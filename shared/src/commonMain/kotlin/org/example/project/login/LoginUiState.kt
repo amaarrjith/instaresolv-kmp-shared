@@ -1,4 +1,4 @@
-package com.example.instaresolv.login
+package org.example.project.login
 
 data class LoginUiState(
     val email: String = "",

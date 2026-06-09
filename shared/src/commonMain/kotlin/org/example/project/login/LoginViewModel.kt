@@ -1,11 +1,11 @@
-package com.example.instaresolv.login
+package org.example.project.login
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.instaresolv.domain.usecase.LoginUseCase
+import org.example.project.domain.usecase.LoginUseCase
 import kotlinx.coroutines.launch
 
 class LoginViewModel(

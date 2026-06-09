@@ -1,4 +1,4 @@
-/* Set TEAM_ID to your Apple Developer Team ID for device signing. */
+
 TEAM_ID=
 
 PRODUCT_NAME=InstaResolv

@@ -1,7 +1,7 @@
-package com.example.instaresolv.data.remote.api
+package org.example.project.data.remote.api
 
-import com.example.instaresolv.data.model.LoginRequest
-import com.example.instaresolv.data.model.LoginResponse
+import org.example.project.data.model.LoginRequest
+import org.example.project.data.model.LoginResponse
 
 interface AuthApiService {
 

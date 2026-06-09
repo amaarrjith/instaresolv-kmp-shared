@@ -1,9 +1,10 @@
-package com.example.instaresolv.di
+package org.example.project.di
 
+import org.example.project.di.appModule
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 
-fun initKoin(config: KoinApplication.() -> Unit = {}) {
+public fun initKoin(config: KoinApplication.() -> Unit = {}) {
     startKoin {
         config()
         modules(appModule)

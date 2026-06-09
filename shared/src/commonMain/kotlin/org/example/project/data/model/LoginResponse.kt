@@ -1,4 +1,4 @@
-package com.example.instaresolv.data.model
+package org.example.project.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

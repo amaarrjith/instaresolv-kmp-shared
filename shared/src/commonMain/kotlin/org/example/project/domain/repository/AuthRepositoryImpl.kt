@@ -1,8 +1,8 @@
-package com.example.instaresolv.domain.repository
+package org.example.project.domain.repository
 
-import com.example.instaresolv.data.model.LoginRequest
-import com.example.instaresolv.data.model.LoginResponse
-import com.example.instaresolv.data.remote.api.AuthApiService
+import org.example.project.data.model.LoginRequest
+import org.example.project.data.model.LoginResponse
+import org.example.project.data.remote.api.AuthApiService
 
 class AuthRepositoryImpl(
     private val apiService: AuthApiService

@@ -26,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import org.example.project.colors.AppColors
-import com.example.instaresolv.login.LoginViewModel
+import org.example.project.login.LoginViewModel
 import org.example.project.typography.textStyle
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField

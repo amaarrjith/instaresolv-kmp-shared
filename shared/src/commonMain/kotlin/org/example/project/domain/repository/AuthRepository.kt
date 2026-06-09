@@ -1,6 +1,6 @@
-package com.example.instaresolv.domain.repository
+package org.example.project.domain.repository
 
-import com.example.instaresolv.data.model.LoginResponse
+import org.example.project.data.model.LoginResponse
 
 interface AuthRepository {
 

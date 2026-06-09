@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.instaresolv.login.LoginViewModel
+import org.example.project.login.LoginViewModel
 import org.example.project.ui.ForgetPasswordScreen
 import org.example.project.ui.LoginScreen
 import org.example.project.ui.OTPVerificationScreen

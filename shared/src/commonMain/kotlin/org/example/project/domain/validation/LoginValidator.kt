@@ -1,4 +1,4 @@
-package com.example.instaresolv.domain.validation
+package org.example.project.domain.validation
 
 class LoginValidator {
 

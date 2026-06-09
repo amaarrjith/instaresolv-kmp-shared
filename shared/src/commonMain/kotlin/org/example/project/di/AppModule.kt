@@ -1,13 +1,13 @@
-package com.example.instaresolv.di
+package org.example.project.di
 
-import com.example.instaresolv.data.remote.api.AuthApiService
-import com.example.instaresolv.data.remote.api.AuthApiServiceImpl
-import com.example.instaresolv.domain.repository.AuthRepository
-import com.example.instaresolv.domain.repository.AuthRepositoryImpl
-import com.example.instaresolv.domain.usecase.LoginUseCase
-import com.example.instaresolv.domain.validation.LoginValidator
-import com.example.instaresolv.login.LoginViewModel
-import com.example.instaresolv.network.createHttpClient
+import org.example.project.data.remote.api.AuthApiService
+import org.example.project.data.remote.api.AuthApiServiceImpl
+import org.example.project.domain.repository.AuthRepository
+import org.example.project.domain.repository.AuthRepositoryImpl
+import org.example.project.domain.usecase.LoginUseCase
+import org.example.project.domain.validation.LoginValidator
+import org.example.project.login.LoginViewModel
+import org.example.project.network.createHttpClient
 import org.koin.dsl.module
 
 val appModule = module {
@@ -18,3 +18,5 @@ val appModule = module {
     single { LoginUseCase(repository = get(), validator = get()) }
     factory { LoginViewModel(get()) }
 }
+
+

@@ -1,8 +1,8 @@
-package com.example.instaresolv.domain.usecase
+package org.example.project.domain.usecase
 
-import com.example.instaresolv.data.model.LoginResponse
-import com.example.instaresolv.domain.repository.AuthRepository
-import com.example.instaresolv.domain.validation.LoginValidator
+import org.example.project.data.model.LoginResponse
+import org.example.project.domain.repository.AuthRepository
+import org.example.project.domain.validation.LoginValidator
 
 class LoginUseCase(
     private val repository: AuthRepository,

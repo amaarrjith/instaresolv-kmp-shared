@@ -7,11 +7,15 @@
 
 
 import SwiftUI
+import Shared
+
 
 struct LoginContentView: View {
     // MARK: - State
     @State private var emailAddress: String = ""
     @State private var password: String = ""
+    let viewModel = ViewModelFactory.shared.loginViewModel()
+    
     // MARK: - Body
     var body: some View {
         NavigationStack {
@@ -132,12 +136,9 @@ private extension LoginContentView {
 // MARK: - Actions
 private extension LoginContentView {
     func onSignIn() {
-//        viewModel.validateAndLogin(email: emailAddress, password: password) {
-//            viewControllerHolder?.present(style: .overCurrentContext) {
-//                AppTabBarView()
-//                    .localize()
-//            }
-//        }
+        viewModel.updateEmail(value: emailAddress)
+        viewModel.updatePassword(value: password)
+        viewModel.login()
     }
 }
 
