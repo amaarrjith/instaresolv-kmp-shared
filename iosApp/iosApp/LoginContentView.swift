@@ -12,8 +12,11 @@ import Shared
 
 struct LoginContentView: View {
     // MARK: - State
+    @State private var showForgetPasswordPage: Bool = false
     @State private var emailAddress: String = ""
     @State private var password: String = ""
+    @State private var toast: AppToast? = nil
+    @State private var showToast: Bool = false
     let viewModel = ViewModelFactory.shared.loginViewModel()
     
     // MARK: - Body
@@ -53,7 +56,19 @@ struct LoginContentView: View {
                     .padding(.horizontal, 24)
                 }
             }
-//            .toastOverlay(toast: $viewModel.toast, show: $viewModel.showToast)
+            .fullScreenCover(isPresented: $showForgetPasswordPage) {
+                ForgotPasswordView()
+            }
+            .task {
+                for await state in viewModel.uiState {
+                    if let error = state.errorMessage {
+                        self.toast = .error(error)
+                        self.showToast = true
+                        viewModel.clearError()
+                    }
+                }
+            }
+            .toastOverlay(toast: $toast, show: $showToast)
             .navigationBarBackButtonHidden()
         }
     }
@@ -120,10 +135,7 @@ private extension LoginContentView {
 
     var forgotPasswordButton: some View {
         Button {
-//            viewControllerHolder?.present(style: .overCurrentContext) {
-//                ForgotPasswordView()
-//                    .localize()
-//            }
+            showForgetPasswordPage = true
         } label: {
             Text("login.forgot_password".localizedString())
                 .font(.regular(14))

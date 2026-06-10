@@ -31,6 +31,12 @@ import org.example.project.typography.textStyle
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -38,7 +44,22 @@ fun LoginScreen(
     navigateToForgetPassword: () -> Unit,
     vm: LoginViewModel
 ) {
-    val uiState = vm.uiState
+    val uiState by vm.uiState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { error ->
+            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+            vm.clearError()
+        }
+    }
+
+    LaunchedEffect(uiState.isLoginSuccess) {
+        if (uiState.isLoginSuccess) {
+            onLoginSuccess()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
