@@ -148,8 +148,8 @@ private extension LoginContentView {
 // MARK: - Actions
 private extension LoginContentView {
     func onSignIn() {
-        viewModel.updateEmail(value: emailAddress)
-        viewModel.updatePassword(value: password)
+        viewModel.updateEmail(email: emailAddress)
+        viewModel.updatePassword(password: password)
         viewModel.login()
     }
 }
