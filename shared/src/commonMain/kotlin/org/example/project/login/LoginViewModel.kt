@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.domain.repository.NetworkResult
@@ -15,66 +18,67 @@ class LoginViewModel(
     private val validator: LoginValidator
 ) : ViewModel() {
 
-    var uiState by mutableStateOf(LoginUiState())
-        private set
+    private val _uiState = MutableStateFlow(LoginUiState())
+    var uiState = _uiState.asStateFlow()
 
-    fun updateEmail(value: String) {
-        uiState = uiState.copy(email = value)
+    fun updateEmail(email: String) {
+        _uiState.update { it.copy(email = email) }
     }
 
-    fun updatePassword(value: String) {
-        uiState = uiState.copy(password = value)
+    fun updatePassword(password: String) {
+        _uiState.update { it.copy(password = password) }
     }
 
     fun login() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
 
-            uiState = uiState.copy(isLoading = true)
-
-            validator.validateEmail(uiState.email)?.let {
-                uiState = uiState.copy(
-                    isLoading = false,
-                    errorMessage = it
-                )
-                return@launch
-            }
-
-            validator.validatePassword(uiState.password)?.let {
-                uiState = uiState.copy(
-                    isLoading = false,
-                    errorMessage = it
-                )
-                return@launch
-            }
-
-            try {
-                when (
-                    repository.login(
-                        email = uiState.email,
-                        password = uiState.password
+            validator.validateEmail(_uiState.value.email)?.let { error ->
+                _uiState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        errorMessage = error
                     )
-                ) {
-                    is NetworkResult.Success -> {
-                        uiState = uiState.copy(
+                }
+                return@launch
+            }
+
+            validator.validatePassword(_uiState.value.password)?.let { error ->
+                _uiState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        errorMessage = error
+                    )
+                }
+                return@launch
+            }
+
+
+            when (val result = repository.login(
+                _uiState.value.email,
+                _uiState.value.password
+            )) {
+                is NetworkResult.Success -> {
+                    _uiState.update {
+                        it.copy(
                             isLoading = false,
                             isLoginSuccess = true
                         )
                     }
-
-                    is NetworkResult.Error -> {
-                        uiState = uiState.copy(
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update {
+                        it.copy(
                             isLoading = false,
-                            isLoginSuccess = false
+                            errorMessage = result.message
                         )
                     }
                 }
-            } catch (e: Exception) {
-                uiState = uiState.copy(
-                    isLoading = false,
-                    isLoginSuccess = false,
-                    errorMessage = e.message ?: "Something went wrong"
-                )
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
     }
 }
