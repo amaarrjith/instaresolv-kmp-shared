@@ -2,6 +2,7 @@ package org.example.project.domain.usecase
 
 import org.example.project.data.model.LoginResponse
 import org.example.project.domain.repository.AuthRepository
+import org.example.project.domain.repository.NetworkResult
 import org.example.project.domain.validation.LoginValidator
 
 class LoginUseCase(
@@ -12,16 +13,14 @@ class LoginUseCase(
     suspend operator fun invoke(
         email: String,
         password: String
-    ): Result<LoginResponse> {
+    ): NetworkResult<LoginResponse> {
 
         validator.validateEmail(email)
-            ?.let { return Result.failure(Exception(it)) }
+            ?.let { return NetworkResult.Error(it) }
 
         validator.validatePassword(password)
-            ?.let { return Result.failure(Exception(it)) }
+            ?.let { return NetworkResult.Error(it) }
 
-        return runCatching {
-            repository.login(email, password)
-        }
+        return repository.login(email, password)
     }
 }

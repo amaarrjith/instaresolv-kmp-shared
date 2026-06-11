@@ -97,3 +97,4 @@ data class NotificationSettingsModel(
     @SerialName("appNotification")
     val appNotification: Boolean? = null
 )
+

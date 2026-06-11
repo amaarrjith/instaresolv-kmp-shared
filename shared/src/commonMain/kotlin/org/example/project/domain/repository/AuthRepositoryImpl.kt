@@ -11,7 +11,7 @@ class AuthRepositoryImpl(
     override suspend fun login(
         email: String,
         password: String
-    ): LoginResponse {
+    ): NetworkResult<LoginResponse> {
         return apiService.login(
             LoginRequest(
                 email = email,

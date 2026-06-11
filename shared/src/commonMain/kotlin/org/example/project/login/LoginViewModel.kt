@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import org.example.project.domain.repository.NetworkResult
 import org.example.project.domain.usecase.LoginUseCase
 import kotlinx.coroutines.launch
 
@@ -34,11 +35,11 @@ class LoginViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            loginUseCase(
+            when (val result = loginUseCase(
                 _uiState.value.email,
                 _uiState.value.password
-            )
-                .onSuccess {
+            )) {
+                is NetworkResult.Success -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -46,14 +47,15 @@ class LoginViewModel(
                         )
                     }
                 }
-                .onFailure { error ->
+                is NetworkResult.Error -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = error.message
+                            errorMessage = result.message
                         )
                     }
                 }
+            }
         }
     }
 }
