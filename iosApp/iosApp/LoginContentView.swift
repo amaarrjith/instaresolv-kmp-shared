@@ -17,6 +17,7 @@ struct LoginContentView: View {
     @State private var password: String = ""
     @State private var toast: AppToast? = nil
     @State private var showToast: Bool = false
+    @State private var isLoading: Bool = false
     let viewModel = ViewModelFactory.shared.loginViewModel()
     
     // MARK: - Body
@@ -61,6 +62,7 @@ struct LoginContentView: View {
             }
             .task {
                 for await state in viewModel.uiState {
+                    self.isLoading = state.isLoading
                     if let error = state.errorMessage {
                         self.toast = .error(error)
                         self.showToast = true
@@ -129,7 +131,7 @@ private extension LoginContentView {
             height: 48.ratiodHeight(),
             backgroundColor: Color.primary,
             font: .bold(16),
-            isLoading: .constant(false)
+            isLoading: $isLoading
         )
     }
 

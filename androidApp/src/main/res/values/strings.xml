@@ -31,4 +31,11 @@
     <string name="continue_text">Continue</string>
     <string name="forgot_password_description">Enter your email ID, and we’ll send you a link to reset your password.</string>
     <string name="reset_password">Reset Password</string>
+    <string name="home">Home\n</string>
+    <string name="project">Project\n</string>
+    <string name="briefs">Briefs\n</string>
+    <string name="settings">Settings\n</string>
+    <string name="assigned_to_me">Assigned To Me\n</string>
+    <string name="view_all">View All\n</string>
+    <string name="action_overview">Action Overview</string>
 </resources>

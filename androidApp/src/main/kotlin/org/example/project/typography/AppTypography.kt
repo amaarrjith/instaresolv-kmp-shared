@@ -23,6 +23,7 @@ fun textStyle(
     size: TextUnit = 14.sp,
     weight: FontWeight = FontWeight.Normal,
     lineHeight: TextUnit = TextUnit.Unspecified,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
     color: Color = AppColors.Black
 ): TextStyle {
     return TextStyle(
@@ -30,6 +31,7 @@ fun textStyle(
         fontWeight = weight,
         fontSize = size,
         lineHeight = lineHeight,
+        letterSpacing = letterSpacing,
         color = color
 
     )

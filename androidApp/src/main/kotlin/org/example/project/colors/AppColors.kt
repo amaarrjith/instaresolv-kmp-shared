@@ -6,4 +6,5 @@ object AppColors {
     val BlackText = Color(0XFF2C4161)
     val Black = Color(0XFF1F2024)
     val DarkGray = Color(0XFF71727A)
+    val TextGray = Color(0XFF8F9098)
 }

@@ -1,5 +1,6 @@
 package org.example.project.navigation
 
+import org.example.project.ui.AppTabBar
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,7 +36,9 @@ fun AppNavigation() {
         composable(Screens.Login.route) {
             val viewModel: LoginViewModel = koinViewModel()
             LoginScreen(
-                onLoginSuccess = { },
+                onLoginSuccess = {
+                    navController.navigate(Screens.TabBar.route)
+                },
                 navigateToRegister = {
                     navController.navigate(Screens.RegisterScreen.route)
                 },
@@ -77,6 +80,9 @@ fun AppNavigation() {
             ForgetPasswordScreen {
                 navController.popBackStack()
             }
+        }
+        composable(Screens.TabBar.route) {
+            AppTabBar()
         }
     }
 }
