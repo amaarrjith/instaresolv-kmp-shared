@@ -17,6 +17,9 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,51 +27,78 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.R
 import org.example.project.colors.AppColors
+import org.example.project.register.RegisterUiState
+import org.example.project.register.RegisterViewModel
 import org.example.project.typography.textStyle
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
+import org.koin.compose.koinInject
 
 @Composable
 fun RegisterScreen(
     isLoginClicked: () -> Unit,
-    isRegisterCompleted: () -> Unit
+    isRegisterCompleted: (tempUserId: Int, email: String) -> Unit
 ) {
+    val viewModel: RegisterViewModel = koinInject()
+    val uiState = viewModel.uiState.collectAsState()
     Box(
         modifier = Modifier.fillMaxSize()
             .background(Color.White)
+            .padding(horizontal = 28.dp)
+            .padding(bottom = 70.dp)
     ) {
         RegisterScreenContent(
             isLoginClicked = {
                 isLoginClicked()
             },
             isRegisterCompleted = {
-                isRegisterCompleted()
+                tempUserId, email ->
+                isRegisterCompleted(tempUserId, email)
             },
             isTermsClicked = {},
-            isPrivacyClicked = {}
+            isPrivacyClicked = {},
+            viewModel,
+            uiState
         )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+        ) {
+            ToastHost(
+                visible = uiState.value.errorMessage != null,
+                type = ToastType.Error,
+                message = uiState.value.errorMessage.orEmpty(),
+            ) {
+                viewModel.clearError()
+            }
+        }
     }
 }
 
 @Composable
 fun RegisterScreenContent(
     isLoginClicked: () -> Unit,
-    isRegisterCompleted: () -> Unit,
+    isRegisterCompleted: (
+            tempUserId: Int,
+            email: String
+            ) -> Unit,
     isTermsClicked: () -> Unit,
-    isPrivacyClicked: () -> Unit
+    isPrivacyClicked: () -> Unit,
+    viewModel: RegisterViewModel,
+    uiState: State<RegisterUiState>
 ) {
     val fullName = remember { mutableStateOf("") }
     val email = remember { mutableStateOf("") }
@@ -78,12 +108,21 @@ fun RegisterScreenContent(
     val company = remember { mutableStateOf("") }
     val isTermsAccepted = remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(uiState.value.isRegisterSuccess) {
+        if (uiState.value.isRegisterSuccess) {
+            isRegisterCompleted(
+                uiState.value.tempUserId,
+                uiState.value.email
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(horizontal = 28.dp)
-            .padding(bottom = 70.dp)
+
     ) {
         Spacer(modifier = Modifier.height(94.dp))
         Text(
@@ -222,12 +261,27 @@ fun RegisterScreenContent(
             )
         }
         Spacer(modifier = Modifier.height(30.dp))
-        AppPrimaryButton(
-            title = stringResource(R.string.register),
-            onClick = {
-                isRegisterCompleted()
-            }
-        )
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            AppPrimaryButton(
+                title = stringResource(R.string.register),
+                isLoading = uiState.value.isLoading,
+                onClick = {
+                    viewModel.register(
+                        fullName.value,
+                        email.value,
+                        password.value,
+                        confirmPassword.value,
+                        designation.value,
+                        company.value,
+                        isTermsAccepted.value
+                    )
+                }
+            )
+        }
+
 
     }
 }
@@ -333,6 +387,8 @@ fun RegisterScreenPreview(
 ) {
     RegisterScreen(
         isLoginClicked = { },
-        isRegisterCompleted = { }
+        isRegisterCompleted = { i: Int, string: String ->
+
+        }
     )
 }

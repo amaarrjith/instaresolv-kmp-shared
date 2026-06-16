@@ -41,13 +41,15 @@ import org.example.project.R
 import org.example.project.model.WelcomeScreenContent
 import org.example.project.typography.InterFontFamily
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+import org.example.project.welcomescreen.WelcomeScreenViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WelcomeScreen(
     onNavigateToLogin: () -> Unit,
 ) {
-
+    val viewModel: WelcomeScreenViewModel = koinInject()
     val scope = rememberCoroutineScope()
 
     val pages = listOf(
@@ -263,6 +265,7 @@ fun WelcomeScreen(
                                         )
 
                                     } else {
+                                        viewModel.saveWelcomeScreenStatus()
                                         onNavigateToLogin()
                                     }
 

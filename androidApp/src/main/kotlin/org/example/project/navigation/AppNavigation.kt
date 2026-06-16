@@ -2,10 +2,13 @@ package org.example.project.navigation
 
 import org.example.project.ui.AppTabBar
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import org.example.project.login.LoginViewModel
+import org.example.project.splash.SplashViewModel
 import org.example.project.ui.ForgetPasswordScreen
 import org.example.project.ui.LoginScreen
 import org.example.project.ui.OTPVerificationScreen
@@ -30,22 +33,30 @@ fun AppNavigation() {
                         }
                     }
                 },
-                onNavigateToHome = { }
+                onNavigateToHome = {
+                    navController.navigate(Screens.TabBar.route) {
+                        popUpTo(Screens.Splash.route) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
         composable(Screens.Login.route) {
-            val viewModel: LoginViewModel = koinViewModel()
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Screens.TabBar.route)
+                    navController.navigate(Screens.TabBar.route) {
+                        popUpTo(Screens.Login.route) {
+                            inclusive = true
+                        }
+                    }
                 },
                 navigateToRegister = {
                     navController.navigate(Screens.RegisterScreen.route)
                 },
                 navigateToForgetPassword = {
                     navController.navigate(Screens.ForgetPasswordScreen.route)
-                },
-                vm = viewModel
+                }
             )
         }
         composable(Screens.WelcomeScreen.route) {
@@ -64,17 +75,36 @@ fun AppNavigation() {
                 isLoginClicked = {
                     navController.popBackStack()
                 },
-                isRegisterCompleted = {
-                    navController.navigate(Screens.OTPScreen.route)
+                isRegisterCompleted = { tempUserId, email ->
+                    navController.navigate(
+                        "${Screens.OTPScreen.route}/$tempUserId/$email"
+                    )
                 }
             )
         }
-        composable(Screens.OTPScreen.route) {
+        composable(
+            Screens.OTPScreenRoute.route,
+            arguments = listOf(
+                navArgument("tempUserId") {type = NavType.IntType},
+                navArgument("email") {type = NavType.StringType}
+            )
+        ) { backStackEntry ->
+            val tempUserId =
+                backStackEntry.arguments?.getInt("tempUserId") ?: -1
+            val email =
+                backStackEntry.arguments?.getString("email").orEmpty()
             OTPVerificationScreen(
-                {}
-            ) {
-                navController.popBackStack()
-            }
+                {
+                    navController.navigate(Screens.TabBar.route) {
+                        popUpTo(Screens.OTPScreenRoute.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                backButtonPressed = { navController.popBackStack() },
+                tempUserId = tempUserId,
+                email = email
+            )
         }
         composable(Screens.ForgetPasswordScreen.route) {
             ForgetPasswordScreen {

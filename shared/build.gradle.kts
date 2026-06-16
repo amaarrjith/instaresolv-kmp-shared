@@ -48,7 +48,7 @@ kotlin {
             api(libs.koin.core)
             api(libs.androidx.lifecycle.viewmodel)
             api(libs.ktor.client.core)
-
+            implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.1")
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

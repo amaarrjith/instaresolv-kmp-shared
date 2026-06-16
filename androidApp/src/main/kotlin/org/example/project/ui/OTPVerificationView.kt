@@ -18,7 +18,10 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,22 +36,45 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.ktor.http.parametersOf
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.example.project.R
+import org.example.project.otp.OTPVerificationViewModel
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.NavigationBackIcon
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
+import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OTPVerificationScreen(
     onOTPVerified: () -> Unit,
-    backButtonPressed: () -> Unit
+    backButtonPressed: () -> Unit,
+    tempUserId: Int = 0,
+    email: String = ""
 ){
+    val viewModel: OTPVerificationViewModel = koinInject(
+        parameters = {
+            parametersOf(email, tempUserId)
+        }
+    )
+    val uiState = viewModel.uiState.collectAsState()
     var otp by remember { mutableStateOf("") }
+    LaunchedEffect(uiState.value.isOTPVerified) {
+        if (uiState.value.isOTPVerified) {
+            onOTPVerified()
+        }
+    }
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
+                ),
                 title = { },
                 navigationIcon = {
                     NavigationBackIcon(
@@ -66,50 +92,64 @@ fun OTPVerificationScreen(
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Column(
+            Box(
                 modifier = Modifier.fillMaxSize()
                     .padding(horizontal = 28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                contentAlignment = Alignment.BottomCenter
             ) {
-                Text(
-                    text = stringResource(R.string.verify_otp),
-                    style = textStyle(
-                        size = 18.sp,
-                        weight = FontWeight.Bold
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.verify_otp),
+                        style = textStyle(
+                            size = 18.sp,
+                            weight = FontWeight.Bold
+                        )
                     )
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = stringResource(R.string.verify_otp_message),
-                    textAlign = TextAlign.Center,
-                    style = textStyle(
-                        size = 14.sp,
-                        weight = FontWeight.Normal
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = stringResource(R.string.verify_otp_message),
+                        textAlign = TextAlign.Center,
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.Normal
+                        )
                     )
-                )
-                Spacer(modifier = Modifier.height(64.dp))
-                OtpInput(
-                    otp = otp,
-                    onOtpChange = { otp = it }
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-                Text(
-                    text = stringResource(R.string.resend_code),
-                    textAlign = TextAlign.Center,
-                    style = textStyle(
-                        size = 14.sp,
-                        weight = FontWeight.Normal
+                    Spacer(modifier = Modifier.height(64.dp))
+                    OtpInput(
+                        otp = otp,
+                        onOtpChange = { otp = it }
                     )
-                )
-                Spacer(modifier = Modifier.height(74.dp))
-                AppPrimaryButton(
-                    title = stringResource(R.string.continue_text),
-                    onClick = {
-                        onOTPVerified()
-                    }
-                )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = stringResource(R.string.resend_code),
+                        textAlign = TextAlign.Center,
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.Normal
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(74.dp))
+                    AppPrimaryButton(
+                        title = stringResource(R.string.continue_text),
+                        isLoading = uiState.value.isLoading,
+                        onClick = {
+                            viewModel.verifyOTP(otp)
+                        }
+                    )
 
+                }
+
+                ToastHost(
+                    visible = uiState.value.errorMessage != null,
+                    type = ToastType.Error,
+                    message = uiState.value.errorMessage.orEmpty(),
+                ) {
+                    viewModel.clearError()
+                }
             }
         }
     }
@@ -168,14 +208,3 @@ fun OtpInput(
     )
 }
 
-@Preview
-@Composable
-fun OTPVerificationScreenPreview(
-    showBackground: Boolean = true
-) {
-    OTPVerificationScreen(
-        {}
-    ) {
-
-    }
-}

@@ -65,7 +65,7 @@ fun AppTabBar() {
             ) {
             NavigationBar(
                 modifier = Modifier
-                    .height(92.dp),
+                    .height(125.dp),
                 containerColor = Color.White,
             ) {
                 navItems.forEachIndexed { index, item ->

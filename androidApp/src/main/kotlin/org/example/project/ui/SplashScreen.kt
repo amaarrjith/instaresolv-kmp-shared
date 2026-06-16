@@ -12,17 +12,28 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 import org.example.project.R
 import kotlinx.coroutines.delay
+import org.example.project.splash.SplashViewModel
+import org.koin.compose.koinInject
 
 
 @Composable
 fun SplashScreen(
     onNavigateToWelcomeScreen: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
 ) {
+    val viewModel: SplashViewModel = koinInject()
     LaunchedEffect(Unit) {
         delay(3000)
-        onNavigateToWelcomeScreen()
+        if (viewModel.isWelcomePageShown()) {
+            if (viewModel.isLoggedIn()) {
+                onNavigateToHome()
+            } else {
+                onNavigateToLogin()
+            }
+        } else {
+            onNavigateToWelcomeScreen()
+        }
     }
     Box(
         modifier = Modifier

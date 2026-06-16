@@ -12,7 +12,9 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -26,20 +28,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.R
+import org.example.project.forgetpassword.ForgetPasswordViewModel
 import org.example.project.typography.textStyle
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgetPasswordScreen(
     onBackButtonPressed: () -> Unit,
 ) {
+    val viewModel: ForgetPasswordViewModel = koinInject()
     val email = remember { mutableStateOf("") }
+    val uiState = viewModel.uiState.collectAsState()
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
+                ),
                 title = { },
                 navigationIcon = {
                     NavigationBackIcon(
@@ -54,12 +66,11 @@ fun ForgetPasswordScreen(
         Box(
             modifier = Modifier.fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 28.dp)
                 .background(Color.White),
             contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = Modifier
-                    .padding(horizontal = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
 
             ) {
@@ -97,10 +108,27 @@ fun ForgetPasswordScreen(
                 AppPrimaryButton(
                     title = stringResource(R.string.reset_password),
                     onClick = {
-
-                    }
+                        viewModel.forgetPassword(email.value)
+                    },
+                    isLoading = uiState.value.isLoading
                 )
             }
+            ToastHost(
+                visible = uiState.value.errorMessage != null,
+                message = uiState.value.errorMessage.orEmpty(),
+                onDismiss = {
+                    viewModel.clearError()
+                },
+                type = ToastType.Error
+            )
+            ToastHost(
+                visible = uiState.value.isPasswordResetSuccess,
+                message = uiState.value.successMessage.orEmpty(),
+                onDismiss = {
+                    viewModel.clearSuccess()
+                },
+                type = ToastType.Success
+            )
         }
     }
 }

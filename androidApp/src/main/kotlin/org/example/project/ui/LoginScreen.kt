@@ -36,21 +36,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import org.example.project.login.LoginUiState
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
+import org.example.project.utilites.ToastView
+import org.koin.compose.koinInject
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     navigateToRegister: () -> Unit,
     navigateToForgetPassword: () -> Unit,
-    vm: LoginViewModel
 ) {
+    val vm: LoginViewModel = koinInject()
     val uiState by vm.uiState.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { error ->
-            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-            vm.clearError()
+
         }
     }
 
@@ -64,12 +68,28 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .padding(horizontal = 28.dp)
     ) {
         LoginScreenContent(
             navigateToRegister = navigateToRegister,
             navigateToForgetPassword = navigateToForgetPassword,
-            viewModel = vm
+            viewModel = vm,
+            uiState
         )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 40.dp)
+            ) {
+                ToastHost(
+                    visible = uiState.errorMessage != null,
+                    type = ToastType.Error,
+                    message = uiState.errorMessage.orEmpty(),
+                    onDismiss = vm::clearError
+                )
+            }
+
     }
 }
 
@@ -77,7 +97,8 @@ fun LoginScreen(
 fun LoginScreenContent(
     navigateToRegister: () -> Unit,
     navigateToForgetPassword: () -> Unit,
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    uiStatus: LoginUiState
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -98,7 +119,7 @@ fun LoginScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 28.dp)
+
         ) {
             Text(
                 text = stringResource(R.string.login),
@@ -151,12 +172,18 @@ fun LoginScreenContent(
                 isSecure = true
             )
             Spacer(modifier = Modifier.height(77.dp))
-            AppPrimaryButton(
-                title = stringResource(R.string.login),
-                onClick = {
-                    viewModel.login()
-                }
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                AppPrimaryButton(
+                    title = stringResource(R.string.login),
+                    onClick = {
+                        viewModel.login()
+                    },
+                    isLoading = uiStatus.isLoading
+                )
+            }
             Spacer(modifier = Modifier.height(30.dp))
             Box(
                 modifier = Modifier.fillMaxWidth(),
