@@ -17,11 +17,13 @@ class SplashViewModel(
     private val repository: AuthRepository
 ): ViewModel() {
 
+    private val _uiState = MutableStateFlow(SplashUiState())
+    val uiState = _uiState.asStateFlow()
+
     init {
         userCheckout()
     }
-    private val _uiState = MutableStateFlow(SplashUiState())
-    val uiState = _uiState.asStateFlow()
+
     fun isLoggedIn(): Boolean {
         return authPreferences.isLoggedIn()
     }

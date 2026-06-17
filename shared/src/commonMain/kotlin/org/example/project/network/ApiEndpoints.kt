@@ -5,5 +5,5 @@ object ApiEndpoints {
     const val FORGOT_PASSWORD = "forgot-password"
     const val REGISTER = "user/registration"
     const val VERIFY_OTP = "user/email-verify"
-    const val USER_CHECKOUT = "user/checkou"
+    const val USER_CHECKOUT = "user/checkout"
 }
