@@ -67,6 +67,8 @@ class LoginViewModel(
                             refresh = auth.refresh ?: "",
                             expiry = auth.tokenExpiry ?: 0L
                         )
+                        authPreferences.saveLoggedInUser(result.data.user)
+                        authPreferences.saveLoggedInUserInfo(result.data.userDetails)
                     }
                     authPreferences.saveLoginStatus(true)
                     _uiState.update {

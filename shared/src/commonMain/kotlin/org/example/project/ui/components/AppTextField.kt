@@ -60,6 +60,10 @@ fun AppTextField(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            textStyle = textStyle(
+                size = 14.sp,
+                weight = FontWeight.Medium
+            ),
             placeholder = {
                 Text(
                     text = placeholder,

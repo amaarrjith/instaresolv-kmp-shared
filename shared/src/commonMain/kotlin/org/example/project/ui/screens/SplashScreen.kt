@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_splash_background
 import instaresolv.shared.generated.resources.ic_app_logo
+import kotlinx.coroutines.delay
 import org.example.project.splash.SplashUiState
 import org.example.project.splash.SplashViewModel
 import org.koin.compose.koinInject
@@ -27,8 +29,21 @@ fun SplashScreen(
 ) {
     val viewModel: SplashViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
-    LaunchedEffect(uiState.value.loadingCompleted) {
-        if (uiState.value.loadingCompleted) {
+//    LaunchedEffect(uiState.value.loadingCompleted) {
+//        if (uiState.value.loadingCompleted) {
+//            if (viewModel.isWelcomePageShown()) {
+//                if (viewModel.isLoggedIn()) {
+//                    onNavigateToHome()
+//                } else {
+//                    onNavigateToLogin()
+//                }
+//            } else {
+//                onNavigateToWelcomeScreen()
+//            }
+//        }
+//    }
+    LaunchedEffect(Unit) {
+        delay(2000)
             if (viewModel.isWelcomePageShown()) {
                 if (viewModel.isLoggedIn()) {
                     onNavigateToHome()
@@ -38,7 +53,7 @@ fun SplashScreen(
             } else {
                 onNavigateToWelcomeScreen()
             }
-        }
+
     }
     Box(
         modifier = Modifier
@@ -47,7 +62,9 @@ fun SplashScreen(
     ) {
         Image(
             painter = painterResource(Res.drawable.ic_splash_background),
-            contentDescription = null
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
         SplashScreenContent(
             uiState.value

@@ -10,6 +10,7 @@ import org.example.project.domain.validation.LoginValidator
 import org.example.project.domain.validation.OTPValidator
 import org.example.project.domain.validation.RegisterValidator
 import org.example.project.forgetpassword.ForgetPasswordViewModel
+import org.example.project.homescreen.HomeScreenViewModel
 import org.example.project.login.LoginViewModel
 import org.example.project.network.createHttpClient
 import org.example.project.otp.OTPVerificationViewModel
@@ -26,6 +27,7 @@ val appModule = module {
     single { LoginValidator() }
     single { RegisterValidator() }
     single { OTPValidator() }
+    factory { HomeScreenViewModel(get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get()) }
     factory { ProfileViewModel(get()) }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,12 +25,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.DrawableResource
@@ -49,8 +53,10 @@ import instaresolv.shared.generated.resources.ic_incidents
 import instaresolv.shared.generated.resources.ic_violations
 import instaresolv.shared.generated.resources.ic_training
 import org.example.project.colors.AppColors
+import org.example.project.homescreen.HomeScreenViewModel
 import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
+import org.example.project.ui.components.WebImageView
 import org.koin.compose.koinInject
 
 @Composable
@@ -58,6 +64,7 @@ fun HomeScreenContentView(
     onProfileClick: () -> Unit
 ) {
     val viewModel: ProfileViewModel = koinInject()
+    val vm: HomeScreenViewModel = koinInject()
     Box(
         modifier = Modifier
             .background(Color.White)
@@ -67,15 +74,23 @@ fun HomeScreenContentView(
         Column(
             modifier = Modifier
                 .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(22.dp))
-            HeaderView(vm = viewModel, onProfileClick = onProfileClick)
+            HeaderView(
+                vm = viewModel,
+                onProfileClick = onProfileClick,
+                userName = vm.user?.name,
+                profileImage = vm.user?.profileImage,
+                notificationCount = vm.userInfo?.notificationUnReadCount,
+                onNotificationClick = {  }
+            )
             Column(
                 modifier = Modifier
                     .padding(vertical = 10.dp)
-                    .verticalScroll(rememberScrollState())
+
             ) {
-                Spacer(modifier = Modifier.height(26.dp))
+                Spacer(modifier = Modifier.height(22.dp))
                 PendingActionsCardView(
                     0
                 )
@@ -91,7 +106,9 @@ fun HomeScreenContentView(
 @Composable
 fun HeaderView(
     vm: ProfileViewModel,
-    userName: String = "Amarjith",
+    userName: String?,
+    profileImage: String?,
+    notificationCount: Int?,
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
@@ -114,29 +131,54 @@ fun HeaderView(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = userName,
-                style = textStyle(
-                    size = 24.sp,
-                    weight = FontWeight.Bold
-                ),
-                color = AppColors.BlackText,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            userName?.let { name ->
+                Text(
+                    text = name,
+                    style = textStyle(
+                        size = 24.sp,
+                        weight = FontWeight.Bold
+                    ),
+                    color = AppColors.BlackText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
-        Image(
-            painter = painterResource(Res.drawable.ic_bell),
-            contentDescription = "Notifications"
-        )
+        Box {
+            Image(
+                painter = painterResource(Res.drawable.ic_bell),
+                contentDescription = "Notifications"
+            )
+
+            val count = notificationCount ?: 0
+            if (count > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 4.dp, y = (-4).dp)
+                        .size(16.dp)
+                        .background(
+                            color = Color.Red,
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (count > 99) "99+" else count.toString(),
+                        color = Color.White,
+                        fontSize = 7.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.width(8.dp))
-        Image(
-            modifier = Modifier.clickable {
-                vm.logout()
-                onProfileClick()
-            },
-            painter = painterResource(Res.drawable.ic_user),
-            contentDescription = "Profile"
+        WebImageView(
+            imageUrl = profileImage,
+            modifier = Modifier
+                .size(49.dp)
+                .clip(RoundedCornerShape(25))
+                .clickable { onProfileClick() }
         )
     }
 }
@@ -148,7 +190,7 @@ fun PendingActionsCardView(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(127.dp)
+            .height(135.dp)
             .clip(RoundedCornerShape(15.dp))
             .background(
                 Brush.linearGradient(
@@ -162,7 +204,8 @@ fun PendingActionsCardView(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 21.dp, vertical = 21.dp),
+                .padding(horizontal = 21.dp, vertical = 21.dp)
+                .height(127.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -181,7 +224,8 @@ fun PendingActionsCardView(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
-                    verticalAlignment = Alignment.Bottom
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.Bottom,
                 ) {
                     Text(
                         text = pendingActionsCount.toString(),
@@ -348,6 +392,14 @@ fun ActionOverviewCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(113.dp)
+            .dropShadow(
+                shape = RoundedCornerShape(16.dp),
+                shadow = Shadow(
+                    radius = 20.dp,
+                    color = Color(0x0F000000),
+                    offset = DpOffset(0.dp, 4.dp)
+                )
+            )
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
             .border(
@@ -369,8 +421,10 @@ fun ActionOverviewCard(
 
                 Text(
                     text = count.toString().padStart(2, '0'),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Medium
+                    style = textStyle(
+                        24.sp,
+                        FontWeight.Medium
+                    )
                 )
             }
 
@@ -378,8 +432,10 @@ fun ActionOverviewCard(
 
             Text(
                 text = action.title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                style = textStyle(
+                    14.sp,
+                    FontWeight.SemiBold
+                )
             )
         }
     }
