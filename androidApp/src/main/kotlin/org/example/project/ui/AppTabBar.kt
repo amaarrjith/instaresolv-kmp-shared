@@ -29,7 +29,9 @@ import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 
 @Composable
-fun AppTabBar() {
+fun AppTabBar(
+    onProfileClick: () -> Unit = {}
+) {
 
     val selectedIndex = remember { mutableStateOf(0) }
 
@@ -124,8 +126,10 @@ fun AppTabBar() {
             contentAlignment = Alignment.Center
         ) {
             when (selectedIndex.value) {
-                0 -> HomeScreenContentView()
-                1 -> Text("Project Screen")
+                0 -> HomeScreenContentView(
+                    onProfileClick = onProfileClick
+                )
+                1 -> ProjectListScreen()
                 2 -> Text("Briefs Screen")
                 3 -> Text("Settings Screen")
             }

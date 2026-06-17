@@ -4,6 +4,9 @@ import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.RegisterResponse
+import org.example.project.data.model.UserCheckoutRequest
+import org.example.project.data.model.UserResponse
+import org.example.project.network.NetworkResult
 
 interface AuthRepository {
 
@@ -31,4 +34,8 @@ interface AuthRepository {
         email: String,
         otp: String
     ): NetworkResult<OTPResponse>
+
+    suspend fun userCheckOut(
+        uuid: String
+    ): NetworkResult<UserResponse>
 }

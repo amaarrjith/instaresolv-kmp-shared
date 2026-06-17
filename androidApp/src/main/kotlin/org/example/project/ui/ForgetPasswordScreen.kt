@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -45,6 +48,7 @@ fun ForgetPasswordScreen(
     val viewModel: ForgetPasswordViewModel = koinInject()
     val email = remember { mutableStateOf("") }
     val uiState = viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -65,6 +69,8 @@ fun ForgetPasswordScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier.fillMaxSize()
+                .imePadding()
+                .verticalScroll(scrollState)
                 .padding(paddingValues)
                 .padding(horizontal = 28.dp)
                 .background(Color.White),

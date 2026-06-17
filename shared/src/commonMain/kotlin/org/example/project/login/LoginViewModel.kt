@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.AuthRepository
-import org.example.project.domain.repository.NetworkResult
 import org.example.project.domain.validation.LoginValidator
+import org.example.project.network.NetworkResult
 
 class LoginViewModel(
     private val repository: AuthRepository,
@@ -61,6 +61,13 @@ class LoginViewModel(
                 _uiState.value.password
             )) {
                 is NetworkResult.Success -> {
+                    result.data.auth?.let { auth ->
+                        authPreferences.saveTokens(
+                            access = auth.access ?: "",
+                            refresh = auth.refresh ?: "",
+                            expiry = auth.tokenExpiry ?: 0L
+                        )
+                    }
                     authPreferences.saveLoginStatus(true)
                     _uiState.update {
                         it.copy(

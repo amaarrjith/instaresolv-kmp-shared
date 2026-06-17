@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +54,7 @@ fun LoginScreen(
     val vm: LoginViewModel = koinInject()
     val uiState by vm.uiState.collectAsState()
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { error ->
@@ -69,6 +73,8 @@ fun LoginScreen(
             .fillMaxSize()
             .background(Color.White)
             .padding(horizontal = 28.dp)
+            .imePadding()
+            .verticalScroll(scrollState)
     ) {
         LoginScreenContent(
             navigateToRegister = navigateToRegister,
@@ -201,6 +207,7 @@ fun LoginScreenContent(
                     color = AppColors.Primary
                 )
             }
+            Spacer(modifier = Modifier.height(30.dp))
         }
     }
 }

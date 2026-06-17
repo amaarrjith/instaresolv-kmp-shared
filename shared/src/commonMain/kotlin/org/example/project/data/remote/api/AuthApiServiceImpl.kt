@@ -1,21 +1,22 @@
 package org.example.project.data.remote.api
 
-import org.example.project.data.model.LoginRequest
-import org.example.project.data.model.LoginResponse
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
-import org.example.project.data.model.CommonResponse
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
+import org.example.project.data.model.LoginRequest
+import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.RegisterRequest
 import org.example.project.data.model.RegisterResponse
-import org.example.project.domain.repository.NetworkResult
+import org.example.project.data.model.UserCheckoutRequest
+import org.example.project.data.model.UserResponse
+import org.example.project.network.ApiEndpoints
+import org.example.project.network.ErrorType
+import org.example.project.network.NetworkResult
+import org.example.project.network.jsonBody
+import org.example.project.network.safeApiCall
 
 class AuthApiServiceImpl(
     private val httpClient: HttpClient
@@ -23,107 +24,39 @@ class AuthApiServiceImpl(
 
     override suspend fun login(
         request: LoginRequest
-    ): NetworkResult<LoginResponse> {
-        return try {
-            val response = httpClient.post("user/login") {
-                contentType(ContentType.Application.Json)
-                setBody(request)
-            }
-
-            val body = response.body<CommonResponse<LoginResponse>>()
-
-            if (body.hasError) {
-                NetworkResult.Error(
-                    body.message ?: "Something went wrong"
-                )
-            } else {
-                NetworkResult.Success(
-                    body.response ?: return NetworkResult.Error("Empty response")
-                )
-            }
-        } catch (e: Exception) {
-            NetworkResult.Error(
-                e.message ?: "Something went wrong"
-            )
+    ): NetworkResult<LoginResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.LOGIN) {
+            jsonBody(request)
         }
     }
 
     override suspend fun forgetPassword(
         request: ForgetPasswordRequest
-    ): NetworkResult<ForgetPasswordResponse> {
-        return try {
-            val response = httpClient.post("forgot-password") {
-                contentType(ContentType.Application.Json)
-                setBody(request)
-            }
-            val body = response.body<CommonResponse<ForgetPasswordResponse>>()
-            if (body.hasError) {
-                NetworkResult.Error(
-                    body.message ?: "Something went wrong"
-                )
-            } else {
-                NetworkResult.Success(
-                    body.response ?: return NetworkResult.Error("Empty response")
-                )
-            }
-            } catch (e: Exception) {
-            NetworkResult.Error(
-                e.message ?: "Something went wrong"
-            )
+    ): NetworkResult<ForgetPasswordResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.FORGOT_PASSWORD) {
+            jsonBody(request)
         }
     }
 
     override suspend fun register(
         request: RegisterRequest
-    ): NetworkResult<RegisterResponse> {
-        return try {
-            val response = httpClient.post("user/registration") {
-                contentType(ContentType.Application.Json)
-                setBody(request)
-            }
-            val body = response.body<CommonResponse<RegisterResponse>>()
-            if (body.hasError) {
-                NetworkResult.Error(
-                    body.message ?: "Something went wrong"
-                )
-            } else {
-                NetworkResult.Success(
-                    body.response ?: return NetworkResult.Error("Empty response")
-                )
-            }
-        } catch (e: Exception) {
-            NetworkResult.Error(
-                e.message ?: "Something went wrong"
-            )
+    ): NetworkResult<RegisterResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.REGISTER) {
+            jsonBody(request)
         }
     }
 
-    override suspend fun verifyOTP(request: OTPRequest): NetworkResult<OTPResponse> {
-        return try {
-            val response = httpClient.post("user/email-verify") {
-                contentType(ContentType.Application.Json)
-                setBody(request)
-            }
-            val body = response.body<CommonResponse<OTPResponse>>()
-            if (body.hasError) {
-                NetworkResult.Error(
-                    body.message ?: "Something went wrong"
-                )
-            } else {
-                if (body.response?.otpVerified ?: false) {
-                    NetworkResult.Success(
-                        body.response ?: return NetworkResult.Error("Empty response")
-                    )
-                } else {
-                    NetworkResult.Error(
-                        body.response?.statusMessage ?: "Something went wrong"
-                    )
-                }
-            }
-        } catch (e: Exception) {
-                NetworkResult.Error(
-                    e.message ?: "Something went wrong"
-                )
-            }
+    override suspend fun verifyOTP(
+        request: OTPRequest
+    ): NetworkResult<OTPResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.VERIFY_OTP) {
+            jsonBody(request)
         }
+    }
+
+    override suspend fun userCheckOut(request: UserCheckoutRequest): NetworkResult<UserResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.USER_CHECKOUT) {
+            jsonBody(request)
+        }
+    }
 }

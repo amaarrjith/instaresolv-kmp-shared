@@ -11,7 +11,7 @@ data class RegisterRequest(
     val confirmPassword: String,
     val designation: String,
     val company: String,
-    val profileImage: String? = null
+    val profileImage: String
 ) {
 
 }

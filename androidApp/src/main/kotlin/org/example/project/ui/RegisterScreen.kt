@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -54,11 +56,15 @@ fun RegisterScreen(
 ) {
     val viewModel: RegisterViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
     Box(
         modifier = Modifier.fillMaxSize()
             .background(Color.White)
             .padding(horizontal = 28.dp)
-            .padding(bottom = 70.dp)
+            .padding(bottom = 10.dp)
+            .navigationBarsPadding()
+            .imePadding()
+            .verticalScroll(scrollState)
     ) {
         RegisterScreenContent(
             isLoginClicked = {
@@ -107,7 +113,7 @@ fun RegisterScreenContent(
     val designation = remember { mutableStateOf("") }
     val company = remember { mutableStateOf("") }
     val isTermsAccepted = remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
+
 
     LaunchedEffect(uiState.value.isRegisterSuccess) {
         if (uiState.value.isRegisterSuccess) {
@@ -121,8 +127,6 @@ fun RegisterScreenContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
-
     ) {
         Spacer(modifier = Modifier.height(94.dp))
         Text(

@@ -112,7 +112,15 @@ fun AppNavigation() {
             }
         }
         composable(Screens.TabBar.route) {
-            AppTabBar()
+            AppTabBar(
+                onProfileClick = {
+                    navController.navigate(Screens.Login.route) {
+                        popUpTo(Screens.TabBar.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
     }
 }

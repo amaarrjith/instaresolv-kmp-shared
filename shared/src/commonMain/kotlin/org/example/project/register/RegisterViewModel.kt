@@ -8,7 +8,7 @@ import org.example.project.domain.validation.RegisterValidator
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.example.project.domain.repository.AuthRepository
-import org.example.project.domain.repository.NetworkResult
+import org.example.project.network.NetworkResult
 
 class RegisterViewModel(
     private val validator: RegisterValidator,

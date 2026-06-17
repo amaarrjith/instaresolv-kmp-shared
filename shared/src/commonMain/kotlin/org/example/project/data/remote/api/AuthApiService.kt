@@ -1,5 +1,6 @@
 package org.example.project.data.remote.api
 
+import org.example.project.data.model.CommonResponse
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.LoginRequest
@@ -8,7 +9,9 @@ import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.RegisterRequest
 import org.example.project.data.model.RegisterResponse
-import org.example.project.domain.repository.NetworkResult
+import org.example.project.data.model.UserCheckoutRequest
+import org.example.project.data.model.UserResponse
+import org.example.project.network.NetworkResult
 
 interface AuthApiService {
 
@@ -27,4 +30,8 @@ interface AuthApiService {
     suspend fun verifyOTP(
         request: OTPRequest
     ): NetworkResult<OTPResponse>
+
+    suspend fun userCheckOut(
+        request: UserCheckoutRequest
+    ): NetworkResult<UserResponse>
 }

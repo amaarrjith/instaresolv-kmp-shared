@@ -10,8 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import org.example.project.R
 import kotlinx.coroutines.delay
+import org.example.project.splash.SplashUiState
 import org.example.project.splash.SplashViewModel
 import org.koin.compose.koinInject
 
@@ -23,16 +25,18 @@ fun SplashScreen(
     onNavigateToHome: () -> Unit,
 ) {
     val viewModel: SplashViewModel = koinInject()
-    LaunchedEffect(Unit) {
-        delay(3000)
-        if (viewModel.isWelcomePageShown()) {
-            if (viewModel.isLoggedIn()) {
-                onNavigateToHome()
+    val uiState = viewModel.uiState.collectAsState()
+    LaunchedEffect(uiState.value.loadingCompleted) {
+        if (uiState.value.loadingCompleted) {
+            if (viewModel.isWelcomePageShown()) {
+                if (viewModel.isLoggedIn()) {
+                    onNavigateToHome()
+                } else {
+                    onNavigateToLogin()
+                }
             } else {
-                onNavigateToLogin()
+                onNavigateToWelcomeScreen()
             }
-        } else {
-            onNavigateToWelcomeScreen()
         }
     }
     Box(
@@ -44,12 +48,16 @@ fun SplashScreen(
             painter = painterResource(R.drawable.ic_splash_background),
             contentDescription = null
         )
-        SplashScreenContent()
+        SplashScreenContent(
+            uiState.value
+        )
     }
 }
 
 @Composable
-fun SplashScreenContent() {
+fun SplashScreenContent(
+    uiState: SplashUiState
+) {
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -60,5 +68,9 @@ fun SplashScreenContent() {
             painter = painterResource(R.drawable.ic_app_logo),
             contentDescription = null
         )
+
+
     }
 }
+
+

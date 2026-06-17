@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.domain.repository.AuthRepository
-import org.example.project.domain.repository.NetworkResult
+import org.example.project.network.NetworkResult
 import org.example.project.domain.validation.LoginValidator
 
 class ForgetPasswordViewModel(

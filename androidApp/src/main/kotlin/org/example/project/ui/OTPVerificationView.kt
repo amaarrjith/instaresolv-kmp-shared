@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -63,6 +66,7 @@ fun OTPVerificationScreen(
     )
     val uiState = viewModel.uiState.collectAsState()
     var otp by remember { mutableStateOf("") }
+    val scrollState = rememberScrollState()
     LaunchedEffect(uiState.value.isOTPVerified) {
         if (uiState.value.isOTPVerified) {
             onOTPVerified()
@@ -89,7 +93,9 @@ fun OTPVerificationScreen(
         Box(
             modifier = Modifier.fillMaxSize()
                 .background(Color.White)
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .imePadding()
+                .verticalScroll(scrollState),
             contentAlignment = Alignment.Center
         ) {
             Box(
@@ -98,7 +104,8 @@ fun OTPVerificationScreen(
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {

@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,10 +36,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.R
 import org.example.project.colors.AppColors
+import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
+import org.koin.compose.koinInject
 
 @Composable
-fun HomeScreenContentView() {
+fun HomeScreenContentView(
+    onProfileClick: () -> Unit
+) {
+    val viewModel: ProfileViewModel = koinInject()
     Box(
         modifier = Modifier
             .background(Color.White)
@@ -50,7 +56,7 @@ fun HomeScreenContentView() {
                 .padding(horizontal = 24.dp)
         ) {
             Spacer(modifier = Modifier.height(22.dp))
-            HeaderView()
+            HeaderView(vm = viewModel, onProfileClick = onProfileClick)
             Column(
                 modifier = Modifier
                     .padding(vertical = 10.dp)
@@ -71,6 +77,7 @@ fun HomeScreenContentView() {
 
 @Composable
 fun HeaderView(
+    vm: ProfileViewModel,
     userName: String = "Amarjith",
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
@@ -111,6 +118,10 @@ fun HeaderView(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Image(
+            modifier = Modifier.clickable {
+                vm.logout()
+                onProfileClick()
+            },
             painter = painterResource(R.drawable.ic_user),
             contentDescription = "Profile"
         )
@@ -424,7 +435,9 @@ Row(
 @Preview
 @Composable
 fun HomeScreenContentViewPreview() {
-    HomeScreenContentView()
+    HomeScreenContentView(
+        onProfileClick = {}
+    )
 }
 
 enum class HomeScreenStatus(
