@@ -44,6 +44,8 @@ import instaresolv.shared.generated.resources.ic_settings_selected
 import instaresolv.shared.generated.resources.ic_settings_unselected
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
+import org.example.project.ui.screens.BriefsScreen
+import org.example.project.ui.screens.SettingsScreen
 
 @Composable
 fun AppTabBar(
@@ -157,8 +159,8 @@ fun AppTabBar(
                     onProfileClick = onProfileClick
                 )
                 1 -> ProjectListScreen()
-                2 -> Text("Briefs Screen")
-                3 -> Text("Settings Screen")
+                2 -> BriefsScreen()
+                3 -> SettingsScreen()
             }
         }
     }

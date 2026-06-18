@@ -34,14 +34,16 @@ class SplashViewModel(
 
     @OptIn(ExperimentalUuidApi::class)
      fun userCheckout() {
-        val uuid = Uuid.random().toString().replace("-", "")
+        val targetUuid = authPreferences.getLoggedInUser()?.uuid
+            ?.takeIf { it.isNotBlank() }
+            ?: Uuid.random().toString().replace("-", "")
         viewModelScope.launch {
             _uiState.update { state ->
                 state.copy(
                     isLoading = true
                 )
             }
-            val result = repository.userCheckOut(uuid)
+            val result = repository.userCheckOut(targetUuid)
             when(result){
                 is NetworkResult.Success -> {
                     _uiState.update {
@@ -61,5 +63,15 @@ class SplashViewModel(
                 }
             }
         }
+    }
+
+    fun onRetry() {
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                errorMessage = null
+            )
+        }
+        userCheckout()
     }
 }

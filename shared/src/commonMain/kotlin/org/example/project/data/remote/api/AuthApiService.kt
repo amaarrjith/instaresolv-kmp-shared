@@ -7,6 +7,8 @@ import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
+import org.example.project.data.model.ProjectListRequest
+import org.example.project.data.model.ProjectListResponse
 import org.example.project.data.model.RegisterRequest
 import org.example.project.data.model.RegisterResponse
 import org.example.project.data.model.UserCheckoutRequest
@@ -34,4 +36,12 @@ interface AuthApiService {
     suspend fun userCheckOut(
         request: UserCheckoutRequest
     ): NetworkResult<UserResponse>
+
+    suspend fun getProject(
+        request: ProjectListRequest
+    ): NetworkResult<ProjectListResponse>
+
+    suspend fun refreshToken(
+        request: org.example.project.data.model.TokenRefreshRequest
+    ): NetworkResult<org.example.project.data.model.AuthResponse>
 }

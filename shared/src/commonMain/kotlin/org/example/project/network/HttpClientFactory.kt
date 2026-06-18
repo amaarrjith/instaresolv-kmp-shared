@@ -11,8 +11,17 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.call.body
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.example.project.data.model.AuthResponse
+import org.example.project.data.model.CommonResponse
+import org.example.project.data.model.TokenRefreshRequest
 import org.example.project.data.settings.AuthPreferences
 
 internal const val BASE_URL = "https://instaresolv-dev.zoondia.org/api/"
@@ -40,6 +49,32 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences) 
                 if (access != null && refresh != null) {
                     BearerTokens(access, refresh)
                 } else null
+            }
+            refreshTokens {
+                val refreshToken = authPreferences.getRefreshToken() ?: return@refreshTokens null
+                try {
+                    val response = client.post(BASE_URL + ApiEndpoints.REFRESH_TOKEN) {
+                        contentType(ContentType.Application.Json)
+                        setBody(TokenRefreshRequest(refreshToken))
+                        markAsRefreshTokenRequest()
+                    }
+                    if (response.status.isSuccess()) {
+                        val body = response.body<CommonResponse<AuthResponse>>()
+                        if (!body.hasError && body.response != null) {
+                            val newAccess = body.response.access
+                            val newRefresh = body.response.refresh ?: refreshToken
+                            val newExpiry = body.response.tokenExpiry ?: 0L
+                            if (newAccess != null) {
+                                authPreferences.saveTokens(newAccess, newRefresh, newExpiry)
+                                return@refreshTokens BearerTokens(newAccess, newRefresh)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    println("KTOR => Token refresh failed: ${e.message}")
+                }
+                authPreferences.logout()
+                null
             }
         }
     }

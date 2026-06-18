@@ -9,5 +9,5 @@ object AppColors {
     val DarkGray = Color(0XFF71727A)
     val TextGray = Color(0XFF8F9098)
     val SkyBlue = Color(0XFF2E6AC6)
-    val SkyBlueLight = Color(0X2E6AC614)
+    val Gray = Color(0X8F9098)
 }

@@ -3,6 +3,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
+import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.ic_placeholder_project
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun WebImageView(
@@ -14,8 +17,10 @@ fun WebImageView(
         contentDescription = null,
         modifier = modifier,
         contentScale = ContentScale.FillBounds,
+        error = painterResource(Res.drawable.ic_placeholder_project),
+        placeholder = painterResource(Res.drawable.ic_placeholder_project),
         onError = {
-            println("Image load error: ${it.result.throwable}")
+            println("`ic_placeholder-project` load error: ${it.result.throwable}")
         }
     )
 }

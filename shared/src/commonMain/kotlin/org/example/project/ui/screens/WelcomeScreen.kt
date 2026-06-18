@@ -48,6 +48,7 @@ import instaresolv.shared.generated.resources.welcome_to
 import org.example.project.model.WelcomeScreenContent
 import org.example.project.typography.interFontFamily
 import kotlinx.coroutines.launch
+import org.example.project.typography.textStyle
 import org.koin.compose.koinInject
 import org.example.project.welcomescreen.WelcomeScreenViewModel
 
@@ -159,9 +160,11 @@ fun WelcomeScreen(
                 if (pagerState.currentPage == 0) {
                     Text(
                         stringResource(Res.string.welcome_to),
-                        color = Color.Gray,
-                        fontFamily = interFontFamily(),
-                        fontSize = 14.sp
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.Normal,
+                            color = Color.Gray,
+                        )
                     )
 
                     Spacer(Modifier.height(24.dp))
@@ -179,11 +182,11 @@ fun WelcomeScreen(
                             pagerState.currentPage.let { pages[it] }.title,
 
                         textAlign = TextAlign.Center,
-
-                        color = Color.Black,
-                        fontFamily = interFontFamily(),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
+                        style = textStyle(
+                            size = 18.sp,
+                            weight = FontWeight.Bold,
+                            color = Color.Black,
+                        ),
                         modifier = Modifier.padding(top = 20.dp)
                     )
 
@@ -197,9 +200,11 @@ fun WelcomeScreen(
                         pagerState.currentPage.let { pages[it] }.description,
 
                     textAlign = TextAlign.Center,
-                    fontFamily = interFontFamily(),
-                    fontSize = 14.sp,
-                    color = Color.Gray
+                    style = textStyle(
+                        size = 14.sp,
+                        weight = FontWeight.Normal,
+                        color = Color.Gray,
+                    ),
                 )
 
                 Spacer(Modifier.weight(1f))

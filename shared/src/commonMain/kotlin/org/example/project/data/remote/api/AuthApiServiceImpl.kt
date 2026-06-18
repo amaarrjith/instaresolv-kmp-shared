@@ -8,6 +8,8 @@ import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
+import org.example.project.data.model.ProjectListRequest
+import org.example.project.data.model.ProjectListResponse
 import org.example.project.data.model.RegisterRequest
 import org.example.project.data.model.RegisterResponse
 import org.example.project.data.model.UserCheckoutRequest
@@ -56,6 +58,18 @@ class AuthApiServiceImpl(
 
     override suspend fun userCheckOut(request: UserCheckoutRequest): NetworkResult<UserResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.USER_CHECKOUT) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getProject(request: ProjectListRequest): NetworkResult<ProjectListResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PROJECT_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun refreshToken(request: org.example.project.data.model.TokenRefreshRequest): NetworkResult<org.example.project.data.model.AuthResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.REFRESH_TOKEN) {
             jsonBody(request)
         }
     }

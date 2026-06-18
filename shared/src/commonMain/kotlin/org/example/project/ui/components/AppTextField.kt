@@ -26,6 +26,7 @@ import org.jetbrains.compose.resources.painterResource
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_eye_open
 import instaresolv.shared.generated.resources.ic_eye_closed
+import instaresolv.shared.generated.resources.ic_search
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 
@@ -108,4 +109,47 @@ fun AppTextField(
             )
         )
     }
+}
+
+@Composable
+fun AppSearchBar(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String = "Search...",
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier.fillMaxWidth(),
+        singleLine = true,
+        textStyle = textStyle(
+            size = 14.sp,
+            weight = FontWeight.Medium
+        ),
+        placeholder = {
+            Text(
+                text = placeholder,
+                style = textStyle(
+                    size = 14.sp,
+                    weight = FontWeight.Medium
+                ),
+                color = Color(0xFF9E9E9E)
+            )
+        },
+        leadingIcon = {
+            Icon(
+                painter = painterResource(Res.drawable.ic_search),
+                contentDescription = null,
+            )
+        },
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color(0xFFF4F4F4),
+            unfocusedContainerColor = Color(0xFFF4F4F4),
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            cursorColor = AppColors.Primary
+        )
+    )
 }

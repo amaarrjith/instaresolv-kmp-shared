@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -150,24 +151,21 @@ fun HeaderView(
                 contentDescription = "Notifications"
             )
 
-            val count = notificationCount ?: 0
-            if (count > 0) {
+            if ((notificationCount ?: 0) > 0) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = 4.dp, y = (-4).dp)
-                        .size(16.dp)
-                        .background(
-                            color = Color.Red,
-                            shape = CircleShape
-                        ),
+                        .offset(x = 5.dp, y = (-8).dp)
+                        .size(20.dp)
+                        .background(Color.Red, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (count > 99) "99+" else count.toString(),
+                        text = notificationCount.toString(),
                         color = Color.White,
-                        fontSize = 7.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 9.sp
                     )
                 }
             }
