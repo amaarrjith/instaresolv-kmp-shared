@@ -54,6 +54,8 @@ import instaresolv.shared.generated.resources.ic_incidents
 import instaresolv.shared.generated.resources.ic_violations
 import instaresolv.shared.generated.resources.ic_training
 import org.example.project.colors.AppColors
+import org.example.project.data.model.ActionsOverview
+import org.example.project.data.model.AssignedToMe
 import org.example.project.homescreen.HomeScreenViewModel
 import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
@@ -62,6 +64,8 @@ import org.koin.compose.koinInject
 
 @Composable
 fun HomeScreenContentView(
+    assignedToMe: AssignedToMe? = null,
+    actionOverview: ActionsOverview? = null,
     onProfileClick: () -> Unit
 ) {
     val viewModel: ProfileViewModel = koinInject()

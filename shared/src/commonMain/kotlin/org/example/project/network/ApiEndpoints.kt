@@ -8,4 +8,5 @@ object ApiEndpoints {
     const val USER_CHECKOUT = "generic/user-check"
     const val PROJECT_LIST = "v3/group/list"
     const val REFRESH_TOKEN = "token/refresh"
+    const val HOME_CONTENT = "home/contentS"
 }

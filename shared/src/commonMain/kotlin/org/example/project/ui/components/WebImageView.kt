@@ -20,7 +20,7 @@ fun WebImageView(
         error = painterResource(Res.drawable.ic_placeholder_project),
         placeholder = painterResource(Res.drawable.ic_placeholder_project),
         onError = {
-            println("`ic_placeholder-project` load error: ${it.result.throwable}")
+            println("`ic_placeholder_project` load error: ${it.result.throwable}")
         }
     )
 }

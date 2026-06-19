@@ -43,9 +43,12 @@ import instaresolv.shared.generated.resources.ic_briefs_unselected
 import instaresolv.shared.generated.resources.ic_settings_selected
 import instaresolv.shared.generated.resources.ic_settings_unselected
 import org.example.project.colors.AppColors
+import org.example.project.tabbar.AppTabBarUiState
+import org.example.project.tabbar.AppTabBarViewModel
 import org.example.project.typography.textStyle
 import org.example.project.ui.screens.BriefsScreen
 import org.example.project.ui.screens.SettingsScreen
+import org.koin.compose.koinInject
 
 @Composable
 fun AppTabBar(
@@ -53,6 +56,7 @@ fun AppTabBar(
 ) {
 
     val selectedIndex = remember { mutableStateOf(0) }
+    val viewModel: AppTabBarViewModel = koinInject()
 
     val navItems = listOf(
         TabBarItems(
@@ -154,13 +158,22 @@ fun AppTabBar(
                 .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-            when (selectedIndex.value) {
-                0 -> HomeScreenContentView(
-                    onProfileClick = onProfileClick
-                )
-                1 -> ProjectListScreen()
-                2 -> BriefsScreen()
-                3 -> SettingsScreen()
+            when (viewModel.uiState.value) {
+                is AppTabBarUiState.Success -> {
+                    when (selectedIndex.value) {
+                        0 -> HomeScreenContentView(
+                            actionOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
+                            assignedToMe = (viewModel.uiState.value as AppTabBarUiState.Success).assignedToMe,
+                            onProfileClick = onProfileClick
+                        )
+                        1 -> ProjectListScreen()
+                        2 -> BriefsScreen()
+                        3 -> SettingsScreen()
+                    }
+                }
+                else -> {
+
+                }
             }
         }
     }

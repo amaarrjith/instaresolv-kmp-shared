@@ -2,6 +2,8 @@ package org.example.project.data.repository
 
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
+import org.example.project.data.model.HomeContentsRequest
+import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.OTPRequest
@@ -86,5 +88,13 @@ class AuthRepositoryImpl(
           uuid = uuid
         )
       )
+    }
+
+    override suspend fun getHomeContents(userId: Int): NetworkResult<HomeResponse> {
+        return apiService.getHomeContents(
+            request = HomeContentsRequest(
+                userId = userId
+            )
+        )
     }
 }

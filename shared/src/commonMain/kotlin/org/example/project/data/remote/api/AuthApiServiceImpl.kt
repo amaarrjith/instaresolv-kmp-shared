@@ -4,6 +4,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
+import org.example.project.data.model.HomeContentsRequest
+import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.OTPRequest
@@ -70,6 +72,12 @@ class AuthApiServiceImpl(
 
     override suspend fun refreshToken(request: org.example.project.data.model.TokenRefreshRequest): NetworkResult<org.example.project.data.model.AuthResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.REFRESH_TOKEN) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getHomeContents(request: HomeContentsRequest): NetworkResult<HomeResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.LOGIN) {
             jsonBody(request)
         }
     }
