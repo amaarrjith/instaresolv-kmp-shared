@@ -6,6 +6,7 @@ import org.example.project.data.model.HomeContentsRequest
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
+import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.RegisterRequest
@@ -96,5 +97,9 @@ class AuthRepositoryImpl(
                 userId = userId
             )
         )
+    }
+
+    override suspend fun getNotificationList(): NetworkResult<NotificationListResponse> {
+        return apiService.getNotificationList()
     }
 }

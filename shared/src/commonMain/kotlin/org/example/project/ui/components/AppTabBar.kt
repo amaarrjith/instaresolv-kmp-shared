@@ -14,6 +14,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,6 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.home
 import instaresolv.shared.generated.resources.project
@@ -46,17 +48,22 @@ import org.example.project.colors.AppColors
 import org.example.project.tabbar.AppTabBarUiState
 import org.example.project.tabbar.AppTabBarViewModel
 import org.example.project.typography.textStyle
+import org.example.project.ui.components.AppLoader
 import org.example.project.ui.screens.BriefsScreen
 import org.example.project.ui.screens.SettingsScreen
 import org.koin.compose.koinInject
 
 @Composable
 fun AppTabBar(
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
+    onModuleClicked: (ActionOverview) -> Unit
 ) {
 
     val selectedIndex = remember { mutableStateOf(0) }
     val viewModel: AppTabBarViewModel = koinInject()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     val navItems = listOf(
         TabBarItems(
@@ -158,21 +165,47 @@ fun AppTabBar(
                 .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-            when (viewModel.uiState.value) {
+            when (val state = uiState) {
                 is AppTabBarUiState.Success -> {
                     when (selectedIndex.value) {
                         0 -> HomeScreenContentView(
+                            pullDownRefresh = { viewModel.getHomeContents(true) },
+                            silentRefresh = { viewModel.getHomeContents(false) },
                             actionOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
                             assignedToMe = (viewModel.uiState.value as AppTabBarUiState.Success).assignedToMe,
-                            onProfileClick = onProfileClick
+                            onProfileClick = onProfileClick,
+                            onNotificationClick = onNotificationClick,
+                            isRefreshing = isRefreshing,
+                            onClickModule = { module -> onModuleClicked(module) }
                         )
                         1 -> ProjectListScreen()
-                        2 -> BriefsScreen()
+                        2 -> BriefsScreen(
+                            actionsOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
+//
+                        )
                         3 -> SettingsScreen()
                     }
                 }
-                else -> {
-
+                is AppTabBarUiState.Error -> {
+                    when (selectedIndex.value) {
+                        0 -> HomeScreenContentView(
+                            pullDownRefresh = { viewModel.getHomeContents(true) },
+                            silentRefresh = { viewModel.getHomeContents(false) },
+                            onProfileClick = onProfileClick,
+                            onNotificationClick = onNotificationClick,
+                            isRefreshing = isRefreshing,
+                            onClickModule = { module -> onModuleClicked(module) }
+                        )
+                        1 -> ProjectListScreen()
+                        2 -> BriefsScreen(
+//                            pullDownRefresh = { viewModel.getHomeContents(true) },
+//                            silentRefresh = { viewModel.getHomeContents(false) },
+//                            isRefreshing = isRefreshing
+                        )
+                        3 -> SettingsScreen()
+                    }
+                } is AppTabBarUiState.Loading -> {
+                    AppLoader()
                 }
             }
         }

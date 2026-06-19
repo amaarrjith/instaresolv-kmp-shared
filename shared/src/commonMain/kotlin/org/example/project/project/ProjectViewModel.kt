@@ -15,21 +15,32 @@ class ProjectViewModel(
     private val _uiState = MutableStateFlow<ProjectListUiState>(ProjectListUiState.Success(emptyList()))
     val uiState = _uiState.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     init {
         getProjects()
     }
     fun getProjects(
         searchKey: String = "",
         isProjectList: Boolean = true,
-        isInvite: Boolean = false
+        isInvite: Boolean = false,
+        isRefresh: Boolean = false
     ) {
         viewModelScope.launch {
-            _uiState.value = ProjectListUiState.Loading
+            if (isRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _uiState.value = ProjectListUiState.Loading
+            }
             val response = projectRepository.getProjects(
                 searchKey = searchKey,
                 isProjectList = isProjectList,
                 isInvite = isInvite
             )
+            if (isRefresh) {
+                _isRefreshing.value = false
+            }
             when(response) {
                 is NetworkResult.Success -> {
                     _uiState.value = ProjectListUiState.Success(

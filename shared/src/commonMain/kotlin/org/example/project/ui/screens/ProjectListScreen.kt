@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -63,6 +64,7 @@ fun ProjectListScreen() {
     var searchQuery by remember { mutableStateOf("") }
     val viewModel: ProjectViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -83,7 +85,7 @@ fun ProjectListScreen() {
                 AppSearchBar(
                     value = searchQuery,
                     onValueChange = {
-                        it -> searchQuery
+                        searchQuery = it
                         viewModel.getProjects(searchQuery)
                                     },
                     placeholder = "Search Projects",
@@ -100,7 +102,9 @@ fun ProjectListScreen() {
                     }
                     is ProjectListUiState.Success -> {
                         ProjectListScreenView(
-                            uiState = uiState.value as ProjectListUiState.Success
+                            uiState = uiState.value as ProjectListUiState.Success,
+                            onRefresh = {   viewModel.getProjects(searchKey = searchQuery, isRefresh = true)  },
+                            isRefreshing = isRefreshing
                         )
                     }
                 }
@@ -111,15 +115,24 @@ fun ProjectListScreen() {
 
 @Composable
 fun ProjectListScreenView(
-    uiState: ProjectListUiState.Success
+    onRefresh: () -> Unit,
+    uiState: ProjectListUiState.Success,
+    isRefreshing: Boolean = false
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize()
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            onRefresh()
+        }
     ) {
-        LazyColumn {
-            items(uiState.projectList.size) { item ->
-                ProjectListCard(project = uiState.projectList[item])
-                HorizontalDivider()
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            LazyColumn {
+                items(uiState.projectList.size) { item ->
+                    ProjectListCard(project = uiState.projectList[item])
+                    HorizontalDivider()
+                }
             }
         }
     }

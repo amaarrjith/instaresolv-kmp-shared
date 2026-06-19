@@ -16,16 +16,27 @@ class AppTabBarViewModel(
     private val authPreferences: AuthPreferences
 ): ViewModel() {
     
-    private val _uiState = MutableStateFlow<AppTabBarUiState>(AppTabBarUiState.Success())
+    private val _uiState = MutableStateFlow<AppTabBarUiState>(AppTabBarUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     init {
-        getHomeContents()
+        getHomeContents(showRefreshSpinner = false)
     }
-    fun getHomeContents() {
+    fun getHomeContents(showRefreshSpinner: Boolean = true) {
         val  userId = authPreferences.getLoggedInUser()?.userId ?: -1
         viewModelScope.launch {
+            if (showRefreshSpinner) {
+                _isRefreshing.value = true
+            } else if (_uiState.value !is AppTabBarUiState.Success) {
+                _uiState.value = AppTabBarUiState.Loading
+            }
             val response = authRepository.getHomeContents(userId)
+            if (showRefreshSpinner) {
+                _isRefreshing.value = false
+            }
             when(response) {
                 is NetworkResult.Success -> {
                     _uiState.value = AppTabBarUiState.Success(

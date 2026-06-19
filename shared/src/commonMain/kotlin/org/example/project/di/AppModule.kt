@@ -15,11 +15,13 @@ import org.example.project.forgetpassword.ForgetPasswordViewModel
 import org.example.project.homescreen.HomeScreenViewModel
 import org.example.project.login.LoginViewModel
 import org.example.project.network.createHttpClient
+import org.example.project.notifications.NotificationsViewModel
 import org.example.project.otp.OTPVerificationViewModel
 import org.example.project.profile.ProfileViewModel
 import org.example.project.project.ProjectViewModel
 import org.example.project.register.RegisterViewModel
 import org.example.project.splash.SplashViewModel
+import org.example.project.tabbar.AppTabBarViewModel
 import org.koin.dsl.module
 import org.example.project.welcomescreen.WelcomeScreenViewModel
 
@@ -32,6 +34,8 @@ val appModule = module {
     single { RegisterValidator() }
     single { OTPValidator() }
     factory { ProjectViewModel(get()) }
+    factory { NotificationsViewModel(get()) }
+    factory { AppTabBarViewModel(get(), get()) }
     factory { HomeScreenViewModel(get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get()) }

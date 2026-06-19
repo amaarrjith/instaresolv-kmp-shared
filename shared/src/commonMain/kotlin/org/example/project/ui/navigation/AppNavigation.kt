@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import org.example.project.ui.ActionOverview
 import org.example.project.ui.AppTabBar
 import org.example.project.ui.ForgetPasswordScreen
 import org.example.project.ui.LoginScreen
@@ -13,6 +14,13 @@ import org.example.project.ui.OTPVerificationScreen
 import org.example.project.ui.RegisterScreen
 import org.example.project.ui.SplashScreen
 import org.example.project.ui.WelcomeScreen
+import org.example.project.ui.components.AuditInspectionListScreen
+import org.example.project.ui.components.IncidentListScreen
+import org.example.project.ui.components.NotificationListScreen
+import org.example.project.ui.components.ObservationListScreen
+import org.example.project.ui.components.PermitToWorkListScreen
+import org.example.project.ui.components.TrainingListScreen
+import org.example.project.ui.components.ViolationListScreen
 
 @Composable
 fun AppNavigation() {
@@ -108,16 +116,72 @@ fun AppNavigation() {
                 navController.popBackStack()
             }
         }
+        composable(Screens.NotificationListScreen.route) {
+            NotificationListScreen {
+                navController.popBackStack()
+            }
+        }
         composable(Screens.TabBar.route) {
             AppTabBar(
                 onProfileClick = {
-                    navController.navigate(Screens.Login.route) {
-                        popUpTo(Screens.TabBar.route) {
-                            inclusive = true
+                    // Profile screen navigation could go here
+                },
+                onNotificationClick = {
+                    navController.navigate(Screens.NotificationListScreen.route)
+                },
+                onModuleClicked = { module ->
+                    when (module) {
+                        ActionOverview.AUDIT_INSPECTIONS -> {
+                            navController.navigate(Screens.AuditInspectionListScreen.route)
+                        }
+                        ActionOverview.PERMIT_TO_WORK -> {
+                            navController.navigate(Screens.PermitToWorkListScreen.route)
+                        }
+                        ActionOverview.OBSERVATIONS -> {
+                            navController.navigate(Screens.ObservationListScreen.route)
+                        }
+                        ActionOverview.INCIDENTS -> {
+                            navController.navigate(Screens.IncidentListScreen.route)
+                        }
+                        ActionOverview.VIOLATIONS -> {
+                            navController.navigate(Screens.ViolationListScreen.route)
+                        }
+                        ActionOverview.TRAINING -> {
+                            navController.navigate(Screens.TrainingListScreen.route)
                         }
                     }
                 }
             )
+        }
+        composable(Screens.AuditInspectionListScreen.route) {
+            AuditInspectionListScreen {
+                navController.popBackStack()
+            }
+        }
+        composable(Screens.PermitToWorkListScreen.route) {
+            PermitToWorkListScreen{
+                navController.popBackStack()
+            }
+        }
+        composable(Screens.ObservationListScreen.route) {
+            ObservationListScreen{
+                navController.popBackStack()
+            }
+        }
+        composable(Screens.IncidentListScreen.route) {
+            IncidentListScreen{
+                navController.popBackStack()
+            }
+        }
+        composable(Screens.ViolationListScreen.route) {
+            ViolationListScreen{
+                navController.popBackStack()
+            }
+        }
+        composable(Screens.TrainingListScreen.route) {
+            TrainingListScreen{
+                navController.popBackStack()
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ import instaresolv.shared.generated.resources.ic_toolbox_talks
 import instaresolv.shared.generated.resources.ic_training
 import instaresolv.shared.generated.resources.ic_violations
 import org.example.project.colors.AppColors
+import org.example.project.data.model.ActionsOverview
 import org.example.project.typography.textStyle
 import org.example.project.ui.ActionOverview
 import org.example.project.ui.ActionOverviewCard
@@ -46,7 +47,14 @@ import kotlin.collections.chunked
 import kotlin.collections.forEach
 
 @Composable
-fun BriefsScreen() {
+fun BriefsScreen(
+    actionsOverview: ActionsOverview? = null
+) {
+    val items = listOf(
+        BriefOverviewItem(BriefOverview.PRE_TASK, actionsOverview?.preTaskCount),
+        BriefOverviewItem(BriefOverview.TOOLBOX_TALKS, actionsOverview?.toolboxCount),
+        BriefOverviewItem(BriefOverview.LESSON, actionsOverview?.lessonCount)
+    )
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -85,24 +93,29 @@ fun BriefsScreen() {
                     )
                 )
                 Spacer(modifier = Modifier.height(14.dp))
-                BriefOverview.entries.chunked(2).forEach { rowItems ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        rowItems.forEach { action ->
-                            Box(modifier = Modifier.weight(1f)) {
-                                BriefOverviewCard(
-                                    action,
-                                    0
-                                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items.chunked(2).forEach { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            rowItems.forEach { action ->
+                                Box(modifier = Modifier.weight(1f)) {
+                                    BriefOverviewCard(
+                                        action.type,
+                                        action.count ?: 0
+                                    )
+                                }
+                            }
+                            if (rowItems.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
-                        if (rowItems.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+//                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+
                 }
             }
         }
@@ -128,6 +141,11 @@ enum class BriefOverview(
         Res.drawable.ic_lesson
     )
 }
+
+data class BriefOverviewItem(
+    val type: BriefOverview,
+    val count: Int?
+)
 
 
 @Composable

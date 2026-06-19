@@ -3,6 +3,7 @@ package org.example.project.domain.repository
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.LoginResponse
+import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.RegisterResponse
 import org.example.project.data.model.UserCheckoutRequest
@@ -43,4 +44,6 @@ interface AuthRepository {
     suspend fun getHomeContents(
         userId: Int
     ): NetworkResult<HomeResponse>
+
+    suspend fun getNotificationList() : NetworkResult<NotificationListResponse>
 }

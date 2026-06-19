@@ -17,12 +17,25 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.example.project.data.settings.formatDate
 import org.jetbrains.compose.resources.DrawableResource
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_bell
@@ -51,11 +65,13 @@ import instaresolv.shared.generated.resources.ic_audit_inspection
 import instaresolv.shared.generated.resources.ic_permit_to_work
 import instaresolv.shared.generated.resources.ic_observations
 import instaresolv.shared.generated.resources.ic_incidents
+import instaresolv.shared.generated.resources.ic_right_icon
 import instaresolv.shared.generated.resources.ic_violations
 import instaresolv.shared.generated.resources.ic_training
 import org.example.project.colors.AppColors
 import org.example.project.data.model.ActionsOverview
 import org.example.project.data.model.AssignedToMe
+import org.example.project.data.settings.timeAgo
 import org.example.project.homescreen.HomeScreenViewModel
 import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
@@ -66,8 +82,17 @@ import org.koin.compose.koinInject
 fun HomeScreenContentView(
     assignedToMe: AssignedToMe? = null,
     actionOverview: ActionsOverview? = null,
-    onProfileClick: () -> Unit
+    pullDownRefresh: () -> Unit,
+    silentRefresh: () -> Unit = {},
+    onProfileClick: () -> Unit,
+    onNotificationClick: () -> Unit,
+    isRefreshing: Boolean,
+    onClickModule: (ActionOverview) -> Unit
 ) {
+
+//    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+//        silentRefresh()
+//    }
     val viewModel: ProfileViewModel = koinInject()
     val vm: HomeScreenViewModel = koinInject()
     Box(
@@ -76,33 +101,43 @@ fun HomeScreenContentView(
             .fillMaxSize()
             .padding()
     ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { pullDownRefresh() }
         ) {
-            Spacer(modifier = Modifier.height(22.dp))
-            HeaderView(
-                vm = viewModel,
-                onProfileClick = onProfileClick,
-                userName = vm.user?.name,
-                profileImage = vm.user?.profileImage,
-                notificationCount = vm.userInfo?.notificationUnReadCount,
-                onNotificationClick = {  }
-            )
             Column(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(22.dp))
-                PendingActionsCardView(
-                    0
+                HeaderView(
+                    vm = viewModel,
+                    onProfileClick = onProfileClick,
+                    userName = vm.user?.name,
+                    profileImage = vm.user?.profileImage,
+                    notificationCount = vm.userInfo?.notificationUnReadCount,
+                    onNotificationClick = onNotificationClick
                 )
-                Spacer(modifier = Modifier.height(26.dp))
-                AssignedToMeCard()
-                Spacer(modifier = Modifier.height(22.dp))
-                ActionOverviewSection()
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+
+                ) {
+                    Spacer(modifier = Modifier.height(22.dp))
+                    PendingActionsCardView(
+                        0
+                    )
+                    Spacer(modifier = Modifier.height(26.dp))
+                    AssignedToMeCard(assignedToMe)
+                    Spacer(modifier = Modifier.height(22.dp))
+                    ActionOverviewSection(
+                        actionOverview = actionOverview,
+                        onClickListener = { action ->
+                            onClickModule(action)
+                        }
+                    )
+                }
             }
         }
     }
@@ -149,7 +184,7 @@ fun HeaderView(
                 )
             }
         }
-        Box {
+        Box(modifier = Modifier.clickable { onNotificationClick() }) {
             Image(
                 painter = painterResource(Res.drawable.ic_bell),
                 contentDescription = "Notifications"
@@ -260,95 +295,228 @@ fun PendingActionsCardView(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AssignedToMeCard() {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row() {
-            Text(
-                stringResource(Res.string.assigned_to_me),
-                style = textStyle(
-                    14.sp,
-                    FontWeight.Bold
-                )
-            )
-            Spacer(
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                stringResource(Res.string.view_all),
-                style = textStyle(
-                    12.sp,
-                    FontWeight.SemiBold,
-                    color = AppColors.BlackText
-                )
-            )
-        }
-        Row() {
-            Image(
-                painter = painterResource(Res.drawable.ic_pipe),
-                contentDescription = null
-            )
-            Spacer(
-                modifier = Modifier.width(14.dp)
-            )
-            Column() {
-                Row (
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    StatusCard(
-                        HomeScreenStatus.PENDING
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    DateCard(
-                        "18 AUG 2025",
-                        "8 Months Ago"
-                    )
-                }
-                Spacer(
-                    modifier = Modifier.height(10.dp)
-                )
+fun AssignedToMeCard(
+    assignedToMe: AssignedToMe?
+) {
+    var showDrawer by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    assignedToMe?.let { contents ->
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row() {
                 Text(
-                    "Water pipe broken in the 2nd floor bathroom",
+                    stringResource(Res.string.assigned_to_me),
                     style = textStyle(
                         14.sp,
                         FontWeight.Bold
                     )
                 )
                 Spacer(
-                    modifier = Modifier.height(10.dp)
+                    modifier = Modifier.weight(1f)
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(Res.drawable.ic_user),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(CircleShape)
+                Text(
+                    stringResource(Res.string.view_all),
+                    style = textStyle(
+                        12.sp,
+                        FontWeight.SemiBold,
+                        color = AppColors.BlackText
                     )
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDrawer = true }
+                    .padding(vertical = 8.dp)
+            ) {
+                WebImageView(
+                    imageUrl = contents.observation.imageUrl,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(12))
+                )
+                Spacer(
+                    modifier = Modifier.width(14.dp)
+                )
+                Column() {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        StatusCard(
+                            contents.observation.pendingActionType
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        DateCard(
+                            formatDate(
+                                contents.observation.date,
+                                "yyyy-MM-dd HH:mm:ss",
+                                "dd MMM yyyy"
+                            ).uppercase(),
+                            timeAgo(
+                                contents.observation.date
+                            )
+                        )
+                    }
                     Spacer(
-                        modifier = Modifier.width(10.dp)
+                        modifier = Modifier.height(10.dp)
                     )
                     Text(
-                        "Cristofer Press",
+                        contents.observation.title,
                         style = textStyle(
-                            11.sp,
-                            FontWeight.Medium
+                            14.sp,
+                            FontWeight.Bold
                         )
                     )
+                    Spacer(
+                        modifier = Modifier.height(10.dp)
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WebImageView(
+                            imageUrl = contents.observation.reportedBy.imageUrl,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(
+                            modifier = Modifier.width(10.dp)
+                        )
+                        Text(
+                            contents.observation.reportedBy.name,
+                            style = textStyle(
+                                11.sp,
+                                FontWeight.Medium
+                            )
+                        )
+                    }
+
+
                 }
-
-
             }
+        }
+        ObservationActionBottomSheet(
+            showSheet = showDrawer,
+            onDismiss = {
+                showDrawer = false
+            },
+            onActionClick = { action ->
+                when (action) {
+                    "View Report" -> {}
+                    "Generate PDF" -> {}
+                    "Close Observation" -> {}
+                    "Request Observation Responsible Person Change" -> {}
+                    "Request to Delete Observation" -> {}
+                }
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ObservationActionBottomSheet(
+    showSheet: Boolean,
+    onDismiss: () -> Unit,
+    onActionClick: (String) -> Unit
+) {
+
+    if (!showSheet) return
+
+    val sheetState = rememberModalBottomSheetState()
+
+    val actions = listOf(
+        "View Report",
+        "Generate PDF",
+        "Close Observation",
+        "Request Observation Responsible Person Change",
+        "Request to Delete Observation"
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Color.White
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+        ) {
+
+            Text(
+                text = "Open Observation",
+                style = textStyle(
+                    size = 18.sp,
+                    weight = FontWeight.Bold
+                )
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            actions.forEachIndexed { index, title ->
+                ObservationActionItem(
+                    title = title,
+                    onClick = {
+                        onActionClick(title)
+                        onDismiss()
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
 @Composable
-fun ActionOverviewSection() {
+private fun ObservationActionItem(
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            style = textStyle(
+                size = 14.sp,
+                weight = FontWeight.Medium
+            )
+        )
+
+        Image(
+            modifier = Modifier.padding(
+                start = 40.dp
+            ),
+            painter = painterResource(Res.drawable.ic_right_icon),
+            contentDescription = null
+        )
+    }
+}
+
+@Composable
+fun ActionOverviewSection(
+    actionOverview: ActionsOverview?,
+    onClickListener: (ActionOverview) -> Unit
+) {
+    val items = listOf(
+        ActionOverviewItem(ActionOverview.AUDIT_INSPECTIONS, actionOverview?.auditAndInspectionsCount),
+        ActionOverviewItem(ActionOverview.PERMIT_TO_WORK, actionOverview?.permitToWorkCount),
+        ActionOverviewItem(ActionOverview.OBSERVATIONS, actionOverview?.observationsCount),
+        ActionOverviewItem(ActionOverview.INCIDENTS, actionOverview?.incidentCount),
+        ActionOverviewItem(ActionOverview.VIOLATIONS, actionOverview?.violationCount),
+        ActionOverviewItem(ActionOverview.TRAINING, actionOverview?.trainingsCount)
+    )
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -363,24 +531,33 @@ fun ActionOverviewSection() {
             modifier = Modifier.height(10.dp)
         )
 
-        ActionOverview.entries.chunked(2).forEach { rowItems ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                rowItems.forEach { action ->
-                    Box(modifier = Modifier.weight(1f)) {
-                        ActionOverviewCard(
-                            action,
-                            0
-                        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items.chunked(2).forEach { rowItems ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    rowItems.forEach { item ->
+                        Box(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            ActionOverviewCard(
+                                action = item.type,
+                                count = item.count ?: 0,
+                                onClick = { action ->
+                                    onClickListener(action)
+                                }
+                            )
+                        }
+                    }
+
+                    if (rowItems.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
-                if (rowItems.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
             }
-            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -388,10 +565,14 @@ fun ActionOverviewSection() {
 @Composable
 fun ActionOverviewCard(
     action: ActionOverview,
-    count: Int
+    count: Int,
+    onClick: (ActionOverview) -> Unit
 ) {
     Box(
         modifier = Modifier
+            .clickable {
+                onClick(action)
+            }
             .fillMaxWidth()
             .height(113.dp)
             .dropShadow(
@@ -445,23 +626,24 @@ fun ActionOverviewCard(
 
 @Composable
 fun StatusCard(
-    status: HomeScreenStatus,
+    status: Int,
     modifier: Modifier = Modifier
 ) {
+    val status = ObservationStatus.fromId(status)
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(status.bgColor),
+            .background(status.backgroundColor),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = status.string.uppercase(),
+            text = status.title.uppercase(),
             style = textStyle(
                 10.sp,
                 FontWeight.SemiBold,
                 letterSpacing = 0.5.sp
             ),
-            color = status.textColor,
+            color = Color.White,
             modifier = Modifier.padding(
                 6.dp
             )
@@ -522,7 +704,8 @@ enum class HomeScreenStatus(
 
 enum class ActionOverview(
     val title: String,
-    val icon: DrawableResource
+    val icon: DrawableResource,
+    val count: Int = 0
 ) {
     AUDIT_INSPECTIONS(
         "Audit & Inspections",
@@ -553,4 +736,38 @@ enum class ActionOverview(
         "Training",
         Res.drawable.ic_training
     )
+}
+
+data class ActionOverviewItem(
+    val type: ActionOverview,
+    val count: Int?
+)
+
+
+enum class ObservationStatus(
+    val id: Int,
+    val title: String,
+    val backgroundColor: Color
+) {
+    OPEN(
+        id = 1,
+        title = "Open",
+        backgroundColor = Color(0xFFFA6345)
+    ),
+    CLOSED(
+        id = 2,
+        title = "Closed",
+        backgroundColor = Color(0xFF45B743)
+    ),
+    CLOSE_OUT_APPROVED(
+        id = 3,
+        title = "Close Out Approved",
+        backgroundColor = Color(0xFFF6A03A)
+    );
+
+    companion object {
+        fun fromId(id: Int): ObservationStatus {
+            return entries.find { it.id == id } ?: OPEN
+        }
+    }
 }

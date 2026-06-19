@@ -19,7 +19,7 @@ fun AppLoader() {
         CircularProgressIndicator(
             modifier = Modifier.size(50.dp),
             color = AppColors.Primary,
-            strokeWidth = 10.dp
+            strokeWidth = 5.dp
         )
     }
 }

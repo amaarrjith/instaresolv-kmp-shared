@@ -8,6 +8,7 @@ import org.example.project.data.model.HomeContentsRequest
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
+import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.ProjectListRequest
@@ -77,8 +78,12 @@ class AuthApiServiceImpl(
     }
 
     override suspend fun getHomeContents(request: HomeContentsRequest): NetworkResult<HomeResponse> = safeApiCall {
-        httpClient.post(ApiEndpoints.LOGIN) {
+        httpClient.post(ApiEndpoints.HOME_CONTENT) {
             jsonBody(request)
         }
+    }
+
+    override suspend fun getNotificationList(): NetworkResult<NotificationListResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.NOTIFICATION_LIST)
     }
 }
