@@ -9,23 +9,23 @@ data class HomeContentsRequest(
 
 @Serializable
 data class HomeResponse(
-    val actionsOverview: ActionsOverview,
-    val assignedToMe: AssignedToMe
+    val actionsOverview: ActionsOverview? = null,
+    val assignedToMe: AssignedToMe? = null
 )
 
 @Serializable
 data class ActionsOverview(
-    val auditAndInspectionsCount: Int,
-    val permitToWorkCount: Int,
-    val observationsCount: Int,
-    val incidentCount: Int,
-    val violationCount: Int,
-    val preTaskCount: Int,
-    val toolboxCount: Int,
-    val lessonCount: Int,
-    val pendingActionsCount: Int,
-    val trainingsCount: Int,
-    val unreadNotificationsCount: Int
+    val auditAndInspectionsCount: Int = 0,
+    val permitToWorkCount: Int = 0,
+    val observationsCount: Int = 0,
+    val incidentCount: Int = 0,
+    val violationCount: Int = 0,
+    val preTaskCount: Int = 0,
+    val toolboxCount: Int = 0,
+    val lessonCount: Int = 0,
+    val pendingActionsCount: Int = 0,
+    val trainingsCount: Int = 0,
+    val unreadNotificationsCount: Int = 0
 )
 
 @Serializable

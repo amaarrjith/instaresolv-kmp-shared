@@ -25,5 +25,7 @@
         <string>Inter-Thin.ttf</string>
         <string>Inter-ThinItalic.ttf</string>
     </array>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to take project photos.</string>
 </dict>
 </plist>

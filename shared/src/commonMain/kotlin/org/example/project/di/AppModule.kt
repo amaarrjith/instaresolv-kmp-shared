@@ -18,12 +18,14 @@ import org.example.project.network.createHttpClient
 import org.example.project.notifications.NotificationsViewModel
 import org.example.project.otp.OTPVerificationViewModel
 import org.example.project.profile.ProfileViewModel
+import org.example.project.project.CreateProjectViewModel
 import org.example.project.project.ProjectViewModel
 import org.example.project.register.RegisterViewModel
 import org.example.project.splash.SplashViewModel
 import org.example.project.tabbar.AppTabBarViewModel
 import org.koin.dsl.module
 import org.example.project.welcomescreen.WelcomeScreenViewModel
+import org.example.project.ui.components.imagepicker.ImagePickerViewModel
 
 val appModule = module {
     single { createHttpClient(get()) }
@@ -39,11 +41,13 @@ val appModule = module {
     factory { HomeScreenViewModel(get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get()) }
-    factory { ProfileViewModel(get()) }
+    factory { ProfileViewModel(get(), get()) }
+    factory { CreateProjectViewModel(get(), get()) }
     factory { WelcomeScreenViewModel(get()) }
     factory { ForgetPasswordViewModel(get(), get()) }
     factory { RegisterViewModel(get(), get()) }
     factory { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
+    factory { ImagePickerViewModel(get()) }
     single { AuthPreferences(get()) }
     single<Settings> { Settings() }
 }

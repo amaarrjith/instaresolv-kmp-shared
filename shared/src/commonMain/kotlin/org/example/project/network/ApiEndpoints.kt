@@ -11,4 +11,9 @@ object ApiEndpoints {
     const val HOME_CONTENT = "home/contents"
 
     const val NOTIFICATION_LIST = "v3/notification/list"
+    const val USER_EDIT = "user/profile/edit"
+    const val CREATE_PROJECT = "v3/group/create"
+    const val VIEW_PROJECT = "v3/group/view"
+    const val REQUEST_PROJECT_ACCESS = "v3/group/request-access"
+    const val UPLOAD_IMAGE = "upload-image"
 }

@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,16 +24,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -47,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_lock
 import instaresolv.shared.generated.resources.ic_add
+import instaresolv.shared.generated.resources.ic_key
 import instaresolv.shared.generated.resources.login
 import org.example.project.colors.AppColors
 import org.example.project.data.model.Project
@@ -60,15 +67,26 @@ import org.example.project.utilites.NavigationBackIcon
 import org.koin.compose.koinInject
 
 @Composable
-fun ProjectListScreen() {
+fun ProjectListScreen(
+    onCreateClicked: () -> Unit
+) {
     var searchQuery by remember { mutableStateOf("") }
     val viewModel: ProjectViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    var showRequestModal by remember { mutableStateOf(false) }
+    var showViewProjectModal by remember { mutableStateOf(false) }
+    var toastMessage by remember { mutableStateOf<String?>(null) }
+    var toastType by remember { mutableStateOf(ToastType.Success) }
+    var viewedProject by remember { mutableStateOf<Project?>(null) }
+
     Scaffold(
         containerColor = Color.White,
         topBar = {
-            ProjectListScreenTopBar()
+            ProjectListScreenTopBar(
+                onCreateClicked = { onCreateClicked() },
+                onRequestClicked = { showRequestModal = true }
+            )
         }
     ) { paddingValues ->
         Box(
@@ -107,8 +125,60 @@ fun ProjectListScreen() {
                             isRefreshing = isRefreshing
                         )
                     }
+                    else -> {}
                 }
             }
+
+            ToastHost(
+                visible = toastMessage != null,
+                message = toastMessage ?: "",
+                onDismiss = { toastMessage = null },
+                type = toastType
+            )
+
+            RequestProjectBottomSheet(
+                showSheet = showRequestModal,
+                onDismiss = { showRequestModal = false },
+                onContinue = { part1, part2 ->
+                    viewModel.requestProjectAccess(
+                        part1 = part1,
+                        part2 = part2,
+                        onSuccess = {
+                            showRequestModal = false
+                            toastMessage = "Project Request Successful"
+                            toastType = ToastType.Success
+                        },
+                        onError = { message ->
+                            toastMessage = message
+                            toastType = ToastType.Error
+                        }
+                    )
+                },
+                onViewProject = { part1, part2 ->
+                    viewModel.viewProject(
+                        part1 = part1,
+                        part2 = part2,
+                        onSuccess = { project ->
+                            showRequestModal = false
+                            viewedProject = project
+                            showViewProjectModal = true
+                        },
+                        onError = { message ->
+                            toastMessage = message
+                            toastType = ToastType.Error
+                        }
+                    )
+                },
+                toastMessage = toastMessage,
+                toastType = toastType,
+                onClearToast = { toastMessage = null }
+            )
+
+            ViewProjectDialog(
+                showDialog = showViewProjectModal,
+                onDismiss = { showViewProjectModal = false },
+                project = viewedProject
+            )
         }
     }
 }
@@ -139,7 +209,10 @@ fun ProjectListScreenView(
 }
 
 @Composable
-fun ProjectListScreenTopBar() {
+fun ProjectListScreenTopBar(
+    onCreateClicked: () -> Unit,
+    onRequestClicked: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -156,15 +229,28 @@ fun ProjectListScreenTopBar() {
             color = AppColors.Black
         )
         Spacer(modifier = Modifier.weight(1f))
-        RequestButton()
+        RequestButton(
+            onRequestClicked = {
+                onRequestClicked()
+            }
+        )
         Spacer(modifier = Modifier.width(8.dp))
-        CreateButton()
+        CreateButton(
+            onCreateClicked = {
+                onCreateClicked()
+            }
+        )
     }
 }
 
 @Composable
-fun RequestButton() {
+fun RequestButton(
+    onRequestClicked: () -> Unit
+) {
     Box(
+        modifier = Modifier.clickable {
+            onRequestClicked()
+        }
     ) {
         Row(
             modifier = Modifier
@@ -192,9 +278,13 @@ fun RequestButton() {
 }
 
 @Composable
-fun CreateButton() {
+fun CreateButton(
+    onCreateClicked: () -> Unit
+) {
     Box(
-//        modifier = Modifier.padding(10.dp)
+        modifier = Modifier.clickable {
+            onCreateClicked()
+        }
     ) {
         Row(
             modifier = Modifier
@@ -271,24 +361,207 @@ fun ProjectListCard(
     }
 }
 
-fun Modifier.shimmer(): Modifier = composed {
-    val transition = rememberInfiniteTransition()
-    val translateAnim by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    val brush = Brush.linearGradient(
-        colors = listOf(
-            Color(0xFFE0E0E0),
-            Color(0xFFF5F5F5),
-            Color(0xFFE0E0E0)
-        ),
-        start = Offset(translateAnim - 200f, 0f),
-        end = Offset(translateAnim, 0f)
-    )
-    this.background(brush)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RequestProjectBottomSheet(
+    showSheet: Boolean,
+    onDismiss: () -> Unit,
+    onContinue: (String, String) -> Unit,
+    onViewProject: (String, String) -> Unit,
+    toastMessage: String?,
+    toastType: ToastType,
+    onClearToast: () -> Unit
+) {
+
+    if (!showSheet) return
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var part1 by remember { mutableStateOf("") }
+    var part2 by remember { mutableStateOf("") }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Color.White
+    ) {
+        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+            Text(
+                text = "Request Project Access",
+                style = textStyle(
+                    size = 18.sp,
+                    weight = FontWeight.Bold
+                ),
+                color = AppColors.Black
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Please enter the code to join the project",
+                style = textStyle(
+                    size = 13.sp,
+                    weight = FontWeight.Normal
+                ),
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(40.dp))
+            Image(
+                painterResource(Res.drawable.ic_key),
+                contentDescription = null,
+                modifier = Modifier.size(60.dp)
+            )
+            Spacer(modifier = Modifier.height(40.dp))
+            
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.foundation.text.BasicTextField(
+                    value = part1,
+                    onValueChange = { if (it.length <= 4) part1 = it },
+                    textStyle = textStyle(size = 16.sp, weight = FontWeight.Bold).copy(textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = AppColors.Black),
+                    singleLine = true,
+                    modifier = Modifier
+                        .width(80.dp)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF4F4F4))
+                        .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+                        .padding(top = 13.dp)
+                )
+                
+                Text(
+                    text = " - ",
+                    color = AppColors.SkyBlue,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    style = textStyle(size = 18.sp, weight = FontWeight.Bold)
+                )
+                
+                androidx.compose.foundation.text.BasicTextField(
+                    value = part2,
+                    onValueChange = { if (it.length <= 5) part2 = it },
+                    textStyle = textStyle(size = 16.sp, weight = FontWeight.Bold).copy(textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = AppColors.Black),
+                    singleLine = true,
+                    modifier = Modifier
+                        .width(90.dp)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF4F4F4))
+                        .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+                        .padding(top = 13.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(30.dp))
+            
+            Text(
+                text = "View Project",
+                style = textStyle(size = 14.sp, weight = FontWeight.Bold),
+                color = AppColors.Primary,
+                modifier = Modifier.clickable { onViewProject(part1, part2) }
+            )
+            
+            Spacer(modifier = Modifier.height(30.dp))
+            
+            org.example.project.utilites.AppPrimaryButton(
+                title = "Continue",
+                onClick = { onContinue(part1, part2) },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            )
+            }
+            
+            ToastHost(
+                visible = toastMessage != null,
+                message = toastMessage ?: "",
+                onDismiss = onClearToast,
+                type = toastType
+            )
+        }
+    }
+}
+
+@Composable
+fun ViewProjectDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    project: Project?
+) {
+    if (!showDialog || project == null) return
+    
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss
+    ) {
+        androidx.compose.material3.Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                    WebImageView(
+                        imageUrl = project.groupImage
+                    )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = project.groupName ?: "",
+                            style = textStyle(size = 15.sp, weight = FontWeight.Bold),
+                            color = AppColors.Black
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.Gray)
+                            ) {
+                                Text(
+                                    text = project.groupCode ?: "",
+                                    modifier = Modifier.padding(vertical = 2.dp, horizontal = 6.dp),
+                                    style = textStyle(size = 10.sp, weight = FontWeight.SemiBold),
+                                    color = Color.White
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+
+                project.description?.let { desc ->
+                    Text(
+                        text = desc,
+                        style = textStyle(size = 13.sp, weight = FontWeight.Normal),
+                        color = Color.DarkGray,
+                        lineHeight = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(30.dp))
+                }
+                
+                org.example.project.utilites.AppPrimaryButton(
+                    title = "Close",
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                )
+            }
+        }
+    }
 }

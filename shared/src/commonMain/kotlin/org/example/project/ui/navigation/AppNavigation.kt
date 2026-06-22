@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navigation
 import org.example.project.ui.ActionOverview
 import org.example.project.ui.AppTabBar
 import org.example.project.ui.ForgetPasswordScreen
@@ -21,6 +22,8 @@ import org.example.project.ui.components.ObservationListScreen
 import org.example.project.ui.components.PermitToWorkListScreen
 import org.example.project.ui.components.TrainingListScreen
 import org.example.project.ui.components.ViolationListScreen
+import org.example.project.ui.screens.CreateProjectScreen
+import org.example.project.ui.screens.ProfileScreen
 
 @Composable
 fun AppNavigation() {
@@ -124,7 +127,7 @@ fun AppNavigation() {
         composable(Screens.TabBar.route) {
             AppTabBar(
                 onProfileClick = {
-                    // Profile screen navigation could go here
+                    navController.navigate(Screens.ProfileScreen.route)
                 },
                 onNotificationClick = {
                     navController.navigate(Screens.NotificationListScreen.route)
@@ -150,6 +153,9 @@ fun AppNavigation() {
                             navController.navigate(Screens.TrainingListScreen.route)
                         }
                     }
+                },
+                onCreateProjectClicked = {
+                    navController.navigate(Screens.CreateProjectScreen.route)
                 }
             )
         }
@@ -182,6 +188,27 @@ fun AppNavigation() {
             TrainingListScreen{
                 navController.popBackStack()
             }
+        }
+        composable(Screens.ProfileScreen.route) {
+            ProfileScreen(
+                onLogout = {
+                    navController.navigate(Screens.Login.route) {
+                        popUpTo(Screens.TabBar.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screens.CreateProjectScreen.route) {
+            CreateProjectScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

@@ -37,6 +37,9 @@ fun AppTextField(
     title: String,
     placeholder: String,
     isSecure: Boolean = false,
+    enabled: Boolean = true,
+    singleLine: Boolean = true,
+    textFieldModifier: Modifier = Modifier.fillMaxWidth(),
     modifier: Modifier = Modifier
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
@@ -59,12 +62,13 @@ fun AppTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
+            modifier = textFieldModifier,
+            singleLine = singleLine,
             textStyle = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Medium
             ),
+            enabled = enabled,
             placeholder = {
                 Text(
                     text = placeholder,

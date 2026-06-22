@@ -90,9 +90,6 @@ fun HomeScreenContentView(
     onClickModule: (ActionOverview) -> Unit
 ) {
 
-//    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-//        silentRefresh()
-//    }
     val viewModel: ProfileViewModel = koinInject()
     val vm: HomeScreenViewModel = koinInject()
     Box(
@@ -126,7 +123,7 @@ fun HomeScreenContentView(
                 ) {
                     Spacer(modifier = Modifier.height(22.dp))
                     PendingActionsCardView(
-                        0
+                        actionOverview?.pendingActionsCount ?: 0
                     )
                     Spacer(modifier = Modifier.height(26.dp))
                     AssignedToMeCard(assignedToMe)
@@ -574,7 +571,7 @@ fun ActionOverviewCard(
                 onClick(action)
             }
             .fillMaxWidth()
-            .height(113.dp)
+            .height(125.dp)
             .dropShadow(
                 shape = RoundedCornerShape(16.dp),
                 shadow = Shadow(
@@ -611,13 +608,16 @@ fun ActionOverviewCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             Text(
                 text = action.title,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 style = textStyle(
                     14.sp,
-                    FontWeight.SemiBold
+                    FontWeight.SemiBold,
+                    lineHeight = 16.sp
                 )
             )
         }

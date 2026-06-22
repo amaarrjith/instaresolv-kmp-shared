@@ -18,5 +18,6 @@ data class Project(
     val groupId: Int,
     val groupName: String?,
     val groupImage: String?,
-    val groupCode: String?
+    val groupCode: String?,
+    val description: String? = null
 )

@@ -55,4 +55,58 @@ class ProjectViewModel(
             }
         }
     }
+
+    fun requestProjectAccess(part1: String, part2: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        if (part1.isBlank() || part2.isBlank()) {
+            onError("Please enter the complete project code")
+            return
+        }
+        viewModelScope.launch {
+            val response = projectRepository.requestProjectAccess(
+                groupId = part2,
+                groupShortCode = part1
+            )
+            when(response) {
+                is NetworkResult.Success -> {
+                    if (response.data.groupVerified) {
+                        onSuccess()
+                    } else {
+                        onError(response.data.statusMessage)
+                    }
+                }
+                is NetworkResult.Error -> {
+                    onError(response.message)
+                }
+            }
+        }
+    }
+
+    fun viewProject(part1: String, part2: String, onSuccess: (Project?) -> Unit, onError: (String) -> Unit) {
+        if (part1.isBlank() || part2.isBlank()) {
+            onError("Please enter the complete project code")
+            return
+        }
+        viewModelScope.launch {
+            val response = projectRepository.viewProject(
+                groupId = part2,
+                groupShortCode = part1
+            )
+            when(response) {
+                is NetworkResult.Success -> {
+                    if (response.data.groupVerified) {
+                        onSuccess(response.data.group)
+                    } else {
+                        onError(response.data.statusMessage)
+                    }
+                }
+                is NetworkResult.Error -> {
+                    onError(response.message)
+                }
+            }
+        }
+    }
+
+
+
+
 }

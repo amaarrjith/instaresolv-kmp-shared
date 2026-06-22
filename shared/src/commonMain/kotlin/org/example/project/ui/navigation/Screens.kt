@@ -20,4 +20,6 @@ sealed class Screens(val route: String) {
     object IncidentListScreen : Screens("incident_list_screen")
     object ViolationListScreen : Screens("violation_list_screen")
     object TrainingListScreen : Screens("training_list_screen")
+    object ProfileScreen : Screens("profile_screen")
+    object CreateProjectScreen : Screens("create_project_screen")
 }

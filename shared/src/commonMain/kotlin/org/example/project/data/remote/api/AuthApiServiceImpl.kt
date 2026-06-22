@@ -2,21 +2,31 @@ package org.example.project.data.remote.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import org.example.project.data.model.CreateProjectRequest
+import org.example.project.data.model.CreateProjectResponse
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeContentsRequest
 import org.example.project.data.model.HomeResponse
+import org.example.project.data.model.ImageUploadData
 import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
+import org.example.project.data.model.ProjectAccessRequest
+import org.example.project.data.model.ProjectAccessResponse
 import org.example.project.data.model.ProjectListRequest
 import org.example.project.data.model.ProjectListResponse
 import org.example.project.data.model.RegisterRequest
 import org.example.project.data.model.RegisterResponse
 import org.example.project.data.model.UserCheckoutRequest
+import org.example.project.data.model.UserEditRequest
+import org.example.project.data.model.UserEditResponse
 import org.example.project.data.model.UserResponse
+import org.example.project.data.model.ViewProjectRequest
+import org.example.project.data.model.ViewProjectResponse
 import org.example.project.network.ApiEndpoints
 import org.example.project.network.ErrorType
 import org.example.project.network.NetworkResult
@@ -85,5 +95,48 @@ class AuthApiServiceImpl(
 
     override suspend fun getNotificationList(): NetworkResult<NotificationListResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.NOTIFICATION_LIST)
+    }
+
+    override suspend fun userEdit(request: UserEditRequest): NetworkResult<UserEditResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.USER_EDIT) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun createProject(request: CreateProjectRequest): NetworkResult<CreateProjectResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.CREATE_PROJECT) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun viewProject(request: ViewProjectRequest): NetworkResult<ViewProjectResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.VIEW_PROJECT) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun requestProjectAccess(request: ProjectAccessRequest): NetworkResult<ProjectAccessResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.REQUEST_PROJECT_ACCESS) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun uploadImage(
+        imageBytes: ByteArray,
+        fileName: String,
+        type: Int
+    ): NetworkResult<ImageUploadData> = safeApiCall {
+        httpClient.post(ApiEndpoints.UPLOAD_IMAGE) {
+            setBody(
+                io.ktor.client.request.forms.MultiPartFormDataContent(
+                    io.ktor.client.request.forms.formData {
+                        append("type", type.toString())
+                        append("image", imageBytes, io.ktor.http.Headers.build {
+                            append(io.ktor.http.HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                        })
+                    }
+                )
+            )
+        }
     }
 }

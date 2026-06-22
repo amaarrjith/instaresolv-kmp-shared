@@ -53,14 +53,17 @@ import org.example.project.ui.screens.BriefsScreen
 import org.example.project.ui.screens.SettingsScreen
 import org.koin.compose.koinInject
 
+import androidx.compose.runtime.saveable.rememberSaveable
+
 @Composable
 fun AppTabBar(
     onProfileClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
-    onModuleClicked: (ActionOverview) -> Unit
+    onModuleClicked: (ActionOverview) -> Unit,
+    onCreateProjectClicked: () -> Unit
 ) {
 
-    val selectedIndex = remember { mutableStateOf(0) }
+    val selectedIndex = rememberSaveable { mutableStateOf(0) }
     val viewModel: AppTabBarViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -178,7 +181,9 @@ fun AppTabBar(
                             isRefreshing = isRefreshing,
                             onClickModule = { module -> onModuleClicked(module) }
                         )
-                        1 -> ProjectListScreen()
+                        1 -> ProjectListScreen(
+                            onCreateProjectClicked
+                        )
                         2 -> BriefsScreen(
                             actionsOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
 //
@@ -196,7 +201,9 @@ fun AppTabBar(
                             isRefreshing = isRefreshing,
                             onClickModule = { module -> onModuleClicked(module) }
                         )
-                        1 -> ProjectListScreen()
+                        1 -> ProjectListScreen(
+                            onCreateProjectClicked
+                        )
                         2 -> BriefsScreen(
 //                            pullDownRefresh = { viewModel.getHomeContents(true) },
 //                            silentRefresh = { viewModel.getHomeContents(false) },
