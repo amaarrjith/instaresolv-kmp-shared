@@ -60,7 +60,8 @@ fun AppTabBar(
     onProfileClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     onModuleClicked: (ActionOverview) -> Unit,
-    onCreateProjectClicked: () -> Unit
+    onCreateProjectClicked: () -> Unit,
+    onProjectClicked: () -> Unit
 ) {
 
     val selectedIndex = rememberSaveable { mutableStateOf(0) }
@@ -182,7 +183,10 @@ fun AppTabBar(
                             onClickModule = { module -> onModuleClicked(module) }
                         )
                         1 -> ProjectListScreen(
-                            onCreateProjectClicked
+                            onCreateProjectClicked,
+                            onProjectClicked = {
+                                onProjectClicked()
+                            }
                         )
                         2 -> BriefsScreen(
                             actionsOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
@@ -202,7 +206,10 @@ fun AppTabBar(
                             onClickModule = { module -> onModuleClicked(module) }
                         )
                         1 -> ProjectListScreen(
-                            onCreateProjectClicked
+                            onCreateProjectClicked,
+                            onProjectClicked = {
+                                onProjectClicked()
+                            }
                         )
                         2 -> BriefsScreen(
 //                            pullDownRefresh = { viewModel.getHomeContents(true) },

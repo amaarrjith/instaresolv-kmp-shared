@@ -343,7 +343,10 @@ fun CreateProjectScreenContent(
                     groupImage = uiState.project.groupImage,
                     groupCode = uiState.project.groupCode
                 )
-                ProjectListCard(project = project)
+                ProjectListCard(
+                    project = project,
+                    onClick = {}
+                )
             }
             Spacer(Modifier.height(28.dp))
             AppPrimaryButton(

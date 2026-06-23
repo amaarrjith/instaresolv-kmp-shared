@@ -24,6 +24,7 @@ import org.example.project.ui.components.TrainingListScreen
 import org.example.project.ui.components.ViolationListScreen
 import org.example.project.ui.screens.CreateProjectScreen
 import org.example.project.ui.screens.ProfileScreen
+import org.example.project.ui.screens.ProjectDetailScreen
 
 @Composable
 fun AppNavigation() {
@@ -137,18 +138,23 @@ fun AppNavigation() {
                         ActionOverview.AUDIT_INSPECTIONS -> {
                             navController.navigate(Screens.AuditInspectionListScreen.route)
                         }
+
                         ActionOverview.PERMIT_TO_WORK -> {
                             navController.navigate(Screens.PermitToWorkListScreen.route)
                         }
+
                         ActionOverview.OBSERVATIONS -> {
                             navController.navigate(Screens.ObservationListScreen.route)
                         }
+
                         ActionOverview.INCIDENTS -> {
                             navController.navigate(Screens.IncidentListScreen.route)
                         }
+
                         ActionOverview.VIOLATIONS -> {
                             navController.navigate(Screens.ViolationListScreen.route)
                         }
+
                         ActionOverview.TRAINING -> {
                             navController.navigate(Screens.TrainingListScreen.route)
                         }
@@ -156,6 +162,9 @@ fun AppNavigation() {
                 },
                 onCreateProjectClicked = {
                     navController.navigate(Screens.CreateProjectScreen.route)
+                },
+                onProjectClicked = {
+                    navController.navigate(Screens.ProjectDetailScreen.route)
                 }
             )
         }
@@ -206,6 +215,13 @@ fun AppNavigation() {
         composable(Screens.CreateProjectScreen.route) {
             CreateProjectScreen(
                 onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screens.ProjectDetailScreen.route) {
+            ProjectDetailScreen(
+                onBackClick = {
                     navController.popBackStack()
                 }
             )

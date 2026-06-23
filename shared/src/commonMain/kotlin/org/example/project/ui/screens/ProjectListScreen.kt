@@ -68,7 +68,8 @@ import org.koin.compose.koinInject
 
 @Composable
 fun ProjectListScreen(
-    onCreateClicked: () -> Unit
+    onCreateClicked: () -> Unit,
+    onProjectClicked: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val viewModel: ProjectViewModel = koinInject()
@@ -122,7 +123,10 @@ fun ProjectListScreen(
                         ProjectListScreenView(
                             uiState = uiState.value as ProjectListUiState.Success,
                             onRefresh = {   viewModel.getProjects(searchKey = searchQuery, isRefresh = true)  },
-                            isRefreshing = isRefreshing
+                            isRefreshing = isRefreshing,
+                            onClickProject = {
+                                onProjectClicked()
+                            }
                         )
                     }
                     else -> {}
@@ -187,7 +191,8 @@ fun ProjectListScreen(
 fun ProjectListScreenView(
     onRefresh: () -> Unit,
     uiState: ProjectListUiState.Success,
-    isRefreshing: Boolean = false
+    isRefreshing: Boolean = false,
+    onClickProject: () -> Unit
 ) {
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -200,7 +205,12 @@ fun ProjectListScreenView(
         ) {
             LazyColumn {
                 items(uiState.projectList.size) { item ->
-                    ProjectListCard(project = uiState.projectList[item])
+                    ProjectListCard(
+                        project = uiState.projectList[item],
+                        onClick = {
+                            onClickProject()
+                        }
+                    )
                     HorizontalDivider()
                 }
             }
@@ -314,12 +324,17 @@ fun CreateButton(
 @Composable
 fun ProjectListCard(
     modifier: Modifier = Modifier,
-    project: Project
+    project: Project,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = modifier
             .padding(vertical = 13.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            }
+        ,
         verticalAlignment = Alignment.CenterVertically
     ) {
         WebImageView(
