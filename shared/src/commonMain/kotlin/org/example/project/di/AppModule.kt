@@ -19,6 +19,7 @@ import org.example.project.notifications.NotificationsViewModel
 import org.example.project.otp.OTPVerificationViewModel
 import org.example.project.profile.ProfileViewModel
 import org.example.project.project.CreateProjectViewModel
+import org.example.project.project.ProjectDetailViewModel
 import org.example.project.project.ProjectViewModel
 import org.example.project.register.RegisterViewModel
 import org.example.project.splash.SplashViewModel
@@ -45,6 +46,7 @@ val appModule = module {
     factory { CreateProjectViewModel(get(), get()) }
     factory { WelcomeScreenViewModel(get()) }
     factory { ForgetPasswordViewModel(get(), get()) }
+    factory { ProjectDetailViewModel(get(), get()) }
     factory { RegisterViewModel(get(), get()) }
     factory { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
     factory { ImagePickerViewModel(get()) }

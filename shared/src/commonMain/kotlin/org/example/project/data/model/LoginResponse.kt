@@ -98,3 +98,16 @@ data class NotificationSettingsModel(
     val appNotification: Boolean? = null
 )
 
+
+enum class UserType(val value: Int) {
+    NORMAL_USER(1),
+    APP_ADMIN(2),
+    ADMIN(3);
+
+    companion object {
+        fun fromInt(value: Int): UserType {
+            return entries.firstOrNull { it.value == value }
+                ?: NORMAL_USER
+        }
+    }
+}

@@ -22,5 +22,7 @@ sealed class Screens(val route: String) {
     object TrainingListScreen : Screens("training_list_screen")
     object ProfileScreen : Screens("profile_screen")
     object CreateProjectScreen : Screens("create_project_screen")
+    object EditProjectScreen : Screens("edit_project_screen")
     object ProjectDetailScreen : Screens("project_detail_screen")
+    object ProjectDetailScreenWithArgs : Screens("project_detail_screen/{groupId}/{groupCode}")
 }

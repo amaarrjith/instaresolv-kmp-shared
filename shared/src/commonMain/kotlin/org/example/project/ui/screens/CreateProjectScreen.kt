@@ -73,18 +73,27 @@ import androidx.compose.ui.graphics.SolidColor
 import org.example.project.ui.components.imagepicker.AppImagePicker
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.LaunchedEffect
+import org.example.project.data.model.ProjectDetail
 
 @Composable
 fun CreateProjectScreen(
+    project: ProjectDetail? = null,
     onBack: () -> Unit
 ) {
     val viewModel: CreateProjectViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     val projectImage = viewModel.uploadedImageUrl.collectAsState()
-    val projectTitle = remember { mutableStateOf("") }
-    val projectDescription = remember { mutableStateOf("") }
+    val projectTitle = remember { mutableStateOf(project?.groupName ?: "") }
+    val projectDescription = remember { mutableStateOf(project?.description ?: "") }
     val showImagePicker = remember { mutableStateOf(false) }
     val isImageUploading = remember { mutableStateOf(false) }
+
+    LaunchedEffect(project) {
+        project?.groupImage?.let {
+            viewModel.setUploadedImageUrl(it)
+        }
+    }
 
     AppImagePicker(
         showPicker = showImagePicker,
@@ -99,14 +108,16 @@ fun CreateProjectScreen(
         containerColor = Color.White,
         topBar = {
             CreateProjectScreenTopBar(
+                isEdit = project != null,
                 onBack = {onBack()}
             )
         },
         bottomBar = {
             CreateProjectScreenBottomBar(
+                isEdit = project != null,
                 onCancel = {    onBack()    },
                 onCreate = {    viewModel.createProject(
-                    groupCode = "",
+                    groupCode = project?.groupCode ?: "",
                     groupName = projectTitle.value,
                     description = projectDescription.value,
                     groupImage = projectImage.value
@@ -121,20 +132,38 @@ fun CreateProjectScreen(
                 .padding(horizontal = 22.dp)
         ) {
             if (uiState.value is CreateProjectUiState.Success) {
-                Dialog(
-                    onDismissRequest = {
+                if (project != null) {
+                    ToastHost(
+                        visible = true,
+                        message = "Project Updated Successfully!",
+                        onDismiss = {
+                            viewModel.clearState()
+                            onBack()
+                        },
+                        type = ToastType.Success
+                    )
+                    LaunchedEffect(Unit) {
+                        kotlinx.coroutines.delay(1500)
                         viewModel.clearState()
                         onBack()
                     }
-                ) {
-                    CreateProjectScreenContent(
-                        viewModel = viewModel,
-                        uiState = uiState.value as CreateProjectUiState.Success,
-                        onBack = {
+                } else {
+                    Dialog(
+                        onDismissRequest = {
                             viewModel.clearState()
                             onBack()
                         }
-                    )
+                    ) {
+                        CreateProjectScreenContent(
+                            isEdit = false,
+                            viewModel = viewModel,
+                            uiState = uiState.value as CreateProjectUiState.Success,
+                            onBack = {
+                                viewModel.clearState()
+                                onBack()
+                            }
+                        )
+                    }
                 }
             }
             ToastHost(
@@ -178,13 +207,23 @@ fun CreateProjectScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    AppBorderButton(
-                        title = "Upload Project Image",
-                        onClick = {
-                            showImagePicker.value = true
-                        },
-                        modifier = Modifier.width(200.dp)
-                    )
+                    if (projectImage.value.isBlank()) {
+                        AppBorderButton(
+                            title = "Upload Project Image",
+                            onClick = {
+                                showImagePicker.value = true
+                            },
+                            modifier = Modifier.width(200.dp)
+                        )
+                    } else {
+                        AppBorderButton(
+                            title = "Change Project Image",
+                            onClick = {
+                                showImagePicker.value = true
+                            },
+                            modifier = Modifier.width(200.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(35.dp))
                     AppTextField(
                         value = projectTitle.value,
@@ -212,6 +251,7 @@ fun CreateProjectScreen(
 
 @Composable
 fun CreateProjectScreenTopBar(
+    isEdit: Boolean,
     onBack: () -> Unit
 ) {
     Row(modifier = Modifier
@@ -226,7 +266,7 @@ fun CreateProjectScreenTopBar(
         )
         Spacer(modifier = Modifier.width(14.dp))
         Text(
-            text = "Create Project".uppercase(),
+            text = (if (isEdit) "Edit Project" else "Create Project").uppercase(),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold
@@ -237,6 +277,7 @@ fun CreateProjectScreenTopBar(
 
 @Composable
 fun CreateProjectScreenBottomBar(
+    isEdit: Boolean,
     onCancel: () -> Unit,
     onCreate: () -> Unit
 ) {
@@ -264,7 +305,7 @@ fun CreateProjectScreenBottomBar(
             modifier = Modifier.weight(1f)
         )
         AppPrimaryButton(
-            title = "Create Project",
+            title = if (isEdit) "Update Project" else "Create Project",
             onClick = {
                 onCreate()
             },
@@ -275,6 +316,7 @@ fun CreateProjectScreenBottomBar(
 
 @Composable
 fun CreateProjectScreenContent(
+    isEdit: Boolean,
     viewModel: CreateProjectViewModel,
     uiState: CreateProjectUiState.Success,
     onBack: () -> Unit
@@ -293,7 +335,7 @@ fun CreateProjectScreenContent(
             )
             Spacer(modifier = Modifier.height(25.dp))
             Text(
-                text = "Project Created Successfully!",
+                text = if (isEdit) "Project Updated Successfully!" else "Project Created Successfully!",
                 style = textStyle(size = 16.sp, weight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.height(24.dp))

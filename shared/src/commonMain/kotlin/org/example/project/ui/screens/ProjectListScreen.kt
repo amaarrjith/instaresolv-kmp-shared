@@ -62,14 +62,16 @@ import org.example.project.project.ProjectViewModel
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.WebImageView
+import org.example.project.ui.screens.EmptyScreenView
 import org.example.project.utilites.AppSearchBar
+import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.koin.compose.koinInject
 
 @Composable
 fun ProjectListScreen(
     onCreateClicked: () -> Unit,
-    onProjectClicked: () -> Unit
+    onProjectClicked: (Project) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val viewModel: ProjectViewModel = koinInject()
@@ -117,17 +119,31 @@ fun ProjectListScreen(
                         AppLoader()
                     }
                     is ProjectListUiState.Error -> {
-
+                        ErrorRetryView(
+                            errorMessage = (uiState.value as ProjectListUiState.Error).errorMessage,
+                            onRetryClick = { viewModel.getProjects(searchKey = searchQuery) }
+                        )
                     }
                     is ProjectListUiState.Success -> {
-                        ProjectListScreenView(
-                            uiState = uiState.value as ProjectListUiState.Success,
-                            onRefresh = {   viewModel.getProjects(searchKey = searchQuery, isRefresh = true)  },
-                            isRefreshing = isRefreshing,
-                            onClickProject = {
-                                onProjectClicked()
-                            }
-                        )
+                        if ((uiState.value as ProjectListUiState.Success).projectList.isEmpty()) {
+                            EmptyScreenView(
+                                message = "No Projects Found"
+                            )
+                        } else {
+                            ProjectListScreenView(
+                                uiState = uiState.value as ProjectListUiState.Success,
+                                onRefresh = {
+                                    viewModel.getProjects(
+                                        searchKey = searchQuery,
+                                        isRefresh = true
+                                    )
+                                },
+                                isRefreshing = isRefreshing,
+                                onClickProject = { project ->
+                                    onProjectClicked(project)
+                                }
+                            )
+                        }
                     }
                     else -> {}
                 }
@@ -192,7 +208,7 @@ fun ProjectListScreenView(
     onRefresh: () -> Unit,
     uiState: ProjectListUiState.Success,
     isRefreshing: Boolean = false,
-    onClickProject: () -> Unit
+    onClickProject: (Project) -> Unit
 ) {
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -207,8 +223,8 @@ fun ProjectListScreenView(
                 items(uiState.projectList.size) { item ->
                     ProjectListCard(
                         project = uiState.projectList[item],
-                        onClick = {
-                            onClickProject()
+                        onClick = { project ->
+                            onClickProject(project)
                         }
                     )
                     HorizontalDivider()
@@ -325,14 +341,14 @@ fun CreateButton(
 fun ProjectListCard(
     modifier: Modifier = Modifier,
     project: Project,
-    onClick: () -> Unit
+    onClick: (Project) -> Unit
 ) {
     Row(
         modifier = modifier
             .padding(vertical = 13.dp)
             .fillMaxWidth()
             .clickable {
-                onClick()
+                onClick(project)
             }
         ,
         verticalAlignment = Alignment.CenterVertically

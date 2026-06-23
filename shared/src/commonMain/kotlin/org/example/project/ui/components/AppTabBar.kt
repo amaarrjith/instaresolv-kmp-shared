@@ -54,6 +54,7 @@ import org.example.project.ui.screens.SettingsScreen
 import org.koin.compose.koinInject
 
 import androidx.compose.runtime.saveable.rememberSaveable
+import org.example.project.data.model.Project
 
 @Composable
 fun AppTabBar(
@@ -61,7 +62,7 @@ fun AppTabBar(
     onNotificationClick: () -> Unit = {},
     onModuleClicked: (ActionOverview) -> Unit,
     onCreateProjectClicked: () -> Unit,
-    onProjectClicked: () -> Unit
+    onProjectClicked: (Project) -> Unit
 ) {
 
     val selectedIndex = rememberSaveable { mutableStateOf(0) }
@@ -184,8 +185,8 @@ fun AppTabBar(
                         )
                         1 -> ProjectListScreen(
                             onCreateProjectClicked,
-                            onProjectClicked = {
-                                onProjectClicked()
+                            onProjectClicked = { project ->
+                                onProjectClicked(project)
                             }
                         )
                         2 -> BriefsScreen(
@@ -207,8 +208,8 @@ fun AppTabBar(
                         )
                         1 -> ProjectListScreen(
                             onCreateProjectClicked,
-                            onProjectClicked = {
-                                onProjectClicked()
+                            onProjectClicked = { project ->
+                                onProjectClicked(project)
                             }
                         )
                         2 -> BriefsScreen(

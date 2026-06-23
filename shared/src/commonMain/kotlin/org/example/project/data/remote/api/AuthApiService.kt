@@ -1,14 +1,18 @@
 package org.example.project.data.remote.api
 
 import org.example.project.data.model.AuthResponse
+import org.example.project.data.model.CommonModelResponse
 import org.example.project.data.model.CommonResponse
 import org.example.project.data.model.CreateProjectRequest
 import org.example.project.data.model.CreateProjectResponse
+import org.example.project.data.model.DeleteProjectRequest
+import org.example.project.data.model.ExitProjectRequest
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeContentsRequest
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.ImageUploadData
+import org.example.project.data.model.InviteUsersRequest
 import org.example.project.data.model.LoginRequest
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.NotificationListResponse
@@ -16,6 +20,8 @@ import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.ProjectAccessRequest
 import org.example.project.data.model.ProjectAccessResponse
+import org.example.project.data.model.ProjectDetail
+import org.example.project.data.model.ProjectDetailRequest
 import org.example.project.data.model.ProjectListRequest
 import org.example.project.data.model.ProjectListResponse
 import org.example.project.data.model.RegisterRequest
@@ -86,4 +92,28 @@ interface AuthApiService {
         fileName: String,
         type: Int
     ): NetworkResult<ImageUploadData>
+
+    suspend fun getProjectDetails(
+        request: ProjectDetailRequest
+    ): NetworkResult<ProjectDetail>
+
+    suspend fun inviteMembers(
+        request: InviteUsersRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun deleteProject(
+        request: DeleteProjectRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun exitProject(
+        request: ExitProjectRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun changeMemberRole(
+        request: org.example.project.data.model.ChangeRoleRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun removeMember(
+        request: org.example.project.data.model.RemoveMemberRequest
+    ): NetworkResult<CommonModelResponse>
 }

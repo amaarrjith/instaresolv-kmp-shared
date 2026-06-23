@@ -16,4 +16,10 @@ object ApiEndpoints {
     const val VIEW_PROJECT = "v3/group/view"
     const val REQUEST_PROJECT_ACCESS = "v3/group/request-access"
     const val UPLOAD_IMAGE = "upload-image"
+    const val PROJECT_DETAILS = "v3/group/details"
+    const val INVITE_MEMBERS = "group/invite-users"
+    const val DELETE_PROJECT = "group/delete"
+    const val EXIT_PROJECT = "group/exit"
+    const val CHANGE_ROLE = "group/role-change"
+    const val REMOVE_MEMBER = "group/remove-member"
 }

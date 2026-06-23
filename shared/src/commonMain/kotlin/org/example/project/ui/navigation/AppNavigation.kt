@@ -7,6 +7,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.example.project.data.model.ProjectDetail
 import org.example.project.ui.ActionOverview
 import org.example.project.ui.AppTabBar
 import org.example.project.ui.ForgetPasswordScreen
@@ -163,8 +167,8 @@ fun AppNavigation() {
                 onCreateProjectClicked = {
                     navController.navigate(Screens.CreateProjectScreen.route)
                 },
-                onProjectClicked = {
-                    navController.navigate(Screens.ProjectDetailScreen.route)
+                onProjectClicked = { project ->
+                    navController.navigate("${Screens.ProjectDetailScreen.route}/${project.groupId}/${project.groupCode}")
                 }
             )
         }
@@ -219,12 +223,33 @@ fun AppNavigation() {
                 }
             )
         }
-        composable(Screens.ProjectDetailScreen.route) {
+        composable(Screens.ProjectDetailScreenWithArgs.route) { backStackEntry ->
+            val groupId = backStackEntry.savedStateHandle.get<String>("groupId")?.toIntOrNull() ?: -1
+            val groupCode = backStackEntry.savedStateHandle.get<String>("groupCode") ?: "-1"
             ProjectDetailScreen(
+                groupId = groupId,
+                groupCode = groupCode,
                 onBackClick = {
+                    navController.popBackStack()
+                },
+                onEditClick = { projectDetail ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("project", Json.encodeToString(projectDetail))
+                    navController.navigate(Screens.EditProjectScreen.route)
+                }
+            )
+        }
+        composable(Screens.EditProjectScreen.route) {
+            val projectJson = navController.previousBackStackEntry?.savedStateHandle?.get<String>("project")
+            val project = projectJson?.let {
+                Json.decodeFromString<ProjectDetail>(it)
+            }
+            CreateProjectScreen(
+                project = project,
+                onBack = {
                     navController.popBackStack()
                 }
             )
+
         }
     }
 }
