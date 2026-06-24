@@ -383,7 +383,8 @@ fun CreateProjectScreenContent(
                     groupId = uiState.project.groupId,
                     groupName = uiState.project.groupName,
                     groupImage = uiState.project.groupImage,
-                    groupCode = uiState.project.groupCode
+                    groupCode = uiState.project.groupCode,
+                    isAdmin = false
                 )
                 ProjectListCard(
                     project = project,

@@ -32,7 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import org.jetbrains.compose.resources.stringResource
+import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -68,6 +68,7 @@ fun OTPVerificationScreen(
     )
     val uiState = viewModel.uiState.collectAsState()
     var otp by remember { mutableStateOf("") }
+    val strings = LocalAppStrings.current
     val scrollState = rememberScrollState()
     LaunchedEffect(uiState.value.isOTPVerified) {
         if (uiState.value.isOTPVerified) {
@@ -112,7 +113,7 @@ fun OTPVerificationScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = stringResource(Res.string.verify_otp),
+                        text = strings.verifyOtp,
                         style = textStyle(
                             size = 18.sp,
                             weight = FontWeight.Bold
@@ -120,7 +121,7 @@ fun OTPVerificationScreen(
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        text = stringResource(Res.string.verify_otp_message),
+                        text = strings.verifyOtpMessage,
                         textAlign = TextAlign.Center,
                         style = textStyle(
                             size = 14.sp,
@@ -134,7 +135,7 @@ fun OTPVerificationScreen(
                     )
                     Spacer(modifier = Modifier.height(32.dp))
                     Text(
-                        text = stringResource(Res.string.resend_code),
+                        text = strings.resendCode,
                         textAlign = TextAlign.Center,
                         style = textStyle(
                             size = 14.sp,
@@ -143,7 +144,7 @@ fun OTPVerificationScreen(
                     )
                     Spacer(modifier = Modifier.height(74.dp))
                     AppPrimaryButton(
-                        title = stringResource(Res.string.continue_text),
+                        title = strings.continueText,
                         isLoading = uiState.value.isLoading,
                         onClick = {
                             viewModel.verifyOTP(otp)

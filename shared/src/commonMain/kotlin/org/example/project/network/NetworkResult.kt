@@ -4,7 +4,8 @@ sealed class NetworkResult<out T> {
     data class Success<T>(val data: T) : NetworkResult<T>()
     data class Error(
         val message: String,
-        val type: ErrorType = ErrorType.UNKNOWN
+        val type: ErrorType = ErrorType.UNKNOWN,
+        val errorCode: Int? = null
     ) : NetworkResult<Nothing>()
 }
 

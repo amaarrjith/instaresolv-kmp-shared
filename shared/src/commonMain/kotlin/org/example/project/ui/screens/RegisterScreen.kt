@@ -13,11 +13,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -27,8 +34,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
+import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +52,7 @@ import instaresolv.shared.generated.resources.register
 import instaresolv.shared.generated.resources.already_have_account
 import instaresolv.shared.generated.resources.login_now
 import instaresolv.shared.generated.resources.upload_profile
+import instaresolv.shared.generated.resources.ic_camera
 import instaresolv.shared.generated.resources.full_name
 import instaresolv.shared.generated.resources.email_id
 import instaresolv.shared.generated.resources.email_placeholder
@@ -131,6 +140,8 @@ fun RegisterScreenContent(
     val designation = remember { mutableStateOf("") }
     val company = remember { mutableStateOf("") }
     val isTermsAccepted = remember { mutableStateOf(false) }
+    val strings = LocalAppStrings.current
+    val focusManager = LocalFocusManager.current
 
 
     LaunchedEffect(uiState.value.isRegisterSuccess) {
@@ -148,7 +159,7 @@ fun RegisterScreenContent(
     ) {
         Spacer(modifier = Modifier.height(94.dp))
         Text(
-            text = stringResource(Res.string.register),
+            text = strings.register,
             style = textStyle(
                 size = 21.sp,
                 weight = FontWeight.Bold
@@ -158,7 +169,7 @@ fun RegisterScreenContent(
         Spacer(modifier = Modifier.height(10.dp))
         Row() {
             Text(
-                text = stringResource(Res.string.already_have_account),
+                text = strings.alreadyHaveAccount,
                 style = textStyle(
                     size = 14.sp,
                     weight = FontWeight.Normal
@@ -170,7 +181,7 @@ fun RegisterScreenContent(
                 modifier = Modifier.clickable {
                     isLoginClicked()
                 },
-                text = stringResource(Res.string.login_now),
+                text = strings.loginNow,
                 style = textStyle(
                     size = 14.sp,
                     weight = FontWeight.SemiBold
@@ -183,21 +194,45 @@ fun RegisterScreenContent(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Box(
+                modifier = Modifier
+                    .size(84.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {
+                            // Image upload logic will go here
+                        }
+                    )
             ) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_avatar),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                AppBorderButton(
-                    title = stringResource(Res.string.upload_profile),
-                    onClick = {
-
-                    },
-                    modifier = Modifier.width(150.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_avatar),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(AppColors.Primary)
+                        .border(2.dp, Color.White, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_camera),
+                        contentDescription = "Upload Profile",
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(30.dp))
@@ -206,8 +241,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 fullName.value = it
             },
-            title = stringResource(Res.string.full_name),
-            placeholder = stringResource(Res.string.full_name)
+            title = strings.fullName,
+            placeholder = strings.fullName
         )
         Spacer(modifier = Modifier.height(20.dp))
         AppTextField(
@@ -215,8 +250,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 email.value = it
             },
-            title = stringResource(Res.string.email_id),
-            placeholder = stringResource(Res.string.email_placeholder)
+            title = strings.emailId,
+            placeholder = strings.emailPlaceholder
         )
         Spacer(modifier = Modifier.height(20.dp))
         AppTextField(
@@ -224,8 +259,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 password.value = it
             },
-            title = stringResource(Res.string.password),
-            placeholder = stringResource(Res.string.password_placeholder),
+            title = strings.password,
+            placeholder = strings.passwordPlaceholder,
             isSecure = true
 
         )
@@ -235,8 +270,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 confirmPassword.value = it
             },
-            title = stringResource(Res.string.confirm_password),
-            placeholder = stringResource(Res.string.confirm_password),
+            title = strings.confirmPassword,
+            placeholder = strings.confirmPassword,
             isSecure = true
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -245,8 +280,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 designation.value = it
             },
-            title = stringResource(Res.string.designation),
-            placeholder = stringResource(Res.string.designation)
+            title = strings.designation,
+            placeholder = strings.designation
         )
         Spacer(modifier = Modifier.height(20.dp))
         AppTextField(
@@ -254,8 +289,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 company.value = it
             },
-            title = stringResource(Res.string.company),
-            placeholder = stringResource(Res.string.company)
+            title = strings.company,
+            placeholder = strings.company
         )
         Spacer(modifier = Modifier.height(20.dp))
         Row() {
@@ -288,7 +323,7 @@ fun RegisterScreenContent(
             contentAlignment = Alignment.Center
         ) {
             AppPrimaryButton(
-                title = stringResource(Res.string.register),
+                title = strings.register,
                 isLoading = uiState.value.isLoading,
                 onClick = {
                     viewModel.register(
@@ -313,6 +348,7 @@ fun TermsAndPrivacyText(
     onTermsClick: () -> Unit,
     onPrivacyClick: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val normalStyle = textStyle(
         size = 12.sp,
         weight = FontWeight.Medium,
@@ -328,7 +364,7 @@ fun TermsAndPrivacyText(
     val annotatedText = buildAnnotatedString {
 
         withStyle(normalStyle) {
-            append(stringResource(Res.string.privacy_policy_message))
+            append(strings.privacyPolicyMessage)
             append(" ")
         }
 
@@ -337,13 +373,13 @@ fun TermsAndPrivacyText(
             annotation = "terms"
         )
         withStyle(linkStyle) {
-            append(stringResource(Res.string.terms_and_conditions))
+            append(strings.termsAndConditions)
             append(" ")
         }
         pop()
 
         withStyle(normalStyle) {
-            append(stringResource(Res.string.and_the))
+            append(strings.andThe)
             append(" ")
         }
 
@@ -352,7 +388,7 @@ fun TermsAndPrivacyText(
             annotation = "privacy"
         )
         withStyle(linkStyle) {
-            append(stringResource(Res.string.privacy_policy))
+            append(strings.privacyPolicy)
         }
         pop()
 

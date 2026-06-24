@@ -85,10 +85,10 @@ class ProjectDetailViewModel(
             )
             when(response) {
                 is NetworkResult.Success -> {
-                    if (response.data.isSuccess) {
-                        onSuccess(response.data.statusMessage)
+                    if (response.data.isSuccess == true) {
+                        onSuccess(response.data.statusMessage ?: "")
                     } else {
-                        onError(response.data.statusMessage)
+                        onError(response.data.statusMessage ?: "")
                     }
                 }
                 is NetworkResult.Error -> {
@@ -108,10 +108,10 @@ class ProjectDetailViewModel(
             )
             when(response) {
                 is NetworkResult.Success -> {
-                    if (response.data.isSuccess) {
-                        onSuccess(response.data.statusMessage)
+                    if (response.data.isSuccess == true) {
+                        onSuccess(response.data.statusMessage ?: "")
                     } else {
-                        onError(response.data.statusMessage)
+                        onError(response.data.statusMessage ?: "")
                     }
                 }
                 is NetworkResult.Error -> {
@@ -134,11 +134,11 @@ class ProjectDetailViewModel(
             )
             when(response) {
                 is NetworkResult.Success -> {
-                    if (response.data.isSuccess) {
-                        onSuccess(response.data.statusMessage)
+                    if (response.data.isSuccess == true) {
+                        onSuccess(response.data.statusMessage?: "")
                         getProjectDetails(groupId, groupCode)
                     } else {
-                        onError(response.data.statusMessage)
+                        onError(response.data.statusMessage?: "")
                     }
                 }
                 is NetworkResult.Error -> {
@@ -161,11 +161,39 @@ class ProjectDetailViewModel(
             )
             when(response) {
                 is NetworkResult.Success -> {
-                    if (response.data.isSuccess) {
-                        onSuccess(response.data.statusMessage)
+                    if (response.data.isSuccess == true) {
+                        onSuccess(response.data.statusMessage?: "")
                         getProjectDetails(groupId, groupCode)
                     } else {
-                        onError(response.data.statusMessage)
+                        onError(response.data.statusMessage?: "")
+                    }
+                }
+                is NetworkResult.Error -> {
+                    onError(response.message)
+                }
+            }
+        }
+    }
+
+    fun transferAdmin(password: String, handOverTo: Int, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        val currentState = _uiState.value
+        if (currentState !is ProjectDetailUiState.Success) return
+        val groupId = currentState.project.groupId
+        val groupCode = currentState.project.groupCode
+        viewModelScope.launch {
+            val response = projectRepository.handoverSuperAdmin(
+                password = password,
+                groupId = groupId,
+                groupCode = groupCode,
+                handOverTo = handOverTo
+            )
+            when(response) {
+                is NetworkResult.Success -> {
+                    if (response.data.isSuccess == true) {
+                        onSuccess(response.data.statusMessage?: "")
+                        getProjectDetails(groupId, groupCode)
+                    } else {
+                        onError(response.data.statusMessage?: "")
                     }
                 }
                 is NetworkResult.Error -> {

@@ -39,8 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_edit
+import androidx.compose.runtime.LaunchedEffect
+
 import instaresolv.shared.generated.resources.ic_pencil
 import org.example.project.colors.AppColors
+import org.example.project.localization.LocalAppStrings
 import org.example.project.profile.ProfileUiState
 import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
@@ -161,13 +164,14 @@ fun ProfileScreenContent(
         )
     }
     Spacer(Modifier.height(46.dp))
-    ProfileScreenItem("Name", viewModel.user?.name ?: "")
-    ProfileScreenItem("Email", viewModel.user?.email ?: "")
-    ProfileScreenItem("Designation", viewModel.user?.designation ?: "")
-    ProfileScreenItem("Company", viewModel.user?.company ?: "")
+    val strings = LocalAppStrings.current
+    ProfileScreenItem(strings.fullName, viewModel.user?.name ?: "")
+    ProfileScreenItem(strings.emailId, viewModel.user?.email ?: "")
+    ProfileScreenItem(strings.designation, viewModel.user?.designation ?: "")
+    ProfileScreenItem(strings.company, viewModel.user?.company ?: "")
     Spacer(modifier = Modifier.height(60.dp))
     AppBorderButton(
-        title = "Logout Account",
+        title = strings.logout,
         onClick = {
             viewModel.logout()
             onLogout()
@@ -187,6 +191,9 @@ fun ProfileEditScreen(
     
     val showImagePicker = remember { mutableStateOf(false) }
     val isImageUploading = remember { mutableStateOf(false) }
+    val strings = LocalAppStrings.current
+
+    LaunchedEffect(viewModel) {}
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -251,7 +258,7 @@ fun ProfileEditScreen(
             }
             if (profileImage.isEmpty()) {
                 AppBorderButton(
-                    title = "Upload Image",
+                    title = strings.uploadProfile,
                     onClick = {
                         showImagePicker.value = true
                     }
@@ -266,30 +273,30 @@ fun ProfileEditScreen(
         AppTextField(
             value = name,
             onValueChange = { name = it },
-            title = "Name",
-            placeholder = "Name"
+            title = strings.fullName,
+            placeholder = strings.fullName
         )
         AppTextField(
             value = email,
             onValueChange = { email = it },
-            title = "Email",
-            placeholder = "Email",
+            title = strings.emailId,
+            placeholder = strings.emailId,
             enabled = false
         )
         AppTextField(
             value = designation,
             onValueChange = { designation = it },
-            title = "Designation",
-            placeholder = "Role/Designation"
+            title = strings.designation,
+            placeholder = strings.designation
         )
         AppTextField(
             value = company,
             onValueChange = { company = it },
-            title = "Company",
-            placeholder = "Company Name"
+            title = strings.company,
+            placeholder = strings.company
         )
         AppPrimaryButton(
-            title = "Save Profile",
+            title = strings.save,
             onClick = {
                 viewModel.saveProfile(name, profileImage, email, designation, company)
             }
@@ -303,6 +310,7 @@ fun ProfileScreenTopBar(
     onEditClick: () -> Unit,
     onBackClick: () -> Unit,
 ) {
+    val strings = LocalAppStrings.current
     Row(
         modifier = Modifier
             .statusBarsPadding()
@@ -317,7 +325,7 @@ fun ProfileScreenTopBar(
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = "My Profile".uppercase(),
+            text = strings.profile.uppercase(),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold

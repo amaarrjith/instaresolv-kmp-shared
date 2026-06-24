@@ -44,7 +44,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
+import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -87,7 +87,8 @@ fun HomeScreenContentView(
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit,
     isRefreshing: Boolean,
-    onClickModule: (ActionOverview) -> Unit
+    onClickModule: (ActionOverview) -> Unit,
+    onPendingActionViewAllClick: () -> Unit = {}
 ) {
 
     val viewModel: ProfileViewModel = koinInject()
@@ -126,7 +127,10 @@ fun HomeScreenContentView(
                         actionOverview?.pendingActionsCount ?: 0
                     )
                     Spacer(modifier = Modifier.height(26.dp))
-                    AssignedToMeCard(assignedToMe)
+                    AssignedToMeCard(
+                        assignedToMe = assignedToMe,
+                        onViewAllClick = onPendingActionViewAllClick
+                    )
                     Spacer(modifier = Modifier.height(22.dp))
                     ActionOverviewSection(
                         actionOverview = actionOverview,
@@ -295,17 +299,19 @@ fun PendingActionsCardView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssignedToMeCard(
-    assignedToMe: AssignedToMe?
+    assignedToMe: AssignedToMe?,
+    onViewAllClick: () -> Unit = {}
 ) {
     var showDrawer by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val strings = LocalAppStrings.current
     assignedToMe?.let { contents ->
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
             Row() {
                 Text(
-                    stringResource(Res.string.assigned_to_me),
+                    strings.assignedToMe,
                     style = textStyle(
                         14.sp,
                         FontWeight.Bold
@@ -315,7 +321,8 @@ fun AssignedToMeCard(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    stringResource(Res.string.view_all),
+                    strings.viewAll,
+                    modifier = Modifier.clickable { onViewAllClick() },
                     style = textStyle(
                         12.sp,
                         FontWeight.SemiBold,
@@ -506,6 +513,7 @@ fun ActionOverviewSection(
     actionOverview: ActionsOverview?,
     onClickListener: (ActionOverview) -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val items = listOf(
         ActionOverviewItem(ActionOverview.AUDIT_INSPECTIONS, actionOverview?.auditAndInspectionsCount),
         ActionOverviewItem(ActionOverview.PERMIT_TO_WORK, actionOverview?.permitToWorkCount),
@@ -518,7 +526,7 @@ fun ActionOverviewSection(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            stringResource(Res.string.action_overview),
+            strings.actionOverview,
             style = textStyle(
                 14.sp,
                 FontWeight.Bold

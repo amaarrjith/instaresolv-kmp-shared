@@ -1,5 +1,6 @@
 package org.example.project.data.settings
 
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -9,6 +10,7 @@ import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.char
 import kotlinx.datetime.periodUntil
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 
 /**
  * Parses [input] using [inputPattern] and re-formats it as [outputPattern].
@@ -18,12 +20,23 @@ import kotlinx.datetime.toInstant
 fun formatDate(input: String, inputPattern: String, outputPattern: String): String {
     val needsTime = inputPattern.hasTimeTokens() || outputPattern.hasTimeTokens()
 
-    return if (needsTime) {
-        val dateTime = LocalDateTime.parse(input, buildDateTimeFormat(inputPattern))
-        dateTime.format(buildDateTimeFormat(outputPattern))
-    } else {
-        val date = LocalDate.parse(input, buildDateFormat(inputPattern))
-        date.format(buildDateFormat(outputPattern))
+    return try {
+        val instant = Instant.parse(input)
+        val timeZone = TimeZone.currentSystemDefault()
+        val localDateTime = instant.toLocalDateTime(timeZone)
+        if (needsTime) {
+            localDateTime.format(buildDateTimeFormat(outputPattern))
+        } else {
+            localDateTime.date.format(buildDateFormat(outputPattern))
+        }
+    } catch (e: Exception) {
+        if (needsTime) {
+            val dateTime = LocalDateTime.parse(input, buildDateTimeFormat(inputPattern))
+            dateTime.format(buildDateTimeFormat(outputPattern))
+        } else {
+            val date = LocalDate.parse(input, buildDateFormat(inputPattern))
+            date.format(buildDateFormat(outputPattern))
+        }
     }
 }
 
@@ -64,10 +77,14 @@ fun timeAgo(
     inputPattern: String = "yyyy-MM-dd HH:mm:ss"
 ): String {
 
-    val dateTime = LocalDateTime.parse(input, buildDateTimeFormat(inputPattern))
     val timeZone = TimeZone.currentSystemDefault()
+    val past = try {
+        Instant.parse(input)
+    } catch (e: Exception) {
+        val dateTime = LocalDateTime.parse(input, buildDateTimeFormat(inputPattern))
+        dateTime.toInstant(timeZone)
+    }
 
-    val past = dateTime.toInstant(timeZone)
     val now = kotlin.time.Clock.System.now()// or Clock.System.now() for newer versions
 
     if (past > now) return "Just now"

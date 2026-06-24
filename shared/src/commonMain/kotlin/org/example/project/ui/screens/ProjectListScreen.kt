@@ -57,12 +57,14 @@ import instaresolv.shared.generated.resources.ic_key
 import instaresolv.shared.generated.resources.login
 import org.example.project.colors.AppColors
 import org.example.project.data.model.Project
+import org.example.project.data.model.UserType
 import org.example.project.project.ProjectListUiState
 import org.example.project.project.ProjectViewModel
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.WebImageView
 import org.example.project.ui.screens.EmptyScreenView
+import org.example.project.ui.screens.MemberStatusIcon
 import org.example.project.utilites.AppSearchBar
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
@@ -82,11 +84,12 @@ fun ProjectListScreen(
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastType by remember { mutableStateOf(ToastType.Success) }
     var viewedProject by remember { mutableStateOf<Project?>(null) }
-
+    val isAppAdmin = UserType.fromInt(viewModel.loggedInUser?.userType ?: -1) == UserType.APP_ADMIN
     Scaffold(
         containerColor = Color.White,
         topBar = {
             ProjectListScreenTopBar(
+                isAppAdmin = isAppAdmin,
                 onCreateClicked = { onCreateClicked() },
                 onRequestClicked = { showRequestModal = true }
             )
@@ -236,6 +239,7 @@ fun ProjectListScreenView(
 
 @Composable
 fun ProjectListScreenTopBar(
+    isAppAdmin: Boolean,
     onCreateClicked: () -> Unit,
     onRequestClicked: () -> Unit
 ) {
@@ -260,12 +264,14 @@ fun ProjectListScreenTopBar(
                 onRequestClicked()
             }
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        CreateButton(
-            onCreateClicked = {
-                onCreateClicked()
-            }
-        )
+        if (isAppAdmin) {
+            Spacer(modifier = Modifier.width(8.dp))
+            CreateButton(
+                onCreateClicked = {
+                    onCreateClicked()
+                }
+            )
+        }
     }
 }
 
@@ -372,21 +378,30 @@ fun ProjectListCard(
                 )
             )
             Spacer(modifier = Modifier.height(9.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.Gray)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = project.groupCode ?: "",
-                    modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-                    style = textStyle(
-                        size = 10.sp,
-                        weight = FontWeight.SemiBold
-                    ),
-                    color = Color.White
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.Gray)
+                ) {
+                    Text(
+                        text = project.groupCode ?: "",
+                        modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
+                        style = textStyle(
+                            size = 10.sp,
+                            weight = FontWeight.SemiBold
+                        ),
+                        color = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.width(6.dp))
+                if (project.isAdmin) {
+                    MemberStatusIcon(true)
+                }
             }
+
         }
 
     }

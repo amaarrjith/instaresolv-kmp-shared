@@ -6,17 +6,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.example.project.data.model.Project
+import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 
 class ProjectViewModel(
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
+    private val authPreferences: AuthPreferences
 ): ViewModel() {
     private val _uiState = MutableStateFlow<ProjectListUiState>(ProjectListUiState.Success(emptyList()))
     val uiState = _uiState.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
+    val loggedInUser = authPreferences.getLoggedInUser()
 
     init {
         getProjects()

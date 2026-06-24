@@ -49,3 +49,11 @@ data class RemoveMemberRequest(
     val groupCode: String,
     val userId: Int
 )
+
+@Serializable
+data class HandoverSuperAdminRequest(
+    val password: String,
+    val groupId: Int,
+    val groupCode: String,
+    val handOverTo: Int
+)

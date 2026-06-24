@@ -135,4 +135,42 @@ class AuthRepositoryImpl(
             )
         )
     }
+
+    override suspend fun getGeneralContents(type: Int): NetworkResult<org.example.project.data.model.GeneralContentsResponse> {
+        return apiService.getGeneralContents(
+            org.example.project.data.model.GeneralContentsRequest(
+                type = type
+            )
+        )
+    }
+
+    override suspend fun changePassword(
+        oldPassword: String,
+        newPassword: String
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.changePassword(
+            org.example.project.data.model.ChangePasswordRequest(
+                oldPassword = oldPassword,
+                newPassword = newPassword
+            )
+        )
+    }
+
+    override suspend fun getDeleteAccountTerms(
+        request: org.example.project.data.model.DeleteAccountTermsRequest
+    ): NetworkResult<org.example.project.data.model.DeleteAccountTermsData> {
+        return apiService.getDeleteAccountTerms(request)
+    }
+
+    override suspend fun requestDeleteAccount(request: org.example.project.data.model.DeleteAccountRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.requestDeleteAccount(request)
+    }
+
+    override suspend fun verifyDeleteAccount(request: org.example.project.data.model.DeleteAccountRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.verifyDeleteAccount(request)
+    }
+
+    override suspend fun sendContactMessage(request: org.example.project.data.model.ContactMessageRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.sendContactMessage(request)
+    }
 }

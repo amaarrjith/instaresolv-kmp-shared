@@ -66,4 +66,29 @@ interface AuthRepository {
         company: String,
         designation: String
     ): NetworkResult<UserEditResponse>
+
+    suspend fun getGeneralContents(
+        type: Int
+    ): NetworkResult<org.example.project.data.model.GeneralContentsResponse>
+
+    suspend fun changePassword(
+        oldPassword: String,
+        newPassword: String
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun getDeleteAccountTerms(
+        request: org.example.project.data.model.DeleteAccountTermsRequest
+    ): NetworkResult<org.example.project.data.model.DeleteAccountTermsData>
+
+    suspend fun requestDeleteAccount(
+        request: org.example.project.data.model.DeleteAccountRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun verifyDeleteAccount(
+        request: org.example.project.data.model.DeleteAccountRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun sendContactMessage(
+        request: org.example.project.data.model.ContactMessageRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
 }

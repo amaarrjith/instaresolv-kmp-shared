@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +24,7 @@ import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.unit.dp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_app_login_logo
-import org.jetbrains.compose.resources.stringResource
+import org.example.project.localization.LocalAppStrings
 import instaresolv.shared.generated.resources.login
 import instaresolv.shared.generated.resources.not_a_member
 import instaresolv.shared.generated.resources.register_now
@@ -46,6 +47,7 @@ import org.example.project.utilites.AppTextField
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalFocusManager
 import org.example.project.login.LoginUiState
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
@@ -69,6 +71,7 @@ fun LoginScreen(
 
     Box(
         modifier = Modifier
+            .statusBarsPadding()
             .fillMaxSize()
             .background(Color.White)
             .padding(horizontal = 28.dp)
@@ -106,6 +109,9 @@ fun LoginScreenContent(
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val strings = LocalAppStrings.current
+    val focusManager = LocalFocusManager.current
+    
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -126,7 +132,7 @@ fun LoginScreenContent(
 
         ) {
             Text(
-                text = stringResource(Res.string.login),
+                text = strings.login,
                 color = AppColors.BlackText,
                 style = textStyle(
                     size = 21.sp,
@@ -136,7 +142,7 @@ fun LoginScreenContent(
             Spacer(modifier = Modifier.height(8.dp))
             Row() {
                 Text(
-                    text = stringResource(Res.string.not_a_member),
+                    text = strings.notAMember,
                     color = AppColors.BlackText,
                     style = textStyle(
                         size = 14.sp,
@@ -149,7 +155,7 @@ fun LoginScreenContent(
                         .clickable {
                             navigateToRegister()
                         },
-                    text = stringResource(Res.string.register_now),
+                    text = strings.registerNow,
                     color = AppColors.Primary,
                     style = textStyle(
                         size = 14.sp,
@@ -163,16 +169,16 @@ fun LoginScreenContent(
                 onValueChange = { email.value = it
                                 viewModel.updateEmail(email.value)
                                 },
-                title = stringResource(Res.string.email_id),
-                placeholder = stringResource(Res.string.email_placeholder)
+                title = strings.emailId,
+                placeholder = strings.emailPlaceholder
             )
             Spacer(modifier = Modifier.height(16.dp))
             AppTextField(
                 value = password.value,
                 onValueChange = { password.value = it
                     viewModel.updatePassword(password.value)},
-                title = stringResource(Res.string.password),
-                placeholder = stringResource(Res.string.password_placeholder),
+                title = strings.password,
+                placeholder = strings.passwordPlaceholder,
                 isSecure = true
             )
             Spacer(modifier = Modifier.height(77.dp))
@@ -181,7 +187,7 @@ fun LoginScreenContent(
                 contentAlignment = Alignment.Center
             ) {
                 AppPrimaryButton(
-                    title = stringResource(Res.string.login),
+                    title = strings.login,
                     onClick = {
                         viewModel.login()
                     },
@@ -197,7 +203,7 @@ fun LoginScreenContent(
                     modifier = Modifier.clickable {
                         navigateToForgetPassword()
                     },
-                    text = stringResource(Res.string.forgot_password),
+                    text = strings.forgotPassword,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Medium

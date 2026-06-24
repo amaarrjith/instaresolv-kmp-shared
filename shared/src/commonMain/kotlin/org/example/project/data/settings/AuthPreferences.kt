@@ -51,6 +51,8 @@ class AuthPreferences(
         settings.remove(KEY_ACCESS_TOKEN)
         settings.remove(KEY_REFRESH_TOKEN)
         settings.remove(KEY_TOKEN_EXPIRY)
+        settings.remove(LOGGED_USER)
+        settings.remove(LOGGED_USER_INFO)
     }
 
     fun saveWelcomePageShownStatus(isWelcomePageShown: Boolean) {

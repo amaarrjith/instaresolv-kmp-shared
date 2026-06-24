@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
+import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -40,11 +40,6 @@ import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.bg_welcome_screen
 import instaresolv.shared.generated.resources.img_insta_resolv
 import instaresolv.shared.generated.resources.ic_arrow_left_red
-import instaresolv.shared.generated.resources.welcome_to_instaresolv
-import instaresolv.shared.generated.resources.lorem_ipsum_dolor_sit_amet_consectetur_adipiscing_elit_sed_do_eiusmod_tempor_incididunt_ut_labore
-import instaresolv.shared.generated.resources.dimentum_aliquam
-import instaresolv.shared.generated.resources.donec_posuerunc_cursus_eu
-import instaresolv.shared.generated.resources.welcome_to
 import org.example.project.model.WelcomeScreenContent
 import org.example.project.typography.interFontFamily
 import kotlinx.coroutines.launch
@@ -59,39 +54,22 @@ fun WelcomeScreen(
 ) {
     val viewModel: WelcomeScreenViewModel = koinInject()
     val scope = rememberCoroutineScope()
+    val strings = LocalAppStrings.current
 
     val pages = listOf(
 
         WelcomeScreenContent(
-
-            title = stringResource(Res.string.welcome_to_instaresolv),
-
-            description =
-                stringResource(Res.string.lorem_ipsum_dolor_sit_amet_consectetur_adipiscing_elit_sed_do_eiusmod_tempor_incididunt_ut_labore)
-
+            title = strings.welcomeToInstaresolv,
+            description = strings.loremIpsum
         ),
-
         WelcomeScreenContent(
-
-            title = stringResource(Res.string.dimentum_aliquam) +
-                    stringResource(Res.string.donec_posuerunc_cursus_eu),
-
-            description =
-                stringResource(Res.string.lorem_ipsum_dolor_sit_amet_consectetur_adipiscing_elit_sed_do_eiusmod_tempor_incididunt_ut_labore)
-
+            title = strings.dimentumAliquam + strings.donecPosuerunc,
+            description = strings.loremIpsum
         ),
-
         WelcomeScreenContent(
-
-            title =
-                stringResource(Res.string.donec_posuerunc_cursus_eu)
-                        + stringResource(Res.string.dimentum_aliquam),
-
-            description =
-                stringResource(Res.string.lorem_ipsum_dolor_sit_amet_consectetur_adipiscing_elit_sed_do_eiusmod_tempor_incididunt_ut_labore)
-
+            title = strings.donecPosuerunc + strings.dimentumAliquam,
+            description = strings.loremIpsum
         )
-
     )
 
     val pagerState = rememberPagerState {
@@ -159,7 +137,7 @@ fun WelcomeScreen(
             ) {
                 if (pagerState.currentPage == 0) {
                     Text(
-                        stringResource(Res.string.welcome_to),
+                        strings.welcomeTo,
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Normal,

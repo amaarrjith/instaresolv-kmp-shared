@@ -52,6 +52,7 @@ class OTPVerificationViewModel(
                                 expiry = auth.tokenExpiry ?: 0L
                             )
                         }
+                        authPreferences.saveLoggedInUser(result.data.user)
                         authPreferences.saveLoginStatus(true)
                         _uiState.update { state ->
                             state.copy(

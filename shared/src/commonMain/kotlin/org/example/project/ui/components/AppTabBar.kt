@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.DpOffset
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
+import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,32 +62,40 @@ fun AppTabBar(
     onNotificationClick: () -> Unit = {},
     onModuleClicked: (ActionOverview) -> Unit,
     onCreateProjectClicked: () -> Unit,
-    onProjectClicked: (Project) -> Unit
+    onProjectClicked: (Project) -> Unit,
+    onChangePasswordClick: () -> Unit = {},
+    onContactUsClick: () -> Unit = {},
+    onAboutUsClick: () -> Unit = {},
+    onTermsOfUseClick: () -> Unit = {},
+    onPrivacyPolicyClick: () -> Unit = {},
+    onDeleteAccountClick: () -> Unit = {},
+    onPendingActionViewAllClick: () -> Unit = {}
 ) {
 
     val selectedIndex = rememberSaveable { mutableStateOf(0) }
     val viewModel: AppTabBarViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val strings = LocalAppStrings.current
 
     val navItems = listOf(
         TabBarItems(
-            stringResource(Res.string.home),
+            strings.home,
             Res.drawable.ic_home_selected,
             Res.drawable.ic_home_unselected
         ),
         TabBarItems(
-            stringResource(Res.string.project),
+            strings.project,
             Res.drawable.ic_project_selected,
             Res.drawable.ic_project_unselected
         ),
         TabBarItems(
-            stringResource(Res.string.briefs),
+            strings.briefs,
             Res.drawable.ic_briefs_selected,
             Res.drawable.ic_briefs_unselected
         ),
         TabBarItems(
-            stringResource(Res.string.settings),
+            strings.settings,
             Res.drawable.ic_settings_selected,
             Res.drawable.ic_settings_unselected
         )
@@ -181,7 +189,8 @@ fun AppTabBar(
                             onProfileClick = onProfileClick,
                             onNotificationClick = onNotificationClick,
                             isRefreshing = isRefreshing,
-                            onClickModule = { module -> onModuleClicked(module) }
+                            onClickModule = { module -> onModuleClicked(module) },
+                            onPendingActionViewAllClick = onPendingActionViewAllClick
                         )
                         1 -> ProjectListScreen(
                             onCreateProjectClicked,
@@ -193,7 +202,14 @@ fun AppTabBar(
                             actionsOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
 //
                         )
-                        3 -> SettingsScreen()
+                        3 -> SettingsScreen(
+                            onChangePasswordClick = onChangePasswordClick,
+                            onContactUsClick = onContactUsClick,
+                            onAboutUsClick = onAboutUsClick,
+                            onTermsOfUseClick = onTermsOfUseClick,
+                            onPrivacyPolicyClick = onPrivacyPolicyClick,
+                            onDeleteAccountClick = onDeleteAccountClick
+                        )
                     }
                 }
                 is AppTabBarUiState.Error -> {
@@ -204,7 +220,8 @@ fun AppTabBar(
                             onProfileClick = onProfileClick,
                             onNotificationClick = onNotificationClick,
                             isRefreshing = isRefreshing,
-                            onClickModule = { module -> onModuleClicked(module) }
+                            onClickModule = { module -> onModuleClicked(module) },
+                            onPendingActionViewAllClick = onPendingActionViewAllClick
                         )
                         1 -> ProjectListScreen(
                             onCreateProjectClicked,
@@ -217,7 +234,14 @@ fun AppTabBar(
 //                            silentRefresh = { viewModel.getHomeContents(false) },
 //                            isRefreshing = isRefreshing
                         )
-                        3 -> SettingsScreen()
+                        3 -> SettingsScreen(
+                            onChangePasswordClick = onChangePasswordClick,
+                            onContactUsClick = onContactUsClick,
+                            onAboutUsClick = onAboutUsClick,
+                            onTermsOfUseClick = onTermsOfUseClick,
+                            onPrivacyPolicyClick = onPrivacyPolicyClick,
+                            onDeleteAccountClick = onDeleteAccountClick
+                        )
                     }
                 } is AppTabBarUiState.Loading -> {
                     AppLoader()

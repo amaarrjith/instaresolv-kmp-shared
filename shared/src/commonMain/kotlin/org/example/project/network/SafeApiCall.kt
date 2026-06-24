@@ -26,7 +26,8 @@ suspend inline fun <reified T> safeApiCall(
                 if (body.hasError) {
                     NetworkResult.Error(
                         message = body.message ?: "Something went wrong",
-                        type = mapErrorCodeToType(body.errorCode)
+                        type = mapErrorCodeToType(body.errorCode),
+                        errorCode = body.errorCode
                     )
                 } else {
                     val data = body.response

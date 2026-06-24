@@ -20,6 +20,8 @@ import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.ProjectAccessRequest
 import org.example.project.data.model.ProjectAccessResponse
+import org.example.project.data.model.PendingActionRequest
+import org.example.project.data.model.PendingActionListResponse
 import org.example.project.data.model.ProjectDetail
 import org.example.project.data.model.ProjectDetailRequest
 import org.example.project.data.model.ProjectListRequest
@@ -116,4 +118,36 @@ interface AuthApiService {
     suspend fun removeMember(
         request: org.example.project.data.model.RemoveMemberRequest
     ): NetworkResult<CommonModelResponse>
+
+    suspend fun handoverSuperAdmin(
+        request: org.example.project.data.model.HandoverSuperAdminRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun getGeneralContents(
+        request: org.example.project.data.model.GeneralContentsRequest
+    ): NetworkResult<org.example.project.data.model.GeneralContentsResponse>
+
+    suspend fun changePassword(
+        request: org.example.project.data.model.ChangePasswordRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun getDeleteAccountTerms(
+        request: org.example.project.data.model.DeleteAccountTermsRequest
+    ): NetworkResult<org.example.project.data.model.DeleteAccountTermsData>
+
+    suspend fun requestDeleteAccount(
+        request: org.example.project.data.model.DeleteAccountRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun verifyDeleteAccount(
+        request: org.example.project.data.model.DeleteAccountRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun sendContactMessage(
+        request: org.example.project.data.model.ContactMessageRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun getPendingActions(
+        request: PendingActionRequest
+    ): NetworkResult<org.example.project.data.model.PendingActionData>
 }

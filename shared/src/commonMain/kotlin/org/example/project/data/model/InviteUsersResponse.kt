@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CommonModelResponse(
-    val isSuccess: Boolean,
-    val statusMessage: String
+    val isSuccess: Boolean? = false,
+    val statusMessage: String? = ""
 )

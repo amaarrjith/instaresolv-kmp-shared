@@ -31,6 +31,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
 import org.example.project.utilites.AppPrimaryButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -94,6 +97,7 @@ fun ProjectDetailScreen(
     val isAppAdmin = UserType.fromInt(viewModel.loggedInUser?.userType ?: -1) == UserType.APP_ADMIN
     val loggedInUserId = viewModel.loggedInUser?.userId ?: -1
     val successMessage = remember { mutableStateOf<String?>(null) }
+    val successToastMessage = remember { mutableStateOf<String?>(null) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
     val isExitProjectClicked = remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -106,6 +110,7 @@ fun ProjectDetailScreen(
         containerColor = Color.White,
         topBar = {
             ProjectDetailScreenTopBar(
+                isAppAdmin = isAppAdmin,
                 uiState = uiState,
                 onEditClick = { project ->
                     onEditClick(project)
@@ -117,6 +122,7 @@ fun ProjectDetailScreen(
         Box(
             modifier = Modifier
                 .padding(paddingValues)
+                .padding(horizontal = 22.dp)
                 .imePadding()
         ) {
             when(uiState.value) {
@@ -128,6 +134,14 @@ fun ProjectDetailScreen(
                         isAppAdmin = isAppAdmin,
                         loggedInUserId = loggedInUserId,
                         project = (uiState.value as ProjectDetailUiState.Success).project,
+                        onTransferAdminSubmit = { password, userId ->
+                            viewModel.transferAdmin(
+                                password = password,
+                                handOverTo = userId,
+                                onSuccess = { msg -> successToastMessage.value = msg },
+                                onError = { msg -> errorMessage.value = msg }
+                            )
+                        },
                         onInviteClick = { emails ->
                             viewModel.inviteMembers(emails)
                         },
@@ -157,14 +171,14 @@ fun ProjectDetailScreen(
                             viewModel.changeMemberRole(
                                 userId = userId,
                                 newRole = newRole,
-                                onSuccess = { msg -> successMessage.value = msg },
+                                onSuccess = { msg -> successToastMessage.value = msg },
                                 onError = { msg -> errorMessage.value = msg }
                             )
                         },
                         onRemoveMemberSubmit = { userId ->
                             viewModel.removeMember(
                                 userId = userId,
-                                onSuccess = { msg -> successMessage.value = msg },
+                                onSuccess = { msg -> successToastMessage.value = msg },
                                 onError = { msg -> errorMessage.value = msg }
                             )
                         }
@@ -227,6 +241,17 @@ fun ProjectDetailScreen(
                     type = ToastType.Error
                 )
             }
+
+            if (successToastMessage.value != null) {
+                ToastHost(
+                    visible = true,
+                    message = successToastMessage.value ?: "",
+                    onDismiss = {
+                        successToastMessage.value = null
+                    },
+                    type = ToastType.Success
+                )
+            }
         }
     }
 }
@@ -236,6 +261,7 @@ fun ProjectDetailScreenContent(
     isAppAdmin: Boolean,
     loggedInUserId: Int,
     project: ProjectDetail,
+    onTransferAdminSubmit: (String, Int) -> Unit,
     onInviteClick: (List<String>) -> Unit,
     onDeleteClick: (String, (String?) -> Unit) -> Unit,
     onExitProjectClick: () -> Unit,
@@ -251,6 +277,7 @@ fun ProjectDetailScreenContent(
     val showInviteSheet = remember { mutableStateOf(false) }
     val showDeleteSheet = remember { mutableStateOf(false) }
     val showExitDialog = remember { mutableStateOf(false) }
+    val showTransferAdminSheet = remember { mutableStateOf(false) }
     val showChangeRoleSheet = remember { mutableStateOf<ProjectMember?>(null) }
     val showChangeDesignationSheet = remember { mutableStateOf<ProjectMember?>(null) }
     val showLeaveProjectDialog = remember { mutableStateOf<ProjectMember?>(null) }
@@ -265,7 +292,7 @@ fun ProjectDetailScreenContent(
         )
         Spacer(modifier = Modifier.height(22.dp))
         Column(
-            modifier = Modifier.padding(horizontal = 22.dp)
+
         ) {
             Box(
                 modifier = Modifier
@@ -318,9 +345,11 @@ fun ProjectDetailScreenContent(
                     }
                 )
                 Spacer(modifier = Modifier.width(20.dp))
-                AddMemberIcon(
-                    onClick = { showInviteSheet.value = true }
-                )
+                if (isAppAdmin || project.isAdmin) {
+                    AddMemberIcon(
+                        onClick = { showInviteSheet.value = true }
+                    )
+                }
             }
             if (isSearchBarVisible.value) {
                 AppSearchBar(
@@ -350,6 +379,7 @@ fun ProjectDetailScreenContent(
                 isAppAdmin = isAppAdmin,
                 isProjectAdmin = project.isAdmin,
                 trainingFileUrl = project.trainingFileUrl,
+                onTransferAdminClick = { showTransferAdminSheet.value = true },
                 onDeleteProjectClick = { showDeleteSheet.value = true },
                 onExitProjectClick = { showExitDialog.value = true }
             )
@@ -372,6 +402,17 @@ fun ProjectDetailScreenContent(
             onDismiss = { showDeleteSheet.value = false },
             onDelete = { password, resultCallback ->
                 onDeleteClick(password, resultCallback)
+            }
+        )
+    }
+
+    if (showTransferAdminSheet.value) {
+        TransferAdminBottomSheet(
+            members = project.members.filter { UserRole.fromInt(it.role) != UserRole.ADMIN },
+            onDismiss = { showTransferAdminSheet.value = false },
+            onSubmit = { password, userId ->
+                onTransferAdminSubmit(password, userId)
+                showTransferAdminSheet.value = false
             }
         )
     }
@@ -427,6 +468,7 @@ fun SettingsContentView(
     isAppAdmin: Boolean,
     isProjectAdmin: Boolean,
     trainingFileUrl: String,
+    onTransferAdminClick: () -> Unit = {},
     onDeleteProjectClick: () -> Unit = {},
     onExitProjectClick: () -> Unit = {}
 ) {
@@ -444,11 +486,33 @@ fun SettingsContentView(
         Spacer(modifier = Modifier.height(6.dp))
 
         when {
+            isProjectAdmin && isAppAdmin -> {
+                SettingsItemRow(
+                    title = "Transfer Admin Rights",
+                    subtitle = "Hand over admin rights to a project member",
+                    onClick = onTransferAdminClick
+                )
+
+                if (trainingFileUrl.isNotBlank()) {
+                    SettingsItemRow(
+                        title = "Export Training Details",
+                        subtitle = "Download all members' training details",
+                        onClick = {}
+                    )
+                }
+
+                SettingsItemRow(
+                    title = "Delete Project",
+                    subtitle = "Permanently delete this project",
+                    isRed = true,
+                    onClick = onDeleteProjectClick
+                )
+            }
             isProjectAdmin -> {
                 SettingsItemRow(
                     title = "Transfer Admin Rights",
                     subtitle = "Hand over admin rights to a project member",
-                    onClick = {}
+                    onClick = onTransferAdminClick
                 )
 
                 if (trainingFileUrl.isNotBlank()) {
@@ -749,6 +813,7 @@ fun MemberStatusIcon(isAdmin: Boolean) {
 
 @Composable
 fun ProjectDetailScreenTopBar(
+    isAppAdmin: Boolean,
     uiState: State<ProjectDetailUiState>,
     onEditClick: (ProjectDetail) -> Unit,
     onBackClick: () -> Unit
@@ -780,28 +845,30 @@ fun ProjectDetailScreenTopBar(
             is ProjectDetailUiState.Error -> {
 
             } else -> {
-            Row(
-                modifier = Modifier
-                    .padding(end = 26.dp)
-            ) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_edit),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Edit".uppercase(),
-                    modifier = Modifier.clickable {
-                        onEditClick((uiState.value as ProjectDetailUiState.Success).project)
-                    },
-                    style = textStyle(
-                        size = 13.sp,
-                        weight = FontWeight.SemiBold
-                    ),
-                    color = AppColors.SkyBlue
-                )
+                if (isAppAdmin) {
+                    Row(
+                        modifier = Modifier
+                            .padding(end = 26.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.ic_edit),
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Edit".uppercase(),
+                            modifier = Modifier.clickable {
+                                onEditClick((uiState.value as ProjectDetailUiState.Success).project)
+                            },
+                            style = textStyle(
+                                size = 13.sp,
+                                weight = FontWeight.SemiBold
+                            ),
+                            color = AppColors.SkyBlue
+                        )
+                    }
+                }
             }
-        }
         }
     }
 }
@@ -1166,6 +1233,179 @@ fun ChangeDesignationBottomSheet(
     ) {
         Box(modifier = Modifier.fillMaxWidth().padding(bottom = 40.dp, start = 22.dp, end = 22.dp)) {
             Text("Change Designation for ${member.name}", style = textStyle(size = 18.sp, weight = FontWeight.Bold))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TransferAdminBottomSheet(
+    members: List<ProjectMember>,
+    onDismiss: () -> Unit,
+    onSubmit: (String, Int) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val selectedMember = remember { mutableStateOf<ProjectMember?>(null) }
+    val password = remember { mutableStateOf("") }
+    val expanded = remember { mutableStateOf(false) }
+    val errorMessage = remember { mutableStateOf<String?>(null) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Color.White
+    ) {
+        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Transfer Admin Rights",
+                    style = textStyle(size = 20.sp, weight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Hand over admin rights to a project member.",
+                    style = textStyle(size = 14.sp, weight = FontWeight.Normal),
+                    color = AppColors.TextGray
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+
+                // Select Member label
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(
+                        text = "Select Member",
+                        style = textStyle(size = 14.sp, weight = FontWeight.Medium)
+                    )
+                    Text(
+                        text = " *",
+                        style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                        color = Color.Red
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Member dropdown
+                ExposedDropdownMenuBox(
+                    expanded = expanded.value,
+                    onExpandedChange = { expanded.value = it }
+                ) {
+                    OutlinedTextField(
+                        value = selectedMember.value?.name ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth().menuAnchor(),
+                        placeholder = {
+                            Text(
+                                text = "Select a member",
+                                style = textStyle(size = 14.sp, weight = FontWeight.Normal),
+                                color = Color(0xFF9E9E9E)
+                            )
+                        },
+                        leadingIcon = if (selectedMember.value != null) {
+                            {
+                                WebImageView(
+                                    imageUrl = selectedMember.value!!.image,
+                                    modifier = Modifier.size(32.dp).clip(CircleShape)
+                                )
+                            }
+                        } else null,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
+                        },
+                        textStyle = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFF4F4F4),
+                            unfocusedContainerColor = Color(0xFFF4F4F4),
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent
+                        ),
+                        singleLine = true
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded.value,
+                        onDismissRequest = { expanded.value = false }
+                    ) {
+                        members.forEach { member ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        WebImageView(
+                                            imageUrl = member.image,
+                                            modifier = Modifier.size(32.dp).clip(CircleShape)
+                                        )
+                                        Text(
+                                            text = member.name,
+                                            style = textStyle(size = 14.sp, weight = FontWeight.Medium)
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    selectedMember.value = member
+                                    expanded.value = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Password field
+                AppTextField(
+                    value = password.value,
+                    onValueChange = { password.value = it },
+                    title = "Password",
+                    placeholder = "********",
+                    isSecure = true
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+
+                // Continue button
+                AppPrimaryButton(
+                    title = "Continue",
+                    onClick = {
+                        when {
+                            selectedMember.value == null -> {
+                                errorMessage.value = "Please select a member"
+                            }
+                            password.value.isBlank() -> {
+                                errorMessage.value = "Please enter your password"
+                            }
+                            else -> {
+                                onSubmit(password.value, selectedMember.value!!.userId)
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Cancel text
+                Text(
+                    text = "Cancel",
+                    style = textStyle(size = 16.sp, weight = FontWeight.SemiBold),
+                    color = AppColors.TextGray,
+                    modifier = Modifier.clickable { onDismiss() }.padding(8.dp)
+                )
+            }
+
+            ToastHost(
+                visible = errorMessage.value != null,
+                message = errorMessage.value ?: "",
+                onDismiss = { errorMessage.value = null },
+                type = ToastType.Error
+            )
         }
     }
 }

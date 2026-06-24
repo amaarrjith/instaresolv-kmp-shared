@@ -65,4 +65,11 @@ interface ProjectRepository {
         groupCode: String,
         userId: Int
     ): NetworkResult<CommonModelResponse>
+
+    suspend fun handoverSuperAdmin(
+        password: String,
+        groupId: Int,
+        groupCode: String,
+        handOverTo: Int
+    ): NetworkResult<CommonModelResponse>
 }

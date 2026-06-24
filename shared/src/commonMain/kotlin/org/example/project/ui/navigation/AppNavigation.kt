@@ -29,6 +29,13 @@ import org.example.project.ui.components.ViolationListScreen
 import org.example.project.ui.screens.CreateProjectScreen
 import org.example.project.ui.screens.ProfileScreen
 import org.example.project.ui.screens.ProjectDetailScreen
+import org.example.project.ui.screens.ChangePasswordScreen
+import org.example.project.ui.screens.ContactUsScreen
+import org.example.project.ui.screens.AboutUsScreen
+import org.example.project.ui.screens.TermsOfUseScreen
+import org.example.project.ui.screens.PrivacyPolicyScreen
+import org.example.project.ui.screens.DeleteAccountScreen
+import org.example.project.ui.screens.PendingActionListScreen
 
 @Composable
 fun AppNavigation() {
@@ -169,7 +176,14 @@ fun AppNavigation() {
                 },
                 onProjectClicked = { project ->
                     navController.navigate("${Screens.ProjectDetailScreen.route}/${project.groupId}/${project.groupCode}")
-                }
+                },
+                onChangePasswordClick = { navController.navigate(Screens.ChangePasswordScreen.route) },
+                onContactUsClick = { navController.navigate(Screens.ContactUsScreen.route) },
+                onAboutUsClick = { navController.navigate(Screens.AboutUsScreen.route) },
+                onTermsOfUseClick = { navController.navigate(Screens.TermsOfUseScreen.route) },
+                onPrivacyPolicyClick = { navController.navigate(Screens.PrivacyPolicyScreen.route) },
+                onDeleteAccountClick = { navController.navigate(Screens.DeleteAccountScreen.route) },
+                onPendingActionViewAllClick = { navController.navigate(Screens.PendingActionListScreen.route) }
             )
         }
         composable(Screens.AuditInspectionListScreen.route) {
@@ -199,6 +213,11 @@ fun AppNavigation() {
         }
         composable(Screens.TrainingListScreen.route) {
             TrainingListScreen{
+                navController.popBackStack()
+            }
+        }
+        composable(Screens.PendingActionListScreen.route) {
+            PendingActionListScreen{
                 navController.popBackStack()
             }
         }
@@ -250,6 +269,24 @@ fun AppNavigation() {
                 }
             )
 
+        }
+        composable(Screens.ChangePasswordScreen.route) {
+            ChangePasswordScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screens.ContactUsScreen.route) {
+            ContactUsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screens.AboutUsScreen.route) {
+            AboutUsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screens.TermsOfUseScreen.route) {
+            TermsOfUseScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screens.PrivacyPolicyScreen.route) {
+            PrivacyPolicyScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screens.DeleteAccountScreen.route) {
+            DeleteAccountScreen(onBack = { navController.popBackStack() })
         }
     }
 }

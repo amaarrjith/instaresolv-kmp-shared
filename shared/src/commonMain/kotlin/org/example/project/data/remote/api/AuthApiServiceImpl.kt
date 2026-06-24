@@ -183,4 +183,52 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun handoverSuperAdmin(request: org.example.project.data.model.HandoverSuperAdminRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.HANDOVER_SUPERADMIN) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getGeneralContents(request: org.example.project.data.model.GeneralContentsRequest): NetworkResult<org.example.project.data.model.GeneralContentsResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERAL_CONTENTS) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun changePassword(request: org.example.project.data.model.ChangePasswordRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.CHANGE_PASSWORD) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getDeleteAccountTerms(request: org.example.project.data.model.DeleteAccountTermsRequest): NetworkResult<org.example.project.data.model.DeleteAccountTermsData> = safeApiCall {
+        httpClient.post(ApiEndpoints.DELETE_ACCOUNT_TERMS) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun requestDeleteAccount(request: org.example.project.data.model.DeleteAccountRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.DELETE_ACCOUNT) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun verifyDeleteAccount(request: org.example.project.data.model.DeleteAccountRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.DELETE_ACCOUNT_VERIFY) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun sendContactMessage(request: org.example.project.data.model.ContactMessageRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.CONTACT_SEND_MESSAGE) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getPendingActions(request: org.example.project.data.model.PendingActionRequest): NetworkResult<org.example.project.data.model.PendingActionData> = safeApiCall {
+        httpClient.post(ApiEndpoints.PENDING_ACTION_LIST) {
+            jsonBody(request)
+        }
+    }
 }

@@ -10,4 +10,5 @@ object AppColors {
     val TextGray = Color(0XFF8F9098)
     val SkyBlue = Color(0XFF2E6AC6)
     val Gray = Color(0X8F9098)
+    val Error = Color(0XFFD32F2F)
 }

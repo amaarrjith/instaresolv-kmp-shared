@@ -76,6 +76,7 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences) 
                 authPreferences.logout()
                 null
             }
+            sendWithoutRequest { true }
         }
     }
 

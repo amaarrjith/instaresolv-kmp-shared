@@ -152,4 +152,20 @@ class ProjectRepositoryImpl(
             )
         )
     }
+
+    override suspend fun handoverSuperAdmin(
+        password: String,
+        groupId: Int,
+        groupCode: String,
+        handOverTo: Int
+    ): NetworkResult<CommonModelResponse> {
+        return apiService.handoverSuperAdmin(
+            org.example.project.data.model.HandoverSuperAdminRequest(
+                password = password,
+                groupId = groupId,
+                groupCode = groupCode,
+                handOverTo = handOverTo
+            )
+        )
+    }
 }
