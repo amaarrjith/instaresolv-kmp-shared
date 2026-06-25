@@ -72,4 +72,10 @@ interface ProjectRepository {
         groupCode: String,
         handOverTo: Int
     ): NetworkResult<CommonModelResponse>
+
+    suspend fun getGroupUsers(
+        groupId: Int,
+        groupCode: String,
+        searchKey: String = ""
+    ): NetworkResult<org.example.project.data.model.GroupUserResponse>
 }

@@ -12,6 +12,8 @@ import org.example.project.domain.repository.ProjectRepository
 import org.example.project.domain.repository.ProjectRepositoryImpl
 import org.example.project.domain.repository.PendingActionRepository
 import org.example.project.domain.repository.PendingActionRepositoryImpl
+import org.example.project.domain.repository.ObservationRepository
+import org.example.project.domain.repository.ObservationRepositoryImpl
 import org.example.project.domain.validation.LoginValidator
 import org.example.project.domain.validation.OTPValidator
 import org.example.project.domain.validation.RegisterValidator
@@ -33,6 +35,8 @@ import org.example.project.welcomescreen.WelcomeScreenViewModel
 import org.example.project.ui.components.imagepicker.ImagePickerViewModel
 import org.example.project.settings.GeneralContentsViewModel
 import org.example.project.ui.screens.PendingActionListViewModel
+import org.example.project.ui.screens.ObservationListViewModel
+import org.example.project.ui.screens.CreateObservationViewModel
 
 val appModule = module {
     factory { createHttpClient(get()) }
@@ -54,6 +58,9 @@ val appModule = module {
     factory { ForgetPasswordViewModel(get(), get()) }
     factory { ProjectDetailViewModel(get(), get()) }
     factory { RegisterViewModel(get(), get()) }
+    factory { org.example.project.ui.screens.ObservationDetailViewModel(get()) }
+    factory { CreateObservationViewModel(get(), get(), get()) }
+    factory { org.example.project.ui.components.AppProjectDropdownViewModel(get()) }
     factory { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
     factory { ImagePickerViewModel(get()) }
     factory { GeneralContentsViewModel(get()) }
@@ -62,6 +69,8 @@ val appModule = module {
     factory { org.example.project.settings.ContactUsViewModel(get()) }
     factory { PendingActionListViewModel(get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
+    factory { ObservationListViewModel(get()) }
+    factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }
     single { AppPreferences(get()) }

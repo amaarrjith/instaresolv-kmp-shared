@@ -10,13 +10,14 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun WebImageView(
     imageUrl: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.FillBounds
 ) {
     AsyncImage(
         model = imageUrl,
         contentDescription = null,
         modifier = modifier,
-        contentScale = ContentScale.FillBounds,
+        contentScale = contentScale,
         error = painterResource(Res.drawable.ic_placeholder_project),
         placeholder = painterResource(Res.drawable.ic_placeholder_project),
         onError = {

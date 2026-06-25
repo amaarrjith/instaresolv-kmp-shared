@@ -12,7 +12,9 @@ sealed class Screens(val route: String) {
     object TabBar: Screens("tab_bar")
     // Observation
     object ObservationListScreen : Screens("observation_list_screen")
+    object CreateObservationScreen : Screens("create_observation_screen")
     object ObservationDetailsScreen : Screens("observation_details_screen")
+    object ObservationDetailsScreenWithArgs : Screens("observation_details_screen/{observationId}")
 
     // Action Overview Modules
     object AuditInspectionListScreen : Screens("audit_inspection_list_screen")

@@ -29,7 +29,8 @@ fun AppPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    fillMaxWidth: Boolean = true
 ) {
     if (isLoading) {
         Loader()
@@ -38,7 +39,7 @@ fun AppPrimaryButton(
             onClick = onClick,
             enabled = enabled,
             modifier = modifier
-                .fillMaxWidth()
+                .then(if (fillMaxWidth) Modifier.fillMaxWidth() else Modifier)
                 .heightIn(min = 50.dp),
             shape = RoundedCornerShape(25.dp),
             colors = ButtonDefaults.buttonColors(

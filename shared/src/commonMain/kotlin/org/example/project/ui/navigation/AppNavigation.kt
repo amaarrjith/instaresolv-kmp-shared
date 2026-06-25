@@ -22,7 +22,8 @@ import org.example.project.ui.WelcomeScreen
 import org.example.project.ui.components.AuditInspectionListScreen
 import org.example.project.ui.components.IncidentListScreen
 import org.example.project.ui.components.NotificationListScreen
-import org.example.project.ui.components.ObservationListScreen
+import org.example.project.ui.screens.ObservationListScreen
+import org.example.project.ui.screens.CreateObservationScreen
 import org.example.project.ui.components.PermitToWorkListScreen
 import org.example.project.ui.components.TrainingListScreen
 import org.example.project.ui.components.ViolationListScreen
@@ -197,9 +198,25 @@ fun AppNavigation() {
             }
         }
         composable(Screens.ObservationListScreen.route) {
-            ObservationListScreen{
+            ObservationListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onCreateClicked = { navController.navigate(Screens.CreateObservationScreen.route) }
+            )
+        }
+        composable(Screens.CreateObservationScreen.route) {
+            CreateObservationScreen{
                 navController.popBackStack()
             }
+        }
+        composable(
+            route = Screens.ObservationDetailsScreenWithArgs.route,
+            arguments = listOf(androidx.navigation.navArgument("observationId") { type = androidx.navigation.NavType.IntType })
+        ) { backStackEntry ->
+            val observationId = backStackEntry.arguments?.getInt("observationId") ?: -1
+            org.example.project.ui.screens.ObservationDetailScreen(
+                observationId = observationId,
+                onBackClicked = { navController.popBackStack() }
+            )
         }
         composable(Screens.IncidentListScreen.route) {
             IncidentListScreen{

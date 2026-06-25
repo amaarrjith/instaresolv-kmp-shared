@@ -29,5 +29,10 @@ object ApiEndpoints {
     const val DELETE_ACCOUNT = "user/delete"
     const val DELETE_ACCOUNT_VERIFY = "user/delete-verify"
     const val CONTACT_SEND_MESSAGE = "contact/send-message"
-    const val PENDING_ACTION_LIST = "pendingAction/list"
+    const val PENDING_ACTION_LIST = "v3/pendingAction/list"
+    const val OBSERVATION_LIST = "v3/observation/list"
+    const val FILTER_CONTENT = "filter-content"
+    const val GROUP_USER_LIST = "v3/group/user-list"
+    const val CREATE_OBSERVATION = "v3/observation/create"
+    const val OBSERVATION_DETAIL = "v2/observation/detail"
 }

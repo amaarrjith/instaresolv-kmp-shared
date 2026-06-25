@@ -168,4 +168,18 @@ class ProjectRepositoryImpl(
             )
         )
     }
+
+    override suspend fun getGroupUsers(
+        groupId: Int,
+        groupCode: String,
+        searchKey: String
+    ): NetworkResult<org.example.project.data.model.GroupUserResponse> {
+        return apiService.getGroupUsers(
+            org.example.project.data.model.GroupUserRequest(
+                searchKey = searchKey,
+                groupId = groupId,
+                groupCode = groupCode
+            )
+        )
+    }
 }

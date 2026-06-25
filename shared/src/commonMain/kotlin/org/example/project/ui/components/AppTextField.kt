@@ -17,6 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -29,15 +35,19 @@ import instaresolv.shared.generated.resources.ic_eye_closed
 import instaresolv.shared.generated.resources.ic_search
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
+import org.jetbrains.compose.resources.DrawableResource
 
 @Composable
 fun AppTextField(
+    icon: DrawableResource? = null,
+    isMandatory: Boolean = false,
     value: String,
     onValueChange: (String) -> Unit,
     title: String,
     placeholder: String,
     isSecure: Boolean = false,
     enabled: Boolean = true,
+    readOnly: Boolean = false,
     singleLine: Boolean = true,
     textFieldModifier: Modifier = Modifier.fillMaxWidth(),
     modifier: Modifier = Modifier
@@ -48,70 +58,90 @@ fun AppTextField(
         modifier = modifier.fillMaxWidth()
     ) {
 
-        Text(
-            text = title,
-            style = textStyle(
-                size = 12.sp,
-                weight = FontWeight.SemiBold
-            ),
-            color = AppColors.Black
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Text(
+                text = title,
+                style = textStyle(
+                    size = 12.sp,
+                    weight = FontWeight.SemiBold
+                ),
+                color = AppColors.Black
+            )
+            if (isMandatory) {
+                Text(
+                    text = "*",
+                    style = textStyle(
+                        size = 12.sp,
+                        weight = FontWeight.SemiBold
+                    ),
+                    color = Color.Red
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = textFieldModifier,
-            singleLine = singleLine,
-            textStyle = textStyle(
-                size = 14.sp,
-                weight = FontWeight.Medium
-            ),
-            enabled = enabled,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    style = textStyle(
+        androidx.compose.foundation.layout.Row(
+            modifier = textFieldModifier
+                .height(44.dp)
+                .background(Color(0xFFF4F4F4), RoundedCornerShape(8.dp))
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                if (value.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.Medium
+                        ),
+                        color = Color(0xFF9E9E9E)
+                    )
+                }
+                androidx.compose.foundation.text.BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = singleLine,
+                    textStyle = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Medium
-                    ),
-                    color = Color(0xFF9E9E9E)
+                    ).copy(color = AppColors.Black),
+                    enabled = enabled,
+                    readOnly = readOnly,
+                    visualTransformation = if (isSecure && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)
                 )
-            },
-            visualTransformation =
-                if (isSecure && !passwordVisible)
-                    PasswordVisualTransformation()
-                else
-                    VisualTransformation.None,
-            trailingIcon = {
-                if (isSecure) {
-                    IconButton(
-                        onClick = {
-                            passwordVisible = !passwordVisible
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(
-                                if (passwordVisible)
-                                    Res.drawable.ic_eye_open
-                                else
-                                    Res.drawable.ic_eye_closed
-                            ),
-                            contentDescription = null
-                        )
-                    }
+            }
+            
+            if (isSecure) {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible },
+                    modifier = Modifier.padding(start = 8.dp).size(24.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (passwordVisible) Res.drawable.ic_eye_open else Res.drawable.ic_eye_closed
+                        ),
+                        contentDescription = null
+                    )
                 }
-            },
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF4F4F4),
-                unfocusedContainerColor = Color(0xFFF4F4F4),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                cursorColor = AppColors.Primary
-            )
-        )
+            } else {
+                icon?.let {
+                    Icon(
+                        painter = painterResource(icon),
+                        contentDescription = null,
+                        modifier = Modifier.padding(start = 8.dp).size(24.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -122,38 +152,46 @@ fun AppSearchBar(
     placeholder: String = "Search...",
     modifier: Modifier = Modifier
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        singleLine = true,
-        textStyle = textStyle(
-            size = 14.sp,
-            weight = FontWeight.Medium
-        ),
-        placeholder = {
-            Text(
-                text = placeholder,
-                style = textStyle(
+    androidx.compose.foundation.layout.Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(44.dp)
+            .background(Color(0xFFF4F4F4), RoundedCornerShape(8.dp))
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_search),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp).padding(end = 8.dp),
+            tint = Color(0xFF9E9E9E)
+        )
+        
+        androidx.compose.foundation.layout.Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            if (value.isEmpty()) {
+                Text(
+                    text = placeholder,
+                    style = textStyle(
+                        size = 14.sp,
+                        weight = FontWeight.Medium
+                    ),
+                    color = Color(0xFF9E9E9E)
+                )
+            }
+            androidx.compose.foundation.text.BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                textStyle = textStyle(
                     size = 14.sp,
                     weight = FontWeight.Medium
-                ),
-                color = Color(0xFF9E9E9E)
+                ).copy(color = AppColors.Black),
+                cursorBrush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)
             )
-        },
-        leadingIcon = {
-            Icon(
-                painter = painterResource(Res.drawable.ic_search),
-                contentDescription = null,
-            )
-        },
-        shape = RoundedCornerShape(8.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF4F4F4),
-            unfocusedContainerColor = Color(0xFFF4F4F4),
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            cursorColor = AppColors.Primary
-        )
-    )
+        }
+    }
 }

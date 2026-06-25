@@ -40,9 +40,15 @@ import org.example.project.network.NetworkResult
 import org.example.project.network.jsonBody
 import org.example.project.network.safeApiCall
 
+import org.example.project.data.model.FilterContentData
+
 class AuthApiServiceImpl(
     private val httpClient: HttpClient
 ) : AuthApiService {
+
+    override suspend fun getFilterContent(): NetworkResult<FilterContentData> = safeApiCall {
+        httpClient.post(ApiEndpoints.FILTER_CONTENT)
+    }
 
     override suspend fun login(
         request: LoginRequest
@@ -228,6 +234,34 @@ class AuthApiServiceImpl(
 
     override suspend fun getPendingActions(request: org.example.project.data.model.PendingActionRequest): NetworkResult<org.example.project.data.model.PendingActionData> = safeApiCall {
         httpClient.post(ApiEndpoints.PENDING_ACTION_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getObservationList(request: org.example.project.data.model.ObservationRequest): NetworkResult<org.example.project.data.model.ObservationData> = safeApiCall {
+        httpClient.post(ApiEndpoints.OBSERVATION_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getGroupUsers(request: org.example.project.data.model.GroupUserRequest): NetworkResult<org.example.project.data.model.GroupUserResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GROUP_USER_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun createObservation(
+        request: org.example.project.data.model.CreateObservationRequest
+    ): NetworkResult<org.example.project.data.model.CommonResponse<org.example.project.data.model.CreateObservationResponse>> = safeApiCall {
+        httpClient.post(ApiEndpoints.CREATE_OBSERVATION) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getObservationDetail(
+        request: org.example.project.data.model.ObservationDetailRequest
+    ): NetworkResult<org.example.project.data.model.ObservationDetailResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.OBSERVATION_DETAIL) {
             jsonBody(request)
         }
     }

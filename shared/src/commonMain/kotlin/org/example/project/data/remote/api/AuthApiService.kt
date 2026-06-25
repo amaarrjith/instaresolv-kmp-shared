@@ -22,6 +22,8 @@ import org.example.project.data.model.ProjectAccessRequest
 import org.example.project.data.model.ProjectAccessResponse
 import org.example.project.data.model.PendingActionRequest
 import org.example.project.data.model.PendingActionListResponse
+import org.example.project.data.model.ObservationRequest
+import org.example.project.data.model.ObservationData
 import org.example.project.data.model.ProjectDetail
 import org.example.project.data.model.ProjectDetailRequest
 import org.example.project.data.model.ProjectListRequest
@@ -36,8 +38,11 @@ import org.example.project.data.model.UserResponse
 import org.example.project.data.model.ViewProjectRequest
 import org.example.project.data.model.ViewProjectResponse
 import org.example.project.network.NetworkResult
+import org.example.project.data.model.FilterContentData
 
 interface AuthApiService {
+
+    suspend fun getFilterContent(): NetworkResult<FilterContentData>
 
     suspend fun login(
         request: LoginRequest
@@ -111,6 +116,10 @@ interface AuthApiService {
         request: ExitProjectRequest
     ): NetworkResult<CommonModelResponse>
 
+    suspend fun createObservation(
+        request: org.example.project.data.model.CreateObservationRequest
+    ): NetworkResult<CommonResponse<org.example.project.data.model.CreateObservationResponse>>
+
     suspend fun changeMemberRole(
         request: org.example.project.data.model.ChangeRoleRequest
     ): NetworkResult<CommonModelResponse>
@@ -135,6 +144,10 @@ interface AuthApiService {
         request: org.example.project.data.model.DeleteAccountTermsRequest
     ): NetworkResult<org.example.project.data.model.DeleteAccountTermsData>
 
+    suspend fun getGroupUsers(
+        request: org.example.project.data.model.GroupUserRequest
+    ): NetworkResult<org.example.project.data.model.GroupUserResponse>
+
     suspend fun requestDeleteAccount(
         request: org.example.project.data.model.DeleteAccountRequest
     ): NetworkResult<CommonModelResponse>
@@ -150,4 +163,12 @@ interface AuthApiService {
     suspend fun getPendingActions(
         request: PendingActionRequest
     ): NetworkResult<org.example.project.data.model.PendingActionData>
+
+    suspend fun getObservationList(
+        request: ObservationRequest
+    ): NetworkResult<ObservationData>
+
+    suspend fun getObservationDetail(
+        request: org.example.project.data.model.ObservationDetailRequest
+    ): NetworkResult<org.example.project.data.model.ObservationDetailResponse>
 }

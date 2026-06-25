@@ -39,20 +39,6 @@ fun PermitToWorkListScreen(
     }
 }
 
-@Composable
-fun ObservationListScreen(
-    onBackClicked: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .clickable {
-                onBackClicked()
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Observations")
-    }
-}
 
 @Composable
 fun IncidentListScreen(
