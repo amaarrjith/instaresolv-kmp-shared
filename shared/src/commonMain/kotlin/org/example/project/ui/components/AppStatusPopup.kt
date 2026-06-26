@@ -42,7 +42,8 @@ fun AppStatusDialog(
         Dialog(onDismissRequest = onDismiss) {
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = Color.White
+                color = Color.White,
+                modifier = Modifier.fillMaxWidth(0.85f)
             ) {
                 Column(
                     modifier = Modifier.padding(top = 40.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
@@ -136,7 +137,8 @@ fun AppConfirmationDialog(
         Dialog(onDismissRequest = onDismiss) {
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = Color.White
+                color = Color.White,
+                modifier = Modifier.fillMaxWidth(0.85f)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),

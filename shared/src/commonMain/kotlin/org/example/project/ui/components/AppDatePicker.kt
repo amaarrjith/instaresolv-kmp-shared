@@ -79,7 +79,7 @@ fun AppDatePicker(
         Text(
             text = displayText,
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
+            color = if (selectedDateMillis != null) AppColors.Black else AppColors.TextGray
         )
     }
 

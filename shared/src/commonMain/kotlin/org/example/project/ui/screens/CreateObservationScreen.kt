@@ -18,6 +18,8 @@ import org.example.project.colors.AppColors
 import org.example.project.data.model.GroupUser
 import org.example.project.data.model.Project
 import org.example.project.typography.textStyle
+import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.AppMultilineTextField
 import org.example.project.ui.components.AppProjectDropdown
 import org.example.project.ui.components.AppUserDropdown
 import org.example.project.ui.components.AppImageCreateBox
@@ -195,13 +197,11 @@ fun CreateObservationScreen(
                     title = "Location",
                     placeholder = "Enter Location"
                 )
-                AppTextField(
+                AppMultilineTextField(
                     value = description.value,
                     onValueChange = { description.value = it },
-                    title = "Description",
+                    title = "Description *",
                     placeholder = "Enter Description",
-                    singleLine = false,
-                    textFieldModifier = Modifier.fillMaxWidth().height(120.dp)
                 )
                 
                 uiState.observationImages.forEachIndexed { index, observationImage ->

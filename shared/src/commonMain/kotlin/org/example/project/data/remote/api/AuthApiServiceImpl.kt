@@ -8,6 +8,7 @@ import org.example.project.data.model.CommonModelResponse
 import org.example.project.data.model.CreateProjectRequest
 import org.example.project.data.model.CreateProjectResponse
 import org.example.project.data.model.DeleteProjectRequest
+import org.example.project.data.model.EmployeeData
 import org.example.project.data.model.ExitProjectRequest
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
@@ -41,6 +42,7 @@ import org.example.project.network.jsonBody
 import org.example.project.network.safeApiCall
 
 import org.example.project.data.model.FilterContentData
+import org.example.project.data.model.EmployeeListRequest
 
 class AuthApiServiceImpl(
     private val httpClient: HttpClient
@@ -48,6 +50,12 @@ class AuthApiServiceImpl(
 
     override suspend fun getFilterContent(): NetworkResult<FilterContentData> = safeApiCall {
         httpClient.post(ApiEndpoints.FILTER_CONTENT)
+    }
+
+    override suspend fun getEmployeeList(request: EmployeeListRequest): NetworkResult<List<EmployeeData>> = safeApiCall {
+        httpClient.post(ApiEndpoints.EMPLOYEE_LIST) {
+            jsonBody(request)
+        }
     }
 
     override suspend fun login(
@@ -262,6 +270,30 @@ class AuthApiServiceImpl(
         request: org.example.project.data.model.ObservationDetailRequest
     ): NetworkResult<org.example.project.data.model.ObservationDetailResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.OBSERVATION_DETAIL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun closeObservation(
+        request: org.example.project.data.model.CloseObservationRequest
+    ): NetworkResult<kotlinx.serialization.json.JsonObject> = safeApiCall {
+        httpClient.post(ApiEndpoints.CLOSE_OBSERVATION) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getIncidentList(
+        request: org.example.project.data.model.IncidentRequest
+    ): NetworkResult<List<org.example.project.data.model.IncidentData>> = safeApiCall {
+        httpClient.post(ApiEndpoints.INCIDENT_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun addIncident(
+        request: org.example.project.data.model.AddIncidentRequest
+    ): NetworkResult<org.example.project.data.model.AddIncidentResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.ADD_INCIDENT) {
             jsonBody(request)
         }
     }

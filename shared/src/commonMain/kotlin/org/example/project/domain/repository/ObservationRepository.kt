@@ -15,4 +15,8 @@ interface ObservationRepository {
     suspend fun getObservationDetail(
         request: org.example.project.data.model.ObservationDetailRequest
     ): NetworkResult<org.example.project.data.model.ObservationDetailResponse>
+
+    suspend fun closeObservation(
+        request: org.example.project.data.model.CloseObservationRequest
+    ): NetworkResult<kotlinx.serialization.json.JsonObject>
 }

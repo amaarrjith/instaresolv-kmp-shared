@@ -1,6 +1,7 @@
 package org.example.project.domain.repository
 import org.example.project.data.model.CommonModelResponse
 import org.example.project.data.model.CreateProjectResponse
+import org.example.project.data.model.EmployeeData
 import org.example.project.data.model.ProjectAccessResponse
 import org.example.project.data.model.ProjectDetail
 import org.example.project.data.model.ProjectListResponse
@@ -78,4 +79,10 @@ interface ProjectRepository {
         groupCode: String,
         searchKey: String = ""
     ): NetworkResult<org.example.project.data.model.GroupUserResponse>
+
+    suspend fun getEmployeeList(
+        groupId: String,
+        pageNumber: Int,
+        searchKey: String
+    ): NetworkResult<List<EmployeeData>>
 }

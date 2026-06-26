@@ -37,6 +37,10 @@ import org.example.project.settings.GeneralContentsViewModel
 import org.example.project.ui.screens.PendingActionListViewModel
 import org.example.project.ui.screens.ObservationListViewModel
 import org.example.project.ui.screens.CreateObservationViewModel
+import org.example.project.ui.screens.CreateIncidentViewModel
+import org.example.project.domain.repository.IncidentRepository
+import org.example.project.domain.repository.IncidentRepositoryImpl
+import org.example.project.ui.screens.IncidentListViewModel
 
 val appModule = module {
     factory { createHttpClient(get()) }
@@ -60,6 +64,7 @@ val appModule = module {
     factory { RegisterViewModel(get(), get()) }
     factory { org.example.project.ui.screens.ObservationDetailViewModel(get()) }
     factory { CreateObservationViewModel(get(), get(), get()) }
+    factory { CreateIncidentViewModel(get(), get(), get()) }
     factory { org.example.project.ui.components.AppProjectDropdownViewModel(get()) }
     factory { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
     factory { ImagePickerViewModel(get()) }
@@ -71,6 +76,8 @@ val appModule = module {
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
     factory { ObservationListViewModel(get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
+    factory { IncidentListViewModel(get()) }
+    factory<IncidentRepository> { IncidentRepositoryImpl(get()) }
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }
     single { AppPreferences(get()) }

@@ -26,6 +26,7 @@ import org.example.project.colors.AppColors
 import org.example.project.data.model.ObservationDetailResponse
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.AppMultilineTextField
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.ui.components.WebImageView
 import org.koin.compose.koinInject
@@ -33,7 +34,8 @@ import org.koin.compose.koinInject
 @Composable
 fun ObservationDetailScreen(
     observationId: Int,
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    onRefreshList: () -> Unit = {}
 ) {
     val viewModel: ObservationDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()

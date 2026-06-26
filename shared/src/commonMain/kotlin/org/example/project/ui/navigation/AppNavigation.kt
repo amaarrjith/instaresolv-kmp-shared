@@ -20,10 +20,11 @@ import org.example.project.ui.RegisterScreen
 import org.example.project.ui.SplashScreen
 import org.example.project.ui.WelcomeScreen
 import org.example.project.ui.components.AuditInspectionListScreen
-import org.example.project.ui.components.IncidentListScreen
+import org.example.project.ui.screens.IncidentListScreen
 import org.example.project.ui.components.NotificationListScreen
 import org.example.project.ui.screens.ObservationListScreen
 import org.example.project.ui.screens.CreateObservationScreen
+import org.example.project.ui.screens.CreateIncidentScreen
 import org.example.project.ui.components.PermitToWorkListScreen
 import org.example.project.ui.components.TrainingListScreen
 import org.example.project.ui.components.ViolationListScreen
@@ -208,20 +209,26 @@ fun AppNavigation() {
                 navController.popBackStack()
             }
         }
+        composable(Screens.CreateIncidentScreen.route) {
+            CreateIncidentScreen {
+                navController.popBackStack()
+            }
+        }
         composable(
-            route = Screens.ObservationDetailsScreenWithArgs.route,
-            arguments = listOf(androidx.navigation.navArgument("observationId") { type = androidx.navigation.NavType.IntType })
+            route = Screens.ObservationDetailsScreenWithArgs.route
         ) { backStackEntry ->
-            val observationId = backStackEntry.arguments?.getInt("observationId") ?: -1
+            val observationId = backStackEntry.savedStateHandle.get<String>("observationId")?.toIntOrNull() ?: -1
             org.example.project.ui.screens.ObservationDetailScreen(
                 observationId = observationId,
-                onBackClicked = { navController.popBackStack() }
+                onBackClicked = { navController.popBackStack() },
+                onRefreshList = {}
             )
         }
         composable(Screens.IncidentListScreen.route) {
-            IncidentListScreen{
-                navController.popBackStack()
-            }
+            IncidentListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onCreateClicked = { navController.navigate(Screens.CreateIncidentScreen.route) }
+            )
         }
         composable(Screens.ViolationListScreen.route) {
             ViolationListScreen{

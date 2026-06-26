@@ -100,8 +100,8 @@ class ObservationListViewModel(
             val request = ObservationRequest(
                 pageNumber = currentPage,
                 searchKey = _uiState.value.searchKey,
-                observers = filter.selectedObservers.mapNotNull { it.userId.toIntOrNull() },
-                responsiblePersons = filter.selectedResponsiblePersons.mapNotNull { it.userId.toIntOrNull() },
+                observers = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
+                responsiblePersons = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
                 groupIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() },
                 status = status,
                 groupSpecified = groupSpecified,

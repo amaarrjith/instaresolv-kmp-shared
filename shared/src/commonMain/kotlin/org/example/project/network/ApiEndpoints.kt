@@ -35,4 +35,8 @@ object ApiEndpoints {
     const val GROUP_USER_LIST = "v3/group/user-list"
     const val CREATE_OBSERVATION = "v3/observation/create"
     const val OBSERVATION_DETAIL = "v2/observation/detail"
+    const val CLOSE_OBSERVATION = "observation/close"
+    const val INCIDENT_LIST = "incidents/list"
+    const val EMPLOYEE_LIST = "employees/list"
+    const val ADD_INCIDENT = "incidents/add"
 }

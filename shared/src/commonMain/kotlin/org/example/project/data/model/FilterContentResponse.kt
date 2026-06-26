@@ -41,6 +41,8 @@ data class AppFilterState(
     val noProjectSelected: Boolean = false,
     val selectedResponsiblePersons: List<FilterResponsiblePerson> = emptyList(),
     val selectedObservers: List<FilterResponsiblePerson> = emptyList(),
+    val selectedReportedBy: List<FilterResponsiblePerson> = emptyList(),
+    val selectedIncidentTypes: List<Int> = emptyList(),
     val dateOpenMillis: Long? = null,
     val dateCloseMillis: Long? = null
 ) {
@@ -50,6 +52,8 @@ data class AppFilterState(
                 !noProjectSelected &&
                 selectedResponsiblePersons.isEmpty() &&
                 selectedObservers.isEmpty() &&
+                selectedReportedBy.isEmpty() &&
+                selectedIncidentTypes.isEmpty() &&
                 dateOpenMillis == null &&
                 dateCloseMillis == null
     }

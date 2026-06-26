@@ -21,7 +21,7 @@ data class ObservationDetailResponse(
     val saveAsDraft: Boolean? = null,
     val imageDescription: List<ObservationImageDescription>? = null,
     val responsiblePerson: ObservationResponsiblePerson? = null,
-    val closeDetails: String? = null,
+    val closeDetails: ObservationCloseDetails? = null,
     val notificationUnReadCount: Int? = null,
     val pendingActionsCount: Int? = null
 )
@@ -57,4 +57,13 @@ data class ObservationResponsiblePerson(
     val image: String? = null,
     val name: String? = null,
     val email: String? = null
+)
+
+@Serializable
+data class ObservationCloseDetails(
+    val date: String? = null,
+    val time: String? = null,
+    val closeDescription: String? = null,
+    val closedBy: ObservationResponsiblePerson? = null,
+    val imageDescription: List<ObservationImageDescription>? = null
 )

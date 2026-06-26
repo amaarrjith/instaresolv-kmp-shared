@@ -6,6 +6,7 @@ import org.example.project.data.model.CommonResponse
 import org.example.project.data.model.CreateProjectRequest
 import org.example.project.data.model.CreateProjectResponse
 import org.example.project.data.model.DeleteProjectRequest
+import org.example.project.data.model.EmployeeData
 import org.example.project.data.model.ExitProjectRequest
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
@@ -39,8 +40,14 @@ import org.example.project.data.model.ViewProjectRequest
 import org.example.project.data.model.ViewProjectResponse
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
+import org.example.project.data.model.EmployeeListRequest
+import org.example.project.data.model.AddIncidentRequest
+import org.example.project.data.model.AddIncidentResponse
+import org.example.project.data.model.IncidentRequest
 
 interface AuthApiService {
+
+    suspend fun getEmployeeList(request: EmployeeListRequest): NetworkResult<List<EmployeeData>>
 
     suspend fun getFilterContent(): NetworkResult<FilterContentData>
 
@@ -171,4 +178,16 @@ interface AuthApiService {
     suspend fun getObservationDetail(
         request: org.example.project.data.model.ObservationDetailRequest
     ): NetworkResult<org.example.project.data.model.ObservationDetailResponse>
+
+    suspend fun closeObservation(
+        request: org.example.project.data.model.CloseObservationRequest
+    ): NetworkResult<kotlinx.serialization.json.JsonObject>
+
+    suspend fun getIncidentList(
+        request: org.example.project.data.model.IncidentRequest
+    ): NetworkResult<List<org.example.project.data.model.IncidentData>>
+
+    suspend fun addIncident(
+        request: org.example.project.data.model.AddIncidentRequest
+    ): NetworkResult<org.example.project.data.model.AddIncidentResponse>
 }

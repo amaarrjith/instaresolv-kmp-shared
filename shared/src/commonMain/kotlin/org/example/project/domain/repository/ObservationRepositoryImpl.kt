@@ -28,4 +28,10 @@ class ObservationRepositoryImpl(
     ): NetworkResult<org.example.project.data.model.ObservationDetailResponse> {
         return apiService.getObservationDetail(request)
     }
+
+    override suspend fun closeObservation(
+        request: org.example.project.data.model.CloseObservationRequest
+    ): NetworkResult<kotlinx.serialization.json.JsonObject> {
+        return apiService.closeObservation(request)
+    }
 }

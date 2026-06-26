@@ -25,28 +25,42 @@ import org.example.project.data.model.AppFilterState
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.example.project.ui.screens.EmptyScreenView
-import org.example.project.ui.components.WebImageView
-import org.example.project.ui.components.AppDatePicker
 import org.jetbrains.compose.resources.painterResource
+import org.example.project.ui.IncidentType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppFilterBottomSheet(
     filterData: FilterContentData?,
     appliedFilterState: AppFilterState,
+    isFromObservation: Boolean = false,
+    isFromIncident: Boolean = false,
+    isFromPermit: Boolean = false,
+    moduleName: String = "Observations",
     onApply: (AppFilterState) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
-    val tabs = listOf("Status", "Project", "Observer", "Responsible", "Date")
-    var selectedTab by remember { mutableStateOf(tabs[0]) }
+    val tabs = remember(isFromObservation, isFromIncident, isFromPermit) {
+        val baseTabs = mutableListOf("Project", "Reported By", "Date")
+        if (isFromObservation) {
+            baseTabs.add(0, "Status")
+        }
+        if (isFromIncident) {
+            baseTabs.add("Incident Type")
+        }
+        baseTabs
+    }
+    var selectedTab by remember(tabs) { mutableStateOf(tabs[0]) }
     
     var tempStatuses by remember { mutableStateOf(appliedFilterState.selectedStatuses) }
     var tempProjects by remember { mutableStateOf(appliedFilterState.selectedProjects) }
     var tempNoProjectSelected by remember { mutableStateOf(appliedFilterState.noProjectSelected) }
     var tempObservers by remember { mutableStateOf(appliedFilterState.selectedObservers) }
     var tempResponsiblePersons by remember { mutableStateOf(appliedFilterState.selectedResponsiblePersons) }
+    var tempReportedBy by remember { mutableStateOf(appliedFilterState.selectedReportedBy) }
+    var tempIncidentTypes by remember { mutableStateOf(appliedFilterState.selectedIncidentTypes) }
     var dateOpenMillis by remember { mutableStateOf(appliedFilterState.dateOpenMillis) }
     var dateCloseMillis by remember { mutableStateOf(appliedFilterState.dateCloseMillis) }
 
@@ -59,51 +73,56 @@ fun AppFilterBottomSheet(
         Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.75f)) {
             HorizontalDivider(color = Color(0xFFE5E5E5))
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                // Left Column
+                // Sidebar
                 Column(
                     modifier = Modifier
-                        .width(120.dp)
                         .fillMaxHeight()
-                        .background(Color(0xFFF3F3F3))
+                        .background(Color(0xFFF2F2F2))
+                        .width(135.dp)
                 ) {
                     tabs.forEach { tab ->
                         val isSelected = selectedTab == tab
-                        val hasBadge = when(tab) {
+                        val hasActiveFilter = when(tab) {
                             "Status" -> tempStatuses.isNotEmpty()
                             "Project" -> tempProjects.isNotEmpty() || tempNoProjectSelected
+                            "Reported By" -> tempReportedBy.isNotEmpty()
+                            "Date" -> dateOpenMillis != null || dateCloseMillis != null
+                            "Incident Type" -> tempIncidentTypes.isNotEmpty()
                             "Observer" -> tempObservers.isNotEmpty()
                             "Responsible" -> tempResponsiblePersons.isNotEmpty()
-                            "Date" -> dateOpenMillis != null || dateCloseMillis != null
                             else -> false
                         }
-                        Box(
+                        
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(if (isSelected) Color.White else Color.Transparent)
                                 .clickable { selectedTab = tab }
-                                .padding(vertical = 16.dp, horizontal = 16.dp)
+                                .background(if (isSelected) Color.White else Color.Transparent)
+                                .padding(vertical = 14.dp, horizontal = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = tab,
-                                    style = textStyle(
-                                        size = 14.sp,
-                                        weight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
-                                    ),
-                                    color = AppColors.Black
+                            Text(
+                                text = tab,
+                                style = textStyle(size = 14.sp, weight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium),
+                                color = if (isSelected) AppColors.Black else Color(0xFF94979D),
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (hasActiveFilter) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(AppColors.Primary)
                                 )
-                                if (hasBadge) {
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Box(
-                                        modifier = Modifier.size(6.dp).clip(CircleShape).background(AppColors.Primary)
-                                    )
-                                }
                             }
+                        }
+                        if (isSelected) {
+                            HorizontalDivider(color = Color(0xFFE5E5E5))
                         }
                     }
                 }
                 
-                // Right Column
+                // Content area
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -131,6 +150,8 @@ fun AppFilterBottomSheet(
                                 tempNoProjectSelected = false
                                 tempObservers = emptyList()
                                 tempResponsiblePersons = emptyList()
+                                tempReportedBy = emptyList()
+                                tempIncidentTypes = emptyList()
                                 dateOpenMillis = null
                                 dateCloseMillis = null
                             }
@@ -140,7 +161,7 @@ fun AppFilterBottomSheet(
                     
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         if (selectedTab == "Status") {
-                            val statusOptions = listOf("Open Observations", "Closed Observations")
+                            val statusOptions = listOf("Open $moduleName", "Closed $moduleName")
                             item {
                                 statusOptions.forEach { option ->
                                      Row(
@@ -148,7 +169,7 @@ fun AppFilterBottomSheet(
                                             .fillMaxWidth()
                                             .clickable { 
                                                 tempStatuses = if (tempStatuses.contains(option)) {
-                                                    tempStatuses - option
+                                                    tempStatuses.filterNot { it == option }
                                                 } else {
                                                     tempStatuses + option
                                                 }
@@ -156,16 +177,17 @@ fun AppFilterBottomSheet(
                                             .padding(vertical = 12.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Image(
-                                            painter = painterResource(if (tempStatuses.contains(option)) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(22.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(12.dp))
+                                        val isChecked = tempStatuses.contains(option)
                                         Text(
                                             text = option,
                                             style = textStyle(size = 15.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
+                                        )
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
                                         )
                                     }
                                 }
@@ -177,21 +199,25 @@ fun AppFilterBottomSheet(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable { 
-                                            tempNoProjectSelected = !tempNoProjectSelected
-                                            if (tempNoProjectSelected) tempProjects = emptyList()
+                                            if (tempNoProjectSelected) {
+                                                tempNoProjectSelected = false
+                                            } else {
+                                                tempNoProjectSelected = true
+                                                tempProjects = emptyList()
+                                            }
                                         }
                                         .padding(vertical = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "No Project", 
+                                            text = "Not Specified", 
                                             style = textStyle(size = 15.sp, weight = FontWeight.Medium), 
                                             color = AppColors.Black
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "Show all observations that are not specified to any project", 
+                                            text = "Show all items that are not specified to any project", 
                                             style = textStyle(size = 12.sp, weight = FontWeight.Normal), 
                                             color = Color(0xFF8F9098)
                                         )
@@ -205,11 +231,7 @@ fun AppFilterBottomSheet(
                                 }
                             }
                             if (projects.isEmpty()) {
-                                item {
-                                    EmptyScreenView(
-                                        "No Projects Found"
-                                    )
-                                }
+                                item { EmptyScreenView("No Projects Found") }
                             } else {
                                 items(projects.size) { index ->
                                     val project = projects[index]
@@ -228,7 +250,7 @@ fun AppFilterBottomSheet(
                                             .padding(vertical = 12.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        org.example.project.ui.components.WebImageView(
+                                        WebImageView(
                                             imageUrl = projects[index].groupImage,
                                             modifier = Modifier
                                                 .size(48.dp)
@@ -236,9 +258,7 @@ fun AppFilterBottomSheet(
                                                 .background(Color(0xFFF2F2F2))
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        androidx.compose.foundation.layout.Column(
-                                            modifier = Modifier.weight(1f)
-                                        ) {
+                                        Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = projects[index].groupName,
                                                 style = textStyle(size = 15.sp, weight = FontWeight.Medium),
@@ -269,11 +289,7 @@ fun AppFilterBottomSheet(
                         } else if (selectedTab == "Responsible") {
                             val persons = filterData?.responsiblePersons ?: emptyList()
                             if (persons.isEmpty()) {
-                                item {
-                                    EmptyScreenView(
-                                        "No Responsible Person Found"
-                                    )
-                                }
+                                item { EmptyScreenView("No Responsible Person Found") }
                             } else {
                                 items(persons.size) { index ->
                                     val person = persons[index]
@@ -291,19 +307,17 @@ fun AppFilterBottomSheet(
                                             .padding(vertical = 12.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        org.example.project.ui.components.WebImageView(
-                                            imageUrl = persons[index].image,
+                                        WebImageView(
+                                            imageUrl = person.image,
                                             modifier = Modifier
                                                 .size(48.dp)
-                                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                                .clip(CircleShape)
                                                 .background(Color(0xFFF2F2F2))
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        androidx.compose.foundation.layout.Column(
-                                            modifier = Modifier.weight(1f)
-                                        ) {
+                                        Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = persons[index].name,
+                                                text = person.name,
                                                 style = textStyle(size = 15.sp, weight = FontWeight.Medium),
                                                 color = AppColors.Black
                                             )
@@ -313,11 +327,11 @@ fun AppFilterBottomSheet(
                                                     painter = painterResource(Res.drawable.ic_email),
                                                     contentDescription = null,
                                                     modifier = Modifier.size(12.dp),
-                                                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color(0xFF8F9098))
+                                                    colorFilter = ColorFilter.tint(Color(0xFF8F9098))
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 Text(
-                                                    text = persons[index].email,
+                                                    text = person.email,
                                                     style = textStyle(size = 12.sp, weight = FontWeight.Normal),
                                                     color = Color(0xFF8F9098)
                                                 )
@@ -333,13 +347,9 @@ fun AppFilterBottomSheet(
                                 }
                             }
                         } else if (selectedTab == "Observer") {
-                            val observers = filterData?.responsiblePersons ?: emptyList()
+                            val observers = filterData?.observers ?: emptyList() // Fixed to use observers instead of responsiblePersons
                             if (observers.isEmpty()) {
-                                item {
-                                    EmptyScreenView(
-                                        "No Observer Found"
-                                    )
-                                }
+                                item { EmptyScreenView("No Observer Found") }
                             } else {
                                 items(observers.size) { index ->
                                     val observer = observers[index]
@@ -357,19 +367,17 @@ fun AppFilterBottomSheet(
                                             .padding(vertical = 12.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        org.example.project.ui.components.WebImageView(
-                                            imageUrl = observers[index].image,
+                                        WebImageView(
+                                            imageUrl = observer.image,
                                             modifier = Modifier
                                                 .size(48.dp)
-                                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                                .clip(CircleShape)
                                                 .background(Color(0xFFF2F2F2))
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        androidx.compose.foundation.layout.Column(
-                                            modifier = Modifier.weight(1f)
-                                        ) {
+                                        Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = observers[index].name,
+                                                text = observer.name,
                                                 style = textStyle(size = 15.sp, weight = FontWeight.Medium),
                                                 color = AppColors.Black
                                             )
@@ -379,11 +387,72 @@ fun AppFilterBottomSheet(
                                                     painter = painterResource(Res.drawable.ic_email),
                                                     contentDescription = null,
                                                     modifier = Modifier.size(12.dp),
-                                                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color(0xFF8F9098))
+                                                    colorFilter = ColorFilter.tint(Color(0xFF8F9098))
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 Text(
-                                                    text = observers[index].email,
+                                                    text = observer.email,
+                                                    style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                                                    color = Color(0xFF8F9098)
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        } else if (selectedTab == "Reported By") {
+                            // Combine responsiblePersons and observers as per the prompt
+                            val allUsers = ((filterData?.responsiblePersons ?: emptyList()) + (filterData?.observers ?: emptyList())).distinctBy { it.userId }
+                            if (allUsers.isEmpty()) {
+                                item { EmptyScreenView("No Users Found") }
+                            } else {
+                                items(allUsers.size) { index ->
+                                    val user = allUsers[index]
+                                    val isChecked = tempReportedBy.any { it.userId == user.userId }
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { 
+                                                tempReportedBy = if (isChecked) {
+                                                    tempReportedBy.filterNot { it.userId == user.userId }
+                                                } else {
+                                                    tempReportedBy + user
+                                                }
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        WebImageView(
+                                            imageUrl = user.image,
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFF2F2F2))
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = user.name,
+                                                style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                                color = AppColors.Black
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Image(
+                                                    painter = painterResource(Res.drawable.ic_email),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(12.dp),
+                                                    colorFilter = ColorFilter.tint(Color(0xFF8F9098))
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = user.email,
                                                     style = textStyle(size = 12.sp, weight = FontWeight.Normal),
                                                     color = Color(0xFF8F9098)
                                                 )
@@ -400,24 +469,54 @@ fun AppFilterBottomSheet(
                             }
                         } else if (selectedTab == "Date") {
                             item {
-                                androidx.compose.foundation.layout.Column(
+                                Column(
                                     verticalArrangement = Arrangement.spacedBy(16.dp),
                                     modifier = Modifier.padding(top = 8.dp)
                                 ) {
-                                    org.example.project.ui.components.AppDatePicker(
+                                    AppDatePicker(
                                         text = "Date Open",
                                         onDateSelected = { dateOpenMillis = it },
                                         selectedDateMillis = dateOpenMillis
                                     )
-                                    org.example.project.ui.components.AppDatePicker(
+                                    AppDatePicker(
                                         text = "Date Close",
                                         onDateSelected = { dateCloseMillis = it },
                                         selectedDateMillis = dateCloseMillis
                                     )
                                 }
                             }
-                        } else {
-
+                        } else if (selectedTab == "Incident Type") {
+                            val incidentTypes = IncidentType.entries
+                            item {
+                                incidentTypes.forEach { type ->
+                                     Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { 
+                                                tempIncidentTypes = if (tempIncidentTypes.contains(type.id)) {
+                                                    tempIncidentTypes.filterNot { it == type.id }
+                                                } else {
+                                                    tempIncidentTypes + type.id
+                                                }
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        val isChecked = tempIncidentTypes.contains(type.id)
+                                        Text(
+                                            text = type.title,
+                                            style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                            color = AppColors.Black
+                                        )
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -438,7 +537,7 @@ fun AppFilterBottomSheet(
                     modifier = Modifier.weight(1f).height(48.dp),
                     shape = RoundedCornerShape(24.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.Primary),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                    contentPadding = PaddingValues(0.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -461,6 +560,8 @@ fun AppFilterBottomSheet(
                                 noProjectSelected = tempNoProjectSelected,
                                 selectedResponsiblePersons = tempResponsiblePersons,
                                 selectedObservers = tempObservers,
+                                selectedReportedBy = tempReportedBy,
+                                selectedIncidentTypes = tempIncidentTypes,
                                 dateOpenMillis = dateOpenMillis,
                                 dateCloseMillis = dateCloseMillis
                             )

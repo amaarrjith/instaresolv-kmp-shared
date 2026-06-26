@@ -17,6 +17,13 @@ sealed class ObservationDetailUiState {
     data class Error(val message: String) : ObservationDetailUiState()
 }
 
+sealed class CloseObservationState {
+    object Idle : CloseObservationState()
+    object Loading : CloseObservationState()
+    object Success : CloseObservationState()
+    data class Error(val message: String) : CloseObservationState()
+}
+
 class ObservationDetailViewModel(
     private val observationRepository: ObservationRepository
 ) : ViewModel() {
@@ -41,5 +48,40 @@ class ObservationDetailViewModel(
                 }
             }
         }
+    }
+
+    private val _closeUiState = MutableStateFlow<CloseObservationState>(CloseObservationState.Idle)
+    val closeUiState: StateFlow<CloseObservationState> = _closeUiState
+
+    fun closeObservation(observationId: Int, description: String, images: List<org.example.project.ui.screens.ObservationImage>) {
+        viewModelScope.launch {
+            _closeUiState.value = CloseObservationState.Loading
+            
+            val imageDescriptions = images.filter { it.imageUrl?.isNotEmpty() == true }.map {
+                org.example.project.data.model.ObservationImageDescription(
+                    image = it.imageUrl,
+                    description = it.description
+                )
+            }
+            
+            val request = org.example.project.data.model.CloseObservationRequest(
+                observationId = observationId,
+                description = description,
+                imageDescription = imageDescriptions
+            )
+            
+            when (val result = observationRepository.closeObservation(request)) {
+                is NetworkResult.Success -> {
+                    _closeUiState.value = CloseObservationState.Success
+                }
+                is NetworkResult.Error -> {
+                    _closeUiState.value = CloseObservationState.Error(result.message ?: "Failed to close observation")
+                }
+            }
+        }
+    }
+    
+    fun resetCloseState() {
+        _closeUiState.value = CloseObservationState.Idle
     }
 }

@@ -4,6 +4,7 @@ import org.example.project.data.model.CommonModelResponse
 import org.example.project.data.model.CreateProjectRequest
 import org.example.project.data.model.CreateProjectResponse
 import org.example.project.data.model.DeleteProjectRequest
+import org.example.project.data.model.EmployeeData
 import org.example.project.data.model.ExitProjectRequest
 import org.example.project.data.model.InviteUsersRequest
 import org.example.project.data.model.ProjectAccessRequest
@@ -179,6 +180,21 @@ class ProjectRepositoryImpl(
                 searchKey = searchKey,
                 groupId = groupId,
                 groupCode = groupCode
+            )
+        )
+    }
+
+    override suspend fun getEmployeeList(
+        groupId: String,
+        pageNumber: Int,
+        searchKey: String
+    ): NetworkResult<List<EmployeeData>> {
+        return apiService.getEmployeeList(
+            org.example.project.data.model.EmployeeListRequest(
+                pageNumber = pageNumber,
+                searchKey = searchKey,
+                groupId = groupId,
+                sortType = 1
             )
         )
     }

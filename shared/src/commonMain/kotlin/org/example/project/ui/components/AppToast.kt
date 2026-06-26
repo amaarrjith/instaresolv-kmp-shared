@@ -166,12 +166,14 @@ fun BoxScope.ToastHost(
     visible: Boolean,
     type: ToastType,
     message: String,
+    modifier: Modifier? = null,
     onDismiss: () -> Unit
 ) {
     AnimatedVisibility(
         modifier = Modifier
             .align(Alignment.BottomCenter)
-            .padding(bottom = 40.dp),
+            .padding(bottom = 40.dp)
+            .then(modifier ?: Modifier),
         visible = visible,
         enter = slideInVertically { it } + fadeIn(),
         exit = slideOutVertically { it } + fadeOut()

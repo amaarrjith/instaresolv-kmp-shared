@@ -4,28 +4,26 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-    <key>UIAppFonts</key>
-    <array>
-        <string>Inter-Black.ttf</string>
-        <string>Inter-BlackItalic.ttf</string>
-        <string>Inter-Bold.ttf</string>
-        <string>Inter-BoldItalic.ttf</string>
-        <string>Inter-ExtraBold.ttf</string>
-        <string>Inter-ExtraBoldItalic.ttf</string>
-        <string>Inter-ExtraLight.ttf</string>
-        <string>Inter-ExtraLightItalic.ttf</string>
-        <string>Inter-Italic.ttf</string>
-        <string>Inter-Light.ttf</string>
-        <string>Inter-LightItalic.ttf</string>
-        <string>Inter-Medium.ttf</string>
-        <string>Inter-MediumItalic.ttf</string>
-        <string>Inter-Regular.ttf</string>
-        <string>Inter-SemiBold.ttf</string>
-        <string>Inter-SemiBoldItalic.ttf</string>
-        <string>Inter-Thin.ttf</string>
-        <string>Inter-ThinItalic.ttf</string>
-    </array>
-    <key>NSCameraUsageDescription</key>
-    <string>We need access to your camera to take project photos.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Inter-Black.ttf</string>
+		<string>Inter-BlackItalic.ttf</string>
+		<string>Inter-Bold.ttf</string>
+		<string>Inter-BoldItalic.ttf</string>
+		<string>Inter-ExtraBold.ttf</string>
+		<string>Inter-ExtraBoldItalic.ttf</string>
+		<string>Inter-ExtraLight.ttf</string>
+		<string>Inter-ExtraLightItalic.ttf</string>
+		<string>Inter-Italic.ttf</string>
+		<string>Inter-Light.ttf</string>
+		<string>Inter-LightItalic.ttf</string>
+		<string>Inter-Medium.ttf</string>
+		<string>Inter-MediumItalic.ttf</string>
+		<string>Inter-Regular.ttf</string>
+		<string>Inter-SemiBold.ttf</string>
+		<string>Inter-SemiBoldItalic.ttf</string>
+		<string>Inter-Thin.ttf</string>
+		<string>Inter-ThinItalic.ttf</string>
+	</array>
 </dict>
 </plist>

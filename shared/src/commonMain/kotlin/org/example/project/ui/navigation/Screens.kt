@@ -13,6 +13,7 @@ sealed class Screens(val route: String) {
     // Observation
     object ObservationListScreen : Screens("observation_list_screen")
     object CreateObservationScreen : Screens("create_observation_screen")
+    object CreateIncidentScreen : Screens("create_incident_screen")
     object ObservationDetailsScreen : Screens("observation_details_screen")
     object ObservationDetailsScreenWithArgs : Screens("observation_details_screen/{observationId}")
 

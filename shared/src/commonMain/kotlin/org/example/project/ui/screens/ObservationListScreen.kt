@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -55,17 +56,21 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ErrorRetryView
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.ic_download
+import instaresolv.shared.generated.resources.ic_export
 import instaresolv.shared.generated.resources.ic_filter
 import org.example.project.colors.AppColors
 import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
 import org.example.project.typography.textStyle
+import org.example.project.ui.ObservationStatus
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppSearchBar
@@ -85,6 +90,21 @@ fun ObservationListScreen(
 
     Scaffold(
         containerColor = Color.White,
+        floatingActionButton = {
+            androidx.compose.material3.FloatingActionButton(
+                onClick = { /* TODO Handle Download */ },
+                shape = CircleShape,
+                containerColor = AppColors.Primary,
+                contentColor = Color.White
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_download),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(Color.White),
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+            }
+        },
         topBar = {
             Row (
                 modifier = Modifier
@@ -163,6 +183,8 @@ fun ObservationListScreen(
                     AppFilterBottomSheet(
                         filterData = uiState.filterData,
                         appliedFilterState = uiState.appliedFilterState,
+                        isFromObservation = true,
+                        moduleName = "Observations",
                         onApply = { state -> 
                             viewModel.applyFilters(state)
                             showFilterModal = false
@@ -182,7 +204,10 @@ fun ObservationListScreen(
                         Box(modifier = Modifier.fillMaxHeight(0.9f)) {
                             org.example.project.ui.screens.ObservationDetailScreen(
                                 observationId = selectedObservationId!!,
-                                onBackClicked = { selectedObservationId = null }
+                                onBackClicked = { selectedObservationId = null },
+                                onRefreshList =  {
+                                    viewModel.fetchObservations(isRefresh = true)
+                                }
                             )
                         }
                     }
@@ -318,7 +343,8 @@ fun ObservationListItem(
     observation: ObservationItem,
     onClick: () -> Unit
 ) {
-    Column {
+    Column(
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -354,39 +380,40 @@ fun ObservationListItem(
                 }
             }
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 // Top Row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val statusColor = when (observation.status) {
-                        1 -> Color(0xFF10B981) // Green for OPEN or similar
-                        2 -> Color(0xFFF97316) // Orange for PENDING
-                        else -> Color.Gray
-                    }
-                    // Pending Badge
+                    val status = ObservationStatus.fromId(observation.status ?: -1)
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(statusColor)
+                            .background(status.backgroundColor)
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        val statusText = when (observation.status) {
-                            1 -> "OPEN"
-                            2 -> "PENDING"
-                            else -> "UNKNOWN"
-                        }
                         Text(
-                            text = statusText,
+                            text = status.title.uppercase(),
                             style = textStyle(size = 9.sp, weight = FontWeight.Bold),
                             color = Color.White
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.weight(1f))
 
+                    Text(
+                        text = timeAgo(
+                            observation.date ?: "",
+                            inputPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'",
+                        ), // Need to format real date to relative string if required, using placeholder for now
+                        style = textStyle(size = 11.sp, weight = FontWeight.Normal),
+                        color = Color.DarkGray
+                    )
+                }
+                Row() {
                     Image(
                         painter = painterResource(Res.drawable.ic_calendar),
                         contentDescription = null,
@@ -405,21 +432,7 @@ fun ObservationListItem(
                         style = textStyle(size = 11.sp, weight = FontWeight.SemiBold),
                         color = AppColors.Black
                     )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Text(
-                        text = timeAgo(
-                            observation.date ?: "",
-                            inputPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'",
-                        ), // Need to format real date to relative string if required, using placeholder for now
-                        style = textStyle(size = 11.sp, weight = FontWeight.Normal),
-                        color = Color.DarkGray
-                    )
                 }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
                 // Title
                 Text(
                     text = observation.observationTitle ?: "Untitled Observation",
@@ -427,9 +440,6 @@ fun ObservationListItem(
                     color = AppColors.Black,
                     maxLines = 2
                 )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
                 // User row
                 Row(
                     verticalAlignment = Alignment.CenterVertically
