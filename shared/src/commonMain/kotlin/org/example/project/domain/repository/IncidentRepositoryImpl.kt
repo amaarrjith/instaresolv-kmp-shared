@@ -17,7 +17,11 @@ class IncidentRepositoryImpl(
         return apiService.getFilterContent()
     }
 
-    override suspend fun addIncident(request: org.example.project.data.model.AddIncidentRequest): NetworkResult<org.example.project.data.model.AddIncidentResponse> {
+    override suspend fun addIncident(request: org.example.project.data.model.AddIncidentRequest): NetworkResult<org.example.project.data.model.AddIncidentData> {
         return apiService.addIncident(request)
+    }
+
+    override suspend fun getIncidentDetail(request: org.example.project.data.model.IncidentDetailRequest): NetworkResult<org.example.project.data.model.IncidentDetailResponse> {
+        return apiService.getIncidentDetail(request)
     }
 }

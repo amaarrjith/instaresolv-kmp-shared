@@ -292,8 +292,32 @@ class AuthApiServiceImpl(
 
     override suspend fun addIncident(
         request: org.example.project.data.model.AddIncidentRequest
-    ): NetworkResult<org.example.project.data.model.AddIncidentResponse> = safeApiCall {
+    ): NetworkResult<org.example.project.data.model.AddIncidentData> = safeApiCall {
         httpClient.post(ApiEndpoints.ADD_INCIDENT) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getIncidentDetail(
+        request: org.example.project.data.model.IncidentDetailRequest
+    ): NetworkResult<org.example.project.data.model.IncidentDetailResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.INCIDENT_DETAIL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getViolationList(
+        request: org.example.project.data.model.ViolationListRequest
+    ): NetworkResult<List<org.example.project.data.model.ViolationData>> = safeApiCall {
+        httpClient.post(ApiEndpoints.VIOLATION_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getViolationDetail(
+        request: org.example.project.data.model.ViolationDetailRequest
+    ): NetworkResult<org.example.project.data.model.ViolationData> = safeApiCall {
+        httpClient.post(ApiEndpoints.VIOLATION_DETAIL) {
             jsonBody(request)
         }
     }

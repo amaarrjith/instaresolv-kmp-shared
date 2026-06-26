@@ -8,5 +8,6 @@ import org.example.project.network.NetworkResult
 interface IncidentRepository {
     suspend fun getIncidentList(request: IncidentRequest): NetworkResult<List<IncidentData>>
     suspend fun getFilterContent(): NetworkResult<FilterContentData>
-    suspend fun addIncident(request: org.example.project.data.model.AddIncidentRequest): NetworkResult<org.example.project.data.model.AddIncidentResponse>
+    suspend fun addIncident(request: org.example.project.data.model.AddIncidentRequest): NetworkResult<org.example.project.data.model.AddIncidentData>
+    suspend fun getIncidentDetail(request: org.example.project.data.model.IncidentDetailRequest): NetworkResult<org.example.project.data.model.IncidentDetailResponse>
 }

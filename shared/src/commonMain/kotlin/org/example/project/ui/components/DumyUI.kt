@@ -55,20 +55,7 @@ fun IncidentListScreen(
     }
 }
 
-@Composable
-fun ViolationListScreen(
-    onBackClicked: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .clickable {
-                onBackClicked()
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Violations")
-    }
-}
+
 
 @Composable
 fun TrainingListScreen(

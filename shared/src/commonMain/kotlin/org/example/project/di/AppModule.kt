@@ -41,6 +41,9 @@ import org.example.project.ui.screens.CreateIncidentViewModel
 import org.example.project.domain.repository.IncidentRepository
 import org.example.project.domain.repository.IncidentRepositoryImpl
 import org.example.project.ui.screens.IncidentListViewModel
+import org.example.project.ui.screens.ViolationListViewModel
+import org.example.project.domain.repository.ViolationRepository
+import org.example.project.domain.repository.ViolationRepositoryImpl
 
 val appModule = module {
     factory { createHttpClient(get()) }
@@ -72,12 +75,19 @@ val appModule = module {
     factory { org.example.project.settings.ChangePasswordViewModel(get()) }
     factory { org.example.project.settings.DeleteAccountViewModel(get(), get()) }
     factory { org.example.project.settings.ContactUsViewModel(get()) }
+
     factory { PendingActionListViewModel(get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
     factory { ObservationListViewModel(get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
     factory { IncidentListViewModel(get()) }
     factory<IncidentRepository> { IncidentRepositoryImpl(get()) }
+    factory { org.example.project.ui.screens.IncidentDetailViewModel(get()) }
+    
+    factory { ViolationListViewModel(get(), get()) }
+    factory<ViolationRepository> { ViolationRepositoryImpl(get()) }
+    factory { org.example.project.ui.screens.ViolationDetailViewModel(get()) }
+    
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }
     single { AppPreferences(get()) }

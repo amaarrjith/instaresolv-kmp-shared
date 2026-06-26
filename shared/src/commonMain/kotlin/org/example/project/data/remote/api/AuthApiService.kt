@@ -189,5 +189,17 @@ interface AuthApiService {
 
     suspend fun addIncident(
         request: org.example.project.data.model.AddIncidentRequest
-    ): NetworkResult<org.example.project.data.model.AddIncidentResponse>
+    ): NetworkResult<org.example.project.data.model.AddIncidentData>
+
+    suspend fun getIncidentDetail(
+        request: org.example.project.data.model.IncidentDetailRequest
+    ): NetworkResult<org.example.project.data.model.IncidentDetailResponse>
+
+    suspend fun getViolationList(
+        request: org.example.project.data.model.ViolationListRequest
+    ): NetworkResult<List<org.example.project.data.model.ViolationData>>
+
+    suspend fun getViolationDetail(
+        request: org.example.project.data.model.ViolationDetailRequest
+    ): NetworkResult<org.example.project.data.model.ViolationData>
 }

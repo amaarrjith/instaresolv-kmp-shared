@@ -23,8 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -50,11 +48,10 @@ import instaresolv.shared.generated.resources.ic_calendar
 import instaresolv.shared.generated.resources.ic_category
 import instaresolv.shared.generated.resources.ic_download
 import org.example.project.colors.AppColors
-import org.example.project.data.model.IncidentData
+import org.example.project.data.model.ViolationData
 import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
 import org.example.project.typography.textStyle
-import org.example.project.ui.IncidentType
 import org.example.project.ui.components.AppFilterBottomSheet
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.WebImageView
@@ -66,14 +63,14 @@ import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IncidentListScreen(
+fun ViolationListScreen(
     onBackClicked: () -> Unit,
     onCreateClicked: () -> Unit
 ) {
-    val viewModel: IncidentListViewModel = koinInject()
+    val viewModel: ViolationListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
-    var selectedIncidentId by remember { mutableStateOf<Int?>(null) }
+    var selectedViolationId by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         containerColor = Color.White,
@@ -102,7 +99,7 @@ fun IncidentListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Incidents".uppercase(),
+                    text = "Violations".uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -134,7 +131,7 @@ fun IncidentListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Incidents",
+                        placeholder = "Search Violations",
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -168,8 +165,8 @@ fun IncidentListScreen(
                     AppFilterBottomSheet(
                         filterData = uiState.filterData,
                         appliedFilterState = uiState.appliedFilterState,
-                        isFromIncident = true,
-                        moduleName = "Incidents",
+                        isFromIncident = true, // Reusing incident filter logic since they share similar filtering fields
+                        moduleName = "Violations",
                         onApply = { state -> 
                             viewModel.applyFilters(state)
                             showFilterModal = false
@@ -178,56 +175,56 @@ fun IncidentListScreen(
                     )
                 }
 
-                if (selectedIncidentId != null) {
-                    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                    ModalBottomSheet(
-                        onDismissRequest = { selectedIncidentId = null },
+                if (selectedViolationId != null) {
+                    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    androidx.compose.material3.ModalBottomSheet(
+                        onDismissRequest = { selectedViolationId = null },
                         sheetState = sheetState,
                         containerColor = Color.White,
                         dragHandle = null
                     ) {
                         Box(modifier = Modifier.fillMaxHeight(0.9f)) {
-                            org.example.project.ui.screens.IncidentDetailScreen(
-                                incidentId = selectedIncidentId!!,
-                                onBackClicked = { selectedIncidentId = null },
+                            org.example.project.ui.screens.ViolationDetailScreen(
+                                violationId = selectedViolationId!!,
+                                onBackClicked = { selectedViolationId = null },
                                 onRefreshList = {
-                                    viewModel.loadIncidents(isRefresh = true)
+                                    viewModel.loadViolations(isRefresh = true)
                                 }
                             )
                         }
                     }
                 }
 
-                if (uiState.isLoading && uiState.incidents.isEmpty()) {
+                if (uiState.isLoading && uiState.violations.isEmpty()) {
                     AppLoader()
-                } else if (uiState.error != null && uiState.incidents.isEmpty()) {
+                } else if (uiState.error != null && uiState.violations.isEmpty()) {
                     ErrorRetryView(
                         errorMessage = uiState.error ?: "",
-                        onRetryClick = { viewModel.loadIncidents(isRefresh = true) }
+                        onRetryClick = { viewModel.loadViolations(isRefresh = true) }
                     )
                 } else {
                     PullToRefreshBox(
                         isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.loadIncidents(isRefresh = true) },
+                        onRefresh = { viewModel.loadViolations(isRefresh = true) },
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        if (uiState.incidents.isEmpty()) {
+                        if (uiState.violations.isEmpty()) {
                             EmptyScreenView(
-                                message = "No incidents found"
+                                message = "No violations found"
                             )
                         } else {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize().padding(top = 25.dp)
                             ) {
-                                items(uiState.incidents.size) { index ->
-                                    if (index >= uiState.incidents.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
+                                items(uiState.violations.size) { index ->
+                                    if (index >= uiState.violations.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
                                         LaunchedEffect(key1 = index) {
-                                            viewModel.loadIncidents(isRefresh = false)
+                                            viewModel.loadViolations(isRefresh = false)
                                         }
                                     }
-                                    IncidentListItem(
-                                        incident = uiState.incidents[index],
-                                        onClick = { selectedIncidentId = uiState.incidents[index].id }
+                                    ViolationListItem(
+                                        violation = uiState.violations[index],
+                                        onClick = { selectedViolationId = uiState.violations[index].id }
                                     )
                                 }
                                 if (uiState.isPaginating) {
@@ -253,8 +250,8 @@ fun IncidentListScreen(
 }
 
 @Composable
-fun IncidentListItem(
-    incident: IncidentData,
+fun ViolationListItem(
+    violation: ViolationData,
     onClick: () -> Unit
 ) {
     Column {
@@ -268,7 +265,7 @@ fun IncidentListItem(
         ) {
             Box {
                 WebImageView(
-                    imageUrl = incident.images?.firstOrNull()?.image ?: "",
+                    imageUrl = violation.images?.firstOrNull()?.image ?: "",
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -279,9 +276,8 @@ fun IncidentListItem(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                // Title from IncidentType
                 Text(
-                    text = IncidentType.getTitlesFromIds(incident.incidentType),
+                    text = "Violation by ${violation.employeeName ?: "Unknown"}",
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 3
@@ -306,8 +302,8 @@ fun IncidentListItem(
 
                         Text(
                             text = formatDate(
-                                incident.incidentDate ?: "",
-                                inputPattern = "yyyy-MM-dd HH:mm:ss",
+                                violation.violationDate ?: "",
+                                inputPattern = "dd-MM-yyyy",
                                 outputPattern = "dd MMM yyyy"
                             ),
                             style = textStyle(size = 11.sp, weight = FontWeight.SemiBold),
@@ -320,7 +316,7 @@ fun IncidentListItem(
                     // Date
                     Text(
                         text = timeAgo(
-                            incident.createdAt ?: "",
+                            violation.createdAt ?: "",
                             inputPattern = "yyyy-MM-dd HH:mm:ss"
                         ),
                         style = textStyle(size = 11.sp, weight = FontWeight.Normal),
@@ -333,14 +329,14 @@ fun IncidentListItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     WebImageView(
-                        imageUrl = incident.facilities?.groupImage ?: "",
+                        imageUrl = violation.facilities?.groupImage ?: "",
                         modifier = Modifier
                             .size(22.dp)
                             .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = incident.facilities?.groupName ?: "",
+                        text = violation.facilities?.groupName ?: "",
                         style = textStyle(size = 11.sp, weight = FontWeight.Medium),
                         color = AppColors.Black
                     )

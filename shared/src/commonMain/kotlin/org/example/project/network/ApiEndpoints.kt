@@ -39,4 +39,7 @@ object ApiEndpoints {
     const val INCIDENT_LIST = "incidents/list"
     const val EMPLOYEE_LIST = "employees/list"
     const val ADD_INCIDENT = "incidents/add"
+    const val INCIDENT_DETAIL = "incidents/detail"
+    const val VIOLATION_LIST = "violation/list"
+    const val VIOLATION_DETAIL = "violation/detail"
 }

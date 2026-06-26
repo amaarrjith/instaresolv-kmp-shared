@@ -27,7 +27,7 @@ import org.example.project.ui.screens.CreateObservationScreen
 import org.example.project.ui.screens.CreateIncidentScreen
 import org.example.project.ui.components.PermitToWorkListScreen
 import org.example.project.ui.components.TrainingListScreen
-import org.example.project.ui.components.ViolationListScreen
+import org.example.project.ui.screens.ViolationListScreen
 import org.example.project.ui.screens.CreateProjectScreen
 import org.example.project.ui.screens.ProfileScreen
 import org.example.project.ui.screens.ProjectDetailScreen
@@ -231,9 +231,10 @@ fun AppNavigation() {
             )
         }
         composable(Screens.ViolationListScreen.route) {
-            ViolationListScreen{
-                navController.popBackStack()
-            }
+            ViolationListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onCreateClicked = { }
+            )
         }
         composable(Screens.TrainingListScreen.route) {
             TrainingListScreen{

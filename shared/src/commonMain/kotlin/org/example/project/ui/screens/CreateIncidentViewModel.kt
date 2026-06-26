@@ -215,7 +215,7 @@ class CreateIncidentViewModel(
             return
         }
 
-        if (state.hasInjuredPerson && state.injuredEmployees.isEmpty()) {
+        if (state.hasInjuredPerson == true && state.injuredEmployees.isEmpty()) {
             _uiState.value = state.copy(error = "Injured Person Details is required")
             return
         }
@@ -225,11 +225,23 @@ class CreateIncidentViewModel(
             return
         }
 
-        val incidentTime = formatDate(
-            state.incidentTime,
-            inputPattern = "HH:mm",
-            outputPattern = "HH:mm:ss"
-        )
+        val incidentTime = try {
+            val cleanTime = state.incidentTime.replace(" : ", ":")
+            val parts = cleanTime.split(":", " ")
+            if (parts.size >= 3) {
+                var h = parts[0].toInt()
+                val m = parts[1]
+                val amPm = parts[2]
+                if (amPm.equals("PM", ignoreCase = true) && h < 12) h += 12
+                if (amPm.equals("AM", ignoreCase = true) && h == 12) h = 0
+                "${h.toString().padStart(2, '0')}:$m:00"
+            } else {
+                state.incidentTime
+            }
+        } catch (e: Exception) {
+            state.incidentTime
+        }
+
         val dateInstantStr = state.incidentDateMillis?.let {
             kotlinx.datetime.Instant.fromEpochMilliseconds(it).toString()
         } ?: ""
@@ -243,11 +255,7 @@ class CreateIncidentViewModel(
         } else ""
 
         val incidentDate = if (dateOnlyStr.isNotEmpty() && incidentTime.isNotEmpty()) {
-            formatDate(
-                "$dateOnlyStr $incidentTime",
-                inputPattern = "yyyy-MM-dd HH:mm:ss",
-                outputPattern = "yyyy-MM-dd HH:mm:ss"
-            )
+            "$dateOnlyStr $incidentTime"
         } else ""
 
         val formattedCreatedAt = formatDate(
@@ -256,13 +264,11 @@ class CreateIncidentViewModel(
             outputPattern = "yyyy-MM-dd HH:mm:ss"
         )
 
-        println(
-            "Incident Time: ${state.incidentTime}, Incident Date: ${state.incidentDateMillis.toString()}, Created At: ${formattedCreatedAt}"
-        )
+
 
         val request = AddIncidentRequest(
             corrections = state.immediateCorrections,
-            facilitiesId = state.selectedProject.groupId?.toString() ?: "",
+            facilitiesId = state.selectedProject?.groupId?.toString() ?: "",
             incidentType = state.incidentTypes,
             injuredEmployees = state.injuredEmployees.map {
                 InjuredEmployeeRequest(
@@ -299,11 +305,7 @@ class CreateIncidentViewModel(
             when (result) {
                 is NetworkResult.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
-                    if (result.data?.hasError == false) {
-                        onSuccess()
-                    } else {
-                        _uiState.update { it.copy(error = result.data?.message ?: "Failed to publish incident") }
-                    }
+                    onSuccess()
                 }
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.message ?: "Failed to publish incident") }
