@@ -204,14 +204,34 @@ class AuthApiServiceImpl(
         }
     }
 
-    override suspend fun getGeneralContents(request: org.example.project.data.model.GeneralContentsRequest): NetworkResult<org.example.project.data.model.GeneralContentsResponse> = safeApiCall {
-        httpClient.post(ApiEndpoints.GENERAL_CONTENTS) {
+
+
+    override suspend fun generateIncidentPdf(request: org.example.project.data.model.GenerateIncidentPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_INCIDENT_PDF) {
             jsonBody(request)
         }
     }
 
+    override suspend fun generateObservationPdf(request: org.example.project.data.model.GenerateObservationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_OBSERVATION_PDF) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generateViolationPdf(request: org.example.project.data.model.GenerateViolationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_VIOLATION_PDF) {
+            jsonBody(request)
+        }
+    }
+    
     override suspend fun changePassword(request: org.example.project.data.model.ChangePasswordRequest): NetworkResult<CommonModelResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.CHANGE_PASSWORD) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getGeneralContents(request: org.example.project.data.model.GeneralContentsRequest): NetworkResult<org.example.project.data.model.GeneralContentsResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERAL_CONTENTS) {
             jsonBody(request)
         }
     }
@@ -318,6 +338,114 @@ class AuthApiServiceImpl(
         request: org.example.project.data.model.ViolationDetailRequest
     ): NetworkResult<org.example.project.data.model.ViolationData> = safeApiCall {
         httpClient.post(ApiEndpoints.VIOLATION_DETAIL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getInspectionList(
+        request: org.example.project.data.model.InspectionListRequest
+    ): NetworkResult<List<org.example.project.data.model.InspectionData>> = safeApiCall {
+        httpClient.post(ApiEndpoints.INSPECTION_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getPreTaskList(
+        request: org.example.project.data.model.PreTaskListRequest
+    ): NetworkResult<List<org.example.project.data.model.PreTaskData>> = safeApiCall {
+        httpClient.post(ApiEndpoints.PRE_TASK_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getPreTaskContent(
+        request: org.example.project.data.model.PreTaskContentRequest
+    ): NetworkResult<org.example.project.data.model.PreTaskContentResponseData> {
+        return safeApiCall {
+            httpClient.post(ApiEndpoints.PRE_TASK_CONTENT) {
+                jsonBody(request)
+            }
+        }
+    }
+
+    override suspend fun createPreTask(
+        request: org.example.project.data.model.CreatePreTaskRequest
+    ): NetworkResult<org.example.project.data.model.CreatePreTaskResponseData> {
+        return safeApiCall {
+            httpClient.post(ApiEndpoints.PRE_TASK_CREATE) {
+                jsonBody(request)
+            }
+        }
+    }
+
+    override suspend fun generateInspectionExcel(
+        request: org.example.project.data.model.InspectionListRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_INSPECTION_EXCEL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generateIncidentExcel(
+        request: org.example.project.data.model.IncidentRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_INCIDENT_EXCEL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generateObservationExcel(
+        request: org.example.project.data.model.ObservationRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_OBSERVATION_EXCEL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generateViolationExcel(
+        request: org.example.project.data.model.ViolationListRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_VIOLATION_EXCEL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun createViolation(
+        request: org.example.project.data.model.CreateViolationRequest
+    ): NetworkResult<org.example.project.data.model.CreateViolationResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.CREATE_VIOLATION) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getAuditItems(): NetworkResult<org.example.project.data.model.AuditItemsResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.AUDIT_ITEMS) {
+            jsonBody(emptyMap<String, String>()) // Assuming no body params as per spec
+        }
+    }
+
+    override suspend fun getStaticEquipmentsList(
+        request: org.example.project.data.model.StaticEquipmentListRequest
+    ): NetworkResult<org.example.project.data.model.StaticEquipmentListResponse> {
+        return safeApiCall {
+            httpClient.post(ApiEndpoints.STATIC_EQUIPMENTS_LIST) {
+                jsonBody(request)
+            }
+        }
+    }
+
+    override suspend fun addInspection(
+        request: org.example.project.data.model.AddInspectionRequest
+    ): NetworkResult<org.example.project.data.model.AddInspectionResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.ADD_INSPECTION) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getInspectionDetail(
+        request: org.example.project.data.model.InspectionDetailRequest
+    ): NetworkResult<org.example.project.data.model.InspectionDetailResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.INSPECTION_DETAILS) {
             jsonBody(request)
         }
     }

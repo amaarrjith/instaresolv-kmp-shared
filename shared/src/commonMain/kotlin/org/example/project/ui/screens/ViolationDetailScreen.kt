@@ -16,6 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,8 +38,10 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
+import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import kotlin.time.Clock
 
 @Composable
 fun ViolationDetailScreen(
@@ -46,6 +51,25 @@ fun ViolationDetailScreen(
 ) {
     val viewModel: ViolationDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    var previewImageUrl by remember { mutableStateOf<String?>(null) }
+
+    val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+
+    LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "Violation_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setPdfToastMessage("Downloading Violation Report")
+            } catch (e: Exception) {
+                // Handle error
+            }
+            viewModel.clearPdfUrl()
+        }
+    }
 
     LaunchedEffect(violationId) {
         viewModel.loadViolationDetail(violationId)
@@ -68,7 +92,7 @@ fun ViolationDetailScreen(
                     ) {
                         AppBorderButton(
                             title = "Generate PDF",
-                            onClick = { },
+                            onClick = { viewModel.generatePdf(violationId) },
                             modifier = Modifier.weight(1f)
                         )
                         Row(
@@ -112,18 +136,43 @@ fun ViolationDetailScreen(
                     )
                 }
                 uiState.detail != null -> {
-                    ViolationDetailContent(detail = uiState.detail!!)
+                    ViolationDetailContent(
+                        detail = uiState.detail!!,
+                        onImageClick = { previewImageUrl = it }
+                    )
                 }
                 else -> {
                     AppLoader()
                 }
             }
+
+            if (isGeneratingPdf) {
+                org.example.project.ui.components.PdfGenerationLoader()
+            }
+            
+            previewImageUrl?.let { url ->
+                org.example.project.ui.components.AppImagePreviewDialog(
+                    imageUrl = url,
+                    onDismiss = { previewImageUrl = null }
+                )
+            }
+            
+            ToastHost(
+                visible = pdfToastMessage != null,
+                message = pdfToastMessage.orEmpty(),
+                onDismiss = { viewModel.clearPdfToastMessage() },
+                type = org.example.project.utilites.ToastType.Success,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
         }
     }
 }
 
 @Composable
-fun ViolationDetailContent(detail: ViolationData) {
+fun ViolationDetailContent(
+    detail: ViolationData,
+    onImageClick: (String) -> Unit
+) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -323,45 +372,6 @@ fun ViolationDetailContent(detail: ViolationData) {
 
         Spacer(Modifier.height(24.dp))
 
-        // Audio Placeholder (Simple View)
-        Row(
-            modifier = Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xFFFFF0EC)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(AppColors.Primary),
-                contentAlignment = Alignment.Center
-            ) {
-                // simple play icon placeholder (could use a real icon if available)
-                Box(modifier = Modifier.size(10.dp).background(Color.White))
-            }
-            
-            // Audio wave placeholder (just text for now, could use a real wave view)
-            Text(
-                text = "||||| ||||||| |||||",
-                color = AppColors.Primary,
-                style = textStyle(size = 12.sp, weight = FontWeight.Bold)
-            )
-            
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 16.dp)) {
-                Text(
-                    text = "0:05",
-                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                    color = AppColors.Black
-                )
-                Spacer(Modifier.width(8.dp))
-                // Volume icon placeholder
-                Box(modifier = Modifier.size(16.dp).background(Color.Gray))
-            }
-        }
-        
-        Spacer(Modifier.height(24.dp))
-
         // Uploaded Images
         Text(
             text = "Uploaded Images",
@@ -380,7 +390,8 @@ fun ViolationDetailContent(detail: ViolationData) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onImageClick(img.image) },
                                 contentScale = ContentScale.Crop
                             )
                             Spacer(Modifier.height(8.dp))

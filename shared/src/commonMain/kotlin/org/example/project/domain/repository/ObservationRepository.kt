@@ -19,4 +19,12 @@ interface ObservationRepository {
     suspend fun closeObservation(
         request: org.example.project.data.model.CloseObservationRequest
     ): NetworkResult<kotlinx.serialization.json.JsonObject>
+
+    suspend fun generateObservationExcel(
+        request: ObservationRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun generatePdf(
+        request: org.example.project.data.model.GenerateObservationPdfRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
 }

@@ -40,6 +40,10 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlin.time.Clock
 
 @Composable
 fun IncidentDetailScreen(
@@ -49,6 +53,27 @@ fun IncidentDetailScreen(
 ) {
     val viewModel: IncidentDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    var showSharePopup by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    
+    val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+
+    LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "Incident_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setPdfToastMessage("Downloading Incident Report")
+            } catch (e: Exception) {
+                // Handle error
+            }
+            viewModel.clearPdfUrl()
+        }
+    }
 
     LaunchedEffect(incidentId) {
         viewModel.loadIncidentDetail(incidentId)
@@ -71,12 +96,12 @@ fun IncidentDetailScreen(
                     ) {
                         AppBorderButton(
                             title = "Generate PDF",
-                            onClick = { },
+                            onClick = { viewModel.generatePdf(incidentId) },
                             modifier = Modifier.weight(1f)
                         )
                         Row(
                             modifier = Modifier.weight(1f)
-                                .clickable { }
+                                .clickable { showSharePopup = true }
                                 .height(48.dp)
                                 .padding(horizontal = 8.dp),
                             horizontalArrangement = Arrangement.Center,
@@ -115,15 +140,48 @@ fun IncidentDetailScreen(
                     )
                 }
                 is IncidentDetailUiState.Success -> {
-                    IncidentDetailContent(detail = state.detail)
+                    IncidentDetailContent(
+                        detail = state.detail,
+                        onImageClick = { previewImageUrl = it }
+                    )
                 }
             }
         }
+        
+        if (showSharePopup) {
+            org.example.project.ui.components.SharePopupBottomSheet(
+                onDismiss = { showSharePopup = false },
+                onTxtClick = { /* Handle TXT share */ },
+                onPdfClick = { viewModel.generatePdf(incidentId) }
+            )
+        }
+        
+        if (isGeneratingPdf) {
+            org.example.project.ui.components.PdfGenerationLoader()
+        }
+        
+        previewImageUrl?.let { url ->
+            org.example.project.ui.components.AppImagePreviewDialog(
+                imageUrl = url,
+                onDismiss = { previewImageUrl = null }
+            )
+        }
+        
+//        ToastHost(
+//            visible = pdfToastMessage != null,
+//            message = pdfToastMessage.orEmpty(),
+//            onDismiss = { viewModel.clearPdfToastMessage() },
+//            type = org.example.project.utilites.ToastType.Success,
+//            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+//        )
     }
 }
 
 @Composable
-fun IncidentDetailContent(detail: IncidentDetailResponse) {
+fun IncidentDetailContent(
+    detail: IncidentDetailResponse,
+    onImageClick: (String) -> Unit
+) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -384,14 +442,14 @@ fun IncidentDetailContent(detail: IncidentDetailResponse) {
                         detail.injuredEmployees.forEachIndexed { index, employee ->
                             Row(
                                 modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.width(200.dp)) {
                                     Text(
                                         employee.employeeName ?: "",
                                         style = textStyle(
-                                            size = 14.sp,
+                                            size = 13.sp,
                                             weight = FontWeight.SemiBold
                                         ),
                                         color = AppColors.Black
@@ -399,7 +457,7 @@ fun IncidentDetailContent(detail: IncidentDetailResponse) {
                                     Text(
                                         employee.employeeCode ?: "",
                                         style = textStyle(
-                                            size = 12.sp,
+                                            size = 11.sp,
                                             weight = FontWeight.Normal
                                         ),
                                         color = AppColors.TextGray
@@ -409,7 +467,7 @@ fun IncidentDetailContent(detail: IncidentDetailResponse) {
                                     employee.companyName ?: "",
                                     modifier = Modifier.width(150.dp),
                                     style = textStyle(
-                                        size = 14.sp,
+                                        size = 13.sp,
                                         weight = FontWeight.Normal
                                     ),
                                     color = AppColors.Black
@@ -418,7 +476,7 @@ fun IncidentDetailContent(detail: IncidentDetailResponse) {
                                     employee.profession ?: "",
                                     modifier = Modifier.width(150.dp),
                                     style = textStyle(
-                                        size = 14.sp,
+                                        size = 13.sp,
                                         weight = FontWeight.Normal
                                     ),
                                     color = AppColors.Black
@@ -446,7 +504,11 @@ fun IncidentDetailContent(detail: IncidentDetailResponse) {
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = detail.translatedDescription ?: detail.description ?: "-",
+            text = detail.translatedDescription
+                ?.takeIf { it.isNotBlank() }
+                ?: detail.description
+                    ?.takeIf { it.isNotBlank() }
+                ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
             color = AppColors.Black
         )
@@ -461,7 +523,11 @@ fun IncidentDetailContent(detail: IncidentDetailResponse) {
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = detail.translatedCorrections ?: detail.corrections ?: "-",
+            text = detail.translatedCorrections
+                ?.takeIf { it.isNotBlank() }
+                ?: detail.corrections
+                    ?.takeIf { it.isNotBlank() }
+                ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
             color = AppColors.Black
         )
@@ -486,7 +552,8 @@ fun IncidentDetailContent(detail: IncidentDetailResponse) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onImageClick(img.image) },
                                 contentScale = ContentScale.Crop
                             )
                             Spacer(Modifier.height(8.dp))

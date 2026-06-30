@@ -18,10 +18,17 @@ sealed class Screens(val route: String) {
     object ObservationDetailsScreenWithArgs : Screens("observation_details_screen/{observationId}")
 
     // Action Overview Modules
+    object PreTaskListScreen : Screens("pre_task_list_screen")
+    object CreatePreTaskScreen : Screens("create_pre_task_screen")
     object AuditInspectionListScreen : Screens("audit_inspection_list_screen")
+    object CreateInspectionScreen : Screens("create_inspection_screen")
+    object CreateInspectionScreenWithArgs : Screens("create_inspection_screen/{inspectionTypeId}/{inspectionTypeName}")
+    object InspectionDetailScreen : Screens("inspection_detail_screen")
+    object InspectionDetailScreenWithArgs : Screens("inspection_detail_screen/{inspectionId}")
     object PermitToWorkListScreen : Screens("permit_to_work_list_screen")
     object IncidentListScreen : Screens("incident_list_screen")
     object ViolationListScreen : Screens("violation_list_screen")
+    object CreateViolationScreen : Screens("create_violation_screen")
     object TrainingListScreen : Screens("training_list_screen")
     object PendingActionListScreen : Screens("pending_action_list_screen")
     object ProfileScreen : Screens("profile_screen")

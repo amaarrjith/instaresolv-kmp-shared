@@ -3,6 +3,7 @@ package org.example.project.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,7 +49,8 @@ import kotlin.collections.forEach
 
 @Composable
 fun BriefsScreen(
-    actionsOverview: ActionsOverview? = null
+    actionsOverview: ActionsOverview? = null,
+    onPreTaskClicked: () -> Unit = {}
 ) {
     val items = listOf(
         BriefOverviewItem(BriefOverview.PRE_TASK, actionsOverview?.preTaskCount),
@@ -105,7 +107,12 @@ fun BriefsScreen(
                                 Box(modifier = Modifier.weight(1f)) {
                                     BriefOverviewCard(
                                         action.type,
-                                        action.count ?: 0
+                                        action.count ?: 0,
+                                        onClick = {
+                                            if (action.type == BriefOverview.PRE_TASK) {
+                                                onPreTaskClicked()
+                                            }
+                                        }
                                     )
                                 }
                             }
@@ -151,7 +158,8 @@ data class BriefOverviewItem(
 @Composable
 fun BriefOverviewCard(
     action: BriefOverview,
-    count: Int
+    count: Int,
+    onClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -172,6 +180,7 @@ fun BriefOverviewCard(
                 color = Color(0xFFE5E5E5),
                 shape = RoundedCornerShape(16.dp)
             )
+            .clickable { onClick() }
             .padding(16.dp)
     ) {
         Column {

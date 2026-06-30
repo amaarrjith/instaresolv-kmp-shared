@@ -14,6 +14,8 @@ import org.example.project.domain.repository.PendingActionRepository
 import org.example.project.domain.repository.PendingActionRepositoryImpl
 import org.example.project.domain.repository.ObservationRepository
 import org.example.project.domain.repository.ObservationRepositoryImpl
+import org.example.project.domain.repository.InspectionRepository
+import org.example.project.domain.repository.InspectionRepositoryImpl
 import org.example.project.domain.validation.LoginValidator
 import org.example.project.domain.validation.OTPValidator
 import org.example.project.domain.validation.RegisterValidator
@@ -44,6 +46,7 @@ import org.example.project.ui.screens.IncidentListViewModel
 import org.example.project.ui.screens.ViolationListViewModel
 import org.example.project.domain.repository.ViolationRepository
 import org.example.project.domain.repository.ViolationRepositoryImpl
+import org.example.project.ui.screens.CreateViolationViewModel
 
 val appModule = module {
     factory { createHttpClient(get()) }
@@ -80,6 +83,10 @@ val appModule = module {
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
     factory { ObservationListViewModel(get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
+    factory<InspectionRepository> { InspectionRepositoryImpl(get()) }
+    factory { org.example.project.ui.screens.AuditInspectionListViewModel(get()) }
+    factory { org.example.project.ui.screens.CreateInspectionViewModel(get(), get()) }
+    factory { org.example.project.ui.screens.InspectionDetailViewModel(get()) }
     factory { IncidentListViewModel(get()) }
     factory<IncidentRepository> { IncidentRepositoryImpl(get()) }
     factory { org.example.project.ui.screens.IncidentDetailViewModel(get()) }
@@ -87,6 +94,11 @@ val appModule = module {
     factory { ViolationListViewModel(get(), get()) }
     factory<ViolationRepository> { ViolationRepositoryImpl(get()) }
     factory { org.example.project.ui.screens.ViolationDetailViewModel(get()) }
+    factory { CreateViolationViewModel(get(), get(), get()) }
+    
+    factory<org.example.project.domain.repository.PreTaskRepository> { org.example.project.domain.repository.PreTaskRepositoryImpl(get()) }
+    factory { org.example.project.ui.screens.PreTaskListViewModel(get()) }
+    factory { org.example.project.ui.screens.CreatePreTaskViewModel(get(), get(), get()) }
     
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }

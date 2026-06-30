@@ -58,8 +58,10 @@ import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppSearchBar
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
+import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,23 +73,30 @@ fun ViolationListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedViolationId by remember { mutableStateOf<Int?>(null) }
+    val exportUrl by viewModel.exportUrl.collectAsState()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+
+    LaunchedEffect(exportUrl) {
+        exportUrl?.let { url ->
+            try {
+                val fileName = "Violation_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setExportToastMessage("Downloading Violation Report")
+            } catch(e: Exception) {
+                uiState.errorExcel = e.message
+            }
+            viewModel.clearExportUrl()
+        }
+    }
 
     Scaffold(
         containerColor = Color.White,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* TODO Handle Download */ },
-                shape = CircleShape,
-                containerColor = AppColors.Primary,
-                contentColor = Color.White
-            ) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_download),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(Color.White),
-                    modifier = Modifier.padding(bottom = 5.dp)
-                )
-            }
+            val isExporting by viewModel.isExporting.collectAsState()
+            org.example.project.ui.components.excel.CommonExcelButton(
+                isLoading = isExporting,
+                onClick = { viewModel.exportToExcel() }
+            )
         },
         topBar = {
             Row(
@@ -120,6 +129,8 @@ fun ViolationListScreen(
                 .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
+            val exportToastMessage by viewModel.exportToastMessage.collectAsState()
+            
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -245,6 +256,22 @@ fun ViolationListScreen(
                     }
                 }
             }
+
+            ToastHost(
+                visible = uiState.errorExcel != null,
+                message = uiState.errorExcel ?: "",
+                onDismiss = { uiState.errorExcel = null },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
+                visible = exportToastMessage != null,
+                message = exportToastMessage.orEmpty(),
+                onDismiss = { viewModel.clearExportToast() },
+                type = org.example.project.utilites.ToastType.Success,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
         }
     }
 }

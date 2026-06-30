@@ -9,20 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 
-@Composable
-fun AuditInspectionListScreen(
-    onBackClicked: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .clickable {
-                onBackClicked()
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Audit & Inspections")
-    }
-}
 
 @Composable
 fun PermitToWorkListScreen(

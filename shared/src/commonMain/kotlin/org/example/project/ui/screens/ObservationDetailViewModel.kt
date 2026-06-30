@@ -31,6 +31,15 @@ class ObservationDetailViewModel(
     private val _uiState = MutableStateFlow<ObservationDetailUiState>(ObservationDetailUiState.Idle)
     val uiState: StateFlow<ObservationDetailUiState> = _uiState
 
+    private val _isGeneratingPdf = MutableStateFlow(false)
+    val isGeneratingPdf: StateFlow<Boolean> = _isGeneratingPdf
+
+    private val _pdfUrl = MutableStateFlow<String?>(null)
+    val pdfUrl: StateFlow<String?> = _pdfUrl
+
+    private val _pdfToastMessage = MutableStateFlow<String?>(null)
+    val pdfToastMessage: StateFlow<String?> = _pdfToastMessage
+
     fun loadObservationDetail(observationId: Int, notificationId: Int = -1) {
         viewModelScope.launch {
             _uiState.value = ObservationDetailUiState.Loading
@@ -83,5 +92,39 @@ class ObservationDetailViewModel(
     
     fun resetCloseState() {
         _closeUiState.value = CloseObservationState.Idle
+    }
+
+    fun generatePdf(observationId: Int) {
+        viewModelScope.launch {
+            _isGeneratingPdf.value = true
+            val request = org.example.project.data.model.GenerateObservationPdfRequest(observationId = observationId)
+            when (val result = observationRepository.generatePdf(request)) {
+                is NetworkResult.Success -> {
+                    _isGeneratingPdf.value = false
+                    val url = result.data?.pdfUrl ?: result.data?.excelUrl
+                    if (!url.isNullOrBlank()) {
+                        _pdfUrl.value = url
+                    } else {
+                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _isGeneratingPdf.value = false
+                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                }
+            }
+        }
+    }
+
+    fun clearPdfUrl() {
+        _pdfUrl.value = null
+    }
+
+    fun setPdfToastMessage(message: String) {
+        _pdfToastMessage.value = message
+    }
+
+    fun clearPdfToastMessage() {
+        _pdfToastMessage.value = null
     }
 }

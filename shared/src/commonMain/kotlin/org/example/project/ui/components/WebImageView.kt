@@ -13,15 +13,17 @@ fun WebImageView(
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.FillBounds
 ) {
+    val modelUrl = imageUrl?.takeIf { it.isNotBlank() }
+
     AsyncImage(
-        model = imageUrl,
+        model = modelUrl,
         contentDescription = null,
         modifier = modifier,
         contentScale = contentScale,
         error = painterResource(Res.drawable.ic_placeholder_project),
         placeholder = painterResource(Res.drawable.ic_placeholder_project),
         onError = {
-            println("`ic_placeholder_project` load error: ${it.result.throwable}")
+            println("Image load error for url ($modelUrl): ${it.result.throwable}")
         }
     )
 }

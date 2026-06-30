@@ -7,6 +7,13 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import io.ktor.client.statement.bodyAsText
 import org.example.project.data.model.CommonResponse
 
 fun HttpRequestBuilder.jsonBody(body: Any) {
@@ -22,14 +29,25 @@ suspend inline fun <reified T> safeApiCall(
         val status = response.status
         when {
             status.isSuccess() -> {
-                val body = response.body<CommonResponse<T>>()
-                if (body.hasError) {
+                val bodyText = response.bodyAsText()
+                val json = Json { ignoreUnknownKeys = true; isLenient = true }
+                val jsonElement = try {
+                    json.parseToJsonElement(bodyText)
+                } catch (e: Exception) {
+                    null
+                }
+                
+                val hasError = jsonElement?.jsonObject?.get("hasError")?.jsonPrimitive?.booleanOrNull == true
+                if (hasError) {
+                    val errorCode = jsonElement.jsonObject["errorCode"]?.jsonPrimitive?.intOrNull
+                    val message = jsonElement.jsonObject["message"]?.jsonPrimitive?.contentOrNull ?: "Something went wrong"
                     NetworkResult.Error(
-                        message = body.message ?: "Something went wrong",
-                        type = mapErrorCodeToType(body.errorCode),
-                        errorCode = body.errorCode
+                        message = message,
+                        type = mapErrorCodeToType(errorCode),
+                        errorCode = errorCode
                     )
                 } else {
+                    val body = json.decodeFromString<CommonResponse<T>>(bodyText)
                     val data = body.response
                     if (data != null) {
                         NetworkResult.Success(data)

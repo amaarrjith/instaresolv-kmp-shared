@@ -65,6 +65,7 @@ import org.example.project.utilites.ToastType
 import org.example.project.ui.components.AppStatusDialog
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import kotlin.time.Clock
 
 @Composable
 fun ObservationDetailScreen(
@@ -81,6 +82,25 @@ fun ObservationDetailScreen(
     val closeImages = remember { androidx.compose.runtime.mutableStateListOf(ObservationImage()) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    
+    val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+
+    LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "Observation_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setPdfToastMessage("Downloading Observation Report")
+            } catch (e: Exception) {
+                // Handle error
+            }
+            viewModel.clearPdfUrl()
+        }
+    }
 
     LaunchedEffect(observationId) {
         viewModel.loadObservationDetail(observationId)
@@ -137,7 +157,7 @@ fun ObservationDetailScreen(
                             AppBorderButton(
                                 title = "Generate PDF",
                                 onClick = {
-
+                                    viewModel.generatePdf(observationId)
                                 },
                                 modifier = Modifier.weight(1f)
                             )
@@ -189,7 +209,8 @@ fun ObservationDetailScreen(
                         onCloseObservationClick = { isClosingObservation = true },
                         closeDescription = closeDescription,
                         onDescriptionChange = { closeDescription = it },
-                        closeImages = closeImages
+                        closeImages = closeImages,
+                        onImageClick = { previewImageUrl = it }
                     )
                 }
             }
@@ -199,7 +220,26 @@ fun ObservationDetailScreen(
                 message = errorMessage ?: "",
                 onDismiss = { errorMessage = null },
                 type = ToastType.Error,
-                modifier = Modifier.padding(horizontal = 22.dp)
+                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+            
+            if (isGeneratingPdf) {
+                org.example.project.ui.components.PdfGenerationLoader()
+            }
+            
+            previewImageUrl?.let { url ->
+                org.example.project.ui.components.AppImagePreviewDialog(
+                    imageUrl = url,
+                    onDismiss = { previewImageUrl = null }
+                )
+            }
+            
+            ToastHost(
+                visible = pdfToastMessage != null,
+                message = pdfToastMessage.orEmpty(),
+                onDismiss = { viewModel.clearPdfToastMessage() },
+                type = ToastType.Success,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )
         }
         
@@ -226,7 +266,8 @@ fun ObservationDetailContent(
     onCloseObservationClick: () -> Unit,
     closeDescription: String,
     onDescriptionChange: (String) -> Unit,
-    closeImages: androidx.compose.runtime.snapshots.SnapshotStateList<ObservationImage>
+    closeImages: androidx.compose.runtime.snapshots.SnapshotStateList<ObservationImage>,
+    onImageClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -339,7 +380,7 @@ fun ObservationDetailContent(
                     observationImages = closeImages
                 )
             } else {
-                ObservationDetailInfo(detail, onCloseObservationClick)
+                ObservationDetailInfo(detail, onCloseObservationClick, onImageClick)
             }
         }
     }
@@ -348,7 +389,8 @@ fun ObservationDetailContent(
 @Composable
 fun ObservationDetailInfo(
     detail: ObservationDetailResponse,
-    onCloseObservationClick: () -> Unit
+    onCloseObservationClick: () -> Unit,
+    onImageClick: (String) -> Unit
 ) {
     Column {
         Text(
@@ -498,7 +540,8 @@ fun ObservationDetailInfo(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onImageClick(img.image) },
                                 contentScale = ContentScale.Crop
                             )
                             Spacer(Modifier.height(8.dp))

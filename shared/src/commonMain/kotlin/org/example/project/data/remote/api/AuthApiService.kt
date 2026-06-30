@@ -202,4 +202,58 @@ interface AuthApiService {
     suspend fun getViolationDetail(
         request: org.example.project.data.model.ViolationDetailRequest
     ): NetworkResult<org.example.project.data.model.ViolationData>
+
+    suspend fun getPreTaskList(
+        request: org.example.project.data.model.PreTaskListRequest
+    ): NetworkResult<List<org.example.project.data.model.PreTaskData>>
+
+    suspend fun getPreTaskContent(
+        request: org.example.project.data.model.PreTaskContentRequest
+    ): NetworkResult<org.example.project.data.model.PreTaskContentResponseData>
+
+    suspend fun createPreTask(
+        request: org.example.project.data.model.CreatePreTaskRequest
+    ): NetworkResult<org.example.project.data.model.CreatePreTaskResponseData>
+
+    suspend fun generateIncidentPdf(request: org.example.project.data.model.GenerateIncidentPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generateObservationPdf(request: org.example.project.data.model.GenerateObservationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generateViolationPdf(request: org.example.project.data.model.GenerateViolationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun getInspectionList(
+        request: org.example.project.data.model.InspectionListRequest
+    ): NetworkResult<List<org.example.project.data.model.InspectionData>>
+
+    suspend fun generateInspectionExcel(
+        request: org.example.project.data.model.InspectionListRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun generateIncidentExcel(
+        request: org.example.project.data.model.IncidentRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun generateObservationExcel(
+        request: org.example.project.data.model.ObservationRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun generateViolationExcel(
+        request: org.example.project.data.model.ViolationListRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun createViolation(
+        request: org.example.project.data.model.CreateViolationRequest
+    ): NetworkResult<org.example.project.data.model.CreateViolationResponse>
+
+    suspend fun getAuditItems(): NetworkResult<org.example.project.data.model.AuditItemsResponse>
+
+    suspend fun getStaticEquipmentsList(
+        request: org.example.project.data.model.StaticEquipmentListRequest
+    ): NetworkResult<org.example.project.data.model.StaticEquipmentListResponse>
+
+    suspend fun addInspection(
+        request: org.example.project.data.model.AddInspectionRequest
+    ): NetworkResult<org.example.project.data.model.AddInspectionResponse>
+
+    suspend fun getInspectionDetail(
+        request: org.example.project.data.model.InspectionDetailRequest
+    ): NetworkResult<org.example.project.data.model.InspectionDetailResponse>
 }

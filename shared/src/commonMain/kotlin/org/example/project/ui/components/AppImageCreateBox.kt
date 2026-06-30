@@ -45,6 +45,7 @@ fun AppImageCreateBox(
     modifier: Modifier = Modifier
 ) {
     val showPicker = remember { mutableStateOf(false) }
+    val showPreview = remember { mutableStateOf(false) }
 
     val isUploading = remember { mutableStateOf(false) }
 
@@ -64,6 +65,13 @@ fun AppImageCreateBox(
         width = strokeWidthPx,
         pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashLengthPx, gapLengthPx), 0f)
     )
+
+    if (showPreview.value && !imageUrl.isNullOrEmpty()) {
+        org.example.project.ui.components.AppImagePreviewDialog(
+            imageUrl = imageUrl,
+            onDismiss = { showPreview.value = false }
+        )
+    }
 
     Box(
         modifier = modifier
@@ -115,7 +123,8 @@ fun AppImageCreateBox(
                             imageUrl = imageUrl,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clip(RoundedCornerShape(8.dp)),
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { showPreview.value = true },
                             contentScale = ContentScale.Crop
                         )
                     }

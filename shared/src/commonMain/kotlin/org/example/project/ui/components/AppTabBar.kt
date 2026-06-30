@@ -69,7 +69,8 @@ fun AppTabBar(
     onTermsOfUseClick: () -> Unit = {},
     onPrivacyPolicyClick: () -> Unit = {},
     onDeleteAccountClick: () -> Unit = {},
-    onPendingActionViewAllClick: () -> Unit = {}
+    onPendingActionViewAllClick: () -> Unit = {},
+    onPreTaskClicked: () -> Unit = {}
 ) {
 
     val selectedIndex = rememberSaveable { mutableStateOf(0) }
@@ -200,7 +201,7 @@ fun AppTabBar(
                         )
                         2 -> BriefsScreen(
                             actionsOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
-//
+                            onPreTaskClicked = onPreTaskClicked
                         )
                         3 -> SettingsScreen(
                             onChangePasswordClick = onChangePasswordClick,

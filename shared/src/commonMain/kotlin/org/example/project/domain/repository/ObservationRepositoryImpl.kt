@@ -34,4 +34,16 @@ class ObservationRepositoryImpl(
     ): NetworkResult<kotlinx.serialization.json.JsonObject> {
         return apiService.closeObservation(request)
     }
+
+    override suspend fun generateObservationExcel(
+        request: ObservationRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generateObservationExcel(request)
+    }
+
+    override suspend fun generatePdf(
+        request: org.example.project.data.model.GenerateObservationPdfRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generateObservationPdf(request)
+    }
 }

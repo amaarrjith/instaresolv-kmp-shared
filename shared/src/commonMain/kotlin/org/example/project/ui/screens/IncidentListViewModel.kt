@@ -24,8 +24,10 @@ data class IncidentListState(
     val error: String? = null,
     val isLastPage: Boolean = false,
     val filterData: FilterContentData? = null,
-    val appliedFilterState: AppFilterState = AppFilterState()
-)
+    val appliedFilterState: AppFilterState = AppFilterState(),
+    var errorExcel: String? = null
+) {
+}
 
 class IncidentListViewModel(
     private val repository: IncidentRepository
@@ -33,6 +35,27 @@ class IncidentListViewModel(
 
     private val _uiState = MutableStateFlow(IncidentListState())
     val uiState: StateFlow<IncidentListState> = _uiState.asStateFlow()
+
+    private val _isExporting = MutableStateFlow(false)
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    private val _exportToastMessage = MutableStateFlow<String?>(null)
+    val exportToastMessage: StateFlow<String?> = _exportToastMessage.asStateFlow()
+
+    private val _exportUrl = MutableStateFlow<String?>(null)
+    val exportUrl: StateFlow<String?> = _exportUrl.asStateFlow()
+
+    fun clearExportToast() {
+        _exportToastMessage.value = null
+    }
+
+    fun clearExportUrl() {
+        _exportUrl.value = null
+    }
+
+    fun setExportToastMessage(message: String) {
+        _exportToastMessage.value = message
+    }
 
     private var currentPage = 1
     private val limit = 20
@@ -128,6 +151,42 @@ class IncidentListViewModel(
                     }
                 }
             }
+        }
+    }
+
+    fun exportToExcel() {
+        viewModelScope.launch {
+            _isExporting.value = true
+            val currentState = _uiState.value
+            val appliedFilters = currentState.appliedFilterState
+
+            val projectIds = appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            val reportedByPersons = appliedFilters.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }
+            val incidentTypes: List<Int>? = appliedFilters.selectedIncidentTypes
+
+            val request = IncidentRequest(
+                searchKey = currentState.searchKey,
+                pageNumber = 1,
+                limit = 1000, // Export usually doesn't need pagination, or limit could be large
+                sortType = 1,
+                projectIds = if (projectIds.isNotEmpty()) projectIds else null,
+                reportedByPersons = if (reportedByPersons.isNotEmpty()) reportedByPersons else null,
+                incidentTypes = if (incidentTypes?.isNotEmpty() == true) incidentTypes else null,
+                openDate = formatMillis(appliedFilters.dateOpenMillis),
+                endDate = formatMillis(appliedFilters.dateCloseMillis)
+            )
+
+            when (val result = repository.generateIncidentExcel(request)) {
+                is NetworkResult.Success -> {
+                    result.data?.excelUrl?.takeIf { it.isNotBlank() }?.let {
+                        _exportUrl.value = it
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _exportToastMessage.value = result.message ?: "Export failed"
+                }
+            }
+            _isExporting.value = false
         }
     }
 

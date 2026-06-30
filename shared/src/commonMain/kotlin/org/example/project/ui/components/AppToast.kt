@@ -101,6 +101,7 @@ fun ToastView(
     Box(
         modifier = Modifier
             .padding(bottom = 40.dp)
+//            .padding(horizontal = 22.dp)
             .fillMaxWidth()
             .shadow(
                 elevation = 8.dp,

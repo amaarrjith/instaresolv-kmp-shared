@@ -24,4 +24,12 @@ class IncidentRepositoryImpl(
     override suspend fun getIncidentDetail(request: org.example.project.data.model.IncidentDetailRequest): NetworkResult<org.example.project.data.model.IncidentDetailResponse> {
         return apiService.getIncidentDetail(request)
     }
+
+    override suspend fun generateIncidentExcel(request: org.example.project.data.model.IncidentRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generateIncidentExcel(request)
+    }
+
+    override suspend fun generatePdf(request: org.example.project.data.model.GenerateIncidentPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generateIncidentPdf(request)
+    }
 }

@@ -19,7 +19,7 @@ import org.example.project.ui.OTPVerificationScreen
 import org.example.project.ui.RegisterScreen
 import org.example.project.ui.SplashScreen
 import org.example.project.ui.WelcomeScreen
-import org.example.project.ui.components.AuditInspectionListScreen
+import org.example.project.ui.screens.AuditInspectionListScreen
 import org.example.project.ui.screens.IncidentListScreen
 import org.example.project.ui.components.NotificationListScreen
 import org.example.project.ui.screens.ObservationListScreen
@@ -28,6 +28,7 @@ import org.example.project.ui.screens.CreateIncidentScreen
 import org.example.project.ui.components.PermitToWorkListScreen
 import org.example.project.ui.components.TrainingListScreen
 import org.example.project.ui.screens.ViolationListScreen
+import org.example.project.ui.screens.CreateViolationScreen
 import org.example.project.ui.screens.CreateProjectScreen
 import org.example.project.ui.screens.ProfileScreen
 import org.example.project.ui.screens.ProjectDetailScreen
@@ -185,13 +186,47 @@ fun AppNavigation() {
                 onTermsOfUseClick = { navController.navigate(Screens.TermsOfUseScreen.route) },
                 onPrivacyPolicyClick = { navController.navigate(Screens.PrivacyPolicyScreen.route) },
                 onDeleteAccountClick = { navController.navigate(Screens.DeleteAccountScreen.route) },
-                onPendingActionViewAllClick = { navController.navigate(Screens.PendingActionListScreen.route) }
+                onPendingActionViewAllClick = { navController.navigate(Screens.PendingActionListScreen.route) },
+                onPreTaskClicked = { navController.navigate(Screens.PreTaskListScreen.route) }
+            )
+        }
+        composable(Screens.PreTaskListScreen.route) {
+            org.example.project.ui.screens.PreTaskListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onCreateClicked = { navController.navigate(Screens.CreatePreTaskScreen.route) }
+            )
+        }
+        composable(Screens.CreatePreTaskScreen.route) {
+            org.example.project.ui.screens.CreatePreTaskScreen(
+                onBackClicked = { navController.popBackStack() }
             )
         }
         composable(Screens.AuditInspectionListScreen.route) {
-            AuditInspectionListScreen {
-                navController.popBackStack()
-            }
+            AuditInspectionListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onCreateClicked = { typeId, typeName ->
+                    navController.navigate("${Screens.CreateInspectionScreen.route}/$typeId/$typeName")
+                },
+                onItemClicked = { inspectionId ->
+                    navController.navigate("${Screens.InspectionDetailScreen.route}/$inspectionId")
+                }
+            )
+        }
+        composable(Screens.CreateInspectionScreenWithArgs.route) { backStackEntry ->
+            val inspectionTypeId = backStackEntry.savedStateHandle.get<String>("inspectionTypeId")?.toIntOrNull() ?: -1
+            val inspectionTypeName = backStackEntry.savedStateHandle.get<String>("inspectionTypeName") ?: ""
+            org.example.project.ui.screens.CreateInspectionScreen(
+                inspectionTypeId = inspectionTypeId,
+                inspectionTypeName = inspectionTypeName,
+                onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(Screens.InspectionDetailScreenWithArgs.route) { backStackEntry ->
+            val inspectionId = backStackEntry.savedStateHandle.get<String>("inspectionId")?.toIntOrNull() ?: -1
+            org.example.project.ui.screens.InspectionDetailScreen(
+                inspectionId = inspectionId,
+                onBackClicked = { navController.popBackStack() }
+            )
         }
         composable(Screens.PermitToWorkListScreen.route) {
             PermitToWorkListScreen{
@@ -233,7 +268,12 @@ fun AppNavigation() {
         composable(Screens.ViolationListScreen.route) {
             ViolationListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onCreateClicked = { }
+                onCreateClicked = { navController.navigate(Screens.CreateViolationScreen.route) }
+            )
+        }
+        composable(Screens.CreateViolationScreen.route) {
+            CreateViolationScreen(
+                onBackClicked = { navController.popBackStack() }
             )
         }
         composable(Screens.TrainingListScreen.route) {

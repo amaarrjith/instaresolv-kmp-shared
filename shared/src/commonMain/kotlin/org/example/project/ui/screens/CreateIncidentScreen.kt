@@ -1,5 +1,6 @@
 package org.example.project.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -378,7 +379,7 @@ fun CreateIncidentScreen(
                                             )
                                             Text(
                                                 "Action",
-                                                modifier = Modifier.width(80.dp),
+                                                modifier = Modifier.width(60.dp),
                                                 style = textStyle(
                                                     size = 12.sp,
                                                     weight = FontWeight.Medium
@@ -391,14 +392,14 @@ fun CreateIncidentScreen(
                                         uiState.injuredEmployees.forEachIndexed { index, employee ->
                                             Row(
                                                 modifier = Modifier
-                                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                                    .padding(horizontal = 16.dp, vertical = 8.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Column(modifier = Modifier.width(200.dp)) {
                                                     Text(
                                                         employee.employeeName ?: "",
                                                         style = textStyle(
-                                                            size = 14.sp,
+                                                            size = 13.sp,
                                                             weight = FontWeight.SemiBold
                                                         ),
                                                         color = AppColors.Black
@@ -406,7 +407,7 @@ fun CreateIncidentScreen(
                                                     Text(
                                                         employee.employeeCode ?: "",
                                                         style = textStyle(
-                                                            size = 12.sp,
+                                                            size = 11.sp,
                                                             weight = FontWeight.Normal
                                                         ),
                                                         color = AppColors.TextGray
@@ -416,7 +417,7 @@ fun CreateIncidentScreen(
                                                     employee.companyName ?: "",
                                                     modifier = Modifier.width(150.dp),
                                                     style = textStyle(
-                                                        size = 14.sp,
+                                                        size = 13.sp,
                                                         weight = FontWeight.Normal
                                                     ),
                                                     color = AppColors.Black
@@ -425,28 +426,25 @@ fun CreateIncidentScreen(
                                                     employee.profession ?: "",
                                                     modifier = Modifier.width(150.dp),
                                                     style = textStyle(
-                                                        size = 14.sp,
+                                                        size = 13.sp,
                                                         weight = FontWeight.Normal
                                                     ),
                                                     color = AppColors.Black
                                                 )
                                                 Box(
-                                                    modifier = Modifier.width(80.dp),
-                                                    contentAlignment = Alignment.CenterStart
+                                                    modifier = Modifier.width(60.dp),
+                                                    contentAlignment = Alignment.Center
                                                 ) {
-                                                    IconButton(onClick = {
-                                                        viewModel.onRemoveInjuredEmployee(
-                                                            index
-                                                        )
-                                                    }) {
-                                                        Icon(
-                                                            painter = painterResource(Res.drawable.ic_trash),
-                                                            contentDescription = "Remove",
-                                                            tint = Color.Red
-                                                        )
-                                                    }
+                                                    Image(
+                                                        painter = painterResource(Res.drawable.ic_trash),
+                                                        contentDescription = null,
+                                                        modifier = Modifier
+                                                            .size(20.dp)
+                                                            .clickable { viewModel.onRemoveInjuredEmployee(index) }
+                                                    )
                                                 }
                                             }
+
                                             if (index < uiState.injuredEmployees.lastIndex) {
                                                 HorizontalDivider(
                                                     color = Color(0xFFF5F5F5),

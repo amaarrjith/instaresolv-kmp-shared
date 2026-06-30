@@ -24,7 +24,8 @@ data class ObservationListState(
     val error: String? = null,
     val endReached: Boolean = false,
     val filterData: FilterContentData? = null,
-    val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState()
+    val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
+    var errorExcel: String? = null
 )
 
 class ObservationListViewModel(
@@ -34,6 +35,27 @@ class ObservationListViewModel(
     private val _uiState = MutableStateFlow(ObservationListState())
     val uiState: StateFlow<ObservationListState> = _uiState.asStateFlow()
     
+    private val _isExporting = MutableStateFlow(false)
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    private val _exportToastMessage = MutableStateFlow<String?>(null)
+    val exportToastMessage: StateFlow<String?> = _exportToastMessage.asStateFlow()
+
+    private val _exportUrl = MutableStateFlow<String?>(null)
+    val exportUrl: StateFlow<String?> = _exportUrl.asStateFlow()
+
+    fun clearExportToast() {
+        _exportToastMessage.value = null
+    }
+
+    fun clearExportUrl() {
+        _exportUrl.value = null
+    }
+
+    fun setExportToastMessage(message: String) {
+        _exportToastMessage.value = message
+    }
+
     private var currentPage = 1
     private var searchJob: Job? = null
 
@@ -138,6 +160,48 @@ class ObservationListViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun exportToExcel() {
+        viewModelScope.launch {
+            _isExporting.value = true
+            val filter = _uiState.value.appliedFilterState
+            val status = when {
+                filter.selectedStatuses.contains("Open Observations") && filter.selectedStatuses.contains("Closed Observations") -> -1
+                filter.selectedStatuses.contains("Open Observations") -> 1
+                filter.selectedStatuses.contains("Closed Observations") -> 2
+                else -> -1
+            }
+            val groupSpecified = when {
+                filter.noProjectSelected -> 0
+                filter.selectedProjects.isNotEmpty() -> 1
+                else -> -1
+            }
+
+            val request = ObservationRequest(
+                pageNumber = 1,
+                searchKey = _uiState.value.searchKey,
+                observers = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
+                responsiblePersons = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
+                groupIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() },
+                status = status,
+                groupSpecified = groupSpecified,
+                openDate = formatMillis(filter.dateOpenMillis),
+                closeDate = formatMillis(filter.dateCloseMillis)
+            )
+
+            when (val result = repository.generateObservationExcel(request)) {
+                is NetworkResult.Success -> {
+                    result.data.excelUrl?.takeIf { it.isNotBlank() }?.let {
+                        _exportUrl.value = it
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _exportToastMessage.value = result.message ?: "Export failed"
+                }
+            }
+            _isExporting.value = false
+        }
     }
 
     private fun formatMillis(millis: Long?): String {
