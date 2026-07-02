@@ -449,4 +449,36 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun getPreTaskDetail(
+        request: org.example.project.data.model.PreTaskDetailRequest
+    ): NetworkResult<org.example.project.data.model.PreTaskDetailResponseData> = safeApiCall {
+        httpClient.post(ApiEndpoints.PRE_TASK_DETAIL) {
+            jsonBody(request)
+        }
+    }
+    
+    override suspend fun createLessonLearned(
+        request: org.example.project.data.model.CreateLessonLearnedRequest
+    ): NetworkResult<org.example.project.data.model.CreateLessonLearnedResponseData> = safeApiCall {
+        httpClient.post(ApiEndpoints.LESSON_LEARNED_CREATE) {
+            jsonBody(request)
+        }
+    }
+    
+    override suspend fun getLessonsLearnedList(
+        request: org.example.project.data.model.LessonLearnedListRequest
+    ): NetworkResult<List<org.example.project.data.model.LessonLearnedData>> = safeApiCall {
+        httpClient.post(ApiEndpoints.LESSON_LEARNED_LIST) {
+            jsonBody(request)
+        }
+    }
+    
+    override suspend fun getLessonLearnedDetail(
+        request: org.example.project.data.model.LessonLearnedDetailRequest
+    ): NetworkResult<org.example.project.data.model.LessonLearnedDetailResponseData> = safeApiCall {
+        httpClient.post(ApiEndpoints.LESSON_LEARNED_DETAIL) {
+            jsonBody(request)
+        }
+    }
 }

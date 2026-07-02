@@ -98,7 +98,13 @@ val appModule = module {
     
     factory<org.example.project.domain.repository.PreTaskRepository> { org.example.project.domain.repository.PreTaskRepositoryImpl(get()) }
     factory { org.example.project.ui.screens.PreTaskListViewModel(get()) }
+    factory { org.example.project.ui.screens.PreTaskDetailViewModel(get()) }
     factory { org.example.project.ui.screens.CreatePreTaskViewModel(get(), get(), get()) }
+    
+    factory<org.example.project.domain.repository.LessonLearnedRepository> { org.example.project.domain.repository.LessonLearnedRepositoryImpl(get()) }
+    factory { org.example.project.ui.screens.LessonsLearnedListViewModel(get()) }
+    factory { org.example.project.ui.screens.LessonsLearnedDetailViewModel(get()) }
+    factory { org.example.project.ui.screens.CreateLessonLearnedViewModel(get()) }
     
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }

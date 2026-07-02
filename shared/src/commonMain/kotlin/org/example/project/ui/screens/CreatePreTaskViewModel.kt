@@ -154,9 +154,6 @@ class CreatePreTaskViewModel(
         }
     }
 
-    fun onReportedBySelected(user: GroupUser?) {
-        _uiState.update { it.copy(reportedBy = user) }
-    }
     
     fun onNotifyPersonSelected(user: GroupUser?) {
         _uiState.update { it.copy(selectedNotifyPerson = user) }
@@ -384,15 +381,24 @@ class CreatePreTaskViewModel(
         val state = _uiState.value
         viewModelScope.launch {
             _uiState.update { it.copy(isPublishing = true, error = null) }
-            
-            if (state.selectedProject == null) {
-                _uiState.update { it.copy(isPublishing = false, error = "Please select a Project") }
-                return@launch
-            }
+
             if (state.taskTitle.isBlank()) {
                 _uiState.update { it.copy(isPublishing = false, error = "Task Title is required") }
                 return@launch
             }
+            if (state.dateMillis == null) {
+                _uiState.update { it.copy(isPublishing = false, error = "Date is required") }
+                return@launch
+            }
+            if (state.startTime.isBlank()) {
+                _uiState.update { it.copy(isPublishing = false, error = "Start Time is required") }
+                return@launch
+            }
+            if (state.endTime.isBlank()) {
+                _uiState.update { it.copy(isPublishing = false, error = "Date is required") }
+                return@launch
+            }
+
             
             val instant = Instant.fromEpochMilliseconds(state.dateMillis ?: 0L)
             val localDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -440,13 +446,13 @@ class CreatePreTaskViewModel(
                 )
             }
             
-            val mappedAttendees = state.attendees.filter { it.employeeName.isNotBlank() || it.employeeCode.isNotBlank() }.map {
+            val mappedAttendees = state.attendees.filter { it.employeeName.isNotBlank() || it.employeeCode.isNotBlank() }.mapIndexed { index, item ->
                 org.example.project.data.model.CreatePreTaskAttendee(
-                    id = "",
-                    employeeCode = it.employeeCode,
-                    employeeName = it.employeeName,
-                    companyName = it.companyName,
-                    profession = it.profession
+                    id = index + 1,
+                    employeeCode = item.employeeCode,
+                    employeeName = item.employeeName,
+                    companyName = item.companyName,
+                    profession = item.profession
                 )
             }
             
@@ -460,8 +466,8 @@ class CreatePreTaskViewModel(
             
             val request = org.example.project.data.model.CreatePreTaskRequest(
                 date = formattedDate,
-                startTime = state.startTime + ":00",
-                endTime = state.endTime + ":00",
+                startTime = convertTimeTo24HourFormat(state.startTime),
+                endTime = convertTimeTo24HourFormat(state.endTime),
                 msraReference = state.msraReference,
                 permitReference = state.permitReference,
                 taskTitle = state.taskTitle,
@@ -470,7 +476,7 @@ class CreatePreTaskViewModel(
                 otherTopic = mappedOtherTopics,
                 attendees = mappedAttendees,
                 createdAt = currentCreatedAt,
-                facilitiesId = state.selectedProject.groupId.toString(),
+                facilitiesId = state.selectedProject?.groupId.toString(),
                 images = mappedImages,
                 reportedBy = state.reportedBy?.userId?.toString() ?: "",
                 notes = state.stepByStepAccount,
@@ -486,5 +492,25 @@ class CreatePreTaskViewModel(
                 }
             }
         }
+    }
+
+    private fun convertTimeTo24HourFormat(timeStr: String): String {
+        try {
+            val parts = timeStr.split(" : ", " ")
+            if (parts.size >= 3) {
+                val hourStr = parts[0]
+                val minuteStr = parts[1]
+                val amPm = parts[2].uppercase()
+
+                var hour = hourStr.toIntOrNull() ?: 0
+                if (amPm == "AM" && hour == 12) hour = 0
+                if (amPm == "PM" && hour < 12) hour += 12
+
+                return "${hour.toString().padStart(2, '0')}:${minuteStr}:00"
+            }
+        } catch (e: Exception) {
+            // Fallback
+        }
+        return timeStr
     }
 }

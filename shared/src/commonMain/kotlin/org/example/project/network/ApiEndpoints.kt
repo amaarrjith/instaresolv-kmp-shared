@@ -12,8 +12,9 @@ object ApiEndpoints {
 
     const val NOTIFICATION_LIST = "v3/notification/list"
     const val PRE_TASK_LIST = "pretask/list"
-    const val PRE_TASK_CONTENT = "pretask/content-items"
     const val PRE_TASK_CREATE = "pretask/create"
+    const val PRE_TASK_CONTENT = "pretask/content-items"
+    const val PRE_TASK_DETAIL = "pretask/detail"
     const val INSPECTION_LIST = "inspection/list"
     const val ADD_INSPECTION = "inspection/add"
     const val INSPECTION_DETAILS = "inspection/details"
@@ -57,5 +58,8 @@ object ApiEndpoints {
     const val GENERATE_VIOLATION_EXCEL = "violation/generate-excel"
     const val GENERATE_INCIDENT_PDF = "incident/generate-pdf"
     const val GENERATE_OBSERVATION_PDF = "observation/generate-pdf"
+    const val LESSON_LEARNED_CREATE = "lesson-learned/create"
+    const val LESSON_LEARNED_LIST = "lesson-learned/list"
+    const val LESSON_LEARNED_DETAIL = "lesson-learned/detail"
     const val GENERATE_VIOLATION_PDF = "violation/generate-pdf"
 }

@@ -226,7 +226,7 @@ fun CreatePreTaskScreen(
                             selectedUser = null,
                             onUserSelected = { },
                             placeholder = "Choose User",
-                            users = emptyList()
+                            users = uiState.groupUsers
                         )
                     }
 
@@ -433,17 +433,6 @@ fun CreatePreTaskScreen(
 
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            AppUserDropdown(
-                title = "Send Notification To",
-                placeholder = "Select Person To Notify",
-                users = uiState.groupUsers,
-                selectedUser = uiState.selectedNotifyPerson,
-                onUserSelected = { viewModel.onNotifyPersonSelected(it) },
-                modifier = Modifier.padding(horizontal = 22.dp)
-            )
-            Spacer(modifier = Modifier.height(32.dp))
 
             ToastHost(
                 visible = uiState.error != null,

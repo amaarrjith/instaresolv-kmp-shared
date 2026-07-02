@@ -121,7 +121,7 @@ data class CreatePreTaskOtherTopic(
 
 @Serializable
 data class CreatePreTaskAttendee(
-    val id: String,
+    val id: Int,
     val employeeCode: String,
     val employeeName: String,
     val companyName: String,
@@ -139,4 +139,69 @@ data class CreatePreTaskImage(
 data class CreatePreTaskResponseData(
     val preTaskId: Int? = null,
     val statusMessage: String? = null
+)
+
+@kotlinx.serialization.Serializable
+data class PreTaskDetailRequest(
+    val id: Int
+)
+
+@kotlinx.serialization.Serializable
+data class PreTaskDetailResponseData(
+    val id: Int,
+    val date: String? = null,
+    val startTime: String? = null,
+    val endTime: String? = null,
+    val msraReference: String? = null,
+    val permitReference: String? = null,
+    val taskTitle: String? = null,
+    val contents: List<PreTaskContentData>? = null,
+    val questions: List<PreTaskQuestionDetail>? = null,
+    val otherTopic: List<PreTaskOtherTopicDetail>? = null,
+    val attendees: List<PreTaskAttendeeDetail>? = null,
+    val createdAt: String? = null,
+    val facilities: PreTaskFacilityData? = null,
+    val images: List<PreTaskImageDetail>? = null,
+    val reportedBy: String? = null,
+    val notes: String? = null,
+    val translatedNotes: String? = null
+)
+
+@kotlinx.serialization.Serializable
+data class PreTaskQuestionDetail(
+    val id: Int,
+    val contentId: Int? = null,
+    val title: String? = null,
+    val imageUrl: String? = null,
+    val selectedAnswer: Int? = null
+)
+
+@kotlinx.serialization.Serializable
+data class PreTaskOtherTopicDetail(
+    val id: Int,
+    val title: String? = null,
+    val selectedAnswer: Int? = null
+)
+
+@kotlinx.serialization.Serializable
+data class PreTaskAttendeeDetail(
+    val id: String? = null,
+    val employeeCode: String? = null,
+    val employeeName: String? = null,
+    val companyName: String? = null,
+    val profession: String? = null
+)
+
+@kotlinx.serialization.Serializable
+data class PreTaskImageDetail(
+    val image: String? = null,
+    val description: String? = null
+)
+
+@kotlinx.serialization.Serializable
+data class PreTaskFacilityData(
+    val groupId: String? = null,
+    val groupName: String? = null,
+    val groupCode: String? = null,
+    val groupImage: String? = null
 )

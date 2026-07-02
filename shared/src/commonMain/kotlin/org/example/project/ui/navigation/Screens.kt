@@ -43,4 +43,8 @@ sealed class Screens(val route: String) {
     object TermsOfUseScreen : Screens("terms_of_use_screen")
     object PrivacyPolicyScreen : Screens("privacy_policy_screen")
     object DeleteAccountScreen : Screens("delete_account_screen")
+    
+    // Lessons Learned
+    object LessonsLearnedListScreen : Screens("lessons_learned_list_screen")
+    object CreateLessonsLearnedScreen : Screens("create_lessons_learned_screen")
 }

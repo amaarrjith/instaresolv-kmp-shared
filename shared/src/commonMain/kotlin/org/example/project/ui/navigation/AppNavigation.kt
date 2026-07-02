@@ -21,6 +21,8 @@ import org.example.project.ui.SplashScreen
 import org.example.project.ui.WelcomeScreen
 import org.example.project.ui.screens.AuditInspectionListScreen
 import org.example.project.ui.screens.IncidentListScreen
+import org.example.project.ui.screens.LessonsLearnedListScreen
+import org.example.project.ui.screens.CreateLessonsLearnedScreen
 import org.example.project.ui.components.NotificationListScreen
 import org.example.project.ui.screens.ObservationListScreen
 import org.example.project.ui.screens.CreateObservationScreen
@@ -171,6 +173,10 @@ fun AppNavigation() {
 
                         ActionOverview.TRAINING -> {
                             navController.navigate(Screens.TrainingListScreen.route)
+                        }
+                        
+                        ActionOverview.LESSONS_LEARNED -> {
+                            navController.navigate(Screens.LessonsLearnedListScreen.route)
                         }
                     }
                 },
@@ -345,7 +351,22 @@ fun AppNavigation() {
             AboutUsScreen(onBack = { navController.popBackStack() })
         }
         composable(Screens.TermsOfUseScreen.route) {
-            TermsOfUseScreen(onBack = { navController.popBackStack() })
+            TermsOfUseScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screens.LessonsLearnedListScreen.route) {
+            LessonsLearnedListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onCreateClicked = { navController.navigate(Screens.CreateLessonsLearnedScreen.route) }
+            )
+        }
+
+        composable(Screens.CreateLessonsLearnedScreen.route) {
+            CreateLessonsLearnedScreen(
+                onBackClicked = { navController.popBackStack() }
+            )
         }
         composable(Screens.PrivacyPolicyScreen.route) {
             PrivacyPolicyScreen(onBack = { navController.popBackStack() })

@@ -44,6 +44,8 @@ import org.example.project.data.model.EmployeeListRequest
 import org.example.project.data.model.AddIncidentRequest
 import org.example.project.data.model.AddIncidentResponse
 import org.example.project.data.model.IncidentRequest
+import org.example.project.data.model.PreTaskDetailRequest
+import org.example.project.data.model.PreTaskDetailResponseData
 
 interface AuthApiService {
 
@@ -256,4 +258,20 @@ interface AuthApiService {
     suspend fun getInspectionDetail(
         request: org.example.project.data.model.InspectionDetailRequest
     ): NetworkResult<org.example.project.data.model.InspectionDetailResponse>
+
+    suspend fun getPreTaskDetail(
+        request: org.example.project.data.model.PreTaskDetailRequest
+    ): NetworkResult<org.example.project.data.model.PreTaskDetailResponseData>
+    
+    suspend fun createLessonLearned(
+        request: org.example.project.data.model.CreateLessonLearnedRequest
+    ): NetworkResult<org.example.project.data.model.CreateLessonLearnedResponseData>
+    
+    suspend fun getLessonsLearnedList(
+        request: org.example.project.data.model.LessonLearnedListRequest
+    ): NetworkResult<List<org.example.project.data.model.LessonLearnedData>>
+    
+    suspend fun getLessonLearnedDetail(
+        request: org.example.project.data.model.LessonLearnedDetailRequest
+    ): NetworkResult<org.example.project.data.model.LessonLearnedDetailResponseData>
 }

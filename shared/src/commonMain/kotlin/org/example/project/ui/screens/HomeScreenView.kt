@@ -743,6 +743,11 @@ enum class ActionOverview(
     TRAINING(
         "Training",
         Res.drawable.ic_training
+    ),
+    
+    LESSONS_LEARNED(
+        "Lessons Learned",
+        Res.drawable.ic_observations
     )
 }
 

@@ -26,6 +26,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,6 +73,7 @@ fun PreTaskListScreen(
     val viewModel: PreTaskListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
+    var selectedPreTaskId by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         containerColor = Color.White,
@@ -189,7 +192,7 @@ fun PreTaskListScreen(
                                     }
                                     PreTaskListItem(
                                         preTask = uiState.preTasks[index],
-                                        onClick = { /* Navigate to detail if needed */ }
+                                        onClick = { selectedPreTaskId = uiState.preTasks[index].id }
                                     )
                                 }
                                 if (uiState.isPaginating) {
@@ -209,6 +212,22 @@ fun PreTaskListScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    selectedPreTaskId?.let { id ->
+        ModalBottomSheet(
+            onDismissRequest = { selectedPreTaskId = null },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color.White,
+            dragHandle = null
+        ) {
+            Box(modifier = Modifier.fillMaxHeight(0.9f)) {
+                PreTaskDetailScreen(
+                    preTaskId = id,
+                    onBackClicked = { selectedPreTaskId = null }
+                )
             }
         }
     }

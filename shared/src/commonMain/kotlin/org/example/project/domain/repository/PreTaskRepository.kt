@@ -12,4 +12,5 @@ interface PreTaskRepository {
     suspend fun getPreTaskList(request: PreTaskListRequest): NetworkResult<List<PreTaskData>>
     suspend fun getPreTaskContent(request: PreTaskContentRequest): NetworkResult<PreTaskContentResponseData>
     suspend fun createPreTask(request: CreatePreTaskRequest): NetworkResult<CreatePreTaskResponseData>
+    suspend fun getPreTaskDetail(request: org.example.project.data.model.PreTaskDetailRequest): NetworkResult<org.example.project.data.model.PreTaskDetailResponseData>
 }

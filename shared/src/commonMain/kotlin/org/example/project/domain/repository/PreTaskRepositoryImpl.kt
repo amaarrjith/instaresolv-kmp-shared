@@ -23,4 +23,8 @@ class PreTaskRepositoryImpl(
     override suspend fun createPreTask(request: CreatePreTaskRequest): NetworkResult<CreatePreTaskResponseData> {
         return apiService.createPreTask(request)
     }
+
+    override suspend fun getPreTaskDetail(request: org.example.project.data.model.PreTaskDetailRequest): NetworkResult<org.example.project.data.model.PreTaskDetailResponseData> {
+        return apiService.getPreTaskDetail(request)
+    }
 }
