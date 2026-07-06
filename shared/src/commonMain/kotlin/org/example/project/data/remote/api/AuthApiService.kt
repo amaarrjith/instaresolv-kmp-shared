@@ -298,4 +298,34 @@ interface AuthApiService {
     suspend fun getToolBoxTalkDetail(
         request: org.example.project.data.model.ToolBoxTalkDetailRequest
     ): NetworkResult<org.example.project.data.model.ToolBoxTalkItem>
+
+    suspend fun getMyTrainingList(
+        request: org.example.project.data.model.TrainingListRequest
+    ): NetworkResult<org.example.project.data.model.TrainingListResponse>
+
+    suspend fun getTrainingDetail(
+        request: org.example.project.data.model.TrainingDetailRequest
+    ): NetworkResult<org.example.project.data.model.TrainingDetailData>
+
+    suspend fun getTrainingVideoUrl(
+        request: org.example.project.data.model.TrainingVideoUrlRequest
+    ): NetworkResult<org.example.project.data.model.TrainingVideoUrlData>
+
+    suspend fun getQuizQuestions(
+        request: org.example.project.data.model.QuizQuestionsRequest
+    ): NetworkResult<org.example.project.data.model.QuizQuestionsResponse>
+
+    suspend fun submitQuiz(
+        request: org.example.project.data.model.QuizSubmitRequest
+    ): NetworkResult<org.example.project.data.model.QuizSubmitResponse>
+
+    suspend fun getPermitList(
+        request: org.example.project.data.model.PermitListRequest
+    ): NetworkResult<org.example.project.data.model.PermitListResponse>
+
+    suspend fun getPermitTypes(): NetworkResult<org.example.project.data.model.PermitTypesResponse>
+
+    suspend fun getPermitPendingActions(
+        request: org.example.project.data.model.PermitPendingActionsRequest
+    ): NetworkResult<org.example.project.data.model.PermitPendingActionsResponse>
 }

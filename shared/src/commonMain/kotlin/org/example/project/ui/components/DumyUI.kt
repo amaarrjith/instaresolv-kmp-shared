@@ -10,21 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 
 
-@Composable
-fun PermitToWorkListScreen(
-    onBackClicked: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .clickable {
-                onBackClicked()
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Permit To Work")
-    }
-}
-
 
 @Composable
 fun IncidentListScreen(
@@ -42,18 +27,3 @@ fun IncidentListScreen(
 }
 
 
-
-@Composable
-fun TrainingListScreen(
-    onBackClicked: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .clickable {
-                onBackClicked()
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Training")
-    }
-}

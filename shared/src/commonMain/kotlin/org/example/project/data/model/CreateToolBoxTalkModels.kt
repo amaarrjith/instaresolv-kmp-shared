@@ -9,7 +9,7 @@ data class CreateToolBoxTalkRequest(
     val endTime: String,
     val topic: String,
     val discussionPoints: List<DiscussionPointRequest>,
-    val attendees: List<AttendeeRequest>,
+    val attendees: List<ToolBoxAttendeeRequest>,
     val createdAt: String,
     val facilitiesId: String? = null,
     val images: List<ToolBoxTalkImageRequest>? = null,
@@ -31,6 +31,14 @@ data class AttendeeRequest(
     val profession: String? = null
 )
 
+@Serializable
+data class ToolBoxAttendeeRequest(
+    val id: Int? = null,
+    val employeeCode: String? = null,
+    val employeeName: String? = null,
+    val companyName: String? = null,
+    val profession: String? = null
+)
 @Serializable
 data class ToolBoxTalkImageRequest(
     val image: String,

@@ -40,6 +40,8 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.ktor.client.okhttp)
+            implementation("androidx.media3:media3-exoplayer:1.5.1")
+            implementation("androidx.media3:media3-ui:1.5.1")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

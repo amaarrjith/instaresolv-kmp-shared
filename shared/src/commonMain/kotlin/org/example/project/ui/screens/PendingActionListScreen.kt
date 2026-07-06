@@ -42,6 +42,9 @@ import instaresolv.shared.generated.resources.ic_arrow_left
 import org.example.project.colors.AppColors
 import org.example.project.data.model.PendingActionItem
 import org.example.project.data.model.PendingActionStatusType
+import org.example.project.data.model.PermitPendingActionItem
+import org.example.project.data.model.PermitStatus
+import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
@@ -162,9 +165,25 @@ fun PendingActionListScreen(
                     }
                 } else {
                     // Permit Actions
-                    EmptyScreenView(
-                        "No permit actions found."
-                    )
+                    if (uiState.isPermitLoading) {
+                        AppLoader()
+                    } else if (uiState.permitError != null) {
+                        ErrorRetryView(
+                            errorMessage = uiState.permitError ?: "",
+                            onRetryClick = { viewModel.fetchPermitPendingActions() }
+                        )
+                    } else if (uiState.permitPendingActions.isEmpty()) {
+                        EmptyScreenView("No permit actions found.")
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(15.dp)
+                        ) {
+                            items(uiState.permitPendingActions) { item ->
+                                PermitPendingActionItem(item)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -512,6 +531,115 @@ fun ActionRow(title: String, onClick: () -> Unit = {}) {
             contentDescription = null,
             colorFilter = ColorFilter.tint(AppColors.Black),
             modifier = Modifier.rotate(180f).size(20.dp)
+        )
+    }
+}
+
+@Composable
+fun PermitPendingActionItem(item: PermitPendingActionItem) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(1.dp, AppColors.TextGray.copy(alpha = 0.4f)),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
+        ) {
+            // Top Row: Status badge + time ago
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                item.status?.let { statusId ->
+                    PermitStatusBadge(statusId)
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                if (!item.createdAt.isNullOrEmpty()) {
+                    Text(
+                        text = timeAgo(item.createdAt),
+                        style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                        color = AppColors.TextGray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Permit Code
+            if (!item.permitCode.isNullOrEmpty()) {
+                Text(
+                    text = item.permitCode,
+                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                    color = AppColors.BlackText
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+            }
+
+            // Permit Type
+            item.permitType?.let { type ->
+                Text(
+                    text = type.title,
+                    style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                    color = AppColors.TextGray
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            HorizontalDivider(thickness = 1.dp, color = AppColors.TextGray.copy(alpha = 0.3f))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Date + Group Code row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_calendar),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(Color.Red)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                if (!item.createdAt.isNullOrEmpty()) {
+                    Text(
+                        text = formatDate(item.createdAt, "", "dd MMM yyyy"),
+                        style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                        color = AppColors.Black
+                    )
+                }
+                if (!item.groupCode.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = item.groupCode,
+                        style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                        color = AppColors.Black
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PermitStatusBadge(statusId: Int) {
+    val permitStatus = PermitStatus.fromValue(statusId)
+    val (bgColor, label) = if (permitStatus != null) {
+        Color(permitStatus.colorHex).copy(alpha = 0.15f) to permitStatus.title
+    } else {
+        Color(0xFFE5E5E5) to "Unknown"
+    }
+    val textColor = if (permitStatus != null) Color(permitStatus.colorHex) else AppColors.TextGray
+
+    Box(
+        modifier = Modifier
+            .background(color = bgColor, shape = RoundedCornerShape(3.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = label,
+            style = textStyle(weight = FontWeight.Normal, size = 12.sp),
+            color = textColor
         )
     }
 }

@@ -25,6 +25,7 @@ import instaresolv.shared.generated.resources.ic_add
 import instaresolv.shared.generated.resources.ic_trash
 import org.example.project.colors.AppColors
 import org.example.project.data.model.AttendeeRequest
+import org.example.project.data.model.ToolBoxAttendeeRequest
 import org.example.project.data.model.ToolBoxTalkImageRequest
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AddEmployeeBlock
@@ -66,7 +67,7 @@ fun CreateToolBoxTalkScreen(
     val discussionPoints = remember { mutableStateListOf("", "", "", "") }
 
     // Attendees
-    val attendees = remember { mutableStateListOf<AttendeeRequest>() }
+    val attendees = remember { mutableStateListOf<ToolBoxAttendeeRequest>() }
 
     // Images
     val images = remember { mutableStateListOf(org.example.project.ui.screens.ObservationImage()) }
@@ -385,7 +386,8 @@ fun CreateToolBoxTalkScreen(
                 AddEmployeeBlock(
                     onAddEmployee = { injured ->
                         attendees.add(
-                            AttendeeRequest(
+                            ToolBoxAttendeeRequest(
+                                id = -1,
                                 employeeCode = injured.employeeCode,
                                 employeeName = injured.employeeName,
                                 companyName = injured.companyName,

@@ -30,8 +30,11 @@ import org.example.project.ui.components.NotificationListScreen
 import org.example.project.ui.screens.ObservationListScreen
 import org.example.project.ui.screens.CreateObservationScreen
 import org.example.project.ui.screens.CreateIncidentScreen
-import org.example.project.ui.components.PermitToWorkListScreen
-import org.example.project.ui.components.TrainingListScreen
+import org.example.project.ui.screens.PermitToWorkListScreen
+import org.example.project.ui.screens.TrainingListScreen
+import org.example.project.ui.screens.TrainingDetailScreen
+import org.example.project.ui.screens.TrainingVideoScreen
+import org.example.project.ui.screens.QuizScreen
 import org.example.project.ui.screens.ViolationListScreen
 import org.example.project.ui.screens.CreateViolationScreen
 import org.example.project.ui.screens.CreateProjectScreen
@@ -240,9 +243,9 @@ fun AppNavigation() {
             )
         }
         composable(Screens.PermitToWorkListScreen.route) {
-            PermitToWorkListScreen{
-                navController.popBackStack()
-            }
+            PermitToWorkListScreen(
+                onBackClicked = { navController.popBackStack() }
+            )
         }
         composable(Screens.ObservationListScreen.route) {
             ObservationListScreen(
@@ -288,9 +291,39 @@ fun AppNavigation() {
             )
         }
         composable(Screens.TrainingListScreen.route) {
-            TrainingListScreen{
-                navController.popBackStack()
-            }
+            TrainingListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onItemClicked = { trainingId ->
+                    navController.navigate("${Screens.TrainingDetailScreen.route}/$trainingId")
+                }
+            )
+        }
+        composable(Screens.TrainingDetailScreenWithArgs.route) { backStackEntry ->
+            val trainingId = backStackEntry.savedStateHandle.get<String>("trainingId")?.toIntOrNull() ?: -1
+            TrainingDetailScreen(
+                trainingId = trainingId,
+                onBackClicked = { navController.popBackStack() },
+                onPlayVideoClicked = { id ->
+                    navController.navigate("${Screens.TrainingVideoScreen.route}/$id")
+                },
+                onStartQuizClicked = { id ->
+                    navController.navigate("${Screens.QuizScreen.route}/$id")
+                }
+            )
+        }
+        composable(Screens.TrainingVideoScreenWithArgs.route) { backStackEntry ->
+            val trainingId = backStackEntry.savedStateHandle.get<String>("trainingId")?.toIntOrNull() ?: -1
+            TrainingVideoScreen(
+                trainingId = trainingId,
+                onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(Screens.QuizScreenWithArgs.route) { backStackEntry ->
+            val trainingId = backStackEntry.savedStateHandle.get<String>("trainingId")?.toIntOrNull() ?: -1
+            QuizScreen(
+                trainingId = trainingId,
+                onBackClicked = { navController.popBackStack() }
+            )
         }
         composable(Screens.PendingActionListScreen.route) {
             PendingActionListScreen{

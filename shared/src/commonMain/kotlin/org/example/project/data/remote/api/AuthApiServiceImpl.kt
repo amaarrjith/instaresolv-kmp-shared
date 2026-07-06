@@ -529,4 +529,64 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun getMyTrainingList(
+        request: org.example.project.data.model.TrainingListRequest
+    ): NetworkResult<org.example.project.data.model.TrainingListResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.MY_TRAINING_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getTrainingDetail(
+        request: org.example.project.data.model.TrainingDetailRequest
+    ): NetworkResult<org.example.project.data.model.TrainingDetailData> = safeApiCall {
+        httpClient.post(ApiEndpoints.TRAINING_DETAIL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getTrainingVideoUrl(
+        request: org.example.project.data.model.TrainingVideoUrlRequest
+    ): NetworkResult<org.example.project.data.model.TrainingVideoUrlData> = safeApiCall {
+        httpClient.post(ApiEndpoints.TRAINING_VIDEO_URL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getQuizQuestions(
+        request: org.example.project.data.model.QuizQuestionsRequest
+    ): NetworkResult<org.example.project.data.model.QuizQuestionsResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.QUIZ_QUESTIONS) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun submitQuiz(
+        request: org.example.project.data.model.QuizSubmitRequest
+    ): NetworkResult<org.example.project.data.model.QuizSubmitResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.QUIZ_SUBMIT) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getPermitList(
+        request: org.example.project.data.model.PermitListRequest
+    ): NetworkResult<org.example.project.data.model.PermitListResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getPermitTypes(): NetworkResult<org.example.project.data.model.PermitTypesResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_TYPES)
+    }
+
+    override suspend fun getPermitPendingActions(
+        request: org.example.project.data.model.PermitPendingActionsRequest
+    ): NetworkResult<org.example.project.data.model.PermitPendingActionsResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_PENDING_ACTIONS) {
+            jsonBody(request)
+        }
+    }
 }

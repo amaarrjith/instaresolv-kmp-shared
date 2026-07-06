@@ -68,4 +68,12 @@ object ApiEndpoints {
     const val GENERATE_TOOLBOX_TALK_EXCEL = "toolbox-talks/generate-excel"
     const val CREATE_TOOLBOX_TALK = "toolbox-talks/create"
     const val TOOLBOX_TALK_DETAIL = "toolbox-talks/detail"
+    const val MY_TRAINING_LIST = "training/my-training-list"
+    const val TRAINING_DETAIL = "training/detail"
+    const val TRAINING_VIDEO_URL = "training/video-url"
+    const val QUIZ_QUESTIONS = "training/quiz-questions"
+    const val QUIZ_SUBMIT = "training/quiz-submit"
+    const val PERMIT_LIST = "permit/list"
+    const val PERMIT_TYPES = "permit/permit-types"
+    const val PERMIT_PENDING_ACTIONS = "permit/pending-actions"
 }

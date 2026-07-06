@@ -42,11 +42,40 @@ import org.example.project.ui.screens.CreateObservationViewModel
 import org.example.project.ui.screens.CreateIncidentViewModel
 import org.example.project.domain.repository.IncidentRepository
 import org.example.project.domain.repository.IncidentRepositoryImpl
+import org.example.project.domain.repository.LessonLearnedRepository
+import org.example.project.domain.repository.LessonLearnedRepositoryImpl
+import org.example.project.domain.repository.PermitRepository
+import org.example.project.domain.repository.PermitRepositoryImpl
+import org.example.project.domain.repository.PreTaskRepository
+import org.example.project.domain.repository.PreTaskRepositoryImpl
+import org.example.project.domain.repository.TrainingRepository
+import org.example.project.domain.repository.TrainingRepositoryImpl
 import org.example.project.ui.screens.IncidentListViewModel
 import org.example.project.ui.screens.ViolationListViewModel
 import org.example.project.domain.repository.ViolationRepository
 import org.example.project.domain.repository.ViolationRepositoryImpl
+import org.example.project.settings.ChangePasswordViewModel
+import org.example.project.settings.ContactUsViewModel
+import org.example.project.settings.DeleteAccountViewModel
+import org.example.project.ui.components.AppProjectDropdownViewModel
+import org.example.project.ui.screens.AuditInspectionListViewModel
+import org.example.project.ui.screens.CreateInspectionViewModel
+import org.example.project.ui.screens.CreateLessonLearnedViewModel
+import org.example.project.ui.screens.CreatePreTaskViewModel
 import org.example.project.ui.screens.CreateViolationViewModel
+import org.example.project.ui.screens.IncidentDetailViewModel
+import org.example.project.ui.screens.InspectionDetailViewModel
+import org.example.project.ui.screens.LessonsLearnedDetailViewModel
+import org.example.project.ui.screens.LessonsLearnedListViewModel
+import org.example.project.ui.screens.ObservationDetailViewModel
+import org.example.project.ui.screens.PermitToWorkListViewModel
+import org.example.project.ui.screens.PreTaskDetailViewModel
+import org.example.project.ui.screens.PreTaskListViewModel
+import org.example.project.ui.screens.QuizViewModel
+import org.example.project.ui.screens.TrainingDetailViewModel
+import org.example.project.ui.screens.TrainingListViewModel
+import org.example.project.ui.screens.TrainingVideoViewModel
+import org.example.project.ui.screens.ViolationDetailViewModel
 
 val appModule = module {
     factory { createHttpClient(get()) }
@@ -68,48 +97,57 @@ val appModule = module {
     factory { ForgetPasswordViewModel(get(), get()) }
     factory { ProjectDetailViewModel(get(), get()) }
     factory { RegisterViewModel(get(), get()) }
-    factory { org.example.project.ui.screens.ObservationDetailViewModel(get()) }
+    factory { ObservationDetailViewModel(get()) }
     factory { CreateObservationViewModel(get(), get(), get()) }
     factory { CreateIncidentViewModel(get(), get(), get()) }
-    factory { org.example.project.ui.components.AppProjectDropdownViewModel(get()) }
+    factory { AppProjectDropdownViewModel(get()) }
     factory { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
     factory { ImagePickerViewModel(get()) }
     factory { GeneralContentsViewModel(get()) }
-    factory { org.example.project.settings.ChangePasswordViewModel(get()) }
-    factory { org.example.project.settings.DeleteAccountViewModel(get(), get()) }
-    factory { org.example.project.settings.ContactUsViewModel(get()) }
+    factory { ChangePasswordViewModel(get()) }
+    factory { DeleteAccountViewModel(get(), get()) }
+    factory { ContactUsViewModel(get()) }
 
-    factory { PendingActionListViewModel(get()) }
+    factory { PendingActionListViewModel(get(), get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
     factory { ObservationListViewModel(get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
     factory<InspectionRepository> { InspectionRepositoryImpl(get()) }
-    factory { org.example.project.ui.screens.AuditInspectionListViewModel(get()) }
-    factory { org.example.project.ui.screens.CreateInspectionViewModel(get(), get()) }
-    factory { org.example.project.ui.screens.InspectionDetailViewModel(get()) }
+    factory { AuditInspectionListViewModel(get()) }
+    factory { CreateInspectionViewModel(get(), get()) }
+    factory { InspectionDetailViewModel(get()) }
     factory { IncidentListViewModel(get()) }
     factory<IncidentRepository> { IncidentRepositoryImpl(get()) }
-    factory { org.example.project.ui.screens.IncidentDetailViewModel(get()) }
+    factory { IncidentDetailViewModel(get()) }
     
     factory { ViolationListViewModel(get(), get()) }
     factory<ViolationRepository> { ViolationRepositoryImpl(get()) }
-    factory { org.example.project.ui.screens.ViolationDetailViewModel(get()) }
+    factory { ViolationDetailViewModel(get()) }
     factory { CreateViolationViewModel(get(), get(), get()) }
     
-    factory<org.example.project.domain.repository.PreTaskRepository> { org.example.project.domain.repository.PreTaskRepositoryImpl(get()) }
-    factory { org.example.project.ui.screens.PreTaskListViewModel(get()) }
-    factory { org.example.project.ui.screens.PreTaskDetailViewModel(get()) }
-    factory { org.example.project.ui.screens.CreatePreTaskViewModel(get(), get(), get()) }
+    factory<PreTaskRepository> { PreTaskRepositoryImpl(get()) }
+    factory { PreTaskListViewModel(get()) }
+    factory { PreTaskDetailViewModel(get()) }
+    factory { CreatePreTaskViewModel(get(), get(), get()) }
     
-    factory<org.example.project.domain.repository.LessonLearnedRepository> { org.example.project.domain.repository.LessonLearnedRepositoryImpl(get()) }
-    factory { org.example.project.ui.screens.LessonsLearnedListViewModel(get()) }
-    factory { org.example.project.ui.screens.LessonsLearnedDetailViewModel(get()) }
-    factory { org.example.project.ui.screens.CreateLessonLearnedViewModel(get(), get()) }
+    factory<LessonLearnedRepository> { LessonLearnedRepositoryImpl(get()) }
+    factory { LessonsLearnedListViewModel(get()) }
+    factory { LessonsLearnedDetailViewModel(get()) }
+    factory {
+        CreateLessonLearnedViewModel(
+            get(),
+            authPreferences = get()
+        )
+    }
 
-    factory<org.example.project.domain.repository.ToolBoxTalkRepository> { org.example.project.domain.repository.ToolBoxTalkRepositoryImpl(get()) }
-    factory { org.example.project.ui.screens.ToolBoxTalkListViewModel(get()) }
-    factory { org.example.project.ui.screens.CreateToolBoxTalkViewModel(get(), get(), get()) }
-    factory { org.example.project.ui.screens.ToolBoxTalkDetailViewModel(get()) }
+    factory<TrainingRepository> { TrainingRepositoryImpl(get()) }
+    factory { TrainingListViewModel(get()) }
+    factory { (trainingId: Int) -> TrainingDetailViewModel(get(), trainingId) }
+    factory { (trainingId: Int) -> TrainingVideoViewModel(get(), trainingId) }
+    factory { (trainingId: Int) -> QuizViewModel(get(), trainingId) }
+    
+    factory<PermitRepository> { PermitRepositoryImpl(get()) }
+    factory { PermitToWorkListViewModel(get()) }
     
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }

@@ -19,6 +19,7 @@ import org.example.project.network.NetworkResult
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.example.project.data.model.ToolBoxAttendeeRequest
 
 sealed class CreateToolBoxTalkUiState {
     object Idle : CreateToolBoxTalkUiState()
@@ -130,10 +131,11 @@ class CreateToolBoxTalkViewModel(
         }
     }
 
-    fun getSelectedEmployeesList(): List<AttendeeRequest> {
+    fun getSelectedEmployeesList(): List<ToolBoxAttendeeRequest> {
         val selectedEmployees = _bulkEmployees.value.filter { _selectedBulkEmployees.value.contains(it.id) }
         return selectedEmployees.map {
-            AttendeeRequest(
+            ToolBoxAttendeeRequest(
+                id = it.id,
                 employeeCode = it.employeeCode ?: "",
                 employeeName = it.employeeName ?: "",
                 companyName = it.companyName ?: "",
@@ -148,7 +150,7 @@ class CreateToolBoxTalkViewModel(
         endTimeStr: String,
         topic: String,
         discussionPoints: List<String>,
-        attendees: List<AttendeeRequest>,
+        attendees: List<ToolBoxAttendeeRequest>,
         facilitiesId: String?,
         images: List<ToolBoxTalkImageRequest>?
     ) {
