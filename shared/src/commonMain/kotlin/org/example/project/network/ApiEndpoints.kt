@@ -61,5 +61,11 @@ object ApiEndpoints {
     const val LESSON_LEARNED_CREATE = "lesson-learned/create"
     const val LESSON_LEARNED_LIST = "lesson-learned/list"
     const val LESSON_LEARNED_DETAIL = "lesson-learned/detail"
+    const val GENERATE_LESSON_LEARNED_EXCEL = "lesson-learned/generate-excel"
+    const val GENERATE_LESSON_LEARNED_PDF = "lesson-learned/generate-pdf"
     const val GENERATE_VIOLATION_PDF = "violation/generate-pdf"
+    const val TOOLBOX_TALK_LIST = "toolbox-talks/list"
+    const val GENERATE_TOOLBOX_TALK_EXCEL = "toolbox-talks/generate-excel"
+    const val CREATE_TOOLBOX_TALK = "toolbox-talks/create"
+    const val TOOLBOX_TALK_DETAIL = "toolbox-talks/detail"
 }

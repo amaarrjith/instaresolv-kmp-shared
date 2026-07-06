@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import org.example.project.data.model.CreateLessonLearnedRequest
 import org.example.project.data.model.CreateLessonLearnedResponseData
 import org.example.project.data.model.LessonLearnedImageRequest
+import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.LessonLearnedRepository
 import org.example.project.network.NetworkResult
 
@@ -20,12 +21,13 @@ sealed class CreateLessonLearnedUiState {
 }
 
 class CreateLessonLearnedViewModel(
-    private val repository: LessonLearnedRepository
+    private val repository: LessonLearnedRepository,
+    private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CreateLessonLearnedUiState>(CreateLessonLearnedUiState.Idle)
     val uiState: StateFlow<CreateLessonLearnedUiState> = _uiState.asStateFlow()
-
+    val user = authPreferences.getLoggedInUser()
     fun resetState() {
         _uiState.value = CreateLessonLearnedUiState.Idle
     }
@@ -34,18 +36,18 @@ class CreateLessonLearnedViewModel(
         title: String,
         description: String?,
         reportedBy: String,
-        images: List<LessonLearnedImageRequest>? = null,
-        facilitiesId: String? = null
+        images: List<LessonLearnedImageRequest>? = emptyList(),
+        facilitiesId: Int
     ) {
         viewModelScope.launch {
             _uiState.value = CreateLessonLearnedUiState.Loading
             
             val request = CreateLessonLearnedRequest(
-                faciltiesId = facilitiesId,
+                facilitiesId = facilitiesId.toString(),
                 title = title,
-                description = description,
+                description = description ?: "",
                 reportedBy = reportedBy,
-                images = images
+                images = images ?: emptyList()
             )
             
             when (val result = repository.createLessonLearned(request)) {

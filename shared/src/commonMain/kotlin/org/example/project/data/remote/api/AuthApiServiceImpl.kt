@@ -481,4 +481,52 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun generateLessonLearnedExcel(
+        request: org.example.project.data.model.LessonLearnedListRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_LESSON_LEARNED_EXCEL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generateLessonLearnedPdf(
+        request: org.example.project.data.model.GenerateLessonLearnedPdfRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_LESSON_LEARNED_PDF) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getToolBoxTalkList(
+        request: org.example.project.data.model.ToolBoxTalkListRequest
+    ): NetworkResult<List<org.example.project.data.model.ToolBoxTalkItem>> = safeApiCall {
+        httpClient.post(ApiEndpoints.TOOLBOX_TALK_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generateToolBoxTalkExcel(
+        request: org.example.project.data.model.ToolBoxTalkExcelRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_TOOLBOX_TALK_EXCEL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun createToolBoxTalk(
+        request: org.example.project.data.model.CreateToolBoxTalkRequest
+    ): NetworkResult<org.example.project.data.model.CreateToolBoxTalkResponseData> = safeApiCall {
+        httpClient.post(ApiEndpoints.CREATE_TOOLBOX_TALK) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getToolBoxTalkDetail(
+        request: org.example.project.data.model.ToolBoxTalkDetailRequest
+    ): NetworkResult<org.example.project.data.model.ToolBoxTalkItem> = safeApiCall {
+        httpClient.post(ApiEndpoints.TOOLBOX_TALK_DETAIL) {
+            jsonBody(request)
+        }
+    }
 }

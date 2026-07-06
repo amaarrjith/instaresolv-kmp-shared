@@ -16,3 +16,8 @@ data class GenerateObservationPdfRequest(
 data class GenerateViolationPdfRequest(
     val violationId: Int
 )
+
+@Serializable
+data class GenerateLessonLearnedPdfRequest(
+    val lessonId: Int
+)

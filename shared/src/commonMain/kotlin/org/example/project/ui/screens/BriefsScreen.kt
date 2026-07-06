@@ -50,7 +50,9 @@ import kotlin.collections.forEach
 @Composable
 fun BriefsScreen(
     actionsOverview: ActionsOverview? = null,
-    onPreTaskClicked: () -> Unit = {}
+    onPreTaskClicked: () -> Unit = {},
+    onToolboxTalksClicked: () -> Unit = {},
+    onLessonLearnedClicked: () -> Unit = {}
 ) {
     val items = listOf(
         BriefOverviewItem(BriefOverview.PRE_TASK, actionsOverview?.preTaskCount),
@@ -109,8 +111,16 @@ fun BriefsScreen(
                                         action.type,
                                         action.count ?: 0,
                                         onClick = {
-                                            if (action.type == BriefOverview.PRE_TASK) {
-                                                onPreTaskClicked()
+                                            when (action.type) {
+                                                BriefOverview.PRE_TASK -> {
+                                                    onPreTaskClicked()
+                                                }
+                                                BriefOverview.TOOLBOX_TALKS -> {
+                                                    onToolboxTalksClicked()
+                                                }
+                                                BriefOverview.LESSON -> {
+                                                    onLessonLearnedClicked()
+                                                }
                                             }
                                         }
                                     )

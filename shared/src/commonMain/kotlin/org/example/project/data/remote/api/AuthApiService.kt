@@ -274,4 +274,28 @@ interface AuthApiService {
     suspend fun getLessonLearnedDetail(
         request: org.example.project.data.model.LessonLearnedDetailRequest
     ): NetworkResult<org.example.project.data.model.LessonLearnedDetailResponseData>
+
+    suspend fun generateLessonLearnedExcel(
+        request: org.example.project.data.model.LessonLearnedListRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun generateLessonLearnedPdf(
+        request: org.example.project.data.model.GenerateLessonLearnedPdfRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun getToolBoxTalkList(
+        request: org.example.project.data.model.ToolBoxTalkListRequest
+    ): NetworkResult<List<org.example.project.data.model.ToolBoxTalkItem>>
+
+    suspend fun generateToolBoxTalkExcel(
+        request: org.example.project.data.model.ToolBoxTalkExcelRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun createToolBoxTalk(
+        request: org.example.project.data.model.CreateToolBoxTalkRequest
+    ): NetworkResult<org.example.project.data.model.CreateToolBoxTalkResponseData>
+
+    suspend fun getToolBoxTalkDetail(
+        request: org.example.project.data.model.ToolBoxTalkDetailRequest
+    ): NetworkResult<org.example.project.data.model.ToolBoxTalkItem>
 }

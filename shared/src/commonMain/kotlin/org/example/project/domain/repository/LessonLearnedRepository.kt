@@ -12,4 +12,6 @@ interface LessonLearnedRepository {
     suspend fun createLessonLearned(request: CreateLessonLearnedRequest): NetworkResult<CreateLessonLearnedResponseData>
     suspend fun getLessonsLearnedList(request: LessonLearnedListRequest): NetworkResult<List<LessonLearnedData>>
     suspend fun getLessonLearnedDetail(request: LessonLearnedDetailRequest): NetworkResult<LessonLearnedDetailResponseData>
+    suspend fun generateLessonLearnedExcel(request: LessonLearnedListRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generateLessonLearnedPdf(request: org.example.project.data.model.GenerateLessonLearnedPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
 }

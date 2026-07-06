@@ -24,4 +24,12 @@ class LessonLearnedRepositoryImpl(
     override suspend fun getLessonLearnedDetail(request: LessonLearnedDetailRequest): NetworkResult<LessonLearnedDetailResponseData> {
         return apiService.getLessonLearnedDetail(request)
     }
+
+    override suspend fun generateLessonLearnedExcel(request: LessonLearnedListRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generateLessonLearnedExcel(request)
+    }
+
+    override suspend fun generateLessonLearnedPdf(request: org.example.project.data.model.GenerateLessonLearnedPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generateLessonLearnedPdf(request)
+    }
 }

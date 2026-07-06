@@ -104,7 +104,12 @@ val appModule = module {
     factory<org.example.project.domain.repository.LessonLearnedRepository> { org.example.project.domain.repository.LessonLearnedRepositoryImpl(get()) }
     factory { org.example.project.ui.screens.LessonsLearnedListViewModel(get()) }
     factory { org.example.project.ui.screens.LessonsLearnedDetailViewModel(get()) }
-    factory { org.example.project.ui.screens.CreateLessonLearnedViewModel(get()) }
+    factory { org.example.project.ui.screens.CreateLessonLearnedViewModel(get(), get()) }
+
+    factory<org.example.project.domain.repository.ToolBoxTalkRepository> { org.example.project.domain.repository.ToolBoxTalkRepositoryImpl(get()) }
+    factory { org.example.project.ui.screens.ToolBoxTalkListViewModel(get()) }
+    factory { org.example.project.ui.screens.CreateToolBoxTalkViewModel(get(), get(), get()) }
+    factory { org.example.project.ui.screens.ToolBoxTalkDetailViewModel(get()) }
     
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }

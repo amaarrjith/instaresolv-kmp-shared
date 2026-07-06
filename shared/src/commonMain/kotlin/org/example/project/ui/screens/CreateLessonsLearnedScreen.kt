@@ -1,55 +1,49 @@
 package org.example.project.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
-import org.example.project.colors.AppColors
-import org.example.project.data.model.LessonLearnedImageRequest
-import org.example.project.data.model.ObservationImage
-import org.example.project.typography.textStyle
-import org.example.project.ui.components.AppProjectDropdown
-import org.example.project.ui.components.AppProjectDropdownViewModel
-import org.example.project.ui.components.AppImageCreateBox
-import org.example.project.utilites.AppPrimaryButton
-import org.example.project.utilites.AppTextInput
-import org.example.project.utilites.NavigationBackIcon
-import org.example.project.utilites.ToastHost
-import org.koin.compose.koinInject
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_add
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.graphics.ColorFilter
-import org.jetbrains.compose.resources.painterResource
+import org.example.project.colors.AppColors
+import org.example.project.data.model.LessonLearnedImageRequest
+import org.example.project.typography.textStyle
+import org.example.project.ui.components.AppMultilineTextField
+import org.example.project.ui.components.AppProjectDropdown
+import org.example.project.ui.components.AppImageCreateBox
+import org.example.project.utilites.AppTextField
+import org.example.project.utilites.NavigationBackIcon
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
+import org.koin.compose.koinInject
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateLessonsLearnedScreen(
     onBackClicked: () -> Unit
 ) {
     val viewModel: CreateLessonLearnedViewModel = koinInject()
-    val projectDropdownViewModel: AppProjectDropdownViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
-    
-    val scope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val showSuccessDialog = remember { mutableStateOf(false) }
 
-    var facilitiesId by remember { mutableStateOf<String?>(null) }
+    var selectedProject by remember { mutableStateOf<org.example.project.data.model.Project?>(null) }
     var title by remember { mutableStateOf("") }
+    var reportedBy by remember { mutableStateOf(viewModel.user?.name ?: "") }
     var description by remember { mutableStateOf("") }
-    var reportedBy by remember { mutableStateOf("") }
-    
-    val images = remember { mutableStateListOf<ObservationImage>() }
+
+    val images = remember { mutableStateListOf(ObservationImage()) }
 
     var showErrorToast by remember { mutableStateOf<String?>(null) }
 
@@ -57,7 +51,7 @@ fun CreateLessonsLearnedScreen(
         when (uiState) {
             is CreateLessonLearnedUiState.Success -> {
                 viewModel.resetState()
-                onBackClicked()
+                showSuccessDialog.value = true
             }
             is CreateLessonLearnedUiState.Error -> {
                 showErrorToast = (uiState as CreateLessonLearnedUiState.Error).message
@@ -68,165 +62,205 @@ fun CreateLessonsLearnedScreen(
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize().background(Color.White).statusBarsPadding().navigationBarsPadding(),
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+            .clickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null
+            ) {
+                focusManager.clearFocus()
+            },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = Color.White,
         topBar = {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(vertical = 10.dp)
+                    .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(onBackClick = onBackClicked)
+                NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Create Lesson Learned",
-                    modifier = Modifier.weight(1f),
-                    style = textStyle(18.sp, FontWeight.SemiBold),
+                    text = "CREATE - LESSON LEARNED",
+                    style = textStyle(
+                        size = 14.sp,
+                        weight = FontWeight.Bold
+                    ),
                     color = AppColors.Black
                 )
             }
         },
         bottomBar = {
-            Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                AppPrimaryButton(
-                    text = "SUBMIT",
-                    onClick = {
-                        if (title.isBlank()) {
-                            showErrorToast = "Title is required"
-                            return@AppPrimaryButton
-                        }
-                        if (reportedBy.isBlank()) {
-                            showErrorToast = "Reported By is required"
-                            return@AppPrimaryButton
-                        }
-                        
-                        val imageRequests = images.filter { it.imageUrl.isNotBlank() }.map {
-                            LessonLearnedImageRequest(
-                                image = it.imageUrl,
-                                description = it.description,
-                                isAiGeneratedDescription = false // Defaulting to false since no AI generation in this form
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = 8.dp)
+                    .background(Color.White)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 22.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    org.example.project.utilites.AppBorderButton(
+                        title = "Save as Draft",
+                        onClick = {
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                    org.example.project.utilites.AppPrimaryButton(
+                        title = "Save",
+                        onClick = {
+                            val imageRequests = images.filter { it.imageUrl?.isNotBlank() == true }.map {
+                                LessonLearnedImageRequest(
+                                    image = it.imageUrl ?: "",
+                                    description = it.description,
+                                    isAiGeneratedDescription = false
+                                )
+                            }
+                            viewModel.createLessonLearned(
+                                title = title,
+                                description = description,
+                                reportedBy = reportedBy,
+                                images = imageRequests,
+                                facilitiesId = selectedProject?.groupId ?: -1
                             )
-                        }
-                        
-                        viewModel.createLessonLearned(
-                            title = title,
-                            description = description.takeIf { it.isNotBlank() },
-                            reportedBy = reportedBy,
-                            images = imageRequests.takeIf { it.isNotEmpty() },
-                            facilitiesId = facilitiesId
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    isLoading = uiState is CreateLessonLearnedUiState.Loading
-                )
+                        },
+                        modifier = Modifier.weight(1f),
+                        isLoading = uiState is CreateLessonLearnedUiState.Loading,
+                        enabled = uiState !is CreateLessonLearnedUiState.Loading,
+                        fillMaxWidth = false
+                    )
+                }
             }
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(scrollState)
-                .padding(16.dp)
+                .imePadding()
+                .padding(horizontal = 22.dp)
+                .background(Color.White)
         ) {
-            
-            AppProjectDropdown(
-                viewModel = projectDropdownViewModel,
-                onProjectSelected = { project ->
-                    facilitiesId = project?.groupId
-                },
-                isRequired = false
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            AppTextInput(
-                value = title,
-                onValueChange = { title = it },
-                title = "Title",
-                hint = "Enter title",
-                isRequired = true
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            AppTextInput(
-                value = description,
-                onValueChange = { description = it },
-                title = "Description",
-                hint = "Enter description",
-                maxLines = 5,
-                isRequired = false
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            AppTextInput(
-                value = reportedBy,
-                onValueChange = { reportedBy = it },
-                title = "Reported By",
-                hint = "Enter reported by",
-                isRequired = true
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                text = "Images (Optional)",
-                style = textStyle(14.sp, FontWeight.Medium),
-                color = AppColors.Black
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            images.forEachIndexed { index, image ->
-                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
-                    Text(
-                        text = "Image ${index + 1}",
-                        style = textStyle(12.sp, FontWeight.Normal),
-                        color = AppColors.TextGray
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AppImageCreateBox(
-                        imageUrl = image.imageUrl,
-                        description = image.description,
-                        onDescriptionChange = { newDesc ->
-                            images[index] = image.copy(description = newDesc)
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                AppProjectDropdown(
+                    onProjectSelected = { project ->
+                        selectedProject = project
+                    },
+                    selectedProject = selectedProject,
+                )
+
+                AppTextField(
+                    isMandatory = true,
+                    value = title,
+                    onValueChange = { title = it },
+                    title = "Title",
+                    placeholder = "Enter Lesson Learned Title"
+                )
+
+                AppTextField(
+                    isMandatory = true,
+                    value = reportedBy,
+                    onValueChange = {  },
+                    title = "Reported By",
+                    placeholder = "Enter Reported By",
+                    enabled = false
+                )
+
+                AppMultilineTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    title = "Description",
+                    placeholder = "Enter Description",
+                )
+
+                images.forEachIndexed { index, observationImage ->
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = "Upload Image ${index + 1}",
+                            style = textStyle(
+                                size = 12.sp,
+                                weight = FontWeight.SemiBold
+                            ),
+                            color = AppColors.Black
+                        )
+                        AppImageCreateBox(
+                            imageUrl = observationImage.imageUrl,
+                            description = observationImage.description,
+                            onDescriptionChange = { newDesc ->
+                                images[index] = observationImage.copy(description = newDesc)
+                            },
+                            onImageUploaded = { newUrl ->
+                                images[index] = observationImage.copy(imageUrl = newUrl)
+                            },
+                            onRemoveImageClick = {
+                                if (images.size > 1) {
+                                    images.removeAt(index)
+                                } else {
+                                    images[index] = ObservationImage()
+                                }
+                            }
+                        )
+                    }
+                }
+                if (images.size < 6) {
+                    TextButton(
+                        onClick = {
+                            if (images.size < 6) {
+                                images.add(ObservationImage())
+                            }
                         },
-                        onImageUploaded = { newUrl ->
-                            images[index] = image.copy(imageUrl = newUrl)
-                        },
-                        onRemoveImageClick = {
-                            images.removeAt(index)
-                        }
-                    )
+                        modifier = Modifier.align(Alignment.Start)
+                    ) {
+                        Icon(
+                            painter = org.jetbrains.compose.resources.painterResource(Res.drawable.ic_add),
+                            contentDescription = "Add Image",
+                            modifier = Modifier.size(15.dp),
+                            tint = AppColors.Primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Add Image",
+                            style = textStyle(
+                                size = 12.sp,
+                                weight = FontWeight.SemiBold
+                            ),
+                            color = AppColors.Primary
+                        )
+                    }
                 }
             }
-            
-            if (images.size < 5) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { images.add(ObservationImage()) }.padding(vertical = 8.dp)
-                ) {
-                    Image(
-                        painter = painterResource(Res.drawable.ic_add),
-                        contentDescription = "Add Image",
-                        modifier = Modifier.size(20.dp),
-                        colorFilter = ColorFilter.tint(AppColors.Primary)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Add Image",
-                        style = textStyle(14.sp, FontWeight.Medium),
-                        color = AppColors.Primary
-                    )
-                }
-            }
+
+            ToastHost(
+                visible = showErrorToast != null,
+                message = showErrorToast.orEmpty(),
+                onDismiss = { showErrorToast = null },
+                type = ToastType.Error
+            )
         }
-    }
-    
-    showErrorToast?.let {
-        ToastHost(
-            message = it,
-            isSuccess = false,
-            onDismiss = { showErrorToast = null }
-        )
+
+        if (showSuccessDialog.value) {
+            org.example.project.ui.components.AppStatusDialog(
+                visible = showSuccessDialog.value,
+                title = "Success",
+                description = "Lesson Learned created successfully.",
+                buttonText = "OK",
+                onDismiss = {
+                    showSuccessDialog.value = false
+                    onBackClicked()
+                }
+            )
+        }
     }
 }

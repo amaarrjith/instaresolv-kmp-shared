@@ -47,4 +47,10 @@ sealed class Screens(val route: String) {
     // Lessons Learned
     object LessonsLearnedListScreen : Screens("lessons_learned_list_screen")
     object CreateLessonsLearnedScreen : Screens("create_lessons_learned_screen")
+    
+    // Toolbox Talks
+    object ToolBoxTalkListScreen : Screens("toolbox_talk_list_screen")
+    object CreateToolBoxTalkScreen : Screens("create_toolbox_talk_screen")
+    object ToolBoxTalkDetailScreen : Screens("toolbox_talk_detail_screen")
+    object ToolBoxTalkDetailScreenWithArgs : Screens("toolbox_talk_detail_screen/{toolboxTalkId}")
 }

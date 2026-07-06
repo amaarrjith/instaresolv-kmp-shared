@@ -10,28 +10,29 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.example.project.data.model.LessonLearnedData
-import org.example.project.data.model.LessonLearnedListRequest
-import org.example.project.domain.repository.LessonLearnedRepository
+import org.example.project.data.model.ToolBoxTalkListRequest
+import org.example.project.data.model.ToolBoxTalkExcelRequest
+import org.example.project.data.model.ToolBoxTalkItem
+import org.example.project.domain.repository.ToolBoxTalkRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.AppFilterState
 
-data class LessonsLearnedListState(
+data class ToolBoxTalkListState(
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
-    val lessons: List<LessonLearnedData> = emptyList(),
+    val items: List<ToolBoxTalkItem> = emptyList(),
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
     val appliedFilterState: AppFilterState = AppFilterState()
 )
 
-class LessonsLearnedListViewModel(
-    private val repository: LessonLearnedRepository
+class ToolBoxTalkListViewModel(
+    private val repository: ToolBoxTalkRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LessonsLearnedListState())
-    val uiState: StateFlow<LessonsLearnedListState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(ToolBoxTalkListState())
+    val uiState: StateFlow<ToolBoxTalkListState> = _uiState.asStateFlow()
 
     private val _isExporting = MutableStateFlow(false)
     val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
@@ -58,7 +59,7 @@ class LessonsLearnedListViewModel(
     private var searchJob: Job? = null
 
     init {
-        fetchLessonsLearned(isRefresh = true)
+        fetchToolBoxTalks(isRefresh = true)
     }
 
     fun updateSearchKey(query: String) {
@@ -66,16 +67,16 @@ class LessonsLearnedListViewModel(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(500) // debounce
-            fetchLessonsLearned(isRefresh = true)
+            fetchToolBoxTalks(isRefresh = true)
         }
     }
 
     fun applyFilters(state: AppFilterState) {
         _uiState.update { it.copy(appliedFilterState = state) }
-        fetchLessonsLearned(isRefresh = true)
+        fetchToolBoxTalks(isRefresh = true)
     }
 
-    fun fetchLessonsLearned(isRefresh: Boolean = false) {
+    fun fetchToolBoxTalks(isRefresh: Boolean = false) {
         if (isRefresh) {
             currentPage = 1
         }
@@ -85,30 +86,30 @@ class LessonsLearnedListViewModel(
 
         viewModelScope.launch {
             if (isRefresh) {
-                _uiState.update { it.copy(isLoading = true, error = null) }
+                _uiState.update { it.copy(isLoading = true, error = null, endReached = false) }
             } else {
                 _uiState.update { it.copy(isPaginating = true, error = null) }
             }
 
-            val request = LessonLearnedListRequest(
+            val request = ToolBoxTalkListRequest(
                 searchKey = _uiState.value.searchKey.takeIf { it.isNotBlank() },
                 pageNumber = currentPage,
                 limit = 20,
                 sortType = 1,
-                projectIds = _uiState.value.appliedFilterState.selectedProjects.mapNotNull { it.groupId.toIntOrNull() },
-                openDate = _uiState.value.appliedFilterState.dateOpenMillis?.let { formatDate(it) },
-                endDate = _uiState.value.appliedFilterState.dateCloseMillis?.let { formatDate(it) },
-                reportedByPersons = _uiState.value.appliedFilterState.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
+                projectIds = _uiState.value.appliedFilterState.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() },
+                openDate = _uiState.value.appliedFilterState.dateOpenMillis?.let { formatDate(it) } ?: "",
+                endDate = _uiState.value.appliedFilterState.dateCloseMillis?.let { formatDate(it) } ?: "",
+                reportedByPersons = _uiState.value.appliedFilterState.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             )
 
-            when (val result = repository.getLessonsLearnedList(request)) {
+            when (val result = repository.getToolBoxTalkList(request)) {
                 is NetworkResult.Success -> {
                     val newItems = result.data
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
                             isPaginating = false,
-                            lessons = if (isRefresh) newItems else state.lessons + newItems,
+                            items = if (isRefresh) newItems else state.items + newItems,
                             endReached = newItems.isEmpty() || newItems.size < 20
                         )
                     }
@@ -131,18 +132,16 @@ class LessonsLearnedListViewModel(
         viewModelScope.launch {
             _isExporting.value = true
 
-            val request = LessonLearnedListRequest(
+            val request = ToolBoxTalkExcelRequest(
                 searchKey = _uiState.value.searchKey.takeIf { it.isNotBlank() },
-                pageNumber = 1,
-                limit = 20,
-                sortType = 1,
-                projectIds = _uiState.value.appliedFilterState.selectedProjects.mapNotNull { it.groupId.toIntOrNull() },
-                openDate = _uiState.value.appliedFilterState.dateOpenMillis?.let { formatDate(it) },
-                endDate = _uiState.value.appliedFilterState.dateCloseMillis?.let { formatDate(it) },
-                reportedByPersons = _uiState.value.appliedFilterState.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
+                sortBy = 1,
+                projectIds = _uiState.value.appliedFilterState.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() },
+                openDate = _uiState.value.appliedFilterState.dateOpenMillis?.let { formatDate(it) } ?: "",
+                endDate = _uiState.value.appliedFilterState.dateCloseMillis?.let { formatDate(it) } ?: "",
+                reportedByPersons = _uiState.value.appliedFilterState.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             )
 
-            when (val result = repository.generateLessonLearnedExcel(request)) {
+            when (val result = repository.generateToolBoxTalkExcel(request)) {
                 is NetworkResult.Success -> {
                     result.data.excelUrl?.takeIf { it.isNotBlank() }?.let {
                         _exportUrl.value = it

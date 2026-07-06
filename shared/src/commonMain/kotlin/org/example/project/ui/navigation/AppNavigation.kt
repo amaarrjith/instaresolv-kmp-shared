@@ -23,6 +23,9 @@ import org.example.project.ui.screens.AuditInspectionListScreen
 import org.example.project.ui.screens.IncidentListScreen
 import org.example.project.ui.screens.LessonsLearnedListScreen
 import org.example.project.ui.screens.CreateLessonsLearnedScreen
+import org.example.project.ui.screens.ToolBoxTalkListScreen
+import org.example.project.ui.screens.CreateToolBoxTalkScreen
+import org.example.project.ui.screens.ToolBoxTalkDetailScreen
 import org.example.project.ui.components.NotificationListScreen
 import org.example.project.ui.screens.ObservationListScreen
 import org.example.project.ui.screens.CreateObservationScreen
@@ -193,7 +196,9 @@ fun AppNavigation() {
                 onPrivacyPolicyClick = { navController.navigate(Screens.PrivacyPolicyScreen.route) },
                 onDeleteAccountClick = { navController.navigate(Screens.DeleteAccountScreen.route) },
                 onPendingActionViewAllClick = { navController.navigate(Screens.PendingActionListScreen.route) },
-                onPreTaskClicked = { navController.navigate(Screens.PreTaskListScreen.route) }
+                onPreTaskClicked = { navController.navigate(Screens.PreTaskListScreen.route) },
+                onLessonLearnedClicked = { navController.navigate(Screens.LessonsLearnedListScreen.route) },
+                onToolboxTalksClicked = { navController.navigate(Screens.ToolBoxTalkListScreen.route) }
             )
         }
         composable(Screens.PreTaskListScreen.route) {
@@ -352,7 +357,7 @@ fun AppNavigation() {
         }
         composable(Screens.TermsOfUseScreen.route) {
             TermsOfUseScreen(
-                onBackClick = { navController.popBackStack() }
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -366,6 +371,24 @@ fun AppNavigation() {
         composable(Screens.CreateLessonsLearnedScreen.route) {
             CreateLessonsLearnedScreen(
                 onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(Screens.ToolBoxTalkListScreen.route) {
+            ToolBoxTalkListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onCreateClicked = { navController.navigate(Screens.CreateToolBoxTalkScreen.route) }
+            )
+        }
+        composable(Screens.CreateToolBoxTalkScreen.route) {
+            CreateToolBoxTalkScreen(
+                onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(Screens.ToolBoxTalkDetailScreenWithArgs.route) { backStackEntry ->
+            val toolboxTalkId = backStackEntry.savedStateHandle.get<String>("toolboxTalkId")?.toIntOrNull() ?: -1
+            ToolBoxTalkDetailScreen(
+                id = toolboxTalkId,
+                onClose = { navController.popBackStack() }
             )
         }
         composable(Screens.PrivacyPolicyScreen.route) {

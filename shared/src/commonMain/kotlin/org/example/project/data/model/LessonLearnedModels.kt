@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CreateLessonLearnedRequest(
-    val faciltiesId: String? = null,
+    val facilitiesId: String? = null,
     val title: String,
     val description: String? = null,
     val images: List<LessonLearnedImageRequest>? = null,
