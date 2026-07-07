@@ -43,7 +43,8 @@ import org.koin.compose.koinInject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PermitToWorkListScreen(
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    onCreateClicked: (typeId: Int, typeName: String) -> Unit = { _, _ -> }
 ) {
     val viewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -196,6 +197,7 @@ fun PermitToWorkListScreen(
                                                 .fillMaxWidth()
                                                 .clickable {
                                                     showAddModal = false
+                                                    onCreateClicked(item.permitTypeId, item.permitTypeTitle ?: "")
                                                 }
                                                 .padding(vertical = 4.dp),
                                             verticalAlignment = Alignment.CenterVertically

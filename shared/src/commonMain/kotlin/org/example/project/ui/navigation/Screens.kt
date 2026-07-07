@@ -26,6 +26,8 @@ sealed class Screens(val route: String) {
     object InspectionDetailScreen : Screens("inspection_detail_screen")
     object InspectionDetailScreenWithArgs : Screens("inspection_detail_screen/{inspectionId}")
     object PermitToWorkListScreen : Screens("permit_to_work_list_screen")
+    object CreatePermitScreen : Screens("create_permit_screen")
+    object CreatePermitScreenWithArgs : Screens("create_permit_screen/{permitTypeId}/{permitTypeName}")
     object IncidentListScreen : Screens("incident_list_screen")
     object ViolationListScreen : Screens("violation_list_screen")
     object CreateViolationScreen : Screens("create_violation_screen")

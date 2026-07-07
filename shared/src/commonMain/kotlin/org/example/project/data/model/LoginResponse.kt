@@ -111,3 +111,15 @@ enum class UserType(val value: Int) {
         }
     }
 }
+
+enum class PermitUserType(val value: Int) {
+    INSTAUSER(1),
+    SUBCONTRACTOR(2);
+
+    companion object {
+        fun fromInt(value: Int): PermitUserType {
+            return entries.firstOrNull { it.value == value }
+                ?: SUBCONTRACTOR
+        }
+    }
+}
