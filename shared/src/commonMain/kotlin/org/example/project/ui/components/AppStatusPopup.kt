@@ -138,7 +138,7 @@ fun AppConfirmationDialog(
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = Color.White,
-                modifier = Modifier.fillMaxWidth(0.85f)
+                modifier = Modifier.fillMaxWidth(0.95f)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -215,14 +215,16 @@ fun AppConfirmationDialog(
 
 @Composable
 fun AppExitDialog(
+    title: String = "Leave this page?",
+    description: String = "Are you sure you want to leave this page?\nUnsaved changes will be lost.",
     visible: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AppConfirmationDialog(
         visible = visible,
-        title = "Leave this page?",
-        description = "Are you sure you want to leave this page?\nUnsaved changes will be lost.",
+        title = title,
+        description = description,
         icon = Res.drawable.ic_toast_alert, // NOTE: Replace with Res.drawable.ic_exit_popup if available
         iconTint = null,
         primaryButtonText = "Yes, Leave",

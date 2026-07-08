@@ -76,6 +76,7 @@ import org.example.project.ui.screens.TrainingDetailViewModel
 import org.example.project.ui.screens.TrainingListViewModel
 import org.example.project.ui.screens.TrainingVideoViewModel
 import org.example.project.ui.screens.ViolationDetailViewModel
+import org.example.project.ui.screens.CreatePermitViewModel
 
 val appModule = module {
     factory { createHttpClient(get()) }
@@ -148,6 +149,7 @@ val appModule = module {
     
     factory<PermitRepository> { PermitRepositoryImpl(get()) }
     factory { PermitToWorkListViewModel(get()) }
+    factory { CreatePermitViewModel(get()) }
     
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }

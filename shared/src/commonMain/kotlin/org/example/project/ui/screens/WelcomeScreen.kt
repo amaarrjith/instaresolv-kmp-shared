@@ -1,9 +1,12 @@
 package org.example.project.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,295 +15,367 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import org.jetbrains.compose.resources.painterResource
-import org.example.project.localization.LocalAppStrings
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.bg_welcome_screen
-import instaresolv.shared.generated.resources.img_insta_resolv
-import instaresolv.shared.generated.resources.ic_arrow_left_red
-import org.example.project.model.WelcomeScreenContent
-import org.example.project.typography.interFontFamily
-import kotlinx.coroutines.launch
+import instaresolv.shared.generated.resources.ic_app_login_logo
+import instaresolv.shared.generated.resources.ic_arrow_left
+import instaresolv.shared.generated.resources.ic_audit_inspection
+import instaresolv.shared.generated.resources.ic_observations
+import instaresolv.shared.generated.resources.ic_right_icon
+import instaresolv.shared.generated.resources.ic_toast_success
+import org.example.project.localization.LocalAppStrings
 import org.example.project.typography.textStyle
-import org.koin.compose.koinInject
 import org.example.project.welcomescreen.WelcomeScreenViewModel
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WelcomeScreen(
     onNavigateToLogin: () -> Unit,
 ) {
     val viewModel: WelcomeScreenViewModel = koinInject()
-    val scope = rememberCoroutineScope()
     val strings = LocalAppStrings.current
-
-    val pages = listOf(
-
-        WelcomeScreenContent(
-            title = strings.welcomeToInstaresolv,
-            description = strings.loremIpsum
-        ),
-        WelcomeScreenContent(
-            title = strings.dimentumAliquam + strings.donecPosuerunc,
-            description = strings.loremIpsum
-        ),
-        WelcomeScreenContent(
-            title = strings.donecPosuerunc + strings.dimentumAliquam,
-            description = strings.loremIpsum
-        )
+    var currentIndex by remember { mutableStateOf(0) }
+    
+    val descriptions = listOf(
+        strings.loremIpsum,
+        strings.loremIpsum,
+        strings.loremIpsum
     )
 
-    val pagerState = rememberPagerState {
-        pages.size
-    }
+    val primaryColor = Color(0xFFD32F2F) // Red accent
+    val bgColor = Color.White
+    val platformColor = Color(0xFFF0F0F0) // Light platform for white background
 
     Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+        modifier = Modifier
+            .background(bgColor)
+            .statusBarsPadding()
+            .fillMaxSize()
 
+    ) {
+        // Red abstract background decorations
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            // Subtle Red Glow in the center background
+            drawCircle(
+                color = primaryColor.copy(alpha = 0.08f),
+                radius = 320.dp.toPx() / 2,
+                center = Offset(-80.dp.toPx() + size.width / 2, -50.dp.toPx() + size.height / 2)
+            )
+            
+            // Bottom-right Red Triangle
+            val trianglePath = Path().apply {
+                moveTo(size.width - 180.dp.toPx(), size.height)
+                lineTo(size.width, size.height - 180.dp.toPx())
+                lineTo(size.width, size.height)
+                close()
+            }
+            drawPath(
+                path = trianglePath,
+                color = primaryColor.copy(alpha = 0.4f),
+                style = Fill
+            )
+        }
 
         Column(
-            modifier = Modifier.background(
-                color = Color(0xFFEFF0F5)
-            )
+            modifier = Modifier.fillMaxSize()
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Image(
-                        painter = painterResource(Res.drawable.bg_welcome_screen),
-                        contentDescription = "",
-                        modifier = Modifier.padding(horizontal = 35.dp)
-                    )
-
-                }
-
-            }
-
-        }
-
-
-
-        Surface(
-
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .fillMaxHeight(.35f),
-
-            shape = BottomSheetCurve(),
-
-            color = Color.White
-        ) {
-
+            // Dynamic slide content: Headers, Logo & Text
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        horizontal = 32.dp,
-                        vertical = 40.dp
-                    ),
-
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 10.dp)
             ) {
-                if (pagerState.currentPage == 0) {
-                    Text(
-                        strings.welcomeTo,
-                        style = textStyle(
-                            size = 14.sp,
-                            weight = FontWeight.Normal,
-                            color = Color.Gray,
-                        )
-                    )
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Image(
-                        painter = painterResource(
-                            Res.drawable.img_insta_resolv
-                        ),
-                        contentDescription = null,
-                        modifier = Modifier.height(35.dp)
-                    )
-                } else {
-                    Text(
-                        text =
-                            pagerState.currentPage.let { pages[it] }.title,
-
-                        textAlign = TextAlign.Center,
-                        style = textStyle(
-                            size = 18.sp,
-                            weight = FontWeight.Bold,
-                            color = Color.Black,
-                        ),
-                        modifier = Modifier.padding(top = 20.dp)
-                    )
-
-                }
-
-
-                Spacer(Modifier.height(20.dp))
-
                 Text(
-                    text =
-                        pagerState.currentPage.let { pages[it] }.description,
-
-                    textAlign = TextAlign.Center,
-                    style = textStyle(
-                        size = 14.sp,
-                        weight = FontWeight.Normal,
-                        color = Color.Gray,
-                    ),
+                    text = "Track.",
+                    color = Color.Black,
+                    style = textStyle(size = 32.sp, weight = FontWeight.Bold)
+                )
+                Text(
+                    text = "Resolve.",
+                    color = Color.Black,
+                    style = textStyle(size = 32.sp, weight = FontWeight.Bold)
+                )
+                Text(
+                    text = "Stay Compliant.",
+                    color = primaryColor,
+                    style = textStyle(size = 32.sp, weight = FontWeight.Bold)
                 )
 
-                Spacer(Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(14.dp))
 
-
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 15.dp)
-                ) {
-
-                    Row(
-                        modifier = Modifier.align(
-                            Alignment.Center
-                        )
-                    ) {
-
-                        repeat(3) { index ->
-
-                            Box(
-                                modifier = Modifier
-                                    .padding(3.dp)
-                                    .size(10.dp)
-                                    .clip(CircleShape)
-                                    .background(
-
-                                        if (
-                                            pagerState.currentPage ==
-                                            index
-                                        )
-                                            Color.Red
-                                        else
-                                            Color.LightGray
-
-                                    )
-                            )
-
-                        }
-
-                    }
-
-                    Image(
-
-                        painter = painterResource(
-                            Res.drawable.ic_arrow_left_red
-                        ),
-
-                        contentDescription = null,
-
-                        modifier = Modifier
-                            .size(55.dp)
-                            .align(
-                                Alignment.CenterEnd
-                            )
-                            .clickable {
-
-                                scope.launch {
-
-                                    val nextPage =
-                                        pagerState.currentPage + 1
-
-                                    if (
-                                        nextPage <
-                                        pagerState.pageCount
-                                    ) {
-
-                                        pagerState.animateScrollToPage(
-                                            nextPage
-                                        )
-
-                                    } else {
-                                        viewModel.saveWelcomeScreenStatus()
-                                        onNavigateToLogin()
-                                    }
-
-                                }
-                            }
-
+                AnimatedContent(targetState = currentIndex, label = "DescriptionAnimation") { targetIndex ->
+                    Text(
+                        text = descriptions[targetIndex],
+                        color = Color.Black.copy(alpha = 0.6f),
+                        style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                        lineHeight = 18.sp,
+                        modifier = Modifier.heightIn(min = 52.dp, max = 72.dp)
                     )
-
                 }
-
-
             }
 
-        }
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // Middle Graphic
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Image(
+                    painter = painterResource(Res.drawable.ic_app_login_logo),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxHeight(0.8f)
+                        .padding(bottom = 16.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Three Columns
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top
+            ) {
+                ColumnView(
+                    title = "Track",
+                    desc = "Capture issues\nin real-time",
+                    icon = Res.drawable.ic_observations,
+                    isActive = currentIndex == 0,
+                    primaryColor = primaryColor,
+                    onClick = { currentIndex = 0 },
+                    modifier = Modifier.weight(1f)
+                )
+                
+                Divider(
+                    color = Color.Black.copy(alpha = 0.1f),
+                    modifier = Modifier
+                        .height(50.dp)
+                        .width(1.dp)
+                )
+                
+                ColumnView(
+                    title = "Resolve",
+                    desc = "Take action and\nclose faster",
+                    icon = Res.drawable.ic_toast_success,
+                    isActive = currentIndex == 1,
+                    primaryColor = primaryColor,
+                    onClick = { currentIndex = 1 },
+                    modifier = Modifier.weight(1f)
+                )
+
+                Divider(
+                    color = Color.Black.copy(alpha = 0.1f),
+                    modifier = Modifier
+                        .height(50.dp)
+                        .width(1.dp)
+                )
+                
+                ColumnView(
+                    title = "Comply",
+                    desc = "Ensure compliance\nwith ease",
+                    icon = Res.drawable.ic_audit_inspection,
+                    isActive = currentIndex == 2,
+                    primaryColor = primaryColor,
+                    onClick = { currentIndex = 2 },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            // Page Indicator Dots
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                descriptions.indices.forEach { index ->
+                    val isActive = index == currentIndex
+                    val scale by animateFloatAsState(
+                        targetValue = if (isActive) 1.25f else 1.0f,
+                        label = "DotScaleAnimation"
+                    )
+                    
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .size(8.dp)
+                            .scale(scale)
+                            .background(
+                                color = if (isActive) primaryColor else Color.Black.copy(alpha = 0.2f),
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+
+            // Action Buttons
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 32.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (currentIndex > 0) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp)
+                            .background(platformColor, RoundedCornerShape(12.dp))
+                            .clickable {
+                                currentIndex -= 1
+                            },
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_arrow_left),
+                            contentDescription = "Back",
+                            tint = Color.Black,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Back",
+                            color = Color.Black,
+                            style = textStyle(size = 16.sp, weight = FontWeight.Bold)
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                        .background(primaryColor, RoundedCornerShape(12.dp))
+                        .clickable {
+                            if (currentIndex < descriptions.size - 1) {
+                                currentIndex += 1
+                            } else {
+                                viewModel.saveWelcomeScreenStatus()
+                                onNavigateToLogin()
+                            }
+                        },
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Continue",
+                        color = Color.White,
+                        style = textStyle(size = 16.sp, weight = FontWeight.Bold)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_right_icon),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
-class BottomSheetCurve : Shape {
-
-    override fun createOutline(
-        size: androidx.compose.ui.geometry.Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-
-        val path = Path().apply {
-
-            moveTo(0f, 0f)
-
-            quadraticBezierTo(
-                size.width / 2f,
-                180f,
-                size.width,
-                0f
+@Composable
+private fun ColumnView(
+    title: String,
+    desc: String,
+    icon: DrawableResource,
+    isActive: Boolean,
+    primaryColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    
+    Column(
+        modifier = modifier
+            .alpha(if (isActive) 1.0f else 0.6f)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .background(
+                    color = if (isActive) primaryColor.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.06f),
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = if (isActive) primaryColor else Color.Black.copy(alpha = 0.5f),
+                modifier = Modifier.size(18.dp)
             )
-
-            lineTo(size.width, size.height)
-
-            lineTo(0f, size.height)
-
-            close()
         }
-
-        return Outline.Generic(path)
+        
+        Spacer(modifier = Modifier.height(10.dp))
+        
+        Text(
+            text = title,
+            color = if (isActive) Color.Black else Color.Black.copy(alpha = 0.5f),
+            style = textStyle(size = 12.sp, weight = FontWeight.Bold)
+        )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = desc,
+            color = Color.Black.copy(alpha = if (isActive) 0.6f else 0.35f),
+            style = textStyle(size = 10.sp, weight = FontWeight.Normal),
+            textAlign = TextAlign.Center,
+            lineHeight = 14.sp
+        )
     }
-
 }

@@ -60,7 +60,6 @@ fun AppDatePicker(
     } else {
         text
     }
-    Column
     Row(
         modifier = modifier
             .fillMaxWidth()

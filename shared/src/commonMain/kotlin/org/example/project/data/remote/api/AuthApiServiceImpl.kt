@@ -589,4 +589,12 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun getPermitContents(
+        request: org.example.project.data.model.PermitContentRequest
+    ): NetworkResult<org.example.project.data.model.PermitContentData> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_CONTENT) {
+            jsonBody(request)
+        }
+    }
 }

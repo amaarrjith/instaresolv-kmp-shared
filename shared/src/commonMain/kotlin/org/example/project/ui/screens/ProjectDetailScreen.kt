@@ -448,6 +448,8 @@ fun ProjectDetailScreenContent(
 
     if (showLeaveProjectDialog.value != null) {
         AppExitDialog(
+            title = "Remove User ?",
+            description = "Are you sure you want to remove this user",
             visible = true,
             onConfirm = {
                 val member = showLeaveProjectDialog.value!!

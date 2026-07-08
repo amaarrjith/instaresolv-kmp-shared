@@ -76,4 +76,5 @@ object ApiEndpoints {
     const val PERMIT_LIST = "permit/list"
     const val PERMIT_TYPES = "permit/permit-types"
     const val PERMIT_PENDING_ACTIONS = "permit/pending-actions"
+    const val PERMIT_CONTENT = "permit/contents"
 }

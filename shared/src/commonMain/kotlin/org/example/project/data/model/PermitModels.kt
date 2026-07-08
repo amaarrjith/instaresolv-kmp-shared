@@ -112,3 +112,20 @@ data class PermitPendingActionsResponse(
     val message: String? = null,
     val response: List<PermitPendingActionItem>? = null
 )
+
+@Serializable
+data class PermitContentRequest(
+    val id: Int
+)
+
+@Serializable
+data class PermitContentItem(
+    val id: Int,
+    val title: String? = null
+)
+
+@Serializable
+data class PermitContentData(
+    val certificateValidity: List<PermitContentItem>? = null,
+    val generalConditions: List<PermitContentItem>? = null
+)

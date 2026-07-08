@@ -24,4 +24,8 @@ class PermitRepositoryImpl(
     override suspend fun getPermitPendingActions(): NetworkResult<org.example.project.data.model.PermitPendingActionsResponse> {
         return apiService.getPermitPendingActions(org.example.project.data.model.PermitPendingActionsRequest())
     }
+
+    override suspend fun getPermitContents(request: org.example.project.data.model.PermitContentRequest): NetworkResult<org.example.project.data.model.PermitContentData> {
+        return apiService.getPermitContents(request)
+    }
 }

@@ -21,8 +21,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import org.example.project.ui.components.imagepicker.AppImagePicker
+import org.example.project.ui.components.WebImageView
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
@@ -79,10 +85,13 @@ import org.koin.compose.koinInject
 @Composable
 fun RegisterScreen(
     isLoginClicked: () -> Unit,
-    isRegisterCompleted: (tempUserId: Int, email: String) -> Unit
+    isRegisterCompleted: (tempUserId: Int, email: String) -> Unit,
+    isTermsClicked: () -> Unit = {},
+    isPrivacyClicked: () -> Unit = {}
 ) {
     val viewModel: RegisterViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier.fillMaxSize()
@@ -92,6 +101,9 @@ fun RegisterScreen(
             .navigationBarsPadding()
             .imePadding()
             .verticalScroll(scrollState)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { focusManager.clearFocus() })
+            }
     ) {
         RegisterScreenContent(
             isLoginClicked = {
@@ -101,8 +113,8 @@ fun RegisterScreen(
                 tempUserId, email ->
                 isRegisterCompleted(tempUserId, email)
             },
-            isTermsClicked = {},
-            isPrivacyClicked = {},
+            isTermsClicked = { isTermsClicked() },
+            isPrivacyClicked = { isPrivacyClicked() },
             viewModel,
             uiState
         )
@@ -140,9 +152,11 @@ fun RegisterScreenContent(
     val designation = remember { mutableStateOf("") }
     val company = remember { mutableStateOf("") }
     val isTermsAccepted = remember { mutableStateOf(false) }
+    val showPicker = remember { mutableStateOf(false) }
+    val profileImageUrl = remember { mutableStateOf("") }
+    val isUploadingImage = remember { mutableStateOf(false) }
     val strings = LocalAppStrings.current
     val focusManager = LocalFocusManager.current
-
 
     LaunchedEffect(uiState.value.isRegisterSuccess) {
         if (uiState.value.isRegisterSuccess) {
@@ -152,6 +166,18 @@ fun RegisterScreenContent(
             )
         }
     }
+
+    AppImagePicker(
+        showPicker = showPicker,
+        imageType = 1,
+        showFullScreenLoader = false,
+        onIsUploading = { isUploading ->
+            isUploadingImage.value = isUploading
+        },
+        onImageUploaded = { url ->
+            profileImageUrl.value = url
+        }
+    )
 
     Column(
         modifier = Modifier
@@ -201,7 +227,7 @@ fun RegisterScreenContent(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = {
-                            // Image upload logic will go here
+                            showPicker.value = true
                         }
                     )
             ) {
@@ -211,11 +237,34 @@ fun RegisterScreenContent(
                         .clip(CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(Res.drawable.ic_avatar),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    if (profileImageUrl.value.isNotEmpty()) {
+                        WebImageView(
+                            imageUrl = profileImageUrl.value,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(Res.drawable.ic_avatar),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    if (isUploadingImage.value) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AppColors.Primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
                 }
                 Box(
                     modifier = Modifier
@@ -338,8 +387,7 @@ fun RegisterScreenContent(
                 }
             )
         }
-
-
+        Spacer(modifier = Modifier.height(10.dp))
     }
 }
 

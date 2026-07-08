@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +63,7 @@ fun LoginScreen(
 ) {
     val vm: LoginViewModel = koinInject()
     val uiState by vm.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
 
     LaunchedEffect(uiState.isLoginSuccess) {
@@ -77,6 +80,11 @@ fun LoginScreen(
             .padding(horizontal = 28.dp)
             .imePadding()
             .verticalScroll(scrollState)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { 
+                    focusManager.clearFocus()
+                })
+            }
     ) {
         LoginScreenContent(
             navigateToRegister = navigateToRegister,

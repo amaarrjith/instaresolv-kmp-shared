@@ -328,4 +328,8 @@ interface AuthApiService {
     suspend fun getPermitPendingActions(
         request: org.example.project.data.model.PermitPendingActionsRequest
     ): NetworkResult<org.example.project.data.model.PermitPendingActionsResponse>
+
+    suspend fun getPermitContents(
+        request: org.example.project.data.model.PermitContentRequest
+    ): NetworkResult<org.example.project.data.model.PermitContentData>
 }

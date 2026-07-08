@@ -111,6 +111,12 @@ fun AppNavigation() {
                     navController.navigate(
                         "${Screens.OTPScreen.route}/$tempUserId/$email"
                     )
+                },
+                isTermsClicked = {
+                    navController.navigate(Screens.TermsOfUseScreen.route)
+                },
+                isPrivacyClicked = {
+                    navController.navigate(Screens.PrivacyPolicyScreen.route)
                 }
             )
         }

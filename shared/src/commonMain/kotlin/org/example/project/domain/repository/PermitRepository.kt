@@ -10,4 +10,5 @@ interface PermitRepository {
     suspend fun getFilterContent(): NetworkResult<FilterContentData>
     suspend fun getPermitTypes(): NetworkResult<org.example.project.data.model.PermitTypesResponse>
     suspend fun getPermitPendingActions(): NetworkResult<org.example.project.data.model.PermitPendingActionsResponse>
+    suspend fun getPermitContents(request: org.example.project.data.model.PermitContentRequest): NetworkResult<org.example.project.data.model.PermitContentData>
 }
