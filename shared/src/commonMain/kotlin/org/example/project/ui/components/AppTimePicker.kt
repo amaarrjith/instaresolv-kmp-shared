@@ -45,7 +45,8 @@ fun AppTimePicker(
     text: String,
     selectedTime: String,
     onTimeSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -57,7 +58,7 @@ fun AppTimePicker(
             .height(48.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(Color(0xFFF2F2F2))
-            .clickable { showDialog = true }
+            .clickable(enabled = enabled) { showDialog = true }
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

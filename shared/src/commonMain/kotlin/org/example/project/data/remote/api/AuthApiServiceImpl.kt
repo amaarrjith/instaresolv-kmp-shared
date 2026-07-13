@@ -597,4 +597,36 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun getPermitProjectList(
+        request: org.example.project.data.model.PermitProjectListRequest
+    ): NetworkResult<org.example.project.data.model.PermitProjectListResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_PROJECT_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getPermitUserList(
+        request: org.example.project.data.model.PermitUserListRequest
+    ): NetworkResult<org.example.project.data.model.PermitUserListResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_USER_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun submitPermitValidity(
+        request: org.example.project.data.model.PermitValiditySubmitRequest
+    ): NetworkResult<org.example.project.data.model.PermitValiditySubmitResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_CERTIFICATE_VALIDITY) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getPermitDetail(
+        request: org.example.project.data.model.PermitDetailRequest
+    ): NetworkResult<org.example.project.data.model.PermitDetailData> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_DETAIL) {
+            jsonBody(request)
+        }
+    }
 }

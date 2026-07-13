@@ -28,4 +28,20 @@ class PermitRepositoryImpl(
     override suspend fun getPermitContents(request: org.example.project.data.model.PermitContentRequest): NetworkResult<org.example.project.data.model.PermitContentData> {
         return apiService.getPermitContents(request)
     }
+
+    override suspend fun getPermitProjectList(request: org.example.project.data.model.PermitProjectListRequest): NetworkResult<org.example.project.data.model.PermitProjectListResponse> {
+        return apiService.getPermitProjectList(request)
+    }
+
+    override suspend fun getPermitUserList(request: org.example.project.data.model.PermitUserListRequest): NetworkResult<org.example.project.data.model.PermitUserListResponse> {
+        return apiService.getPermitUserList(request)
+    }
+
+    override suspend fun submitPermitValidity(request: org.example.project.data.model.PermitValiditySubmitRequest): NetworkResult<org.example.project.data.model.PermitValiditySubmitResponse> {
+        return apiService.submitPermitValidity(request)
+    }
+
+    override suspend fun getPermitDetail(request: org.example.project.data.model.PermitDetailRequest): NetworkResult<org.example.project.data.model.PermitDetailData> {
+        return apiService.getPermitDetail(request)
+    }
 }

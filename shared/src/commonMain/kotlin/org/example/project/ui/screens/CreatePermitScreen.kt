@@ -1,5 +1,6 @@
 package org.example.project.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -25,6 +27,7 @@ import org.koin.compose.koinInject
 import org.example.project.ui.components.AppLoader
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -42,6 +45,8 @@ import org.example.project.ui.components.AppTimePicker
 import org.example.project.ui.components.AppUserDropdown
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
 
 @Composable
 fun CreatePermitScreen(
@@ -81,6 +86,40 @@ fun CreatePermitScreen(
                     )
                 )
             }
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = 8.dp)
+                    .background(Color.White)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 22.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    org.example.project.utilites.AppBorderButton(
+                        title = "Save as Draft",
+                        onClick = {
+
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                    org.example.project.utilites.AppPrimaryButton(
+                        title = "Save",
+                        onClick = {
+                            viewModel.submitPermit()
+                        },
+                        modifier = Modifier.weight(1f),
+                        isLoading = uiState.isSubmitting,
+                        enabled = !uiState.isSubmitting,
+                        fillMaxWidth = false
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         Box(
@@ -103,11 +142,20 @@ fun CreatePermitScreen(
                             color = AppColors.Primary
                         )
                     }
+                    AppTextField(
+                        value = "InstaResolv Private Limited",
+                        onValueChange = {},
+                        title = "Contractor Name",
+                        placeholder = "",
+                        enabled = false,
+                        isMandatory = true
+                    )
                     AppProjectDropdown(
                         title = "Specify Project",
                         placeholder = "Choose Project",
-                        selectedProject = null,
-                        onProjectSelected = { },
+                        selectedProject = uiState.selectedProject,
+                        onProjectSelected = { viewModel.updateSelectedProject(it) },
+                        projects = uiState.projects,
                     )
                     HorizontalDivider()
                     Text(
@@ -128,8 +176,8 @@ fun CreatePermitScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         AppDatePicker(
                             text = "Permit Date",
-                            onDateSelected = { },
-                            selectedDateMillis = null
+                            onDateSelected = { viewModel.updatePermitDate(it) },
+                            selectedDateMillis = uiState.permitDateMillis
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -144,8 +192,8 @@ fun CreatePermitScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             AppTimePicker(
                                 text = "00 : 00",
-                                selectedTime = "",
-                                onTimeSelected = {  }
+                                selectedTime = uiState.startTime,
+                                onTimeSelected = { viewModel.updateStartTime(it) }
                             )
                         }
                         Column(modifier = Modifier.weight(1f)) {
@@ -159,18 +207,20 @@ fun CreatePermitScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             AppTimePicker(
                                 text = "00 : 00",
-                                selectedTime = "",
-                                onTimeSelected = {}
+                                selectedTime = uiState.endTime,
+                                onTimeSelected = { viewModel.updateEndTime(it) }
                             )
                         }
                     }
-                    AppUserDropdown(
-                        title = "Authorized Person",
-                        selectedUser = null,
-                        onUserSelected = { },
-                        placeholder = "Choose User",
-                        users = emptyList()
-                    )
+                    if (uiState.selectedProject != null) {
+                        AppUserDropdown(
+                            title = "Authorized Person",
+                            selectedUser = uiState.selectedUser,
+                            onUserSelected = { viewModel.updateSelectedUser(it) },
+                            placeholder = "Choose User",
+                            users = uiState.authorizedUsers
+                        )
+                    }
                     if (uiState.certificateValidity.isNotEmpty()) {
                         uiState.certificateValidity.forEach { item ->
                             AppTextField(
@@ -211,7 +261,7 @@ fun CreatePermitScreen(
                         color = AppColors.Primary
                     )
                     AppTextField(
-                        value = "",
+                        value = viewModel.logginedUser?.name ?: "",
                         onValueChange = {
 
                         },
@@ -225,37 +275,79 @@ fun CreatePermitScreen(
                         onSignatureUploaded = { viewModel.updateSignatureUrl(it) },
                         onRemoveSignatureClick = { viewModel.updateSignatureUrl(null) },
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append("Time")
+                                    },
+                                    style = textStyle(12.sp, FontWeight.SemiBold)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                AppTimePicker(
+                                    text = "00 : 00",
+                                    selectedTime = uiState.signatureTime,
+                                    onTimeSelected = {  },
+                                    enabled = false
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append("Date")
+                                    },
+                                    style = textStyle(12.sp, FontWeight.SemiBold)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                AppDatePicker(
+                                    text = "YYYY-MM-DD",
+                                    onDateSelected = { },
+                                    selectedDateMillis = uiState.signatureDateMillis,
+                                    enabled = false
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        if (uiState.submitError != null) {
                             Text(
-                                text = buildAnnotatedString {
-                                    append("Time")
-                                },
-                                style = textStyle(12.sp, FontWeight.SemiBold)
+                                text = uiState.submitError ?: "",
+                                color = Color.Red,
+                                style = textStyle(12.sp, FontWeight.Medium),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            AppTimePicker(
-                                text = "00 : 00",
-                                selectedTime = "",
-                                onTimeSelected = {  }
-                            )
                         }
-                        Column(modifier = Modifier.weight(1f)) {
+                        if (uiState.submitSuccess) {
                             Text(
-                                text = buildAnnotatedString {
-                                    append("Date")
-                                },
-                                style = textStyle(12.sp, FontWeight.SemiBold)
+                                text = "Permit validity submitted successfully!",
+                                color = Color(0xFF4CAF50),
+                                style = textStyle(14.sp, FontWeight.Medium),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            AppDatePicker(
-                                text = "YYYY-MM-DD",
-                                onDateSelected = { },
-                                selectedDateMillis = null
-                            )
                         }
-                    }
                 }
+
+                ToastHost(
+                    visible = uiState.error != null,
+                    message = uiState.error.orEmpty(),
+                    onDismiss = { viewModel.clearError() },
+                    type = ToastType.Error
+                )
+            }
+            if (uiState.submitSuccess) {
+                org.example.project.ui.components.AppStatusDialog(
+                    visible = uiState.submitSuccess,
+                    title = "Success",
+                    description = uiState.successMessage ?: "Success",
+                    buttonText = "OK",
+                    onDismiss = {
+                        uiState.submitSuccess = false
+                        onBackClicked()
+                    }
+                )
             }
         }
     }

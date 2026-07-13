@@ -11,6 +11,7 @@ import kotlinx.datetime.format.char
 import kotlinx.datetime.periodUntil
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 /**
  * Parses [input] using [inputPattern] and re-formats it as [outputPattern].
@@ -72,47 +73,43 @@ private fun buildDateTimeFormat(pattern: String): DateTimeFormat<LocalDateTime> 
         }
     }
 }
+
 fun timeAgo(
     input: String,
-    inputPattern: String = "yyyy-MM-dd HH:mm:ss"
+    inputPattern: String = "yyyy-MM-dd HH:mm:ss",
+    isUtc: Boolean = false
 ): String {
 
-    val timeZone = TimeZone.currentSystemDefault()
+    val systemTimeZone = TimeZone.currentSystemDefault()
+
     val past = try {
+        // For ISO-8601 strings like "2026-07-10T12:30:00Z"
         Instant.parse(input)
-    } catch (e: Exception) {
-        val dateTime = LocalDateTime.parse(input, buildDateTimeFormat(inputPattern))
-        dateTime.toInstant(timeZone)
+    } catch (_: Exception) {
+        val dateTime = LocalDateTime.parse(
+            input,
+            buildDateTimeFormat(inputPattern)
+        )
+
+        dateTime.toInstant(
+            if (isUtc) TimeZone.UTC else systemTimeZone
+        )
     }
 
-    val now = kotlin.time.Clock.System.now()// or Clock.System.now() for newer versions
+    val now = Clock.System.now()
 
     if (past > now) return "Just now"
 
-    val period = past.periodUntil(now, timeZone)
+    val period = past.periodUntil(now, systemTimeZone)
 
     return when {
-        period.years > 0 ->
-            pluralize(period.years, "year")
-
-        period.months > 0 ->
-            pluralize(period.months, "month")
-
-        period.days >= 7 ->
-            pluralize(period.days / 7, "week")
-
-        period.days > 0 ->
-            pluralize(period.days, "day")
-
-        period.hours > 0 ->
-            pluralize(period.hours, "hour")
-
-        period.minutes > 0 ->
-            pluralize(period.minutes, "minute")
-
-        period.seconds > 0 ->
-            pluralize(period.seconds, "second")
-
+        period.years > 0 -> pluralize(period.years, "year")
+        period.months > 0 -> pluralize(period.months, "month")
+        period.days >= 7 -> pluralize(period.days / 7, "week")
+        period.days > 0 -> pluralize(period.days, "day")
+        period.hours > 0 -> pluralize(period.hours, "hour")
+        period.minutes > 0 -> pluralize(period.minutes, "minute")
+        period.seconds > 0 -> pluralize(period.seconds, "second")
         else -> "Just now"
     }
 }

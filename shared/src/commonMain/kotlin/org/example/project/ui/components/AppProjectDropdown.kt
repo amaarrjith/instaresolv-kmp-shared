@@ -32,10 +32,14 @@ fun AppProjectDropdown(
     placeholder: String = "Select Project",
     selectedProject: Project?,
     onProjectSelected: (Project?) -> Unit,
+    projects: List<Project>? = null,
     modifier: Modifier = Modifier
 ) {
     val viewModel: AppProjectDropdownViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    
+    val displayProjects = projects ?: uiState.projects
+    val isLoading = if (projects != null) false else uiState.isLoading
     
     var expanded by remember { mutableStateOf(false) }
 
@@ -112,18 +116,18 @@ fun AppProjectDropdown(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.background(Color.White)
             ) {
-                if (uiState.isLoading) {
+                if (isLoading) {
                     DropdownMenuItem(
                         text = { Text("Loading...") },
                         onClick = { }
                     )
-                } else if (uiState.projects.isEmpty()) {
+                } else if (displayProjects.isEmpty()) {
                     DropdownMenuItem(
                         text = { Text("No Projects Found") },
                         onClick = { }
                     )
                 } else {
-                    uiState.projects.forEach { project ->
+                    displayProjects.forEach { project ->
                         DropdownMenuItem(
                             text = { 
                                 Row(

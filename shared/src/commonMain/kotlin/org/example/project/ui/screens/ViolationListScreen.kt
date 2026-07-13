@@ -344,7 +344,8 @@ fun ViolationListItem(
                     Text(
                         text = timeAgo(
                             violation.createdAt ?: "",
-                            inputPattern = "yyyy-MM-dd HH:mm:ss"
+                            inputPattern = "yyyy-MM-dd HH:mm:ss",
+                            true
                         ),
                         style = textStyle(size = 11.sp, weight = FontWeight.Normal),
                         color = Color.DarkGray

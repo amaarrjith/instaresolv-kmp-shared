@@ -77,6 +77,12 @@ import org.example.project.ui.screens.TrainingListViewModel
 import org.example.project.ui.screens.TrainingVideoViewModel
 import org.example.project.ui.screens.ViolationDetailViewModel
 import org.example.project.ui.screens.CreatePermitViewModel
+import org.example.project.ui.screens.PermitDetailViewModel
+import org.example.project.ui.screens.ToolBoxTalkListViewModel
+import org.example.project.ui.screens.CreateToolBoxTalkViewModel
+import org.example.project.ui.screens.ToolBoxTalkDetailViewModel
+import org.example.project.domain.repository.ToolBoxTalkRepository
+import org.example.project.domain.repository.ToolBoxTalkRepositoryImpl
 
 val appModule = module {
     factory { createHttpClient(get()) }
@@ -108,7 +114,10 @@ val appModule = module {
     factory { ChangePasswordViewModel(get()) }
     factory { DeleteAccountViewModel(get(), get()) }
     factory { ContactUsViewModel(get()) }
-
+    factory<ToolBoxTalkRepository> { ToolBoxTalkRepositoryImpl(get()) }
+    factory { ToolBoxTalkListViewModel(get()) }
+    factory { CreateToolBoxTalkViewModel(get(), get(), get()) }
+    factory { ToolBoxTalkDetailViewModel(get()) }
     factory { PendingActionListViewModel(get(), get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
     factory { ObservationListViewModel(get()) }
@@ -149,7 +158,8 @@ val appModule = module {
     
     factory<PermitRepository> { PermitRepositoryImpl(get()) }
     factory { PermitToWorkListViewModel(get()) }
-    factory { CreatePermitViewModel(get()) }
+    factory { CreatePermitViewModel(get(), get()) }
+    factory { PermitDetailViewModel(get(), get(), get()) }
     
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }

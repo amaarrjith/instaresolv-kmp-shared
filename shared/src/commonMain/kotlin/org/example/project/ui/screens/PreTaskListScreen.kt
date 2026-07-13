@@ -290,16 +290,6 @@ fun PreTaskListItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Time Ago
-                    Text(
-                        text = timeAgo(
-                            preTask.createdAt ?: "",
-                            inputPattern = "yyyy-MM-dd HH:mm:ss",
-                        ),
-                        style = textStyle(size = 11.sp, weight = FontWeight.Normal),
-                        color = Color.DarkGray
-                    )
-                    Spacer(Modifier.weight(1f))
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -322,6 +312,16 @@ fun PreTaskListItem(
                             color = AppColors.Black
                         )
                     }
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = timeAgo(
+                            preTask.createdAt ?: "",
+                            inputPattern = "yyyy-MM-dd HH:mm:ss",
+                            true
+                        ),
+                        style = textStyle(size = 11.sp, weight = FontWeight.Normal),
+                        color = Color.DarkGray
+                    )
                 }
 
                 // Title

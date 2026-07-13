@@ -32,6 +32,7 @@ import org.example.project.ui.screens.CreateObservationScreen
 import org.example.project.ui.screens.CreateIncidentScreen
 import org.example.project.ui.screens.PermitToWorkListScreen
 import org.example.project.ui.screens.CreatePermitScreen
+import org.example.project.ui.screens.PermitDetailScreen
 import org.example.project.ui.screens.TrainingListScreen
 import org.example.project.ui.screens.TrainingDetailScreen
 import org.example.project.ui.screens.TrainingVideoScreen
@@ -254,7 +255,17 @@ fun AppNavigation() {
                 onBackClicked = { navController.popBackStack() },
                 onCreateClicked = { typeId, typeName ->
                     navController.navigate("${Screens.CreatePermitScreen.route}/$typeId/$typeName")
+                },
+                onItemClicked = { permitId ->
+                    navController.navigate("${Screens.PermitDetailScreen.route}/$permitId")
                 }
+            )
+        }
+        composable(Screens.PermitDetailScreenWithArgs.route) { backStackEntry ->
+            val permitId = backStackEntry.savedStateHandle.get<String>("permitId")?.toIntOrNull() ?: -1
+            PermitDetailScreen(
+                id = permitId,
+                onBackClicked = { navController.popBackStack() }
             )
         }
         composable(Screens.CreatePermitScreenWithArgs.route) { backStackEntry ->

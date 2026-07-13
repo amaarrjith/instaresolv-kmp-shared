@@ -47,7 +47,8 @@ fun AppDatePicker(
     text: String,
     onDateSelected: (Long?) -> Unit,
     modifier: Modifier = Modifier,
-    selectedDateMillis: Long? = null
+    selectedDateMillis: Long? = null,
+    enabled: Boolean = true
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -66,7 +67,7 @@ fun AppDatePicker(
             .height(48.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(Color(0xFFF2F2F2))
-            .clickable { showDialog = true }
+            .clickable(enabled = enabled) { showDialog = true }
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -44,7 +44,8 @@ import org.koin.compose.koinInject
 @Composable
 fun PermitToWorkListScreen(
     onBackClicked: () -> Unit,
-    onCreateClicked: (typeId: Int, typeName: String) -> Unit = { _, _ -> }
+    onCreateClicked: (typeId: Int, typeName: String) -> Unit = { _, _ -> },
+    onItemClicked: (Int) -> Unit = {}
 ) {
     val viewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -257,7 +258,8 @@ fun PermitToWorkListScreen(
                                         }
                                     }
                                     PermitListItem(
-                                        permit = uiState.permits[index]
+                                        permit = uiState.permits[index],
+                                        onClick = { onItemClicked(uiState.permits[index].id) }
                                     )
                                 }
                                 if (uiState.isPaginating) {
@@ -287,9 +289,10 @@ fun PermitToWorkListScreen(
 
 @Composable
 private fun PermitListItem(
-    permit: PermitItem
+    permit: PermitItem,
+    onClick: () -> Unit = {}
 ) {
-    Column {
+    Column(modifier = Modifier.clickable { onClick() }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -347,11 +350,13 @@ private fun PermitListItem(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = formatDate(
-                                permit.certificateDate ?: permit.createdAt ?: "",
-                                inputPattern = if (permit.certificateDate != null) "yyyy-MM-dd" else "yyyy-MM-dd HH:mm:ss",
-                                outputPattern = "dd MMM yyyy"
-                            ),
+                            text = permit.certificateDate.takeIf { !it.isNullOrBlank() }?.let {
+                                formatDate(
+                                    it,
+                                    inputPattern = "yyyy-MM-dd",
+                                    outputPattern = "dd MMM yyyy"
+                                )
+                            } ?: "",
                             style = textStyle(size = 11.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -361,6 +366,7 @@ private fun PermitListItem(
                         text = timeAgo(
                             permit.createdAt ?: "",
                             inputPattern = "yyyy-MM-dd HH:mm:ss",
+                            isUtc = true
                         ), // Need to format real date to relative string if required, using placeholder for now
                         style = textStyle(size = 11.sp, weight = FontWeight.Normal),
                         color = Color.DarkGray
