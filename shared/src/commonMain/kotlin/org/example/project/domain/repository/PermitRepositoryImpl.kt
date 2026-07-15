@@ -44,4 +44,8 @@ class PermitRepositoryImpl(
     override suspend fun getPermitDetail(request: org.example.project.data.model.PermitDetailRequest): NetworkResult<org.example.project.data.model.PermitDetailData> {
         return apiService.getPermitDetail(request)
     }
+
+    override suspend fun submitPermitAuthorization(request: org.example.project.data.model.PermitAuthorizationSubmitRequest): NetworkResult<org.example.project.data.model.PermitAuthorizationSubmitResponse> {
+        return apiService.submitPermitAuthorization(request)
+    }
 }

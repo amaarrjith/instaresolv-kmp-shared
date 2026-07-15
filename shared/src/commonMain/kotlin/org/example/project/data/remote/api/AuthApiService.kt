@@ -348,4 +348,8 @@ interface AuthApiService {
     suspend fun getPermitDetail(
         request: org.example.project.data.model.PermitDetailRequest
     ): NetworkResult<org.example.project.data.model.PermitDetailData>
+
+    suspend fun submitPermitAuthorization(
+        request: org.example.project.data.model.PermitAuthorizationSubmitRequest
+    ): NetworkResult<org.example.project.data.model.PermitAuthorizationSubmitResponse>
 }

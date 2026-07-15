@@ -16,6 +16,7 @@ import org.example.project.domain.repository.PermitRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
 import kotlinx.datetime.toLocalDateTime
+import org.example.project.data.settings.AuthPreferences
 
 data class PermitToWorkListState(
     val isLoading: Boolean = false,
@@ -32,12 +33,13 @@ data class PermitToWorkListState(
 )
 
 class PermitToWorkListViewModel(
-    private val repository: PermitRepository
+    private val repository: PermitRepository,
+    private val authPreferences: AuthPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PermitToWorkListState())
     val uiState: StateFlow<PermitToWorkListState> = _uiState.asStateFlow()
-
+    val logginedUser = authPreferences.getLoggedInUser()
     private var currentPage = 1
     private var searchJob: Job? = null
 
@@ -140,6 +142,10 @@ class PermitToWorkListViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun showError(message: String) {
+        _uiState.update { it.copy(error = message) }
     }
 
     private fun formatMillis(millis: Long?): String {

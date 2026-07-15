@@ -1,5 +1,6 @@
 package org.example.project.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -14,12 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_avatar
+import instaresolv.shared.generated.resources.ic_share
 import org.example.project.App
 import org.example.project.colors.AppColors
 import org.example.project.data.model.GroupUser
@@ -28,11 +31,15 @@ import org.example.project.data.model.PermitDetailData
 import org.example.project.data.model.PermitStatus
 import org.example.project.data.model.PermitFormUserType
 import org.example.project.typography.textStyle
+import org.example.project.ui.components.AppDatePicker
 import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.AppMultilineTextField
 import org.example.project.ui.components.AppSignCreateBox
+import org.example.project.ui.components.AppTimePicker
 import org.example.project.ui.components.AppUserDropdown
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.ui.components.WebImageView
+import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.ErrorRetryView
@@ -84,6 +91,41 @@ fun PermitDetailScreen(
                     color = AppColors.Black
                 )
             }
+        },
+        bottomBar = {
+            if (uiState is PermitDetailUiState.Success) {
+                Surface(color = Color.White, shadowElevation = 8.dp) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 22.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        AppBorderButton(
+                            title = "Generate PDF",
+                            onClick = { },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Row(
+                            modifier = Modifier.weight(1f)
+                                .clickable {  }
+                                .height(48.dp)
+                                .padding(horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                            Spacer(Modifier.width(8.dp))
+                            Image(
+                                painter = painterResource(Res.drawable.ic_share),
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                }
+            }
         }
     ) { paddingValues ->
         when (val state = uiState) {
@@ -126,6 +168,17 @@ fun PermitDetailScreen(
                     viewModel = viewModel,
                     paddingValues = paddingValues,
                     onImageClick = { previewImageUrl = it }
+                )
+            }
+            is PermitDetailUiState.SubmitSuccess -> {
+                org.example.project.ui.components.AppStatusDialog(
+                    visible = true,
+                    title = "Success",
+                    description = state.message,
+                    buttonText = "OK",
+                    onDismiss = {
+                        onBackClicked()
+                    }
                 )
             }
         }
@@ -351,7 +404,8 @@ fun PermitDetailContent(
                     color = AppColors.Black
                 )
             }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+        Spacer(modifier = Modifier.height(16.dp))
+//        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -453,7 +507,8 @@ fun PermitDetailContent(
                 Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = condition.title ?: "",
@@ -603,7 +658,7 @@ fun PermitDetailContent(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Authorization Request",
-                style = textStyle(16.sp, FontWeight.Bold),
+                style = textStyle(14.sp, FontWeight.Bold),
                 color = AppColors.Primary
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -614,7 +669,8 @@ fun PermitDetailContent(
                 value = authorizerName,
                 onValueChange = {},
                 enabled = false,
-                readOnly = true
+                readOnly = true,
+                isMandatory = true
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -633,7 +689,8 @@ fun PermitDetailContent(
                 title = "MSRA Number",
                 placeholder = "Enter MSRA Number",
                 value = msraNumber,
-                onValueChange = viewModel::onMsraNumberChanged
+                onValueChange = viewModel::onMsraNumberChanged,
+                isMandatory = true
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -643,43 +700,83 @@ fun PermitDetailContent(
                 onSignatureUploaded = viewModel::onSignatureUploaded,
                 onRemoveSignatureClick = viewModel::onRemoveSignatureClick
             )
-            
-            if (!signatureUrl.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Date: $signatureDate",
-                        style = textStyle(12.sp, FontWeight.Medium),
-                        color = AppColors.TextGray
+                        text = buildAnnotatedString {
+                            append("Time")
+                        },
+                        style = textStyle(12.sp, FontWeight.SemiBold)
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AppTimePicker(
+                        text = "00 : 00",
+                        selectedTime = signatureTime,
+                        onTimeSelected = {  },
+                        enabled = false
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Time: $signatureTime",
-                        style = textStyle(12.sp, FontWeight.Medium),
-                        color = AppColors.TextGray
+                        text = buildAnnotatedString {
+                            append("Date")
+                        },
+                        style = textStyle(12.sp, FontWeight.SemiBold)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AppDatePicker(
+                        text = signatureDate.ifBlank { "YYYY-MM-DD" },
+                        onDateSelected = { },
+                        selectedDateMillis = null,
+                        enabled = false
                     )
                 }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
-            
-            AppTextField(
+
+            AppMultilineTextField(
                 title = "Additional Precautions",
-                placeholder = "Enter additional precautions",
+                placeholder = "Enter Additional Precautions",
                 value = additionalPrecautions,
-                onValueChange = viewModel::onAdditionalPrecautionsChanged,
-                singleLine = false,
-                modifier = Modifier.height(100.dp)
+                onValueChange = viewModel::onAdditionalPrecautionsChanged
             )
-            
             Spacer(modifier = Modifier.height(24.dp))
 
             AppPrimaryButton(
                 title = "Submit",
-                onClick = { /* Handle submit */ }
+                onClick = {
+                    data.permitId?.let { viewModel.authorizePermit(it) }
+                }
             )
+        }
+
+        if (userType == PermitFormUserType.AUTHORIZER_VIEWER) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Authorization Request",
+                style = textStyle(14.sp, FontWeight.Bold),
+                color = AppColors.Primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
+                Text(
+                    text = "Requestor Name",
+                    style = textStyle(12.sp, FontWeight.Medium),
+                    color = AppColors.Black
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = data.authorizationRequest?.authorizerName ?: "-",
+                    style = textStyle(12.sp, FontWeight.Bold),
+                    color = AppColors.Primary
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
         }
         
         Spacer(modifier = Modifier.height(32.dp))

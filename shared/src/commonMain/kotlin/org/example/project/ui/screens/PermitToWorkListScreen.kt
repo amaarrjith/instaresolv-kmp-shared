@@ -37,6 +37,7 @@ import org.example.project.ui.screens.EmptyScreenView
 import org.example.project.utilites.AppSearchBar
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
+import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
@@ -74,8 +75,14 @@ fun PermitToWorkListScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 DraftButton(onDraftClicked = {})
                 Spacer(modifier = Modifier.width(8.dp))
-                NewButton(onNewClicked = { viewModel.fetchPermitTypes()
-                    showAddModal = true })
+                NewButton(onNewClicked = {
+                    if (viewModel.logginedUser?.projectDesignation?.contains(2) == true) {
+                        viewModel.fetchPermitTypes()
+                        showAddModal = true
+                    } else {
+                        viewModel.showError("You don't have permission to create a new permit. Only Requestors can perform this action.")
+                    }
+                })
             }
         }
     ) { paddingValues ->
@@ -282,6 +289,14 @@ fun PermitToWorkListScreen(
                     }
                 }
             }
+
+            ToastHost(
+                visible = uiState.error != null,
+                message = uiState.error  ?: "",
+                onDismiss = { viewModel.clearError() },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
         }
     }
 }

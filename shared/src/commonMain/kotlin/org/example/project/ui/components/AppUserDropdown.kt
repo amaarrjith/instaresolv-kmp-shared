@@ -105,7 +105,15 @@ fun AppUserDropdown(
             ) {
                 if (users.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text("No Users Found") },
+                        text = {
+                            Text(
+                                "No Users Found",
+                                style = textStyle(
+                                    size = 14.sp,
+                                    weight = FontWeight.Medium
+                                )
+                            )
+                               },
                         onClick = { }
                     )
                 } else {

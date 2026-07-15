@@ -81,4 +81,5 @@ object ApiEndpoints {
     const val PERMIT_USER_LIST = "permit/user-list"
     const val PERMIT_CERTIFICATE_VALIDITY = "permit/certificate-validity"
     const val PERMIT_DETAIL = "permit/detail"
+    const val PERMIT_AUTHORIZATION = "permit/authorization"
 }

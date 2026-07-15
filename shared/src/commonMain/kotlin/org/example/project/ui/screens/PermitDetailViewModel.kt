@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.model.PermitDetailData
 import org.example.project.data.model.PermitDetailRequest
@@ -17,12 +18,18 @@ import org.example.project.data.model.PermitStatus
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.data.model.GroupUser
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import org.example.project.data.model.toGroupUser
+import org.example.project.utilities.convertTo24HourFormat
+import org.example.project.utilities.formatTimestamp
 
 sealed class PermitDetailUiState {
     object Loading : PermitDetailUiState()
     data class Success(val data: PermitDetailData) : PermitDetailUiState()
     data class Error(val message: String) : PermitDetailUiState()
+    data class SubmitSuccess(val message: String): PermitDetailUiState()
 }
 
 class PermitDetailViewModel(
@@ -92,11 +99,85 @@ class PermitDetailViewModel(
         _additionalPrecautions.value = precautions
     }
 
-    private fun fetchGroupUsers(groupId: Int, groupCode: String) {
+    private fun fetchHSEUsers(groupId: Int, groupCode: String) {
         viewModelScope.launch {
-            val result = projectRepository.getGroupUsers(groupId, groupCode)
-            if (result is NetworkResult.Success) {
-                _hsePersons.value = result.data?.users ?: emptyList()
+            // using designationType = 1 as default
+            val request = org.example.project.data.model.PermitUserListRequest(
+                groupId = groupId,
+                groupCode = groupCode,
+                designationType = 4
+            )
+            when (val result = repository.getPermitUserList(request)) {
+                is NetworkResult.Success -> {
+                    val mappedUsers = result.data.users.map { it.toGroupUser() }
+                    _hsePersons.value = mappedUsers
+                }
+                is NetworkResult.Error -> {}
+            }
+        }
+    }
+
+    fun authorizePermit(permitId: Int) {
+        val authorizer = _authorizerName.value
+        val msra = _msraNumber.value
+        val hsePersonId = _selectedHsePerson.value?.userId ?: 0
+        val signature = _signatureUrl.value ?: ""
+        val date = _signatureDate.value
+        val time = _signatureTime.value
+        val notes = _additionalPrecautions.value
+
+        if (msra.isBlank() || signature.isBlank() || hsePersonId == 0) {
+            _uiState.value = PermitDetailUiState.Error("Please fill all mandatory fields")
+            return
+        }
+
+        var formattedDate = date
+        var formattedTime = time
+        if (date.isNotBlank() && time.isNotBlank()) {
+            try {
+                val localDateTimeStr = "${date}T${time}"
+                val instant = kotlinx.datetime.LocalDateTime.parse(localDateTimeStr).toInstant(kotlinx.datetime.TimeZone.currentSystemDefault())
+                val utcDateTime = instant.toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+                
+                val day = utcDateTime.day.toString().padStart(2, '0')
+                val month = utcDateTime.month.number.toString().padStart(2, '0')
+                formattedDate = "$day-$month-${utcDateTime.year}"
+                
+                val hour = utcDateTime.hour.toString().padStart(2, '0')
+                val min = utcDateTime.minute.toString().padStart(2, '0')
+                val sec = utcDateTime.second.toString().padStart(2, '0')
+                formattedTime = "$hour:$min:$sec"
+            } catch (e: Exception) {
+                val parts = date.split("-")
+                if (parts.size == 3) {
+                    formattedDate = "${parts[2]}-${parts[1]}-${parts[0]}"
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            _uiState.value = PermitDetailUiState.Loading
+            val request = org.example.project.data.model.PermitAuthorizationSubmitRequest(
+                permitId = permitId,
+                authorizationRequest = org.example.project.data.model.PermitAuthorizationRequestPayload(
+                    authorizerName = authorizer,
+                    msraNumber = msra,
+                    responsibleHSEPersonId = hsePersonId,
+                    signatureImageUrl = signature,
+                    authorizedTime = formattedTime,
+                    authorizedDate = formattedDate,
+                    notes = notes
+                )
+            )
+            println("Request: $request")
+            val result = repository.submitPermitAuthorization(request)
+            when (result) {
+                is NetworkResult.Success -> {
+                    _uiState.value = PermitDetailUiState.SubmitSuccess(result.data.statusMessage)
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = PermitDetailUiState.Error(result.message ?: "Failed to authorize permit")
+                }
             }
         }
     }
@@ -130,10 +211,10 @@ class PermitDetailViewModel(
         }
         
         if (_userType.value == PermitFormUserType.AUTHORIZER) {
-            val groupId = permit.certificateValidity?.project?.groupId
             val groupCode = permit.certificateValidity?.project?.groupCode
-            if (groupId != null && groupCode != null) {
-                fetchGroupUsers(groupId.toIntOrNull() ?: -1, groupCode)
+            if (groupCode != null) {
+                val extractedGroupId = groupCode.substringAfter("-").toIntOrNull() ?: -1
+                fetchHSEUsers(extractedGroupId, groupCode)
             }
         }
     }
@@ -173,7 +254,7 @@ class PermitDetailViewModel(
                 if (isRequstedUser) {
                     _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
                 } else {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    _userType.value = PermitFormUserType.AUTHORIZER_VIEWER
                 }
             }
             PermitStatus.CANCELLED -> {

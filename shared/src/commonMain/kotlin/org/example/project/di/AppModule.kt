@@ -157,7 +157,7 @@ val appModule = module {
     factory { (trainingId: Int) -> QuizViewModel(get(), trainingId) }
     
     factory<PermitRepository> { PermitRepositoryImpl(get()) }
-    factory { PermitToWorkListViewModel(get()) }
+    factory { PermitToWorkListViewModel(get(), get()) }
     factory { CreatePermitViewModel(get(), get()) }
     factory { PermitDetailViewModel(get(), get(), get()) }
     

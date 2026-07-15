@@ -288,7 +288,7 @@ fun CreatePermitScreen(
                                 AppTimePicker(
                                     text = "00 : 00",
                                     selectedTime = uiState.signatureTime,
-                                    onTimeSelected = {  },
+                                    onTimeSelected = { },
                                     enabled = false
                                 )
                             }
@@ -307,26 +307,6 @@ fun CreatePermitScreen(
                                     enabled = false
                                 )
                             }
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-                        if (uiState.submitError != null) {
-                            Text(
-                                text = uiState.submitError ?: "",
-                                color = Color.Red,
-                                style = textStyle(12.sp, FontWeight.Medium),
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                        if (uiState.submitSuccess) {
-                            Text(
-                                text = "Permit validity submitted successfully!",
-                                color = Color(0xFF4CAF50),
-                                style = textStyle(14.sp, FontWeight.Medium),
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
                         }
                 }
 

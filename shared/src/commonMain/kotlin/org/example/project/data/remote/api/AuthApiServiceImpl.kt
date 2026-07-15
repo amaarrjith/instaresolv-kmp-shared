@@ -629,4 +629,12 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun submitPermitAuthorization(
+        request: org.example.project.data.model.PermitAuthorizationSubmitRequest
+    ): NetworkResult<org.example.project.data.model.PermitAuthorizationSubmitResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_AUTHORIZATION) {
+            jsonBody(request)
+        }
+    }
 }

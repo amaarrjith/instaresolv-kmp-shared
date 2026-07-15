@@ -167,9 +167,33 @@ data class PermitCertificateClosure(
     val closureDate: String? = null
 )
 
+@Serializable
+data class PermitAuthorizationSubmitRequest(
+    val permitId: Int,
+    val authorizationRequest: PermitAuthorizationRequestPayload
+)
+
+@Serializable
+data class PermitAuthorizationRequestPayload(
+    val authorizerName: String,
+    val msraNumber: String,
+    val responsibleHSEPersonId: Int,
+    val signatureImageUrl: String,
+    val authorizedTime: String,
+    val authorizedDate: String,
+    val notes: String
+)
+
+@Serializable
+data class PermitAuthorizationSubmitResponse(
+    val statusMessage: String
+)
+
 enum class PermitFormUserType {
     REQUESTOR,
     AUTHORIZER,
+
+    AUTHORIZER_VIEWER,
     CERTIFICATE_CLOSURE,
     REQUEST_FOR_CERTIFICATE_CLOSURE,
     SUBCONTRACTOR_AUTHORIZER,
