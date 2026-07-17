@@ -24,12 +24,12 @@ import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.model.toGroupUser
 import org.example.project.utilities.convertTo24HourFormat
 import org.example.project.utilities.formatTimestamp
+import kotlin.time.Clock
 
 sealed class PermitDetailUiState {
     object Loading : PermitDetailUiState()
     data class Success(val data: PermitDetailData) : PermitDetailUiState()
     data class Error(val message: String) : PermitDetailUiState()
-    data class SubmitSuccess(val message: String): PermitDetailUiState()
 }
 
 class PermitDetailViewModel(
@@ -67,6 +67,12 @@ class PermitDetailViewModel(
 
     private val _additionalPrecautions = MutableStateFlow("")
     val additionalPrecautions: StateFlow<String> = _additionalPrecautions.asStateFlow()
+
+    private val _canCancelOrSuspend = MutableStateFlow(false)
+    val canCancelOrSuspend: StateFlow<Boolean> = _canCancelOrSuspend.asStateFlow()
+
+    private val _canReactivate = MutableStateFlow(false)
+    val canReactivate: StateFlow<Boolean> = _canReactivate.asStateFlow()
 
     fun onHsePersonSelected(user: GroupUser) {
         _selectedHsePerson.value = user
@@ -156,7 +162,7 @@ class PermitDetailViewModel(
         }
 
         viewModelScope.launch {
-            _uiState.value = PermitDetailUiState.Loading
+            isAuthorizing.value = true
             val request = org.example.project.data.model.PermitAuthorizationSubmitRequest(
                 permitId = permitId,
                 authorizationRequest = org.example.project.data.model.PermitAuthorizationRequestPayload(
@@ -171,12 +177,256 @@ class PermitDetailViewModel(
             )
             println("Request: $request")
             val result = repository.submitPermitAuthorization(request)
+            isAuthorizing.value = false
             when (result) {
                 is NetworkResult.Success -> {
-                    _uiState.value = PermitDetailUiState.SubmitSuccess(result.data.statusMessage)
+                    submitSuccessMessage.value = result.data.statusMessage ?: "Success"
                 }
                 is NetworkResult.Error -> {
                     _uiState.value = PermitDetailUiState.Error(result.message ?: "Failed to authorize permit")
+                }
+            }
+        }
+    }
+
+    private val _showActionDialog = MutableStateFlow(false)
+    val showActionDialog: StateFlow<Boolean> = _showActionDialog.asStateFlow()
+
+    val actionLoadingState = MutableStateFlow(-1)
+    val isAuthorizing = MutableStateFlow(false)
+    
+    val submitSuccessMessage = MutableStateFlow<String?>(null)
+    
+    fun onDismissSubmitSuccess() {
+        submitSuccessMessage.value = null
+    }
+
+    private val _actionRemarks = MutableStateFlow("")
+    val actionRemarks: StateFlow<String> = _actionRemarks.asStateFlow()
+
+    private val _actionImages = MutableStateFlow<List<org.example.project.data.model.PermitImage>>(emptyList())
+    val actionImages: StateFlow<List<org.example.project.data.model.PermitImage>> = _actionImages.asStateFlow()
+    
+    val isWorkCompletedVerified = MutableStateFlow(false)
+    val closureRemarks = MutableStateFlow("")
+    val closureImages = MutableStateFlow<List<org.example.project.data.model.PermitImage>>(listOf(org.example.project.data.model.PermitImage(image = null, description = "")))
+    val closureSignatureUrl = MutableStateFlow<String?>(null)
+    val closureSignatureDate = MutableStateFlow("")
+    val closureSignatureTime = MutableStateFlow("")
+    val isSubmittingClosure = MutableStateFlow(false)
+    
+    val certificateClosureSignatureUrl = MutableStateFlow<String?>(null)
+    val certificateClosureDate = MutableStateFlow("")
+    val certificateClosureTime = MutableStateFlow("")
+    val isSubmittingCertificateClosure = MutableStateFlow(false)
+    
+    private val _selectedAction = MutableStateFlow(-1)
+
+    fun onActionClick(action: Int) {
+        _selectedAction.value = action
+        _showActionDialog.value = true
+    }
+
+    fun onActionDialogDismiss() {
+        _showActionDialog.value = false
+        _actionRemarks.value = ""
+        _actionImages.value = emptyList()
+        _selectedAction.value = -1
+    }
+
+    fun onActionRemarksChanged(remarks: String) {
+        _actionRemarks.value = remarks
+    }
+
+    fun onImageDescriptionChange(index: Int, description: String) {
+        val currentList = _actionImages.value.toMutableList()
+        if (index in currentList.indices) {
+            currentList[index] = currentList[index].copy(description = description)
+            _actionImages.value = currentList
+        }
+    }
+
+    fun onImageSelected(index: Int, url: String) {
+        val currentList = _actionImages.value.toMutableList()
+        if (index in currentList.indices) {
+            currentList[index] = currentList[index].copy(image = url)
+            _actionImages.value = currentList
+        }
+    }
+
+    fun onImageRemoved(index: Int) {
+        val currentList = _actionImages.value.toMutableList()
+        if (index in currentList.indices) {
+            currentList.removeAt(index)
+            _actionImages.value = currentList
+        }
+    }
+
+    fun onAddImageSlot() {
+        if (_actionImages.value.size < 6) {
+            _actionImages.update { it + org.example.project.data.model.PermitImage(image = "", description = "") }
+        }
+    }
+    
+    fun onWorkCompletedVerifiedChanged(verified: Boolean) {
+        isWorkCompletedVerified.value = verified
+    }
+    fun onClosureRemarksChanged(remarks: String) {
+        closureRemarks.value = remarks
+    }
+    fun onClosureImageDescriptionChange(index: Int, description: String) {
+        val current = closureImages.value.toMutableList()
+        if (index in current.indices) {
+            current[index] = current[index].copy(description = description)
+            closureImages.value = current
+        }
+    }
+    fun onClosureImageSelected(index: Int, url: String) {
+        val current = closureImages.value.toMutableList()
+        if (index in current.indices) {
+            current[index] = current[index].copy(image = url)
+            closureImages.value = current
+        }
+    }
+    fun onClosureImageRemoved(index: Int) {
+        val current = closureImages.value.toMutableList()
+        if (index in current.indices) {
+            current.removeAt(index)
+            closureImages.value = current
+        }
+    }
+    fun onAddClosureImageSlot() {
+        if (closureImages.value.size < 6) {
+            closureImages.update { it + org.example.project.data.model.PermitImage(image = null, description = "") }
+        }
+    }
+    fun onClosureSignatureUploaded(url: String) {
+        closureSignatureUrl.value = url
+        val now = Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+        val month = now.monthNumber.toString().padStart(2, '0')
+        val day = now.dayOfMonth.toString().padStart(2, '0')
+        closureSignatureDate.value = "${now.year}-$month-$day"
+        
+        val hour = now.hour.toString().padStart(2, '0')
+        val min = now.minute.toString().padStart(2, '0')
+        val sec = now.second.toString().padStart(2, '0')
+        closureSignatureTime.value = "$hour:$min:$sec"
+    }
+    fun onRemoveClosureSignatureClick() {
+        closureSignatureUrl.value = null
+        closureSignatureDate.value = ""
+        closureSignatureTime.value = ""
+    }
+    fun submitPermitClosureRequest(permitId: Int) {
+        val signatureUrl = closureSignatureUrl.value
+        val remarks = closureRemarks.value
+        
+        if (signatureUrl.isNullOrBlank()) {
+            submitSuccessMessage.value = "Please provide a signature"
+            return
+        }
+
+        viewModelScope.launch {
+            isSubmittingClosure.value = true
+            
+            val validImages = closureImages.value.filter { !it.image.isNullOrBlank() }
+            
+            val request = org.example.project.data.model.PermitClosureSubmitRequest(
+                permitId = permitId,
+                requestForCertificateClosure = org.example.project.data.model.RequestForCertificateClosureSubmit(
+                    remarks = remarks,
+                    signatureImageUrl = signatureUrl,
+                    requestTime = closureSignatureTime.value,
+                    requestDate = closureSignatureDate.value,
+                    images = validImages
+                )
+            )
+
+            when (val result = repository.submitPermitClosureRequest(request)) {
+                is org.example.project.network.NetworkResult.Success -> {
+                    submitSuccessMessage.value = result.data.statusMessage ?: "Closure Request Submitted Successfully"
+                    loadPermitDetail(permitId)
+                }
+                is org.example.project.network.NetworkResult.Error -> {
+                    submitSuccessMessage.value = result.message
+                }
+            }
+            isSubmittingClosure.value = false
+        }
+    }
+
+    fun onCertificateClosureSignatureUploaded(url: String) {
+        certificateClosureSignatureUrl.value = url
+        val currentDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        certificateClosureDate.value = "${currentDateTime.year}-${currentDateTime.monthNumber.toString().padStart(2, '0')}-${currentDateTime.dayOfMonth.toString().padStart(2, '0')}"
+        certificateClosureTime.value = "${currentDateTime.hour.toString().padStart(2, '0')}:${currentDateTime.minute.toString().padStart(2, '0')}:${currentDateTime.second.toString().padStart(2, '0')}"
+    }
+
+    fun onRemoveCertificateClosureSignatureClick() {
+        certificateClosureSignatureUrl.value = null
+        certificateClosureDate.value = ""
+        certificateClosureTime.value = ""
+    }
+
+    fun submitPermitCertificateClosure(permitId: Int) {
+        val contractorName = authPreferences.getLoggedInUser()?.name ?: ""
+        val signatureUrl = certificateClosureSignatureUrl.value
+
+        if (signatureUrl.isNullOrBlank()) {
+            submitSuccessMessage.value = "Please provide your signature"
+            return
+        }
+
+        viewModelScope.launch {
+            isSubmittingCertificateClosure.value = true
+
+            val request = org.example.project.data.model.PermitCertificateClosureSubmitRequest(
+                permitId = permitId,
+                certificateClosure = org.example.project.data.model.CertificateClosureSubmit(
+                    contractorName = contractorName,
+                    signatureImageUrl = signatureUrl,
+                    closureTime = certificateClosureTime.value,
+                    closureDate = certificateClosureDate.value
+                )
+            )
+
+            when (val result = repository.submitPermitCertificateClosure(request)) {
+                is org.example.project.network.NetworkResult.Success -> {
+                    submitSuccessMessage.value = result.data.statusMessage ?: "Closure Done Successfully"
+                    loadPermitDetail(permitId)
+                }
+                is org.example.project.network.NetworkResult.Error -> {
+                    submitSuccessMessage.value = result.message
+                }
+            }
+            isSubmittingCertificateClosure.value = false
+        }
+    }
+
+    fun submitPermitAction(permitId: Int) {
+        val user = authPreferences.getLoggedInUser() ?: return
+        val action = _selectedAction.value
+        if (action == -1) return
+        
+        viewModelScope.launch {
+            onActionDialogDismiss()
+            actionLoadingState.value = action
+            val request = org.example.project.data.model.PermitActionRequest(
+                permitId = permitId,
+                action = action,
+                actionBy = user,
+                remarks = _actionRemarks.value,
+                images = _actionImages.value
+            )
+            val result = repository.submitPermitAction(request)
+            actionLoadingState.value = -1
+            when (result) {
+                is NetworkResult.Success -> {
+                    val statusMsg = result.data.statusMessage ?: "Success"
+                    submitSuccessMessage.value = statusMsg
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = PermitDetailUiState.Error(result.message ?: "Failed to perform action")
                 }
             }
         }
@@ -217,6 +467,15 @@ class PermitDetailViewModel(
                 fetchHSEUsers(extractedGroupId, groupCode)
             }
         }
+
+        val loggedInUserId = authPreferences.getLoggedInUser()?.userId
+        val isAuthorizedPerson = loggedInUserId != null && loggedInUserId == permit.certificateValidity?.authorizedPerson?.userId
+        val isHsePerson = loggedInUserId != null && loggedInUserId == permit.authorizationRequest?.responsibleHSEPerson?.userId
+        
+        _canCancelOrSuspend.value = permit.permitStatus == 2 && (isAuthorizedPerson || isHsePerson)
+
+        val isLastSuspendedUser = loggedInUserId != null && loggedInUserId == permit.permitSuspendedUsers?.lastOrNull()?.userId
+        _canReactivate.value = permit.permitStatus == 4 && isLastSuspendedUser
     }
     
     private fun handleUserTypeForAlNasr(permit: PermitDetailData) {
@@ -246,7 +505,7 @@ class PermitDetailViewModel(
                     return
                 }
                 if (certClosureSignature.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER
                     return
                 }
             }
@@ -258,10 +517,10 @@ class PermitDetailViewModel(
                 }
             }
             PermitStatus.CANCELLED -> {
-                _userType.value = PermitFormUserType.AUTHORIZER
+                _userType.value = PermitFormUserType.AUTHORIZER_VIEWER
             }
             PermitStatus.SUSPENDED -> {
-                _userType.value = PermitFormUserType.AUTHORIZER
+                _userType.value = PermitFormUserType.AUTHORIZER_VIEWER
             }
             PermitStatus.EXPIRED -> {
                 if (certificateRequestSign.isNullOrEmpty()) {

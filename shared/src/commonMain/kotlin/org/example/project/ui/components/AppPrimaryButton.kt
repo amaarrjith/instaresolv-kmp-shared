@@ -30,10 +30,13 @@ fun AppPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    fillMaxWidth: Boolean = true
+    fillMaxWidth: Boolean = true,
+    color: Color = AppColors.Primary
 ) {
     if (isLoading) {
-        Loader()
+        Loader(
+            color
+        )
     } else {
         Button(
             onClick = onClick,
@@ -43,7 +46,7 @@ fun AppPrimaryButton(
                 .heightIn(min = 50.dp),
             shape = RoundedCornerShape(25.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.Primary
+                containerColor = color
             )
         ) {
             Text(
@@ -61,12 +64,14 @@ fun AppPrimaryButton(
 
 
 @Composable
-fun Loader() {
+fun Loader(
+    color: Color
+) {
     Box(
         modifier = Modifier
             .size(50.dp)
             .clip(CircleShape)
-            .background(AppColors.Primary),
+            .background(color),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(

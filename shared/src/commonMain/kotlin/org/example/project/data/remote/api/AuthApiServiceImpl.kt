@@ -637,4 +637,28 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun submitPermitAction(
+        request: org.example.project.data.model.PermitActionRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_ACTION) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun submitPermitClosureRequest(
+        request: org.example.project.data.model.PermitClosureSubmitRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_CLOSURE_REQUEST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun submitPermitCertificateClosure(
+        request: org.example.project.data.model.PermitCertificateClosureSubmitRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_CLOSURE) {
+            jsonBody(request)
+        }
+    }
 }

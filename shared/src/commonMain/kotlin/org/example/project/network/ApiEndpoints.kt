@@ -82,4 +82,7 @@ object ApiEndpoints {
     const val PERMIT_CERTIFICATE_VALIDITY = "permit/certificate-validity"
     const val PERMIT_DETAIL = "permit/detail"
     const val PERMIT_AUTHORIZATION = "permit/authorization"
+    const val PERMIT_ACTION = "permit/action"
+    const val PERMIT_CLOSURE_REQUEST = "permit/certificate-closure-request"
+    const val PERMIT_CLOSURE = "permit/certificate-closure"
 }

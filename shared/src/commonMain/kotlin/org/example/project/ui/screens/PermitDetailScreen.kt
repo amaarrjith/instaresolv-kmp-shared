@@ -15,12 +15,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.ic_add
+import instaresolv.shared.generated.resources.ic_add_photo
 import instaresolv.shared.generated.resources.ic_avatar
 import instaresolv.shared.generated.resources.ic_share
 import org.example.project.App
@@ -28,13 +34,20 @@ import org.example.project.colors.AppColors
 import org.example.project.data.model.GroupUser
 import org.example.project.data.model.PermitActionDetails
 import org.example.project.data.model.PermitDetailData
+import org.example.project.data.model.PermitDetailUser
 import org.example.project.data.model.PermitStatus
 import org.example.project.data.model.PermitFormUserType
+import org.example.project.data.model.PermitImage
+import org.example.project.data.settings.formatDate
+import org.example.project.data.settings.utcToLocal
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppDatePicker
+import org.example.project.ui.components.AppImageCreateBox
+import org.example.project.ui.components.AppImagePreviewDialog
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.AppMultilineTextField
 import org.example.project.ui.components.AppSignCreateBox
+import org.example.project.ui.components.AppStatusDialog
 import org.example.project.ui.components.AppTimePicker
 import org.example.project.ui.components.AppUserDropdown
 import org.example.project.utilites.NavigationBackIcon
@@ -62,6 +75,28 @@ fun PermitDetailScreen(
     val signatureDate by viewModel.signatureDate.collectAsState()
     val signatureTime by viewModel.signatureTime.collectAsState()
     val additionalPrecautions by viewModel.additionalPrecautions.collectAsState()
+    val canCancelOrSuspend by viewModel.canCancelOrSuspend.collectAsState()
+    val showActionDialog by viewModel.showActionDialog.collectAsState()
+    val actionRemarks by viewModel.actionRemarks.collectAsState()
+    val actionImages by viewModel.actionImages.collectAsState()
+    val canReactivate by viewModel.canReactivate.collectAsState()
+    
+    val actionLoading by viewModel.actionLoadingState.collectAsState()
+    val isAuthorizing by viewModel.isAuthorizing.collectAsState()
+    val successMessage by viewModel.submitSuccessMessage.collectAsState()
+    
+    val isWorkCompletedVerified by viewModel.isWorkCompletedVerified.collectAsState()
+    val closureRemarks by viewModel.closureRemarks.collectAsState()
+    val closureImages by viewModel.closureImages.collectAsState()
+    val closureSignatureUrl by viewModel.closureSignatureUrl.collectAsState()
+    val closureSignatureDate by viewModel.closureSignatureDate.collectAsState()
+    val closureSignatureTime by viewModel.closureSignatureTime.collectAsState()
+    val isSubmittingClosure by viewModel.isSubmittingClosure.collectAsState()
+    
+    val certificateClosureSignatureUrl by viewModel.certificateClosureSignatureUrl.collectAsState()
+    val certificateClosureDate by viewModel.certificateClosureDate.collectAsState()
+    val certificateClosureTime by viewModel.certificateClosureTime.collectAsState()
+    val isSubmittingCertificateClosure by viewModel.isSubmittingCertificateClosure.collectAsState()
 
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
 
@@ -95,33 +130,38 @@ fun PermitDetailScreen(
         bottomBar = {
             if (uiState is PermitDetailUiState.Success) {
                 Surface(color = Color.White, shadowElevation = 8.dp) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .navigationBarsPadding()
-                            .padding(horizontal = 22.dp, vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .padding(horizontal = 22.dp, vertical = 16.dp)
                     ) {
-                        AppBorderButton(
-                            title = "Generate PDF",
-                            onClick = { },
-                            modifier = Modifier.weight(1f)
-                        )
+
                         Row(
-                            modifier = Modifier.weight(1f)
-                                .clickable {  }
-                                .height(48.dp)
-                                .padding(horizontal = 8.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
-                            Spacer(Modifier.width(8.dp))
-                            Image(
-                                painter = painterResource(Res.drawable.ic_share),
-                                contentDescription = null,
+                            AppBorderButton(
+                                title = "Generate PDF",
+                                onClick = { },
+                                modifier = Modifier.weight(1f)
                             )
+                            Row(
+                                modifier = Modifier.weight(1f)
+                                    .clickable {  }
+                                    .height(48.dp)
+                                    .padding(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Share", style = textStyle(size = 14.sp, FontWeight.Bold), color = AppColors.Black)
+                                Spacer(Modifier.width(8.dp))
+                                Image(
+                                    painter = painterResource(Res.drawable.ic_share),
+                                    contentDescription = null,
+                                )
+                            }
                         }
                     }
                 }
@@ -167,26 +207,57 @@ fun PermitDetailScreen(
                     additionalPrecautions = additionalPrecautions,
                     viewModel = viewModel,
                     paddingValues = paddingValues,
-                    onImageClick = { previewImageUrl = it }
-                )
-            }
-            is PermitDetailUiState.SubmitSuccess -> {
-                org.example.project.ui.components.AppStatusDialog(
-                    visible = true,
-                    title = "Success",
-                    description = state.message,
-                    buttonText = "OK",
-                    onDismiss = {
-                        onBackClicked()
-                    }
+                    onImageClick = { previewImageUrl = it },
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    isAuthorizing = isAuthorizing,
+                    isWorkCompletedVerified = isWorkCompletedVerified,
+                    closureRemarks = closureRemarks,
+                    closureImages = closureImages,
+                    closureSignatureUrl = closureSignatureUrl,
+                    closureSignatureDate = closureSignatureDate,
+                    closureSignatureTime = closureSignatureTime,
+                    isSubmittingClosure = isSubmittingClosure,
+                    certificateClosureSignatureUrl = certificateClosureSignatureUrl,
+                    certificateClosureDate = certificateClosureDate,
+                    certificateClosureTime = certificateClosureTime,
+                    isSubmittingCertificateClosure = isSubmittingCertificateClosure
                 )
             }
         }
+        
+        if (successMessage != null) {
+            AppStatusDialog(
+                visible = true,
+                title = "Success",
+                description = successMessage!!,
+                buttonText = "OK",
+                onDismiss = {
+                    viewModel.onDismissSubmitSuccess()
+                    onBackClicked()
+                }
+            )
+        }
 
         if (previewImageUrl != null) {
-            org.example.project.ui.components.AppImagePreviewDialog(
+            AppImagePreviewDialog(
                 imageUrl = previewImageUrl!!,
                 onDismiss = { previewImageUrl = null }
+            )
+        }
+        
+        if (showActionDialog) {
+            PermitActionDialog(
+                remarks = actionRemarks,
+                images = actionImages,
+                onRemarksChange = viewModel::onActionRemarksChanged,
+                onImageDescriptionChange = viewModel::onImageDescriptionChange,
+                onImageSelected = viewModel::onImageSelected,
+                onImageRemoved = viewModel::onImageRemoved,
+                onAddImageSlot = viewModel::onAddImageSlot,
+                onDismiss = viewModel::onActionDialogDismiss,
+                onSubmit = { viewModel.submitPermitAction(id) }
             )
         }
     }
@@ -206,7 +277,22 @@ fun PermitDetailContent(
     additionalPrecautions: String,
     viewModel: PermitDetailViewModel,
     paddingValues: PaddingValues,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    canCancelOrSuspend: Boolean,
+    canReactivate: Boolean,
+    actionLoading: Int,
+    isAuthorizing: Boolean,
+    isWorkCompletedVerified: Boolean,
+    closureRemarks: String,
+    closureImages: List<PermitImage>,
+    closureSignatureUrl: String?,
+    closureSignatureDate: String,
+    closureSignatureTime: String,
+    isSubmittingClosure: Boolean,
+    certificateClosureSignatureUrl: String?,
+    certificateClosureDate: String,
+    certificateClosureTime: String,
+    isSubmittingCertificateClosure: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -218,107 +304,250 @@ fun PermitDetailContent(
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Header Info
-        Column(modifier = Modifier.fillMaxWidth()) {
-            if (userType != PermitFormUserType.NONE) {
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFFE3F2FD), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Role: ${userType.name.replace("_", " ")}",
-                        style = textStyle(size = 10.sp, weight = FontWeight.SemiBold),
-                        color = Color(0xFF1976D2)
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            Text(
-                text = data.permitType?.permitTypeTitle ?: "N/A",
-                style = textStyle(16.sp, FontWeight.Bold),
-                color = AppColors.Black
+        PermitHeaderSection(data, userType)
+        FacilityProjectSection(data)
+        RequestedBySection(data)
+        AuthorizedPersonSection(data)
+        DateAndTimesSection(data)
+        LocationDescriptionSection(data)
+        ValiditySectionsSection(data)
+        GeneralConditionsSection(data)
+        PermitValiditySection(data, onImageClick)
+        EvidenceImagesSection(data, onImageClick)
+        
+        // Authorization Request Form
+        if (userType == PermitFormUserType.AUTHORIZER) {
+            AuthorizerFormSection(
+                data = data,
+                authorizerName = authorizerName,
+                hsePersons = hsePersons,
+                selectedHsePerson = selectedHsePerson,
+                msraNumber = msraNumber,
+                signatureUrl = signatureUrl,
+                signatureDate = signatureDate,
+                signatureTime = signatureTime,
+                additionalPrecautions = additionalPrecautions,
+                viewModel = viewModel,
+                isAuthorizing = isAuthorizing
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = data.permitCode ?: "N/A",
-                style = textStyle(12.sp, FontWeight.Medium),
-                color = AppColors.TextGray
+        }
+
+        if (userType == PermitFormUserType.AUTHORIZER_VIEWER) {
+            AuthorizerViewerSection(
+                data = data,
+                onImageClick = onImageClick,
+                canCancelOrSuspend = canCancelOrSuspend,
+                canReactivate = canReactivate,
+                actionLoading = actionLoading,
+                viewModel = viewModel
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            data.permitStatus?.let { statusVal ->
-                val status = PermitStatus.fromValue(statusVal)
-                if (status != null) {
-                    Box(
-                        modifier = Modifier
-                            .background(Color(status.colorHex), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = status.title.uppercase(),
-                            style = textStyle(size = 9.sp, weight = FontWeight.Bold),
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
         }
         
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+        if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE) {
+            AuthorizerViewerSection(
+                data = data,
+                onImageClick = onImageClick,
+                canCancelOrSuspend = canCancelOrSuspend,
+                canReactivate = canReactivate,
+                actionLoading = actionLoading,
+                viewModel = viewModel
+            )
+            RequestForPermitClosureSection(
+                data = data,
+                isWorkCompletedVerified = isWorkCompletedVerified,
+                closureRemarks = closureRemarks,
+                closureImages = closureImages,
+                closureSignatureUrl = closureSignatureUrl,
+                signatureDate = closureSignatureDate,
+                signatureTime = closureSignatureTime,
+                isSubmittingClosure = isSubmittingClosure,
+                viewModel = viewModel
+            )
+        }
 
-        // Facility / Project
+        if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER) {
+            AuthorizerViewerSection(
+                data = data,
+                onImageClick = onImageClick,
+                canCancelOrSuspend = canCancelOrSuspend,
+                canReactivate = canReactivate,
+                actionLoading = actionLoading,
+                viewModel = viewModel
+            )
+            RequestForCertificateClosureViewerSection(data, onImageClick)
+            PermitCertificateClosureViewerSection(data, onImageClick)
+        }
+
+        if (userType == PermitFormUserType.CERTIFICATE_CLOSURE) {
+            AuthorizerViewerSection(
+                data = data,
+                onImageClick = onImageClick,
+                canCancelOrSuspend = canCancelOrSuspend,
+                canReactivate = canReactivate,
+                actionLoading = actionLoading,
+                viewModel = viewModel
+            )
+            RequestForCertificateClosureViewerSection(data, onImageClick)
+            PermitCertificateClosureSection(
+                data = data,
+                userName = authorizerName,
+                certificateClosureSignatureUrl = certificateClosureSignatureUrl,
+                certificateClosureDate = certificateClosureDate,
+                certificateClosureTime = certificateClosureTime,
+                isSubmittingCertificateClosure = isSubmittingCertificateClosure,
+                viewModel = viewModel
+            )
+        }
+
+        if (userType == PermitFormUserType.NONE) {
+            AuthorizerViewerSection(
+                data = data,
+                onImageClick = onImageClick,
+                canCancelOrSuspend = canCancelOrSuspend,
+                canReactivate = canReactivate,
+                actionLoading = actionLoading,
+                viewModel = viewModel
+            )
+            RequestForCertificateClosureViewerSection(data, onImageClick)
+            PermitCertificateClosureViewerSection(data, onImageClick)
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+fun PermitHeaderSection(data: PermitDetailData, userType: PermitFormUserType) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Facility / Project",
-            style = textStyle(12.sp, FontWeight.Normal),
+            text = data.permitType?.permitTypeTitle ?: "N/A",
+            style = textStyle(16.sp, FontWeight.Bold),
+            color = AppColors.Black
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = data.permitCode ?: "N/A",
+            style = textStyle(12.sp, FontWeight.Medium),
             color = AppColors.TextGray
         )
         Spacer(modifier = Modifier.height(8.dp))
-        val fac = data.facility ?: data.certificateValidity?.project
-        if (fac != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                WebImageView(
-                    imageUrl = fac.groupImage ?: "",
-                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp))
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
+        data.permitStatus?.let { statusVal ->
+            val status = PermitStatus.fromValue(statusVal)
+            if (status != null) {
+                Box(
+                    modifier = Modifier
+                        .background(Color(status.colorHex), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
                     Text(
-                        text = fac.groupName ?: "N/A",
-                        style = textStyle(14.sp, FontWeight.SemiBold),
-                        color = AppColors.Black
+                        text = status.title.uppercase(),
+                        style = textStyle(size = 9.sp, weight = FontWeight.Bold),
+                        color = Color.White,
+                        textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Box(
-                        modifier = Modifier
-                            .background(AppColors.TextGray.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = fac.groupCode ?: "",
-                            style = textStyle(10.sp, FontWeight.Medium),
-                            color = Color.White
-                        )
-                    }
                 }
             }
-        } else {
-            Text("N/A", style = textStyle(14.sp, FontWeight.SemiBold), color = AppColors.Black)
         }
+    }
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+}
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+@Composable
+fun FacilityProjectSection(data: PermitDetailData) {
+    Text(
+        text = "Facility / Project",
+        style = textStyle(12.sp, FontWeight.Normal),
+        color = AppColors.TextGray
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    val fac = data.facility ?: data.certificateValidity?.project
+    if (fac != null) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            WebImageView(
+                imageUrl = fac.groupImage ?: "",
+                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp))
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = fac.groupName ?: "N/A",
+                    style = textStyle(14.sp, FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .background(AppColors.TextGray.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = fac.groupCode ?: "",
+                        style = textStyle(10.sp, FontWeight.Medium),
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    } else {
+        Text("N/A", style = textStyle(14.sp, FontWeight.SemiBold), color = AppColors.Black)
+    }
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+}
 
-        // Requested By
+@Composable
+fun RequestedBySection(data: PermitDetailData) {
+    Text(
+        text = "Requested By",
+        style = textStyle(12.sp, FontWeight.Normal),
+        color = AppColors.TextGray
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        if (data.permitRequestedUser?.profileImage != null) {
+            WebImageView(
+                imageUrl = data.permitRequestedUser.profileImage,
+                modifier = Modifier.size(36.dp).clip(CircleShape)
+            )
+        } else {
+            Icon(
+                painter = painterResource(Res.drawable.ic_avatar),
+                contentDescription = null,
+                modifier = Modifier.size(36.dp),
+                tint = Color.Unspecified
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(
+                text = data.permitRequestedUser?.name ?: "N/A",
+                style = textStyle(14.sp, FontWeight.SemiBold),
+                color = AppColors.Black
+            )
+            if (data.permitRequestedUser?.designation != null) {
+                Text(
+                    text = data.permitRequestedUser.designation,
+                    style = textStyle(12.sp, FontWeight.Normal),
+                    color = AppColors.TextGray
+                )
+            }
+        }
+    }
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+}
+
+@Composable
+fun AuthorizedPersonSection(data: PermitDetailData) {
+    if (data.certificateValidity?.authorizedPerson != null) {
         Text(
-            text = "Requested By",
+            text = "Authorized Person",
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (data.permitRequestedUser?.profileImage != null) {
+            if (data.certificateValidity.authorizedPerson.image != null) {
                 WebImageView(
-                    imageUrl = data.permitRequestedUser.profileImage,
+                    imageUrl = data.certificateValidity.authorizedPerson.image,
                     modifier = Modifier.size(36.dp).clip(CircleShape)
                 )
             } else {
@@ -332,434 +561,201 @@ fun PermitDetailContent(
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    text = data.permitRequestedUser?.name ?: "N/A",
+                    text = data.certificateValidity.authorizedPerson.name ?: "N/A",
                     style = textStyle(14.sp, FontWeight.SemiBold),
                     color = AppColors.Black
                 )
-                if (data.permitRequestedUser?.designation != null) {
+                if (data.certificateValidity.authorizedPerson.email != null) {
                     Text(
-                        text = data.permitRequestedUser.designation,
+                        text = data.certificateValidity.authorizedPerson.email,
                         style = textStyle(12.sp, FontWeight.Normal),
                         color = AppColors.TextGray
                     )
                 }
             }
         }
-
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+    }
+}
 
-        // Authorized Person
-        if (data.certificateValidity?.authorizedPerson != null) {
+@Composable
+fun DateAndTimesSection(data: PermitDetailData) {
+    Column() {
+        Text(
+            text = "Request Date",
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = data.certificateValidity?.certificateDate?.let { formatDate(it, "yyyy-MM-dd", "dd MMM yyyy") } ?: "N/A",
+            style = textStyle(14.sp, FontWeight.SemiBold),
+            color = AppColors.Black
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Authorized Person",
+                text = "Valid From",
                 style = textStyle(12.sp, FontWeight.Normal),
                 color = AppColors.TextGray
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (data.certificateValidity.authorizedPerson.image != null) {
-                    WebImageView(
-                        imageUrl = data.certificateValidity.authorizedPerson.image,
-                        modifier = Modifier.size(36.dp).clip(CircleShape)
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_avatar),
-                        contentDescription = null,
-                        modifier = Modifier.size(36.dp),
-                        tint = Color.Unspecified
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = data.certificateValidity.authorizedPerson.name ?: "N/A",
-                        style = textStyle(14.sp, FontWeight.SemiBold),
-                        color = AppColors.Black
-                    )
-                    if (data.certificateValidity.authorizedPerson.email != null) {
-                        Text(
-                            text = data.certificateValidity.authorizedPerson.email,
-                            style = textStyle(12.sp, FontWeight.Normal),
-                            color = AppColors.TextGray
-                        )
-                    }
-                }
-            }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text =  utcToLocal(
+                    data.certificateValidity?.validFrom ?: "N/A",
+                    "HH:mm:ss",
+                    "hh:mm a"
+                ),
+                style = textStyle(14.sp, FontWeight.SemiBold),
+                color = AppColors.Black
+            )
         }
 
-        // Date & Times
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "End Time",
+                style = textStyle(12.sp, FontWeight.Normal),
+                color = AppColors.TextGray
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = utcToLocal(
+                    data.certificateValidity?.endTime ?: "N/A",
+                    "HH:mm:ss",
+                    "hh:mm a"
+                ),
+                style = textStyle(14.sp, FontWeight.SemiBold),
+                color = AppColors.Black
+            )
+        }
+    }
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+}
 
-            Column() {
-                Text(
-                    text = "Request Date",
-                    style = textStyle(12.sp, FontWeight.Normal),
-                    color = AppColors.TextGray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = data.createdAt?.let { org.example.project.data.settings.formatDate(it, "yyyy-MM-dd HH:mm:ss", "dd MMM yyyy") } ?: "N/A",
-                    style = textStyle(14.sp, FontWeight.SemiBold),
-                    color = AppColors.Black
-                )
-            }
+@Composable
+fun LocationDescriptionSection(data: PermitDetailData) {
+    if (data.certificateValidity?.location != null) {
+        Text(
+            text = "Location",
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = data.certificateValidity.location,
+            style = textStyle(14.sp, FontWeight.SemiBold),
+            color = AppColors.Black
+        )
         Spacer(modifier = Modifier.height(16.dp))
-//        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Valid From",
-                    style = textStyle(12.sp, FontWeight.Normal),
-                    color = AppColors.TextGray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = data.certificateValidity?.validFrom ?: "N/A",
-                    style = textStyle(14.sp, FontWeight.SemiBold),
-                    color = AppColors.Black
-                )
-            }
+    }
 
-            Column(modifier = Modifier.weight(1f)) {
+    if (data.certificateValidity?.description != null) {
+        Text(
+            text = "Description",
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = data.certificateValidity.description,
+            style = textStyle(14.sp, FontWeight.SemiBold),
+            color = AppColors.Black
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun ValiditySectionsSection(data: PermitDetailData) {
+    if (!data.certificateValidity?.certificateValiditySections.isNullOrEmpty()) {
+        Text(
+            text = "Validity Sections",
+            style = textStyle(14.sp, FontWeight.Bold),
+            color = AppColors.Primary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        data.certificateValidity?.certificateValiditySections?.forEach { section ->
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
                 Text(
-                    text = "End Time",
-                    style = textStyle(12.sp, FontWeight.Normal),
-                    color = AppColors.TextGray
+                    text = section.title ?: "",
+                    style = textStyle(12.sp, FontWeight.Medium),
+                    color = AppColors.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = data.certificateValidity?.endTime ?: "N/A",
-                    style = textStyle(14.sp, FontWeight.SemiBold),
-                    color = AppColors.Black
+                    text = section.answer ?: "-",
+                    style = textStyle(12.sp, FontWeight.Bold),
+                    color = AppColors.Primary
                 )
             }
         }
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
-        // Location & Description
-        if (data.certificateValidity?.location != null) {
-            Text(
-                text = "Location",
-                style = textStyle(12.sp, FontWeight.Normal),
-                color = AppColors.TextGray
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = data.certificateValidity.location,
-                style = textStyle(14.sp, FontWeight.SemiBold),
-                color = AppColors.Black
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+    }
+}
 
-        if (data.certificateValidity?.description != null) {
-            Text(
-                text = "Description",
-                style = textStyle(12.sp, FontWeight.Normal),
-                color = AppColors.TextGray
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = data.certificateValidity.description,
-                style = textStyle(14.sp, FontWeight.SemiBold),
-                color = AppColors.Black
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Validity Sections
-        if (!data.certificateValidity?.certificateValiditySections.isNullOrEmpty()) {
-            Text(
-                text = "Validity Sections",
-                style = textStyle(14.sp, FontWeight.Bold),
-                color = AppColors.Primary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            data.certificateValidity?.certificateValiditySections?.forEach { section ->
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+@Composable
+fun GeneralConditionsSection(data: PermitDetailData) {
+    if (!data.certificateValidity?.generalConditions.isNullOrEmpty()) {
+        Text(
+            text = "General Conditions",
+            style = textStyle(14.sp, FontWeight.Bold),
+            color = AppColors.Primary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        data.certificateValidity?.generalConditions?.forEach { condition ->
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = section.title ?: "",
+                        text = condition.title ?: "",
                         style = textStyle(12.sp, FontWeight.Medium),
-                        color = AppColors.Black
+                        color = AppColors.Black,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = section.answer ?: "-",
+                        text = when(condition.answer) {
+                            1 -> "Yes"
+                            2 -> "No"
+                            3 -> "N/A"
+                            else -> "-"
+                        },
                         style = textStyle(12.sp, FontWeight.Bold),
                         color = AppColors.Primary
                     )
                 }
-            }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
-        }
-
-        // General Conditions
-        if (!data.certificateValidity?.generalConditions.isNullOrEmpty()) {
-            Text(
-                text = "General Conditions",
-                style = textStyle(14.sp, FontWeight.Bold),
-                color = AppColors.Primary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            data.certificateValidity?.generalConditions?.forEach { condition ->
-                Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = condition.title ?: "",
-                            style = textStyle(12.sp, FontWeight.Medium),
-                            color = AppColors.Black,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = when(condition.answer) {
-                                1 -> "Yes"
-                                2 -> "No"
-                                3 -> "N/A"
-                                else -> "-"
-                            },
-                            style = textStyle(12.sp, FontWeight.Bold),
-                            color = AppColors.Primary
-                        )
-                    }
-                    if (!condition.remarks.isNullOrBlank()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Remarks: ${condition.remarks}",
-                            style = textStyle(10.sp, FontWeight.Normal),
-                            color = AppColors.TextGray
-                        )
-                    }
-                }
-            }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
-        }
-
-        // Permit Validity
-        if (data.certificateValidity?.requestContractor != null || data.certificateValidity?.signatureImageUrl != null) {
-            Text(
-                text = "Permit Validity",
-                style = textStyle(14.sp, FontWeight.Bold),
-                color = AppColors.Primary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            if (!data.certificateValidity.requestContractor.isNullOrBlank()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Requestor Name",
-                        style = textStyle(12.sp, FontWeight.Medium),
-                        color = AppColors.Black
-                    )
+                if (!condition.remarks.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = data.certificateValidity.requestContractor,
-                        style = textStyle(12.sp, FontWeight.Bold),
-                        color = AppColors.Primary
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            
-            if (!data.certificateValidity.signatureImageUrl.isNullOrBlank()) {
-                WebImageView(
-                    imageUrl = data.certificateValidity.signatureImageUrl,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onImageClick(data.certificateValidity.signatureImageUrl) },
-                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (!data.certificateValidity.requestDate.isNullOrBlank()) {
-                    Text(
-                        text = "Date: ${data.certificateValidity.requestDate}",
-                        style = textStyle(12.sp, FontWeight.Medium),
-                        color = AppColors.TextGray
-                    )
-                }
-                if (!data.certificateValidity.requestTime.isNullOrBlank()) {
-                    Text(
-                        text = "Time: ${data.certificateValidity.requestTime}",
-                        style = textStyle(12.sp, FontWeight.Medium),
+                        text = "Remarks: ${condition.remarks}",
+                        style = textStyle(10.sp, FontWeight.Normal),
                         color = AppColors.TextGray
                     )
                 }
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
         }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+    }
+}
 
-        // Evidence Images
-        if (!data.certificateValidity?.images.isNullOrEmpty()) {
-            Text(
-                text = "Images",
-                style = textStyle(14.sp, FontWeight.Bold),
-                color = AppColors.Primary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                data.certificateValidity?.images?.forEach { imageDetail ->
-                    if (imageDetail.image?.isNotBlank() == true) {
-                        Column {
-                            WebImageView(
-                                imageUrl = imageDetail.image,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onImageClick(imageDetail.image) },
-                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                            )
-                            if (!imageDetail.description.isNullOrEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = imageDetail.description,
-                                    style = textStyle(14.sp, FontWeight.Normal),
-                                    color = AppColors.Black
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
-        }
-
-        // Action Details (Cancellations, Suspensions, Reactivations)
-        if (data.permitCancellationDetails != null) {
-            ActionDetailSection("Cancellation Details", listOf(data.permitCancellationDetails), onImageClick)
-        }
+@Composable
+fun PermitValiditySection(data: PermitDetailData, onImageClick: (String) -> Unit) {
+    if (data.certificateValidity?.requestContractor != null || data.certificateValidity?.signatureImageUrl != null) {
+        Text(
+            text = "Permit Validity",
+            style = textStyle(14.sp, FontWeight.Bold),
+            color = AppColors.Primary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
         
-        if (!data.permitSuspensionDetails.isNullOrEmpty()) {
-            ActionDetailSection("Suspension Details", data.permitSuspensionDetails, onImageClick)
-        }
-        
-        if (!data.permitReactivationDetails.isNullOrEmpty()) {
-            ActionDetailSection("Reactivation Details", data.permitReactivationDetails, onImageClick)
-        }
-        
-        // Authorization Request Form
-        if (userType == PermitFormUserType.AUTHORIZER) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Authorization Request",
-                style = textStyle(14.sp, FontWeight.Bold),
-                color = AppColors.Primary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AppTextField(
-                title = "Authorizer Name",
-                placeholder = "Authorizer Name",
-                value = authorizerName,
-                onValueChange = {},
-                enabled = false,
-                readOnly = true,
-                isMandatory = true
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AppUserDropdown(
-                title = "Responsible HSE Person",
-                placeholder = "Select Person",
-                users = hsePersons,
-                selectedUser = selectedHsePerson,
-                onUserSelected = viewModel::onHsePersonSelected
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            AppTextField(
-                title = "MSRA Number",
-                placeholder = "Enter MSRA Number",
-                value = msraNumber,
-                onValueChange = viewModel::onMsraNumberChanged,
-                isMandatory = true
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AppSignCreateBox(
-                signatureUrl = signatureUrl,
-                onSignatureUploaded = viewModel::onSignatureUploaded,
-                onRemoveSignatureClick = viewModel::onRemoveSignatureClick
-            )
-
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = buildAnnotatedString {
-                            append("Time")
-                        },
-                        style = textStyle(12.sp, FontWeight.SemiBold)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AppTimePicker(
-                        text = "00 : 00",
-                        selectedTime = signatureTime,
-                        onTimeSelected = {  },
-                        enabled = false
-                    )
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = buildAnnotatedString {
-                            append("Date")
-                        },
-                        style = textStyle(12.sp, FontWeight.SemiBold)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AppDatePicker(
-                        text = signatureDate.ifBlank { "YYYY-MM-DD" },
-                        onDateSelected = { },
-                        selectedDateMillis = null,
-                        enabled = false
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AppMultilineTextField(
-                title = "Additional Precautions",
-                placeholder = "Enter Additional Precautions",
-                value = additionalPrecautions,
-                onValueChange = viewModel::onAdditionalPrecautionsChanged
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            AppPrimaryButton(
-                title = "Submit",
-                onClick = {
-                    data.permitId?.let { viewModel.authorizePermit(it) }
-                }
-            )
-        }
-
-        if (userType == PermitFormUserType.AUTHORIZER_VIEWER) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Authorization Request",
-                style = textStyle(14.sp, FontWeight.Bold),
-                color = AppColors.Primary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        if (!data.certificateValidity.requestContractor.isNullOrBlank()) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
             ) {
@@ -770,18 +766,661 @@ fun PermitDetailContent(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = data.authorizationRequest?.authorizerName ?: "-",
+                    text = data.certificateValidity.requestContractor,
                     style = textStyle(12.sp, FontWeight.Bold),
                     color = AppColors.Primary
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        if (!data.certificateValidity.signatureImageUrl.isNullOrBlank()) {
+            Text(
+                text = "Signature",
+                style = textStyle(12.sp, FontWeight.Normal),
+                color = AppColors.TextGray
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            WebImageView(
+                imageUrl = data.certificateValidity.signatureImageUrl,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onImageClick(data.certificateValidity.signatureImageUrl) },
+                contentScale = ContentScale.Fit
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (!data.certificateValidity.requestDate.isNullOrBlank()) {
+                Text(
+                    text = "Date : ${formatDate(
+                        data.certificateValidity.requestDate,
+                        "yyyy-MM-dd",
+                        "dd MMM yyyy"
+                    ) }",
+                    style = textStyle(12.sp, FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+            }
+            if (!data.certificateValidity.requestTime.isNullOrBlank()) {
+                Text(
+                    text = "Time : ${utcToLocal(
+                        data.certificateValidity.requestTime,
+                        inputFormat = "HH:mm:ss",
+                        outputFormat = "hh:mm a"
+                    )}",
+                    style = textStyle(12.sp, FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
     }
 }
+
+@Composable
+fun EvidenceImagesSection(data: PermitDetailData, onImageClick: (String) -> Unit) {
+    if (!data.certificateValidity?.images.isNullOrEmpty()) {
+        Text(
+            text = "Images",
+            style = textStyle(14.sp, FontWeight.Bold),
+            color = AppColors.Primary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            data.certificateValidity?.images?.forEach { imageDetail ->
+                if (imageDetail.image?.isNotBlank() == true) {
+                    Column {
+                        WebImageView(
+                            imageUrl = imageDetail.image,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onImageClick(imageDetail.image) },
+                            contentScale = ContentScale.Crop
+                        )
+                        if (!imageDetail.description.isNullOrEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = imageDetail.description,
+                                style = textStyle(14.sp, FontWeight.Normal),
+                                color = AppColors.Black
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+    }
+}
+
+@Composable
+fun AuthorizerFormSection(
+    data: PermitDetailData,
+    authorizerName: String,
+    hsePersons: List<GroupUser>,
+    selectedHsePerson: GroupUser?,
+    msraNumber: String,
+    signatureUrl: String?,
+    signatureDate: String,
+    signatureTime: String,
+    additionalPrecautions: String,
+    viewModel: PermitDetailViewModel,
+    isAuthorizing: Boolean
+) {
+    Text(
+        text = "Authorization Request",
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppTextField(
+        title = "Authorizer Name",
+        placeholder = "Authorizer Name",
+        value = authorizerName,
+        onValueChange = {},
+        enabled = false,
+        readOnly = true,
+        isMandatory = true
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppUserDropdown(
+        title = "Responsible HSE Person",
+        placeholder = "Select Person",
+        users = hsePersons,
+        selectedUser = selectedHsePerson,
+        onUserSelected = viewModel::onHsePersonSelected
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+    
+    AppTextField(
+        title = "MSRA Number",
+        placeholder = "Enter MSRA Number",
+        value = msraNumber,
+        onValueChange = viewModel::onMsraNumberChanged,
+        isMandatory = true
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppSignCreateBox(
+        signatureUrl = signatureUrl,
+        onSignatureUploaded = viewModel::onSignatureUploaded,
+        onRemoveSignatureClick = viewModel::onRemoveSignatureClick
+    )
+
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = buildAnnotatedString {
+                    append("Time")
+                },
+                style = textStyle(12.sp, FontWeight.SemiBold)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            AppTimePicker(
+                text = "00 : 00",
+                selectedTime = signatureTime,
+                onTimeSelected = {  },
+                enabled = false
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = buildAnnotatedString {
+                    append("Date")
+                },
+                style = textStyle(12.sp, FontWeight.SemiBold)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            AppDatePicker(
+                text = signatureDate.ifBlank { "YYYY-MM-DD" },
+                onDateSelected = { },
+                selectedDateMillis = null,
+                enabled = false
+            )
+        }
+    }
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppMultilineTextField(
+        title = "Additional Precautions",
+        placeholder = "Enter Additional Precautions",
+        value = additionalPrecautions,
+        onValueChange = viewModel::onAdditionalPrecautionsChanged
+    )
+    Spacer(modifier = Modifier.height(24.dp))
+
+    AppPrimaryButton(
+        title = "Submit",
+        isLoading = isAuthorizing,
+        onClick = {
+            data.permitId?.let { viewModel.authorizePermit(it) }
+        }
+    )
+}
+
+@Composable
+fun AuthorizerViewerSection(
+    data: PermitDetailData,
+    onImageClick: (String) -> Unit,
+    canCancelOrSuspend: Boolean,
+    canReactivate: Boolean,
+    actionLoading: Int,
+    viewModel: PermitDetailViewModel
+) {
+    Text(
+        text = "Authorization Request",
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = "Requestor Name",
+            style = textStyle(12.sp, FontWeight.Medium),
+            color = AppColors.Black
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = data.authorizationRequest?.authorizerName ?: "-",
+            style = textStyle(12.sp, FontWeight.Bold),
+            color = AppColors.Primary
+        )
+    }
+    
+    if (!data.authorizationRequest?.msraNumber.isNullOrBlank()) {
+        Spacer(modifier = Modifier.height(12.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        ) {
+            Text(
+                text = "MSRA Number",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.Black
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = data.authorizationRequest?.msraNumber ?: "-",
+                style = textStyle(12.sp, FontWeight.Bold),
+                color = AppColors.Primary
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(12.dp))
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+
+    // Responsible HSE Person
+    if (data.authorizationRequest?.responsibleHSEPerson != null) {
+        Text(
+            text = "Responsible HSE Person",
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (data.authorizationRequest.responsibleHSEPerson.image != null) {
+                WebImageView(
+                    imageUrl = data.authorizationRequest.responsibleHSEPerson.image,
+                    modifier = Modifier.size(36.dp).clip(CircleShape)
+                )
+            } else {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_avatar),
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    tint = Color.Unspecified
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text(
+                    text = data.authorizationRequest.responsibleHSEPerson.name ?: "N/A",
+                    style = textStyle(14.sp, FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+                if (data.authorizationRequest.responsibleHSEPerson.email != null) {
+                    Text(
+                        text = data.authorizationRequest.responsibleHSEPerson.email,
+                        style = textStyle(12.sp, FontWeight.Normal),
+                        color = AppColors.TextGray
+                    )
+                }
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+    }
+
+    if (!data.authorizationRequest?.signatureImageUrl.isNullOrBlank()) {
+        Text(
+            text = "Signature",
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        WebImageView(
+            imageUrl = data.authorizationRequest?.signatureImageUrl ?: "",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { data.authorizationRequest?.signatureImageUrl?.let { onImageClick(it) } },
+            contentScale = ContentScale.Fit
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (!data.authorizationRequest?.authorizedDate.isNullOrBlank()) {
+            Text(
+                text = "Date : ${formatDate(
+                    data.authorizationRequest.authorizedDate,
+                    "yyyy-MM-dd",
+                    "dd MMM yyyy"
+                )}",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+        if (!data.authorizationRequest?.authorizedTime.isNullOrBlank()) {
+            Text(
+                text = "Time : ${utcToLocal(
+                    data.authorizationRequest.authorizedTime,
+                    inputFormat = "HH:mm:ss",
+                    outputFormat = "hh:mm a"
+                ) }",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+    }
+    
+    if (!data.authorizationRequest?.notes.isNullOrBlank()) {
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+        Text(
+            text = "Additional Precautions",
+            style = textStyle(12.sp, FontWeight.Medium),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = data.authorizationRequest.notes ?: "-",
+            style = textStyle(14.sp, FontWeight.SemiBold),
+            color = AppColors.Black
+        )
+    }
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+    // Action Details (Cancellations, Suspensions, Reactivations)
+    if (data.permitCancellationDetails != null) {
+        ActionDetailSection("Cancellation Details", listOf(data.permitCancellationDetails), onImageClick)
+    }
+
+    if (!data.permitCancelledUsers.isNullOrEmpty()) {
+        val user = data.permitCancelledUsers.lastOrNull()
+        if (user != null) {
+            PermitActionUserCard(user, "Cancelled User")
+        }
+    }
+
+    if (!data.permitSuspensionDetails.isNullOrEmpty()) {
+        ActionDetailSection("Suspension Details", data.permitSuspensionDetails, onImageClick)
+    }
+
+    if (data.permitStatus == 4 && !data.permitSuspendedUsers.isNullOrEmpty()) {
+        val user = data.permitSuspendedUsers.lastOrNull()
+        if (user != null) {
+            PermitActionUserCard(user, "Suspended User")
+        }
+    }
+
+    if (data.permitStatus != 4 && data.permitStatus != 3) {
+        if (!data.permitReactivationDetails.isNullOrEmpty()) {
+            val lastDetail = data.permitReactivationDetails.last()
+            ActionDetailSection("Reactivation Details", listOf(lastDetail), onImageClick)
+        }
+    }
+
+    if (canCancelOrSuspend) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            AppPrimaryButton(
+                title = "Cancel",
+                onClick = { viewModel.onActionClick(1) },
+                isLoading = actionLoading == 1,
+                modifier = Modifier.weight(1f).height(48.dp),
+                color = Color(0xFFD32F2F)
+            )
+
+            AppPrimaryButton(
+                title = "Suspend",
+                onClick = { viewModel.onActionClick(2) },
+                isLoading = actionLoading == 2,
+                modifier = Modifier.weight(1f).height(48.dp),
+                color = Color(0xFFE5A93C)
+            )
+        }
+    }
+
+    if (canReactivate) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            AppPrimaryButton(
+                title = "Reactivate",
+                onClick = { viewModel.onActionClick(3) },
+                isLoading = actionLoading == 3,
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                color = Color(0xFF2E6AC6)
+            )
+        }
+    }
+}
+
+@Composable
+fun RequestForCertificateClosureViewerSection(data: PermitDetailData, onImageClick: (String) -> Unit) {
+    val closureDetails = data.requestForCertificateClosure ?: return
+    
+    Text(
+        text = "Request For Certificate Closure",
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    
+    if (closureDetails.images?.isNotEmpty() == true) {
+        Text(
+            text = "Images",
+            style = textStyle(12.sp, FontWeight.Medium),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            closureDetails.images.forEach { img ->
+                Column {
+                    if (!img.image.isNullOrBlank()) {
+                        WebImageView(
+                            imageUrl = img.image,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onImageClick(img.image) },
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    if (!img.description.isNullOrBlank()) {
+                        Text(
+                            text = img.description,
+                            style = textStyle(size = 14.sp, weight = FontWeight.Normal),
+                            color = AppColors.Black
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (!closureDetails.remarks.isNullOrBlank()) {
+        Text(
+            text = "Remarks",
+            style = textStyle(12.sp, FontWeight.Medium),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = closureDetails.remarks,
+            style = textStyle(14.sp, FontWeight.SemiBold),
+            color = AppColors.Black
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (!closureDetails.signatureImageUrl.isNullOrBlank()) {
+        Text(
+            text = "Signature",
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        WebImageView(
+            imageUrl = closureDetails.signatureImageUrl,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onImageClick(closureDetails.signatureImageUrl) },
+            contentScale = ContentScale.Fit
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (!closureDetails.requestDate.isNullOrBlank()) {
+            Text(
+                text = "Date : ${formatDate(
+                    closureDetails.requestDate,
+                    "yyyy-MM-dd",
+                    "dd MMM yyyy"
+                )}",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+        if (!closureDetails.requestTime.isNullOrBlank()) {
+            Text(
+                text = "Time : ${utcToLocal(
+                    closureDetails.requestTime,
+                    inputFormat = "HH:mm:ss",
+                    outputFormat = "hh:mm a"
+                )}",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+    }
+    
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+}
+
+@Composable
+fun RequestForPermitClosureSection(
+    data: PermitDetailData,
+    isWorkCompletedVerified: Boolean,
+    closureRemarks: String,
+    closureImages: List<PermitImage>,
+    closureSignatureUrl: String?,
+    signatureDate: String,
+    signatureTime: String,
+    isSubmittingClosure: Boolean,
+    viewModel: PermitDetailViewModel
+) {
+    Text(
+        text = "Request For Certificate Closure",
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    // Checkbox
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(
+            checked = isWorkCompletedVerified,
+            onCheckedChange = viewModel::onWorkCompletedVerifiedChanged,
+            colors = CheckboxDefaults.colors(
+                AppColors.Primary
+            )
+        )
+        Spacer(modifier = Modifier.width(2.dp))
+        Text(
+            text = "I verify the work has been completed and all required controls were implemented",
+            style = textStyle(10.sp, FontWeight.Medium, fontStyle = FontStyle.Italic),
+            color = AppColors.Black
+        )
+    }
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    // Images
+    closureImages.forEachIndexed { index, image ->
+        AppImageCreateBox(
+            imageUrl = image.image,
+            description = image.description ?: "",
+            onDescriptionChange = { viewModel.onClosureImageDescriptionChange(index, it) },
+            onImageUploaded = { viewModel.onClosureImageSelected(index, it) },
+            onRemoveImageClick = { viewModel.onClosureImageRemoved(index) }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+    if (closureImages.size < 6) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable { viewModel.onAddClosureImageSlot() }.padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = null, tint = AppColors.Primary)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Add Image",
+                style = textStyle(
+                    size = 12.sp,
+                    weight = FontWeight.SemiBold
+                ),
+                color = AppColors.Primary
+            )
+        }
+    }
+    
+    Spacer(modifier = Modifier.height(16.dp))
+    
+    AppMultilineTextField(
+        title = "Remarks",
+        placeholder = "Enter remarks",
+        value = closureRemarks,
+        onValueChange = viewModel::onClosureRemarksChanged
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppSignCreateBox(
+        signatureUrl = closureSignatureUrl,
+        onSignatureUploaded = viewModel::onClosureSignatureUploaded,
+        onRemoveSignatureClick = viewModel::onRemoveClosureSignatureClick
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = "Time", style = textStyle(12.sp, FontWeight.SemiBold))
+            Spacer(modifier = Modifier.height(8.dp))
+            AppTimePicker(text = "00 : 00", selectedTime = signatureTime, onTimeSelected = { }, enabled = false)
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = "Date", style = textStyle(12.sp, FontWeight.SemiBold))
+            Spacer(modifier = Modifier.height(8.dp))
+            AppDatePicker(text = signatureDate.ifBlank { "YYYY-MM-DD" }, onDateSelected = { }, selectedDateMillis = null, enabled = false)
+        }
+    }
+    
+    Spacer(modifier = Modifier.height(24.dp))
+    
+    AppPrimaryButton(
+        title = "Submit",
+        isLoading = isSubmittingClosure,
+        onClick = { data.permitId?.let { viewModel.submitPermitClosureRequest(it) } }
+    )
+}
+
 
 @Composable
 fun ActionDetailSection(
@@ -796,7 +1435,13 @@ fun ActionDetailSection(
     )
     Spacer(modifier = Modifier.height(12.dp))
     
-    detailsList.forEachIndexed { index, details ->
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 250.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        detailsList.forEachIndexed { index, details ->
         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
             if (details.actionedBy != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -845,7 +1490,7 @@ fun ActionDetailSection(
                                     .size(100.dp)
                                     .clip(RoundedCornerShape(8.dp))
                                     .clickable { onImageClick(img.image) },
-                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                contentScale = ContentScale.Crop
                             )
                         }
                     }
@@ -856,5 +1501,336 @@ fun ActionDetailSection(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFFF0F0F0))
         }
     }
-    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+    }
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+}
+
+@Composable
+fun PermitActionUserCard(
+    user: PermitDetailUser,
+    title: String
+) {
+    Text(
+        text = title,
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9)),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (user.profileImage != null) {
+                WebImageView(
+                    imageUrl = user.profileImage,
+                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                )
+            } else {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_avatar),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = Color.Unspecified
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = user.name ?: "N/A",
+                    style = textStyle(14.sp, FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+                if (user.email != null) {
+                    Text(
+                        text = user.email,
+                        style = textStyle(12.sp, FontWeight.Normal),
+                        color = AppColors.TextGray
+                    )
+                }
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
+fun PermitActionDialog(
+    remarks: String,
+    images: List<PermitImage>,
+    onRemarksChange: (String) -> Unit,
+    onImageDescriptionChange: (Int, String) -> Unit,
+    onImageSelected: (Int, String) -> Unit,
+    onImageRemoved: (Int) -> Unit,
+    onAddImageSlot: () -> Unit,
+    onDismiss: () -> Unit,
+    onSubmit: () -> Unit
+) {
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .heightIn(max = 600.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = "Permit Action",
+                        style = textStyle(16.sp, FontWeight.Bold),
+                        color = AppColors.Black
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    AppMultilineTextField(
+                        title = "Remarks",
+                        placeholder = "Enter remarks",
+                        value = remarks,
+                        onValueChange = onRemarksChange
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Images",
+                        style = textStyle(12.sp, FontWeight.Medium),
+                        color = AppColors.Black
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    images.forEachIndexed { index, image ->
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                text = "Upload Image ${index + 1}",
+                                style = textStyle(
+                                    size = 12.sp,
+                                    weight = FontWeight.SemiBold
+                                ),
+                                color = AppColors.Black
+                            )
+                            AppImageCreateBox(
+                                imageUrl = image.image,
+                                description = image.description ?: "",
+                                onDescriptionChange = { onImageDescriptionChange(index, it) },
+                                onImageUploaded = {
+                                    onImageSelected(index, it)
+                                },
+                                onRemoveImageClick = {
+                                    onImageRemoved(index)
+                                }
+                            )
+                        }
+                    }
+                    if (images.size < 6) {
+                        TextButton(
+                            onClick = onAddImageSlot,
+                            modifier = Modifier.align(Alignment.Start)
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_add),
+                                contentDescription = "Add Image",
+                                modifier = Modifier.size(15.dp),
+                                tint = AppColors.Primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Add Image",
+                                style = textStyle(
+                                    size = 12.sp,
+                                    weight = FontWeight.SemiBold
+                                ),
+                                color = AppColors.Primary
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    AppBorderButton(
+                        title = "Cancel",
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f)
+                    )
+                    AppPrimaryButton(
+                        title = "Submit",
+                        onClick = onSubmit,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PermitCertificateClosureSection(
+    data: PermitDetailData,
+    userName: String,
+    certificateClosureSignatureUrl: String?,
+    certificateClosureDate: String,
+    certificateClosureTime: String,
+    isSubmittingCertificateClosure: Boolean,
+    viewModel: PermitDetailViewModel
+) {
+    Text(
+        text = "Permit Closure",
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    AppTextField(
+        value = userName,
+        onValueChange = {},
+        title = "Authorizer Name",
+        placeholder = "Authorizer Name",
+        modifier = Modifier.fillMaxWidth(),
+        enabled = false
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppSignCreateBox(
+        onSignatureUploaded = viewModel::onCertificateClosureSignatureUploaded,
+        onRemoveSignatureClick = viewModel::onRemoveCertificateClosureSignatureClick,
+        signatureUrl = certificateClosureSignatureUrl
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = "Time", style = textStyle(12.sp, FontWeight.SemiBold))
+            Spacer(modifier = Modifier.height(8.dp))
+            AppTimePicker(
+                text = "00 : 00",
+                selectedTime = certificateClosureTime,
+                onTimeSelected = { },
+                enabled = false
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = "Date", style = textStyle(12.sp, FontWeight.SemiBold))
+            Spacer(modifier = Modifier.height(8.dp))
+            AppDatePicker(
+                text = certificateClosureDate.ifBlank { "YYYY-MM-DD" },
+                onDateSelected = { },
+                selectedDateMillis = null,
+                enabled = false
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+    
+    AppPrimaryButton(
+        title = "Submit",
+        isLoading = isSubmittingCertificateClosure,
+        onClick = { data.permitId?.let { viewModel.submitPermitCertificateClosure(it) } },
+        modifier = Modifier.fillMaxWidth().height(48.dp)
+    )
+}
+
+@Composable
+fun PermitCertificateClosureViewerSection(data: PermitDetailData, onImageClick: (String) -> Unit) {
+    val closureDetails = data.certificateClosure ?: return
+
+    Text(
+        text = "Permit Closure",
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    if (!closureDetails.contractorName.isNullOrBlank()) {
+        Text(
+            text = "Authorizer Name",
+            style = textStyle(12.sp, FontWeight.Medium),
+            color = AppColors.Black
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = closureDetails.contractorName,
+            style = textStyle(12.sp, FontWeight.Bold),
+            color = AppColors.Primary
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (!closureDetails.signatureImageUrl.isNullOrBlank()) {
+        Text(
+            text = "Signature",
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        WebImageView(
+            imageUrl = closureDetails.signatureImageUrl,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onImageClick(closureDetails.signatureImageUrl) },
+            contentScale = ContentScale.Fit
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (!closureDetails.closureDate.isNullOrBlank()) {
+            Text(
+                text = "Date : ${formatDate(
+                    closureDetails.closureDate,
+                    "yyyy-MM-dd",
+                    "dd MMM yyyy"
+                )}",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+        if (!closureDetails.closureTime.isNullOrBlank()) {
+            Text(
+                text = "Time : ${utcToLocal(
+                    closureDetails.closureTime,
+                    inputFormat = "HH:mm:ss",
+                    outputFormat = "hh:mm a"
+                )}",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+    }
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 }

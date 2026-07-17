@@ -48,4 +48,16 @@ class PermitRepositoryImpl(
     override suspend fun submitPermitAuthorization(request: org.example.project.data.model.PermitAuthorizationSubmitRequest): NetworkResult<org.example.project.data.model.PermitAuthorizationSubmitResponse> {
         return apiService.submitPermitAuthorization(request)
     }
+
+    override suspend fun submitPermitAction(request: org.example.project.data.model.PermitActionRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.submitPermitAction(request)
+    }
+
+    override suspend fun submitPermitClosureRequest(request: org.example.project.data.model.PermitClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.submitPermitClosureRequest(request)
+    }
+
+    override suspend fun submitPermitCertificateClosure(request: org.example.project.data.model.PermitCertificateClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.submitPermitCertificateClosure(request)
+    }
 }

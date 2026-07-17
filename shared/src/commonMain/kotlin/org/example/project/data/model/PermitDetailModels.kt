@@ -196,7 +196,46 @@ enum class PermitFormUserType {
     AUTHORIZER_VIEWER,
     CERTIFICATE_CLOSURE,
     REQUEST_FOR_CERTIFICATE_CLOSURE,
+    REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER,
     SUBCONTRACTOR_AUTHORIZER,
     SUBCONTRACTOR_CLOSURE,
     NONE
 }
+
+@Serializable
+data class PermitActionRequest(
+    val permitId: Int,
+    val action: Int,
+    val actionBy: UserResponse,
+    val remarks: String,
+    val images: List<PermitImage>
+)
+
+@Serializable
+data class PermitClosureSubmitRequest(
+    val permitId: Int,
+    val requestForCertificateClosure: RequestForCertificateClosureSubmit
+)
+
+@Serializable
+data class RequestForCertificateClosureSubmit(
+    val remarks: String,
+    val signatureImageUrl: String,
+    val requestTime: String,
+    val requestDate: String,
+    val images: List<PermitImage>
+)
+
+@Serializable
+data class PermitCertificateClosureSubmitRequest(
+    val permitId: Int,
+    val certificateClosure: CertificateClosureSubmit
+)
+
+@Serializable
+data class CertificateClosureSubmit(
+    val contractorName: String,
+    val signatureImageUrl: String,
+    val closureTime: String,
+    val closureDate: String
+)

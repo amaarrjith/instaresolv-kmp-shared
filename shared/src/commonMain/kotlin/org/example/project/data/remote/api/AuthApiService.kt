@@ -352,4 +352,16 @@ interface AuthApiService {
     suspend fun submitPermitAuthorization(
         request: org.example.project.data.model.PermitAuthorizationSubmitRequest
     ): NetworkResult<org.example.project.data.model.PermitAuthorizationSubmitResponse>
+
+    suspend fun submitPermitAction(
+        request: org.example.project.data.model.PermitActionRequest
+    ): NetworkResult<CommonModelResponse>
+    
+    suspend fun submitPermitClosureRequest(
+        request: org.example.project.data.model.PermitClosureSubmitRequest
+    ): NetworkResult<CommonModelResponse>
+    
+    suspend fun submitPermitCertificateClosure(
+        request: org.example.project.data.model.PermitCertificateClosureSubmitRequest
+    ): NetworkResult<CommonModelResponse>
 }
