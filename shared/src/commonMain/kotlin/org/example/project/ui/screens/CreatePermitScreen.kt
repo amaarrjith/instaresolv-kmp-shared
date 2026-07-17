@@ -316,6 +316,12 @@ fun CreatePermitScreen(
                     onDismiss = { viewModel.clearError() },
                     type = ToastType.Error
                 )
+                ToastHost(
+                    visible = uiState.submitError != null,
+                    message = uiState.submitError.orEmpty(),
+                    onDismiss = { viewModel.clearError() },
+                    type = ToastType.Error
+                )
             }
             if (uiState.submitSuccess) {
                 org.example.project.ui.components.AppStatusDialog(

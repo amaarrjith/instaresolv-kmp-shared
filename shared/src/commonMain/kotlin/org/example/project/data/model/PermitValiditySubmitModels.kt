@@ -36,7 +36,7 @@ data class PermitValidityProject(
 data class PermitValiditySection(
     val id: Int,
     val title: String,
-    val answer: String? = null
+    val answer: String = ""
 )
 
 @Serializable
