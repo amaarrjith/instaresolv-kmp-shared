@@ -16,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -56,6 +58,8 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.ErrorRetryView
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
@@ -194,38 +198,45 @@ fun PermitDetailScreen(
             }
             is PermitDetailUiState.Success -> {
                 val data = state.data
-                PermitDetailContent(
-                    data = data,
-                    userType = userType,
-                    authorizerName = authorizerName,
-                    hsePersons = hsePersons,
-                    selectedHsePerson = selectedHsePerson,
-                    msraNumber = msraNumber,
-                    signatureUrl = signatureUrl,
-                    signatureDate = signatureDate,
-                    signatureTime = signatureTime,
-                    additionalPrecautions = additionalPrecautions,
-                    viewModel = viewModel,
-                    paddingValues = paddingValues,
-                    onImageClick = { previewImageUrl = it },
-                    canCancelOrSuspend = canCancelOrSuspend,
-                    canReactivate = canReactivate,
-                    actionLoading = actionLoading,
-                    isAuthorizing = isAuthorizing,
-                    isWorkCompletedVerified = isWorkCompletedVerified,
-                    closureRemarks = closureRemarks,
-                    closureImages = closureImages,
-                    closureSignatureUrl = closureSignatureUrl,
-                    closureSignatureDate = closureSignatureDate,
-                    closureSignatureTime = closureSignatureTime,
-                    isSubmittingClosure = isSubmittingClosure,
-                    certificateClosureSignatureUrl = certificateClosureSignatureUrl,
-                    certificateClosureDate = certificateClosureDate,
-                    certificateClosureTime = certificateClosureTime,
-                    isSubmittingCertificateClosure = isSubmittingCertificateClosure
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    PermitDetailContent(
+                        submitError = state.submitError,
+                        data = data,
+                        userType = userType,
+                        authorizerName = authorizerName,
+                        hsePersons = hsePersons,
+                        selectedHsePerson = selectedHsePerson,
+                        msraNumber = msraNumber,
+                        signatureUrl = signatureUrl,
+                        signatureDate = signatureDate,
+                        signatureTime = signatureTime,
+                        additionalPrecautions = additionalPrecautions,
+                        viewModel = viewModel,
+                        paddingValues = paddingValues,
+                        onImageClick = { previewImageUrl = it },
+                        canCancelOrSuspend = canCancelOrSuspend,
+                        canReactivate = canReactivate,
+                        actionLoading = actionLoading,
+                        isAuthorizing = isAuthorizing,
+                        isWorkCompletedVerified = isWorkCompletedVerified,
+                        closureRemarks = closureRemarks,
+                        closureImages = closureImages,
+                        closureSignatureUrl = closureSignatureUrl,
+                        closureSignatureDate = closureSignatureDate,
+                        closureSignatureTime = closureSignatureTime,
+                        isSubmittingClosure = isSubmittingClosure,
+                        certificateClosureSignatureUrl = certificateClosureSignatureUrl,
+                        certificateClosureDate = certificateClosureDate,
+                        certificateClosureTime = certificateClosureTime,
+                        isSubmittingCertificateClosure = isSubmittingCertificateClosure
+                    )
+                }
             }
         }
+
+
         
         if (successMessage != null) {
             AppStatusDialog(
@@ -265,6 +276,7 @@ fun PermitDetailScreen(
 
 @Composable
 fun PermitDetailContent(
+    submitError: String?,
     data: PermitDetailData,
     userType: PermitFormUserType,
     authorizerName: String,
@@ -294,125 +306,137 @@ fun PermitDetailContent(
     certificateClosureTime: String,
     isSubmittingCertificateClosure: Boolean
 ) {
-    Column(
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
             .padding(paddingValues)
             .padding(horizontal = 22.dp)
-            .verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        PermitHeaderSection(data, userType)
-        FacilityProjectSection(data)
-        RequestedBySection(data)
-        AuthorizedPersonSection(data)
-        DateAndTimesSection(data)
-        LocationDescriptionSection(data)
-        ValiditySectionsSection(data)
-        GeneralConditionsSection(data)
-        PermitValiditySection(data, onImageClick)
-        EvidenceImagesSection(data, onImageClick)
-        
-        // Authorization Request Form
-        if (userType == PermitFormUserType.AUTHORIZER) {
-            AuthorizerFormSection(
-                data = data,
-                authorizerName = authorizerName,
-                hsePersons = hsePersons,
-                selectedHsePerson = selectedHsePerson,
-                msraNumber = msraNumber,
-                signatureUrl = signatureUrl,
-                signatureDate = signatureDate,
-                signatureTime = signatureTime,
-                additionalPrecautions = additionalPrecautions,
-                viewModel = viewModel,
-                isAuthorizing = isAuthorizing
-            )
-        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (userType == PermitFormUserType.AUTHORIZER_VIEWER) {
-            AuthorizerViewerSection(
-                data = data,
-                onImageClick = onImageClick,
-                canCancelOrSuspend = canCancelOrSuspend,
-                canReactivate = canReactivate,
-                actionLoading = actionLoading,
-                viewModel = viewModel
-            )
-        }
-        
-        if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE) {
-            AuthorizerViewerSection(
-                data = data,
-                onImageClick = onImageClick,
-                canCancelOrSuspend = canCancelOrSuspend,
-                canReactivate = canReactivate,
-                actionLoading = actionLoading,
-                viewModel = viewModel
-            )
-            RequestForPermitClosureSection(
-                data = data,
-                isWorkCompletedVerified = isWorkCompletedVerified,
-                closureRemarks = closureRemarks,
-                closureImages = closureImages,
-                closureSignatureUrl = closureSignatureUrl,
-                signatureDate = closureSignatureDate,
-                signatureTime = closureSignatureTime,
-                isSubmittingClosure = isSubmittingClosure,
-                viewModel = viewModel
-            )
-        }
+            PermitHeaderSection(data, userType)
+            FacilityProjectSection(data)
+            RequestedBySection(data)
+            AuthorizedPersonSection(data)
+            DateAndTimesSection(data)
+            LocationDescriptionSection(data)
+            ValiditySectionsSection(data)
+            GeneralConditionsSection(data)
+            PermitValiditySection(data, onImageClick)
+            EvidenceImagesSection(data, onImageClick)
 
-        if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER) {
-            AuthorizerViewerSection(
-                data = data,
-                onImageClick = onImageClick,
-                canCancelOrSuspend = canCancelOrSuspend,
-                canReactivate = canReactivate,
-                actionLoading = actionLoading,
-                viewModel = viewModel
-            )
-            RequestForCertificateClosureViewerSection(data, onImageClick)
-            PermitCertificateClosureViewerSection(data, onImageClick)
-        }
+            // Authorization Request Form
+            if (userType == PermitFormUserType.AUTHORIZER) {
+                AuthorizerFormSection(
+                    data = data,
+                    authorizerName = authorizerName,
+                    hsePersons = hsePersons,
+                    selectedHsePerson = selectedHsePerson,
+                    msraNumber = msraNumber,
+                    signatureUrl = signatureUrl,
+                    signatureDate = signatureDate,
+                    signatureTime = signatureTime,
+                    additionalPrecautions = additionalPrecautions,
+                    viewModel = viewModel,
+                    isAuthorizing = isAuthorizing
+                )
+            }
 
-        if (userType == PermitFormUserType.CERTIFICATE_CLOSURE) {
-            AuthorizerViewerSection(
-                data = data,
-                onImageClick = onImageClick,
-                canCancelOrSuspend = canCancelOrSuspend,
-                canReactivate = canReactivate,
-                actionLoading = actionLoading,
-                viewModel = viewModel
-            )
-            RequestForCertificateClosureViewerSection(data, onImageClick)
-            PermitCertificateClosureSection(
-                data = data,
-                userName = authorizerName,
-                certificateClosureSignatureUrl = certificateClosureSignatureUrl,
-                certificateClosureDate = certificateClosureDate,
-                certificateClosureTime = certificateClosureTime,
-                isSubmittingCertificateClosure = isSubmittingCertificateClosure,
-                viewModel = viewModel
-            )
-        }
+            if (userType == PermitFormUserType.AUTHORIZER_VIEWER) {
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+            }
 
-        if (userType == PermitFormUserType.NONE) {
-            AuthorizerViewerSection(
-                data = data,
-                onImageClick = onImageClick,
-                canCancelOrSuspend = canCancelOrSuspend,
-                canReactivate = canReactivate,
-                actionLoading = actionLoading,
-                viewModel = viewModel
-            )
-            RequestForCertificateClosureViewerSection(data, onImageClick)
-            PermitCertificateClosureViewerSection(data, onImageClick)
-        }
+            if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE) {
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+                RequestForPermitClosureSection(
+                    data = data,
+                    isWorkCompletedVerified = isWorkCompletedVerified,
+                    closureRemarks = closureRemarks,
+                    closureImages = closureImages,
+                    closureSignatureUrl = closureSignatureUrl,
+                    signatureDate = closureSignatureDate,
+                    signatureTime = closureSignatureTime,
+                    isSubmittingClosure = isSubmittingClosure,
+                    viewModel = viewModel
+                )
+            }
 
-        Spacer(modifier = Modifier.height(32.dp))
+            if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER) {
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+                RequestForCertificateClosureViewerSection(data, onImageClick)
+                PermitCertificateClosureViewerSection(data, onImageClick)
+            }
+
+            if (userType == PermitFormUserType.CERTIFICATE_CLOSURE) {
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+                RequestForCertificateClosureViewerSection(data, onImageClick)
+                PermitCertificateClosureSection(
+                    data = data,
+                    userName = authorizerName,
+                    certificateClosureSignatureUrl = certificateClosureSignatureUrl,
+                    certificateClosureDate = certificateClosureDate,
+                    certificateClosureTime = certificateClosureTime,
+                    isSubmittingCertificateClosure = isSubmittingCertificateClosure,
+                    viewModel = viewModel
+                )
+            }
+
+            if (userType == PermitFormUserType.NONE) {
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+                RequestForCertificateClosureViewerSection(data, onImageClick)
+                PermitCertificateClosureViewerSection(data, onImageClick)
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+        ToastHost(
+            visible = submitError != null,
+            type = ToastType.Error,
+            message = submitError ?: "",
+            onDismiss = {
+                viewModel.clearSubmitError()
+            }
+        )
     }
 }
 
@@ -523,9 +547,9 @@ fun RequestedBySection(data: PermitDetailData) {
                 style = textStyle(14.sp, FontWeight.SemiBold),
                 color = AppColors.Black
             )
-            if (data.permitRequestedUser?.designation != null) {
+            if (data.permitRequestedUser?.email != null) {
                 Text(
-                    text = data.permitRequestedUser.designation,
+                    text = data.permitRequestedUser.email,
                     style = textStyle(12.sp, FontWeight.Normal),
                     color = AppColors.TextGray
                 )
@@ -687,7 +711,7 @@ fun ValiditySectionsSection(data: PermitDetailData) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = section.answer ?: "-",
+                    text = section.answer?.ifBlank { "-" } ?: "-",
                     style = textStyle(12.sp, FontWeight.Bold),
                     color = AppColors.Primary
                 )
@@ -897,6 +921,7 @@ fun AuthorizerFormSection(
 
     AppUserDropdown(
         title = "Responsible HSE Person",
+        isMandatory = true,
         placeholder = "Select Person",
         users = hsePersons,
         selectedUser = selectedHsePerson,
@@ -963,14 +988,18 @@ fun AuthorizerFormSection(
         onValueChange = viewModel::onAdditionalPrecautionsChanged
     )
     Spacer(modifier = Modifier.height(24.dp))
-
-    AppPrimaryButton(
-        title = "Submit",
-        isLoading = isAuthorizing,
-        onClick = {
-            data.permitId?.let { viewModel.authorizePermit(it) }
-        }
-    )
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        AppPrimaryButton(
+            title = "Submit",
+            isLoading = isAuthorizing,
+            onClick = {
+                data.permitId?.let { viewModel.authorizePermit(it) }
+            }
+        )
+    }
 }
 
 @Composable
@@ -1342,8 +1371,19 @@ fun RequestForPermitClosureSection(
         )
         Spacer(modifier = Modifier.width(2.dp))
         Text(
-            text = "I verify the work has been completed and all required controls were implemented",
-            style = textStyle(10.sp, FontWeight.Medium, fontStyle = FontStyle.Italic),
+            text = buildAnnotatedString {
+                append("I verify the work has been completed and all required controls were implemented")
+                withStyle(
+                    style = SpanStyle(color = Color.Red)
+                ) {
+                    append(" *")
+                }
+            },
+            style = textStyle(
+                10.sp,
+                FontWeight.Medium,
+                fontStyle = FontStyle.Italic
+            ),
             color = AppColors.Black
         )
     }
@@ -1413,12 +1453,23 @@ fun RequestForPermitClosureSection(
     }
     
     Spacer(modifier = Modifier.height(24.dp))
-    
-    AppPrimaryButton(
-        title = "Submit",
-        isLoading = isSubmittingClosure,
-        onClick = { data.permitId?.let { viewModel.submitPermitClosureRequest(it) } }
-    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        AppPrimaryButton(
+            title = "Submit",
+            isLoading = isSubmittingClosure,
+            onClick = {
+                data.permitId?.let {
+                    viewModel.submitPermitClosureRequest(
+                        it,
+                        isWorkCompletedVerified
+                    )
+                }
+            }
+        )
+    }
 }
 
 
@@ -1750,13 +1801,18 @@ fun PermitCertificateClosureSection(
     }
 
     Spacer(modifier = Modifier.height(24.dp))
-    
-    AppPrimaryButton(
-        title = "Submit",
-        isLoading = isSubmittingCertificateClosure,
-        onClick = { data.permitId?.let { viewModel.submitPermitCertificateClosure(it) } },
-        modifier = Modifier.fillMaxWidth().height(48.dp)
-    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        AppPrimaryButton(
+            title = "Submit",
+            isLoading = isSubmittingCertificateClosure,
+            onClick = { data.permitId?.let { viewModel.submitPermitCertificateClosure(it) } },
+            modifier = Modifier.fillMaxWidth().height(48.dp)
+        )
+    }
 }
 
 @Composable

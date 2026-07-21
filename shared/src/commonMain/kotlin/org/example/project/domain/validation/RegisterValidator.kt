@@ -12,7 +12,7 @@ class RegisterValidator {
     }
     fun validatePassword(password: String): String? {
         if (password.isBlank()) return "Password is required"
-        if (password.length < 8) return "Minimum 8 characters"
+        if (password.length < 8) return "Password must be at least 8 characters"
         return null
     }
     fun validateConfirmPassword(password: String, confirmPassword: String): String? {

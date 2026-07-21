@@ -39,6 +39,11 @@ import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
 import instaresolv.shared.generated.resources.ic_calendar
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.ToastType
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTimePicker(
@@ -46,9 +51,12 @@ fun AppTimePicker(
     selectedTime: String,
     onTimeSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    restrictPastTime: Boolean = false,
+    restrictFutureTime: Boolean = false
 ) {
     var showDialog by remember { mutableStateOf(false) }
+    var toastMessage by remember { mutableStateOf<String?>(null) }
 
     val displayText = selectedTime.ifEmpty { text }
 
@@ -80,39 +88,71 @@ fun AppTimePicker(
         val timePickerState = rememberTimePickerState(is24Hour = false)
         
         Dialog(onDismissRequest = { showDialog = false }) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Box {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface
                 ) {
-                    TimePicker(state = timePickerState)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        TextButton(onClick = { showDialog = false }) {
-                            Text("Cancel")
-                        }
-                        TextButton(onClick = {
-                            val hour = timePickerState.hour
-                            val minute = timePickerState.minute
-                            val amPm = if (hour < 12) "AM" else "PM"
-                            val formattedHour = if (hour % 12 == 0) 12 else hour % 12
-                            val formattedMinute = minute.toString().padStart(2, '0')
-                            val formattedTime = "${formattedHour.toString().padStart(2, '0')} : $formattedMinute $amPm"
-                            
-                            onTimeSelected(formattedTime)
-                            showDialog = false
-                        }) {
-                            Text("OK")
+                        TimePicker(state = timePickerState)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End
+                        ) {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Cancel")
+                            }
+                            TextButton(onClick = {
+                                val hour = timePickerState.hour
+                                val minute = timePickerState.minute
+                                
+                                val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                                val currentHour = now.hour
+                                val currentMinute = now.minute
+
+                                var isValid = true
+
+                                if (restrictPastTime) {
+                                    if (hour < currentHour || (hour == currentHour && minute < currentMinute)) {
+                                        toastMessage = "Cannot select a past time"
+                                        isValid = false
+                                    }
+                                }
+                                
+                                if (isValid && restrictFutureTime) {
+                                    if (hour > currentHour || (hour == currentHour && minute > currentMinute)) {
+                                        toastMessage = "Cannot select a future time"
+                                        isValid = false
+                                    }
+                                }
+
+                                if (isValid) {
+                                    val amPm = if (hour < 12) "AM" else "PM"
+                                    val formattedHour = if (hour % 12 == 0) 12 else hour % 12
+                                    val formattedMinute = minute.toString().padStart(2, '0')
+                                    val formattedTime = "${formattedHour.toString().padStart(2, '0')} : $formattedMinute $amPm"
+                                    
+                                    onTimeSelected(formattedTime)
+                                    showDialog = false
+                                }
+                            }) {
+                                Text("OK")
+                            }
                         }
                     }
                 }
+                ToastHost(
+                    visible = toastMessage != null,
+                    message = toastMessage.orEmpty(),
+                    onDismiss = { toastMessage = null },
+                    type = ToastType.Error,
+                    modifier = modifier.padding(horizontal = 16.dp)
+                )
             }
         }
     }

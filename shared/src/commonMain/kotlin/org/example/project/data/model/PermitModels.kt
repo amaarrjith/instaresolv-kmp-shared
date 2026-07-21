@@ -129,3 +129,25 @@ data class PermitContentData(
     val certificateValidity: List<PermitContentItem>? = null,
     val generalConditions: List<PermitContentItem>? = null
 )
+
+@Serializable
+data class PermitExcelRequest(
+    val searchKey: String = "",
+    val sortBy: Int = 1,
+    val projectIds: List<Int>? = null,
+    val authorizer: List<Int>? = null,
+    val requestor: List<Int>? = null,
+    val hseAssigned: List<Int>? = null,
+    val status: List<Int>? = null,
+    val permitTypes: List<Int>? = null,
+    val openDate: String? = null,
+    val closeDate: String? = null,
+    val validity: Int? = null
+)
+
+@Serializable
+data class PermitExcelResponseData(
+    val excelUrl: String
+)
+
+

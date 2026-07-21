@@ -37,6 +37,7 @@ import instaresolv.shared.generated.resources.ic_calendar
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
+import androidx.compose.material3.SelectableDates
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -48,7 +49,9 @@ fun AppDatePicker(
     onDateSelected: (Long?) -> Unit,
     modifier: Modifier = Modifier,
     selectedDateMillis: Long? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    restrictPastDates: Boolean = false,
+    restrictFutureDates: Boolean = false
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -85,7 +88,34 @@ fun AppDatePicker(
     }
 
     if (showDialog) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateMillis)
+        val selectableDates = remember(restrictPastDates, restrictFutureDates) {
+            object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    val today = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.UTC).date
+                    val targetDate = Instant.fromEpochMilliseconds(utcTimeMillis).toLocalDateTime(TimeZone.UTC).date
+                    return when {
+                        restrictPastDates && restrictFutureDates -> targetDate == today
+                        restrictPastDates -> targetDate >= today
+                        restrictFutureDates -> targetDate <= today
+                        else -> true
+                    }
+                }
+
+                override fun isSelectableYear(year: Int): Boolean {
+                    val currentYear = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.UTC).date.year
+                    return when {
+                        restrictPastDates && restrictFutureDates -> year == currentYear
+                        restrictPastDates -> year >= currentYear
+                        restrictFutureDates -> year <= currentYear
+                        else -> true
+                    }
+                }
+            }
+        }
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDateMillis,
+            selectableDates = selectableDates
+        )
         DatePickerDialog(
             onDismissRequest = { showDialog = false },
             confirmButton = {

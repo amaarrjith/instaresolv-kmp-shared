@@ -29,6 +29,7 @@ import org.example.project.ui.screens.EmptyScreenView
 @Composable
 fun AppProjectDropdown(
     title: String = "Project",
+    isMandatory: Boolean = false,
     placeholder: String = "Select Project",
     selectedProject: Project?,
     onProjectSelected: (Project?) -> Unit,
@@ -44,14 +45,29 @@ fun AppProjectDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            style = textStyle(
-                size = 12.sp,
-                weight = FontWeight.SemiBold
-            ),
-            color = AppColors.Black
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = title,
+                style = textStyle(
+                    size = 12.sp,
+                    weight = FontWeight.SemiBold
+                ),
+                color = AppColors.Black
+            )
+            if (isMandatory) {
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                    text = "*",
+                    style = textStyle(
+                        size = 12.sp,
+                        weight = FontWeight.SemiBold
+                    ),
+                    color = Color.Red
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 

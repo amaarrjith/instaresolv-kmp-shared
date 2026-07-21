@@ -21,8 +21,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.koinInject
 import org.example.project.ui.components.AppLoader
 import androidx.compose.ui.Alignment
@@ -56,6 +63,30 @@ fun CreatePermitScreen(
 ) {
     val viewModel: CreatePermitViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    var localError by remember { mutableStateOf<String?>(null) }
+
+    val isToday = remember(uiState.permitDateMillis) {
+        uiState.permitDateMillis?.let { millis ->
+            val selectedDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.currentSystemDefault()).date
+            val today = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            selectedDate == today
+        } ?: false
+    }
+
+    fun parseTime(timeStr: String): Int {
+        if (timeStr.isBlank()) return 0
+        val parts = timeStr.trim().split(Regex("[:\\s]+"))
+        if (parts.size >= 3) {
+            val h = parts[0].toIntOrNull() ?: 0
+            val m = parts[1].toIntOrNull() ?: 0
+            val ampm = parts[2].uppercase()
+            var hour24 = h
+            if (ampm == "PM" && h < 12) hour24 += 12
+            if (ampm == "AM" && h == 12) hour24 = 0
+            return hour24 * 60 + m
+        }
+        return 0
+    }
 
     LaunchedEffect(permitTypeId) {
         if (permitTypeId != -1) {
@@ -152,6 +183,7 @@ fun CreatePermitScreen(
                     )
                     AppProjectDropdown(
                         title = "Specify Project",
+                        isMandatory = true,
                         placeholder = "Choose Project",
                         selectedProject = uiState.selectedProject,
                         onProjectSelected = { viewModel.updateSelectedProject(it) },
@@ -166,18 +198,32 @@ fun CreatePermitScreen(
                     Column(
                         horizontalAlignment = Alignment.Start
                     ) {
-                        Text(
-                            text = "Permit Date",
-                            style = textStyle(
-                                size = 12.sp,
-                                weight = FontWeight.SemiBold
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = "Permit Date",
+                                style = textStyle(
+                                    size = 12.sp,
+                                    weight = FontWeight.SemiBold
+                                )
                             )
-                        )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "*",
+                                style = textStyle(
+                                    size = 12.sp,
+                                    weight = FontWeight.SemiBold
+                                ),
+                                color = Color.Red
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                         AppDatePicker(
                             text = "Permit Date",
                             onDateSelected = { viewModel.updatePermitDate(it) },
-                            selectedDateMillis = uiState.permitDateMillis
+                            selectedDateMillis = uiState.permitDateMillis,
+                            restrictPastDates = true
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -190,11 +236,22 @@ fun CreatePermitScreen(
                                 style = textStyle(12.sp, FontWeight.SemiBold)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            AppTimePicker(
-                                text = "00 : 00",
-                                selectedTime = uiState.startTime,
-                                onTimeSelected = { viewModel.updateStartTime(it) }
-                            )
+                            Box {
+                                AppTimePicker(
+                                    text = "00 : 00",
+                                    selectedTime = uiState.startTime,
+                                    onTimeSelected = { viewModel.updateStartTime(it) },
+                                    enabled = uiState.permitDateMillis != null,
+                                    restrictPastTime = isToday
+                                )
+                                if (uiState.permitDateMillis == null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .clickable { localError = "Select Date" }
+                                    )
+                                }
+                            }
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
@@ -205,11 +262,33 @@ fun CreatePermitScreen(
                                 style = textStyle(12.sp, FontWeight.SemiBold)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            AppTimePicker(
-                                text = "00 : 00",
-                                selectedTime = uiState.endTime,
-                                onTimeSelected = { viewModel.updateEndTime(it) }
-                            )
+                            Box {
+                                AppTimePicker(
+                                    text = "00 : 00",
+                                    selectedTime = uiState.endTime,
+                                    onTimeSelected = { endTime -> 
+                                        if (uiState.startTime.isNotBlank() && parseTime(endTime) <= parseTime(uiState.startTime)) {
+                                            localError = "End time must be greater than start time"
+                                        } else {
+                                            viewModel.updateEndTime(endTime)
+                                        }
+                                    },
+                                    enabled = uiState.permitDateMillis != null && uiState.startTime.isNotBlank()
+                                )
+                                if (uiState.permitDateMillis == null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .clickable { localError = "Select Date" }
+                                    )
+                                } else if (uiState.startTime.isBlank()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .clickable { localError = "Select start time" }
+                                    )
+                                }
+                            }
                         }
                     }
                     if (uiState.selectedProject != null) {
@@ -250,6 +329,10 @@ fun CreatePermitScreen(
                                 selectedAnswer = uiState.generalConditionAnswers[item.id],
                                 onAnswerSelected = { answer ->
                                     viewModel.updateGeneralCondition(item.id, answer)
+                                },
+                                remarks = uiState.generalConditionRemarks[item.id] ?: "",
+                                onRemarksChanged = { remark ->
+                                    viewModel.updateGeneralConditionRemark(item.id, remark)
                                 }
                             )
                         }
@@ -310,6 +393,12 @@ fun CreatePermitScreen(
                         }
                 }
 
+                ToastHost(
+                    visible = localError != null,
+                    message = localError.orEmpty(),
+                    onDismiss = { localError = null },
+                    type = ToastType.Error
+                )
                 ToastHost(
                     visible = uiState.error != null,
                     message = uiState.error.orEmpty(),

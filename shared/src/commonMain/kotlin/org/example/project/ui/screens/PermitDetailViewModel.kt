@@ -28,7 +28,7 @@ import kotlin.time.Clock
 
 sealed class PermitDetailUiState {
     object Loading : PermitDetailUiState()
-    data class Success(val data: PermitDetailData) : PermitDetailUiState()
+    data class Success(val data: PermitDetailData, val submitError: String? = null) : PermitDetailUiState()
     data class Error(val message: String) : PermitDetailUiState()
 }
 
@@ -131,12 +131,19 @@ class PermitDetailViewModel(
         val date = _signatureDate.value
         val time = _signatureTime.value
         val notes = _additionalPrecautions.value
-
-        if (msra.isBlank() || signature.isBlank() || hsePersonId == 0) {
-            _uiState.value = PermitDetailUiState.Error("Please fill all mandatory fields")
+        val state = _uiState.value as? PermitDetailUiState.Success ?: return
+        if (hsePersonId == 0) {
+            _uiState.value = state.copy(submitError = "Please select an HSE person")
             return
         }
-
+        if (msra.isBlank()) {
+            _uiState.value = state.copy(submitError = "Please enter MSRA number")
+            return
+        }
+        if (signature.isBlank()) {
+            _uiState.value = state.copy(submitError = "Please add your signature")
+            return
+        }
         var formattedDate = date
         var formattedTime = time
         if (date.isNotBlank() && time.isNotBlank()) {
@@ -199,6 +206,13 @@ class PermitDetailViewModel(
     
     fun onDismissSubmitSuccess() {
         submitSuccessMessage.value = null
+    }
+
+    fun clearSubmitError() {
+        val currentState = _uiState.value
+        if (currentState is PermitDetailUiState.Success) {
+            _uiState.update { currentState.copy(submitError = null) }
+        }
     }
 
     private val _actionRemarks = MutableStateFlow("")
@@ -317,12 +331,17 @@ class PermitDetailViewModel(
         closureSignatureDate.value = ""
         closureSignatureTime.value = ""
     }
-    fun submitPermitClosureRequest(permitId: Int) {
+    fun submitPermitClosureRequest(permitId: Int, isWorkCompletedVerified: Boolean) {
         val signatureUrl = closureSignatureUrl.value
         val remarks = closureRemarks.value
+        val state = _uiState.value as? PermitDetailUiState.Success ?: return
         
+        if (!isWorkCompletedVerified) {
+            _uiState.value = state.copy(submitError = "Please verify work completed")
+            return
+        }
         if (signatureUrl.isNullOrBlank()) {
-            submitSuccessMessage.value = "Please provide a signature"
+            _uiState.value = state.copy(submitError = "Please provide a signature")
             return
         }
 
@@ -348,7 +367,7 @@ class PermitDetailViewModel(
                     loadPermitDetail(permitId)
                 }
                 is org.example.project.network.NetworkResult.Error -> {
-                    submitSuccessMessage.value = result.message
+                    _uiState.value = state.copy(submitError = result.message)
                 }
             }
             isSubmittingClosure.value = false
@@ -371,9 +390,10 @@ class PermitDetailViewModel(
     fun submitPermitCertificateClosure(permitId: Int) {
         val contractorName = authPreferences.getLoggedInUser()?.name ?: ""
         val signatureUrl = certificateClosureSignatureUrl.value
+        val state = _uiState.value as? PermitDetailUiState.Success ?: return
 
         if (signatureUrl.isNullOrBlank()) {
-            submitSuccessMessage.value = "Please provide your signature"
+            _uiState.value = state.copy(submitError = "Please provide your signature")
             return
         }
 
@@ -396,7 +416,7 @@ class PermitDetailViewModel(
                     loadPermitDetail(permitId)
                 }
                 is org.example.project.network.NetworkResult.Error -> {
-                    submitSuccessMessage.value = result.message
+                    _uiState.value = state.copy(submitError = result.message)
                 }
             }
             isSubmittingCertificateClosure.value = false
@@ -532,11 +552,11 @@ class PermitDetailViewModel(
                     return
                 }
                 if (requestForCertificateClosureSignature.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    _userType.value = PermitFormUserType.AUTHORIZER_VIEWER
                     return
                 }
                 if (certClosureSignature.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER
                     return
                 }
             }
@@ -556,11 +576,11 @@ class PermitDetailViewModel(
                     return
                 }
                 if (requestForCertificateClosureSignature.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    _userType.value = PermitFormUserType.AUTHORIZER_VIEWER
                     return
                 }
                 if (certClosureSignature.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER
                     return
                 }
             }

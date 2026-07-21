@@ -20,4 +20,5 @@ interface PermitRepository {
     suspend fun submitPermitAction(request: org.example.project.data.model.PermitActionRequest): NetworkResult<CommonModelResponse>
     suspend fun submitPermitClosureRequest(request: org.example.project.data.model.PermitClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun submitPermitCertificateClosure(request: org.example.project.data.model.PermitCertificateClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generatePermitExcel(request: org.example.project.data.model.PermitExcelRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
 }

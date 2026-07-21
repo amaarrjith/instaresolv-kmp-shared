@@ -661,4 +661,12 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun generatePermitExcel(
+        request: org.example.project.data.model.PermitExcelRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post("permit/generate-excel") {
+            jsonBody(request)
+        }
+    }
 }

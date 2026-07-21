@@ -40,6 +40,7 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,8 +53,25 @@ fun PermitToWorkListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var showAddModal by remember { mutableStateOf(false) }
-
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    LaunchedEffect(uiState.exportDownloadUrl) {
+        uiState.exportDownloadUrl?.let { url ->
+            try {
+                val fileName = "Permit_Report_${Clock.System.now().toEpochMilliseconds()}.xlsx"
+                fileDownloader.downloadFile(url, fileName)
+            } catch (e: Exception) {
+                viewModel.showError(e.message ?: "Download failed")
+            }
+            viewModel.clearExportDownloadUrl()
+        }
+    }
     Scaffold(
+        floatingActionButton = {
+            org.example.project.ui.components.excel.CommonExcelButton(
+                isLoading = uiState.isExporting,
+                onClick = { viewModel.generateExcel() }
+            )
+        },
         containerColor = Color.White,
         topBar = {
             Row(
@@ -84,6 +102,9 @@ fun PermitToWorkListScreen(
                     }
                 })
             }
+        },
+        bottomBar = {
+
         }
     ) { paddingValues ->
         Box(
@@ -295,6 +316,30 @@ fun PermitToWorkListScreen(
                 message = uiState.error  ?: "",
                 onDismiss = { viewModel.clearError() },
                 type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
+                visible = uiState.errorMessage != null,
+                message = uiState.errorMessage  ?: "",
+                onDismiss = { viewModel.clearError() },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
+                visible = uiState.exportError != null,
+                message = uiState.exportError ?: "",
+                onDismiss = { viewModel.clearExportError() },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
+                visible = uiState.exportSuccessMessage != null,
+                message = uiState.exportSuccessMessage ?: "",
+                onDismiss = { viewModel.clearExportSuccess() },
+                type = org.example.project.utilites.ToastType.Success,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )
         }

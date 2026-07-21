@@ -485,7 +485,9 @@ fun CreatePreTaskScreen(
 fun QuestionRow(
     title: String,
     selectedAnswer: String?,
-    onAnswerSelected: (String) -> Unit
+    onAnswerSelected: (String) -> Unit,
+    remarks: String = "",
+    onRemarksChanged: ((String) -> Unit)? = null
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
         Text(
@@ -501,6 +503,15 @@ fun QuestionRow(
             selectedAnswer = selectedAnswer,
             onAnswerSelected = onAnswerSelected
         )
+        if (onRemarksChanged != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            org.example.project.utilites.AppTextField(
+                value = remarks,
+                onValueChange = onRemarksChanged,
+                title = "Remarks (Optional)",
+                placeholder = "Enter remarks"
+            )
+        }
     }
 }
 

@@ -291,7 +291,8 @@ fun RegisterScreenContent(
                 fullName.value = it
             },
             title = strings.fullName,
-            placeholder = strings.fullName
+            placeholder = strings.fullName,
+            isMandatory = true
         )
         Spacer(modifier = Modifier.height(20.dp))
         AppTextField(
@@ -300,7 +301,8 @@ fun RegisterScreenContent(
                 email.value = it
             },
             title = strings.emailId,
-            placeholder = strings.emailPlaceholder
+            placeholder = strings.emailPlaceholder,
+            isMandatory = true
         )
         Spacer(modifier = Modifier.height(20.dp))
         AppTextField(
@@ -310,7 +312,8 @@ fun RegisterScreenContent(
             },
             title = strings.password,
             placeholder = strings.passwordPlaceholder,
-            isSecure = true
+            isSecure = true,
+            isMandatory = true
 
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -321,7 +324,8 @@ fun RegisterScreenContent(
             },
             title = strings.confirmPassword,
             placeholder = strings.confirmPassword,
-            isSecure = true
+            isSecure = true,
+            isMandatory = true
         )
         Spacer(modifier = Modifier.height(20.dp))
         AppTextField(

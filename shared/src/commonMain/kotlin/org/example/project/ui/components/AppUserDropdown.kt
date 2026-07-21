@@ -22,6 +22,7 @@ import org.example.project.typography.textStyle
 @Composable
 fun AppUserDropdown(
     title: String,
+    isMandatory: Boolean = false,
     placeholder: String,
     users: List<GroupUser>,
     selectedUser: GroupUser?,
@@ -31,14 +32,27 @@ fun AppUserDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            style = textStyle(
-                size = 12.sp,
-                weight = FontWeight.SemiBold
-            ),
-            color = AppColors.Black
-        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = title,
+                style = textStyle(
+                    size = 12.sp,
+                    weight = FontWeight.SemiBold
+                ),
+                color = AppColors.Black
+            )
+            if (isMandatory) {
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                    text = "*",
+                    style = textStyle(
+                        size = 12.sp,
+                        weight = FontWeight.SemiBold
+                    ),
+                    color = Color.Red
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 

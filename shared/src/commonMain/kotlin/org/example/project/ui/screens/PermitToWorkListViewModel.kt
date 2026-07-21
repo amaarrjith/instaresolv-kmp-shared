@@ -29,7 +29,12 @@ data class PermitToWorkListState(
     val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
     val isTypesLoading: Boolean = false,
     val permitTypesList: List<org.example.project.data.model.PermitTypeItem> = emptyList(),
-    val typesError: String? = null
+    val typesError: String? = null,
+    val isExporting: Boolean = false,
+    val exportSuccessMessage: String? = null,
+    val exportDownloadUrl: String? = null,
+    val exportError: String? = null,
+    val errorMessage: String? = null
 )
 
 class PermitToWorkListViewModel(
@@ -142,10 +147,11 @@ class PermitToWorkListViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+        _uiState.update { it.copy(errorMessage = null) }
     }
 
     fun showError(message: String) {
-        _uiState.update { it.copy(error = message) }
+        _uiState.update { it.copy(errorMessage = message) }
     }
 
     private fun formatMillis(millis: Long?): String {
@@ -180,5 +186,56 @@ class PermitToWorkListViewModel(
                 }
             }
         }
+    }
+    fun generateExcel() {
+        if (_uiState.value.isExporting) return
+        _uiState.update { it.copy(isExporting = true, exportError = null, exportSuccessMessage = null, exportDownloadUrl = null) }
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            val filter = currentState.appliedFilterState
+
+            val selectedStatuses = filter.selectedStatuses.mapNotNull { statusName ->
+                PermitStatus.entries.find { it.title.equals(statusName, ignoreCase = true) }?.value
+            }.takeIf { it.isNotEmpty() }
+
+            val projectIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val openDateStr = formatMillis(filter.dateOpenMillis).takeIf { it.isNotBlank() }
+            val closeDateStr = formatMillis(filter.dateCloseMillis).takeIf { it.isNotBlank() }
+
+            val request = org.example.project.data.model.PermitExcelRequest(
+                searchKey = currentState.searchKey,
+                sortBy = 1,
+                projectIds = projectIds,
+                status = selectedStatuses,
+                openDate = openDateStr,
+                closeDate = closeDateStr
+            )
+            
+            try {
+                when (val result = repository.generatePermitExcel(request)) {
+                    is NetworkResult.Success -> {
+                        val url = result.data.excelUrl?.takeIf { it.isNotBlank() }
+                        _uiState.update { it.copy(isExporting = false, exportSuccessMessage = "Downloading Permit Report", exportDownloadUrl = url) }
+                    }
+                    is NetworkResult.Error -> {
+                        _uiState.update { it.copy(isExporting = false, exportError = result.message ?: "Failed to generate Excel") }
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isExporting = false, exportError = e.message ?: "An unexpected error occurred") }
+            }
+        }
+    }
+    
+    fun clearExportSuccess() {
+        _uiState.update { it.copy(exportSuccessMessage = null) }
+    }
+    
+    fun clearExportDownloadUrl() {
+        _uiState.update { it.copy(exportDownloadUrl = null) }
+    }
+    
+    fun clearExportError() {
+        _uiState.update { it.copy(exportError = null) }
     }
 }

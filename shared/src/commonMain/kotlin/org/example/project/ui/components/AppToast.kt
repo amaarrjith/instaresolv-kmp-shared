@@ -173,7 +173,6 @@ fun BoxScope.ToastHost(
     AnimatedVisibility(
         modifier = Modifier
             .align(Alignment.BottomCenter)
-            .padding(bottom = 40.dp)
             .then(modifier ?: Modifier),
         visible = visible,
         enter = slideInVertically { it } + fadeIn(),

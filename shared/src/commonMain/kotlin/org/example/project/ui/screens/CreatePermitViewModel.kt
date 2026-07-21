@@ -31,6 +31,7 @@ data class CreatePermitUiState(
     val generalConditions: List<PermitContentItem> = emptyList(),
     val certificateValidityAnswers: Map<Int, String> = emptyMap(),
     val generalConditionAnswers: Map<Int, String> = emptyMap(),
+    val generalConditionRemarks: Map<Int, String> = emptyMap(),
     val signatureUrl: String? = null,
     val signatureDateMillis: Long? = null,
     val signatureTime: String = "",
@@ -144,6 +145,16 @@ class CreatePermitViewModel(
             it.copy(
                 generalConditionAnswers = it.generalConditionAnswers.toMutableMap().apply {
                     put(id, answer)
+                }
+            )
+        }
+    }
+
+    fun updateGeneralConditionRemark(id: Int, remark: String) {
+        _uiState.update {
+            it.copy(
+                generalConditionRemarks = it.generalConditionRemarks.toMutableMap().apply {
+                    put(id, remark)
                 }
             )
         }
@@ -277,7 +288,8 @@ class CreatePermitViewModel(
                     PermitValidityCondition(
                         id = condition.id,
                         title = condition.title ?: "",
-                        answer = answerInt
+                        answer = answerInt,
+                        remarks = currentState.generalConditionRemarks[condition.id] ?: ""
                     )
                 },
             )
