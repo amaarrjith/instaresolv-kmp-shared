@@ -107,10 +107,7 @@ data class PermitPendingActionItem(
 
 @Serializable
 data class PermitPendingActionsResponse(
-    val hasError: Boolean = false,
-    val errorCode: Int = 0,
-    val message: String? = null,
-    val response: List<PermitPendingActionItem>? = null
+    val results: List<PermitPendingActionItem>? = null
 )
 
 @Serializable

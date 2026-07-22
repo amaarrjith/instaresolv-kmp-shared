@@ -30,22 +30,34 @@ data class ActionsOverview(
 
 @Serializable
 data class AssignedToMe(
-    val observation: PendingObservation
+    val observation: PendingObservation? = null,
+    val permit: PendingPermit? = null
 )
 
 @Serializable
 data class PendingObservation(
-    val contentId: Int,
-    val date: String,
-    val imageUrl: String,
-    val pendingActionType: Int,
-    val reportedBy: ReportedBy,
-    val title: String
+    val contentId: Int = 0,
+    val date: String = "",
+    val imageUrl: String = "",
+    val pendingActionType: Int = 0,
+    val reportedBy: ReportedBy? = null,
+    val title: String = ""
+)
+
+@Serializable
+data class PendingPermit(
+    val id: Int = 0,
+    val createdAt: String = "",
+    val groupCode: String = "",
+    val permitCode: String = "",
+    val permitId: Int = 0,
+    val permitType: PermitType? = null,
+    val status: Int = 0
 )
 
 @Serializable
 data class ReportedBy(
-    val imageUrl: String,
-    val name: String
+    val imageUrl: String = "",
+    val name: String = ""
 )
 

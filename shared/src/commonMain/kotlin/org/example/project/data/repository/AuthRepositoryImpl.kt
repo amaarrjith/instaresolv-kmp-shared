@@ -3,6 +3,7 @@ package org.example.project.data.repository
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeContentsRequest
+import org.example.project.data.model.CommonResponse
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.ImageUploadData
 import org.example.project.data.model.LoginRequest

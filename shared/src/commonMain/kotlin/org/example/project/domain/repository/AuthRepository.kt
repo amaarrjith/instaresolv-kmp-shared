@@ -2,6 +2,7 @@ package org.example.project.domain.repository
 
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeResponse
+import org.example.project.data.model.CommonResponse
 import org.example.project.data.model.ImageUploadData
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.NotificationListResponse

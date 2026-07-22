@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -64,6 +65,7 @@ fun PendingActionListScreen(
     var selectedTab by remember { mutableStateOf(0) }
     var showFilterSheet by remember { mutableStateOf(false) }
     var selectedFilters by remember { mutableStateOf<Set<Int>>(emptySet()) }
+    var selectedPermitFilters by remember { mutableStateOf<Set<Int>>(emptySet()) }
     
     val sheetState = rememberModalBottomSheetState()
     var selectedActionForSheet by remember { mutableStateOf<PendingActionItem?>(null) }
@@ -93,9 +95,7 @@ fun PendingActionListScreen(
                     painter = painterResource(Res.drawable.ic_filter),
                     contentDescription = null,
                     modifier = Modifier.padding(end = 20.dp).clickable {
-                        if (selectedTab == 0) {
-                            showFilterSheet = true
-                        }
+                        showFilterSheet = true
                     }
                 )
             }
@@ -144,10 +144,8 @@ fun PendingActionListScreen(
                         }
                         
                         if (filteredActions.isEmpty()) {
-                        Text(
-                            text = "No pending actions found.",
-                            color = AppColors.TextGray,
-                            modifier = Modifier.align(Alignment.Center)
+                        EmptyScreenView(
+                            "No pending actions found.",
                         )
                         } else {
                             LazyColumn(
@@ -175,12 +173,22 @@ fun PendingActionListScreen(
                     } else if (uiState.permitPendingActions.isEmpty()) {
                         EmptyScreenView("No permit actions found.")
                     } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(15.dp)
-                        ) {
-                            items(uiState.permitPendingActions) { item ->
-                                PermitPendingActionItem(item)
+                        val filteredPermitActions = if (selectedPermitFilters.isEmpty()) {
+                            uiState.permitPendingActions
+                        } else {
+                            uiState.permitPendingActions.filter { selectedPermitFilters.contains(it.status) }
+                        }
+                        
+                        if (filteredPermitActions.isEmpty()) {
+                            EmptyScreenView("No permit actions found.")
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(15.dp)
+                            ) {
+                                items(filteredPermitActions) { item ->
+                                    PermitPendingActionItem(item)
+                                }
                             }
                         }
                     }
@@ -190,11 +198,11 @@ fun PendingActionListScreen(
     }
     
     if (showFilterSheet) {
-        var tempFilters by remember { mutableStateOf(selectedFilters) }
+        var tempFilters by remember { mutableStateOf(if (selectedTab == 0) selectedFilters else selectedPermitFilters) }
         
         ModalBottomSheet(
             onDismissRequest = { showFilterSheet = false },
-            sheetState = sheetState,
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             containerColor = Color.White,
             dragHandle = { BottomSheetDefaults.DragHandle() }
         ) {
@@ -210,44 +218,54 @@ fun PendingActionListScreen(
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 
-                val filters = listOf(
-                    PendingActionStatusType.OPEN_OBSERVATION to "Open Observation",
-                    PendingActionStatusType.REQUEST_TO_JOIN_GROUP to "Request to Join Group",
-                    PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE to "Observation Responsibility Change",
-                    PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION to "Request to Delete Observation",
-                    PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT to "Review Observation Closeout"
-                )
+                val filters = if (selectedTab == 0) {
+                    listOf(
+                        PendingActionStatusType.OPEN_OBSERVATION to "Open Observation",
+                        PendingActionStatusType.REQUEST_TO_JOIN_GROUP to "Request to Join Group",
+                        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE to "Observation Responsibility Change",
+                        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION to "Request to Delete Observation",
+                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT to "Review Observation Closeout"
+                    )
+                } else {
+                    org.example.project.data.model.PermitStatus.entries.map {
+                        it.value to it.title
+                    }
+                }
                 
-                filters.forEach { (type, label) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
-                            }
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = tempFilters.contains(type),
-                            onClick = {
-                                tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
-                            },
-                            modifier = Modifier.size(20.dp),
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = AppColors.Primary,
-                                unselectedColor = AppColors.TextGray
+                Column(
+                    modifier = Modifier.weight(1f, fill = false).verticalScroll(androidx.compose.foundation.rememberScrollState())
+                ) {
+                    filters.forEach { (type, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = tempFilters.contains(type),
+                                onClick = {
+                                    tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
+                                },
+                                modifier = Modifier.size(20.dp),
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = AppColors.Primary,
+                                    unselectedColor = AppColors.TextGray
+                                )
                             )
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = label,
-                            style = textStyle(
-                                size = 14.sp,
-                                weight = if (tempFilters.contains(type)) FontWeight.SemiBold else FontWeight.Normal
-                            ),
-                            color = if (tempFilters.contains(type)) AppColors.Primary else AppColors.Black
-                        )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = label,
+                                style = textStyle(
+                                    size = 14.sp,
+                                    weight = if (tempFilters.contains(type)) FontWeight.SemiBold else FontWeight.Normal
+                                ),
+                                color = if (tempFilters.contains(type)) AppColors.Primary else AppColors.Black
+                            )
+                        }
                     }
                 }
                 
@@ -261,7 +279,11 @@ fun PendingActionListScreen(
                     }
                     Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
                     Box(modifier = Modifier.weight(1f).clickable { 
-                        selectedFilters = tempFilters
+                        if (selectedTab == 0) {
+                            selectedFilters = tempFilters
+                        } else {
+                            selectedPermitFilters = tempFilters
+                        }
                         showFilterSheet = false 
                     }.padding(15.dp), contentAlignment = Alignment.Center) {
                         Text(text = "Apply", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
@@ -557,7 +579,7 @@ fun PermitPendingActionItem(item: PermitPendingActionItem) {
                 Spacer(modifier = Modifier.weight(1f))
                 if (!item.createdAt.isNullOrEmpty()) {
                     Text(
-                        text = timeAgo(item.createdAt),
+                        text = timeAgo(item.createdAt, isUtc = true),
                         style = textStyle(size = 12.sp, weight = FontWeight.Normal),
                         color = AppColors.TextGray
                     )
@@ -603,7 +625,7 @@ fun PermitPendingActionItem(item: PermitPendingActionItem) {
                 Spacer(modifier = Modifier.width(6.dp))
                 if (!item.createdAt.isNullOrEmpty()) {
                     Text(
-                        text = formatDate(item.createdAt, "", "dd MMM yyyy"),
+                        text = formatDate(item.createdAt, "yyyy-MM-dd HH:mm:ss", "dd MMM yyyy"),
                         style = textStyle(size = 12.sp, weight = FontWeight.Normal),
                         color = AppColors.Black
                     )

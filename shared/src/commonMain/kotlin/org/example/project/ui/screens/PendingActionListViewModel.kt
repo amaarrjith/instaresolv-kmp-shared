@@ -60,7 +60,7 @@ class PendingActionListViewModel(
             _uiState.update { it.copy(isPermitLoading = true, permitError = null) }
             when (val result = permitRepository.getPermitPendingActions()) {
                 is NetworkResult.Success -> {
-                    val items = result.data?.response ?: emptyList()
+                    val items = result.data.results ?: emptyList()
                     _uiState.update {
                         it.copy(isPermitLoading = false, permitPendingActions = items)
                     }
