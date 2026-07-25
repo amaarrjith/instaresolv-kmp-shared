@@ -23,7 +23,6 @@ data class IncidentListState(
     val searchKey: String = "",
     val error: String? = null,
     val isLastPage: Boolean = false,
-    val filterData: FilterContentData? = null,
     val appliedFilterState: AppFilterState = AppFilterState(),
     var errorExcel: String? = null
 ) {
@@ -62,20 +61,6 @@ class IncidentListViewModel(
 
     init {
         loadIncidents(isRefresh = true)
-        fetchFilterContent()
-    }
-
-    private fun fetchFilterContent() {
-        viewModelScope.launch {
-            when (val result = repository.getFilterContent()) {
-                is NetworkResult.Success -> {
-                    _uiState.update { it.copy(filterData = result.data) }
-                }
-                is NetworkResult.Error -> {
-                    // Handle filter loading error if necessary
-                }
-            }
-        }
     }
 
     fun applyFilters(filterState: AppFilterState) {

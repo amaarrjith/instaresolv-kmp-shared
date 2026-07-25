@@ -25,7 +25,6 @@ data class PermitToWorkListState(
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
-    val filterData: FilterContentData? = null,
     val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
     val isTypesLoading: Boolean = false,
     val permitTypesList: List<org.example.project.data.model.PermitTypeItem> = emptyList(),
@@ -50,20 +49,6 @@ class PermitToWorkListViewModel(
 
     init {
         fetchPermits(isRefresh = true)
-        fetchFilterContent()
-    }
-
-    private fun fetchFilterContent() {
-        viewModelScope.launch {
-            when (val result = repository.getFilterContent()) {
-                is NetworkResult.Success -> {
-                    _uiState.update { it.copy(filterData = result.data) }
-                }
-                is NetworkResult.Error -> {
-                    println("Permit Filter API Error: ${result.message}")
-                }
-            }
-        }
     }
 
     fun updateSearchKey(query: String) {

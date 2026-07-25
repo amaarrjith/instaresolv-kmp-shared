@@ -67,10 +67,12 @@ fun PermitToWorkListScreen(
     }
     Scaffold(
         floatingActionButton = {
-            org.example.project.ui.components.excel.CommonExcelButton(
-                isLoading = uiState.isExporting,
-                onClick = { viewModel.generateExcel() }
-            )
+            if (uiState.error == null && !uiState.permits.isEmpty()) {
+                org.example.project.ui.components.excel.CommonExcelButton(
+                    isLoading = uiState.isExporting,
+                    onClick = { viewModel.generateExcel() }
+                )
+            }
         },
         containerColor = Color.White,
         topBar = {
@@ -157,9 +159,8 @@ fun PermitToWorkListScreen(
 
                 if (showFilterModal) {
                     AppFilterBottomSheet(
-                        filterData = uiState.filterData,
                         appliedFilterState = uiState.appliedFilterState,
-                        isFromObservation = false,
+                        isFromPermit = true,
                         moduleName = "Permits",
                         onApply = { state ->
                             viewModel.applyFilters(state)

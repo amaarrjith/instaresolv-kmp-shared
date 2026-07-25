@@ -152,8 +152,8 @@ fun PreTaskListScreen(
                 
                 if (showFilterModal) {
                     AppFilterBottomSheet(
-                        filterData = uiState.filterData,
                         appliedFilterState = uiState.appliedFilterState,
+                        isFromObservation = false,
                         moduleName = "Pre Tasks",
                         onApply = { state -> 
                             viewModel.applyFilters(state)

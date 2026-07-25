@@ -8,7 +8,7 @@ import org.example.project.data.model.FilterContentData
 
 interface PermitRepository {
     suspend fun getPermitList(request: PermitListRequest): NetworkResult<PermitListResponse>
-    suspend fun getFilterContent(): NetworkResult<FilterContentData>
+
     suspend fun getPermitTypes(): NetworkResult<org.example.project.data.model.PermitTypesResponse>
     suspend fun getPermitPendingActions(): NetworkResult<org.example.project.data.model.PermitPendingActionsResponse>
     suspend fun getPermitContents(request: org.example.project.data.model.PermitContentRequest): NetworkResult<org.example.project.data.model.PermitContentData>
@@ -21,4 +21,5 @@ interface PermitRepository {
     suspend fun submitPermitClosureRequest(request: org.example.project.data.model.PermitClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun submitPermitCertificateClosure(request: org.example.project.data.model.PermitCertificateClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun generatePermitExcel(request: org.example.project.data.model.PermitExcelRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generatePermitPdf(request: org.example.project.data.model.GeneratePermitPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
 }

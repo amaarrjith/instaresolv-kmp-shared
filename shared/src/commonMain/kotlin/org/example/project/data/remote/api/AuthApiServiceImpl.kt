@@ -154,6 +154,7 @@ class AuthApiServiceImpl(
                     io.ktor.client.request.forms.formData {
                         append("type", type.toString())
                         append("image", imageBytes, io.ktor.http.Headers.build {
+                            append(io.ktor.http.HttpHeaders.ContentType, "image/jpeg")
                             append(io.ktor.http.HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
                         })
                     }
@@ -221,6 +222,12 @@ class AuthApiServiceImpl(
 
     override suspend fun generateViolationPdf(request: org.example.project.data.model.GenerateViolationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.GENERATE_VIOLATION_PDF) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generatePermitPdf(request: org.example.project.data.model.GeneratePermitPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_PERMIT_PDF) {
             jsonBody(request)
         }
     }
@@ -668,6 +675,24 @@ class AuthApiServiceImpl(
     ): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
         httpClient.post("permit/generate-excel") {
             jsonBody(request)
+        }
+    }
+
+    override suspend fun analyzeImage(
+        imageBytes: ByteArray,
+        fileName: String
+    ): NetworkResult<org.example.project.data.model.ImageAnalyzerResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.IMAGE_ANALYZER) {
+            setBody(
+                io.ktor.client.request.forms.MultiPartFormDataContent(
+                    io.ktor.client.request.forms.formData {
+                        append("image", imageBytes, io.ktor.http.Headers.build {
+                            append(io.ktor.http.HttpHeaders.ContentType, "image/jpeg")
+                            append(io.ktor.http.HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                        })
+                    }
+                )
+            )
         }
     }
 }

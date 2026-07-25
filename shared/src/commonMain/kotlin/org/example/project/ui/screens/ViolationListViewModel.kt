@@ -24,7 +24,6 @@ data class ViolationListState(
     val searchKey: String = "",
     val error: String? = null,
     val isLastPage: Boolean = false,
-    val filterData: FilterContentData? = null,
     val appliedFilterState: AppFilterState = AppFilterState(),
     var errorExcel: String? = null
 )
@@ -63,20 +62,6 @@ class ViolationListViewModel(
 
     init {
         loadViolations(isRefresh = true)
-        fetchFilterContent()
-    }
-
-    private fun fetchFilterContent() {
-        viewModelScope.launch {
-            when (val result = apiService.getFilterContent()) {
-                is NetworkResult.Success -> {
-                    _uiState.update { it.copy(filterData = result.data) }
-                }
-                is NetworkResult.Error -> {
-                    // Handle filter loading error if necessary
-                }
-            }
-        }
     }
 
     fun applyFilters(filterState: AppFilterState) {

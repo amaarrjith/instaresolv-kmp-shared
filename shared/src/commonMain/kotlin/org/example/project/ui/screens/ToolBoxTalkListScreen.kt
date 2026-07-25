@@ -75,11 +75,13 @@ fun ToolBoxTalkListScreen(
     Scaffold(
         containerColor = Color.White,
         floatingActionButton = {
-            val isExporting by viewModel.isExporting.collectAsState()
-            org.example.project.ui.components.excel.CommonExcelButton(
-                isLoading = isExporting,
-                onClick = { viewModel.exportToExcel() }
-            )
+            if (uiState.error == null && !uiState.items.isEmpty()) {
+                val isExporting by viewModel.isExporting.collectAsState()
+                org.example.project.ui.components.excel.CommonExcelButton(
+                    isLoading = isExporting,
+                    onClick = { viewModel.exportToExcel() }
+                )
+            }
         },
         topBar = {
             Row(
@@ -155,8 +157,8 @@ fun ToolBoxTalkListScreen(
 
                 if (showFilterModal) {
                     AppFilterBottomSheet(
-                        filterData = null,
                         appliedFilterState = uiState.appliedFilterState,
+                        isFromObservation = false,
                         moduleName = "Toolbox Talks",
                         onApply = { state ->
                             viewModel.applyFilters(state)

@@ -72,7 +72,8 @@ fun AppTabBar(
     onPendingActionViewAllClick: () -> Unit = {},
     onPreTaskClicked: () -> Unit = {},
     onLessonLearnedClicked: () -> Unit = {},
-    onToolboxTalksClicked: () -> Unit = {}
+    onToolboxTalksClicked: () -> Unit = {},
+    onPermitDetailClick: (Int) -> Unit = {}
 ) {
 
     val selectedIndex = rememberSaveable { mutableStateOf(0) }
@@ -193,7 +194,8 @@ fun AppTabBar(
                             onNotificationClick = onNotificationClick,
                             isRefreshing = isRefreshing,
                             onClickModule = { module -> onModuleClicked(module) },
-                            onPendingActionViewAllClick = onPendingActionViewAllClick
+                            onPendingActionViewAllClick = onPendingActionViewAllClick,
+                            onPermitClick = onPermitDetailClick
                         )
                         1 -> ProjectListScreen(
                             onCreateProjectClicked,
@@ -226,7 +228,8 @@ fun AppTabBar(
                             onNotificationClick = onNotificationClick,
                             isRefreshing = isRefreshing,
                             onClickModule = { module -> onModuleClicked(module) },
-                            onPendingActionViewAllClick = onPendingActionViewAllClick
+                            onPendingActionViewAllClick = onPendingActionViewAllClick,
+                            onPermitClick = onPermitDetailClick
                         )
                         1 -> ProjectListScreen(
                             onCreateProjectClicked,

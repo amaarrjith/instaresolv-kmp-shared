@@ -4,16 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.model.ObservationDetailRequest
 import org.example.project.data.model.ObservationDetailResponse
+import org.example.project.data.model.TranslateAudioRequest
+import org.example.project.domain.repository.AudioRepository
 import org.example.project.domain.repository.ObservationRepository
 import org.example.project.network.NetworkResult
 
 sealed class ObservationDetailUiState {
     object Idle : ObservationDetailUiState()
     object Loading : ObservationDetailUiState()
-    data class Success(val detail: ObservationDetailResponse) : ObservationDetailUiState()
+    data class Success(val detail: ObservationDetailResponse, var translatedAudioUrl: String? = null, var isTranslatingAudio: Boolean = false) : ObservationDetailUiState()
     data class Error(val message: String) : ObservationDetailUiState()
 }
 
@@ -25,7 +28,8 @@ sealed class CloseObservationState {
 }
 
 class ObservationDetailViewModel(
-    private val observationRepository: ObservationRepository
+    private val observationRepository: ObservationRepository,
+    private val audioRepository: AudioRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ObservationDetailUiState>(ObservationDetailUiState.Idle)
@@ -85,6 +89,43 @@ class ObservationDetailViewModel(
                 }
                 is NetworkResult.Error -> {
                     _closeUiState.value = CloseObservationState.Error(result.message ?: "Failed to close observation")
+                }
+            }
+        }
+    }
+
+    fun translateAudio(url: String? = null, infoMessage: (String) -> Unit) {
+        if (url.isNullOrEmpty()) { return } else {
+            _uiState.update { state ->
+                if (state is ObservationDetailUiState.Success) {
+                    viewModelScope.launch {
+                        val request = TranslateAudioRequest(audioUrl = url)
+                        val response = audioRepository.translateAudio(request)
+                        if (response is NetworkResult.Success) {
+                            _uiState.update { currentState ->
+                                if (currentState is ObservationDetailUiState.Success) {
+                                    if (response.data.audioUrl.isNullOrEmpty()) {
+                                        infoMessage("No translation needed")
+                                    }
+                                    currentState.copy(
+                                        translatedAudioUrl = response.data.audioUrl,
+                                        isTranslatingAudio = false
+                                    )
+                                } else currentState
+                            }
+                        } else {
+                            _uiState.update { currentState ->
+                                if (currentState is ObservationDetailUiState.Success) {
+                                    currentState.copy(
+                                        isTranslatingAudio = false
+                                    )
+                                } else currentState
+                            }
+                        }
+                    }
+                    state.copy(isTranslatingAudio = true)
+                } else {
+                    state
                 }
             }
         }

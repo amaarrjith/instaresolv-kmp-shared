@@ -83,11 +83,14 @@ import org.example.project.ui.screens.CreateToolBoxTalkViewModel
 import org.example.project.ui.screens.ToolBoxTalkDetailViewModel
 import org.example.project.domain.repository.ToolBoxTalkRepository
 import org.example.project.domain.repository.ToolBoxTalkRepositoryImpl
+import org.example.project.ui.components.FilterBottomSheetViewModel
 
 val appModule = module {
-    factory { createHttpClient(get()) }
+    factory { createHttpClient(get(), get()) }
     factory<AuthApiService> { AuthApiServiceImpl(get()) }
     factory<AuthRepository> { AuthRepositoryImpl(get()) }
+    factory<org.example.project.data.remote.api.AudioApiService> { org.example.project.data.remote.api.AudioApiServiceImpl(get()) }
+    factory<org.example.project.domain.repository.AudioRepository> { org.example.project.data.repository.AudioRepositoryImpl(get()) }
     factory<ProjectRepository> { ProjectRepositoryImpl(get()) }
     single { LoginValidator() }
     single { RegisterValidator() }
@@ -95,7 +98,7 @@ val appModule = module {
     factory { ProjectViewModel(get(),get()) }
     factory { NotificationsViewModel(get()) }
     factory { AppTabBarViewModel(get(), get()) }
-    factory { HomeScreenViewModel(get(), get()) }
+    factory { HomeScreenViewModel(get(), get(), get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get()) }
     factory { ProfileViewModel(get(), get()) }
@@ -104,7 +107,7 @@ val appModule = module {
     factory { ForgetPasswordViewModel(get(), get()) }
     factory { ProjectDetailViewModel(get(), get()) }
     factory { RegisterViewModel(get(), get()) }
-    factory { ObservationDetailViewModel(get()) }
+    factory { ObservationDetailViewModel(get(), get()) }
     factory { CreateObservationViewModel(get(), get(), get()) }
     factory { CreateIncidentViewModel(get(), get(), get()) }
     factory { AppProjectDropdownViewModel(get()) }
@@ -133,6 +136,7 @@ val appModule = module {
     factory { ViolationListViewModel(get(), get()) }
     factory<ViolationRepository> { ViolationRepositoryImpl(get()) }
     factory { ViolationDetailViewModel(get()) }
+    factory { FilterBottomSheetViewModel(get()) }
     factory { CreateViolationViewModel(get(), get(), get()) }
     
     factory<PreTaskRepository> { PreTaskRepositoryImpl(get()) }

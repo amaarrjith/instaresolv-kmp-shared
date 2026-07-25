@@ -23,7 +23,6 @@ data class PreTaskListState(
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
-    val filterData: FilterContentData? = null,
     val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState()
 )
 

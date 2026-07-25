@@ -31,6 +31,57 @@ class PendingActionListViewModel(
     private val _uiState = MutableStateFlow(PendingActionListState())
     val uiState: StateFlow<PendingActionListState> = _uiState.asStateFlow()
 
+    private val _isGeneratingPdf = MutableStateFlow(false)
+    val isGeneratingPdf: StateFlow<Boolean> = _isGeneratingPdf
+
+    private val _pdfUrl = MutableStateFlow<String?>(null)
+    val pdfUrl: StateFlow<String?> = _pdfUrl
+
+    private val _pdfToastMessage = MutableStateFlow<String?>(null)
+    val pdfToastMessage: StateFlow<String?> = _pdfToastMessage
+
+    private val _pdfErrorToastMessage = MutableStateFlow<String?>(null)
+    val pdfErrorToastMessage: StateFlow<String?> = _pdfErrorToastMessage
+
+    fun generatePermitPDF(permitId: Int) {
+        viewModelScope.launch {
+            _isGeneratingPdf.value = true
+            val request = org.example.project.data.model.GeneratePermitPdfRequest(permitId = permitId)
+            when (val result = permitRepository.generatePermitPdf(request)) {
+                is NetworkResult.Success -> {
+                    _isGeneratingPdf.value = false
+                    val url = result.data.pdfUrl ?: result.data.excelUrl
+                    if (!url.isNullOrBlank()) {
+                        _pdfUrl.value = url
+                    } else {
+                        _pdfToastMessage.value = result.data.statusMessage ?: "Failed to generate Permit PDF"
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _isGeneratingPdf.value = false
+                    _pdfErrorToastMessage.value = result.message ?: "Failed to generate Permit PDF"
+                }
+            }
+        }
+    }
+
+    fun setPdfToastMessage(message: String) {
+        _pdfToastMessage.value = message
+    }
+
+    fun setPdfErrorToastMessage(message: String) {
+        _pdfErrorToastMessage.value = message
+    }
+
+    fun clearToasts() {
+        _pdfToastMessage.value = null
+        _pdfErrorToastMessage.value = null
+    }
+
+    fun clearPdfUrl() {
+        _pdfUrl.value = null
+    }
+
     init {
         fetchPendingActions()
         fetchPermitPendingActions()

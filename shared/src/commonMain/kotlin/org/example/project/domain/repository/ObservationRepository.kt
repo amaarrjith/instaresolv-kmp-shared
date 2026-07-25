@@ -7,7 +7,7 @@ import org.example.project.data.model.FilterContentData
 
 interface ObservationRepository {
     suspend fun getObservationList(request: ObservationRequest): NetworkResult<ObservationData>
-    suspend fun getFilterContent(): NetworkResult<FilterContentData>
+
     suspend fun createObservation(
         request: org.example.project.data.model.CreateObservationRequest
     ): NetworkResult<org.example.project.data.model.CommonResponse<org.example.project.data.model.CreateObservationResponse>>

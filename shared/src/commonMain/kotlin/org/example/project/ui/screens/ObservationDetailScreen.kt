@@ -37,7 +37,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -46,6 +49,7 @@ import instaresolv.shared.generated.resources.ic_camera
 import instaresolv.shared.generated.resources.ic_right_icon
 import instaresolv.shared.generated.resources.ic_share
 import instaresolv.shared.generated.resources.ic_translate
+import instaresolv.shared.generated.resources.ic_translate_done
 
 import org.example.project.colors.AppColors
 import org.example.project.data.model.ObservationDetailResponse
@@ -54,6 +58,7 @@ import org.example.project.data.settings.formatDate
 import org.example.project.typography.textStyle
 import org.example.project.ui.ObservationStatus
 import org.example.project.ui.ProjectListCard
+import org.example.project.ui.components.AppAudioPlayer
 import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.AppMultilineTextField
@@ -82,8 +87,9 @@ fun ObservationDetailScreen(
     val closeImages = remember { androidx.compose.runtime.mutableStateListOf(ObservationImage()) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var infoMessage by remember { mutableStateOf<String?>(null) }
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
-    
+    var isTranslationDone by remember { mutableStateOf(false) }
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
@@ -104,6 +110,15 @@ fun ObservationDetailScreen(
 
     LaunchedEffect(observationId) {
         viewModel.loadObservationDetail(observationId)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is ObservationDetailUiState.Success) {
+            val successState = uiState as ObservationDetailUiState.Success
+            if (!successState.detail.translatedDescription.isNullOrEmpty()) {
+                isTranslationDone = true
+            }
+        }
     }
 
     LaunchedEffect(closeUiState) {
@@ -205,12 +220,27 @@ fun ObservationDetailScreen(
                 is ObservationDetailUiState.Success -> {
                     ObservationDetailContent(
                         detail = state.detail,
+                        translatedAudioUrl = state.translatedAudioUrl,
                         isClosingObservation = isClosingObservation,
                         onCloseObservationClick = { isClosingObservation = true },
                         closeDescription = closeDescription,
                         onDescriptionChange = { closeDescription = it },
                         closeImages = closeImages,
-                        onImageClick = { previewImageUrl = it }
+                        onImageClick = { previewImageUrl = it },
+                        isTranslationDone = isTranslationDone,
+                        onTranslate = {
+                            if (!state.detail.translatedDescription.isNullOrEmpty()) {
+                                isTranslationDone = !isTranslationDone
+                            } else {
+                                infoMessage = "No translation found"
+                            }
+                        },
+                        onTranslateAudio = {
+                            viewModel.translateAudio(
+                                state.detail.audioUrl
+                                ) { infoMessage = it }
+                        },
+                        isTranslatingAudio = state.isTranslatingAudio
                     )
                 }
             }
@@ -220,7 +250,15 @@ fun ObservationDetailScreen(
                 message = errorMessage ?: "",
                 onDismiss = { errorMessage = null },
                 type = ToastType.Error,
-                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter)
+            )
+
+            ToastHost(
+                visible = infoMessage != null,
+                message = infoMessage ?: "",
+                onDismiss = { infoMessage = null },
+                type = ToastType.Info,
+                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter)
             )
             
             if (isGeneratingPdf) {
@@ -262,19 +300,23 @@ fun ObservationDetailScreen(
 @Composable
 fun ObservationDetailContent(
     detail: ObservationDetailResponse,
+    translatedAudioUrl: String?,
+    isTranslationDone: Boolean,
+    onTranslate: () -> Unit,
     isClosingObservation: Boolean,
     onCloseObservationClick: () -> Unit,
     closeDescription: String,
     onDescriptionChange: (String) -> Unit,
     closeImages: androidx.compose.runtime.snapshots.SnapshotStateList<ObservationImage>,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onTranslateAudio: () -> Unit,
+    isTranslatingAudio: Boolean
 ) {
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
             .padding(horizontal = 22.dp, vertical = 16.dp),
     ) {
         // Drag handle
@@ -311,15 +353,21 @@ fun ObservationDetailContent(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_translate),
+                    painter = painterResource(if (isTranslationDone) {Res.drawable.ic_translate_done} else {Res.drawable.ic_translate}),
                     contentDescription = null,
+                    modifier = Modifier.clickable { onTranslate() }
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
 
-        Text(
-            text = "Project",
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
+            Text(
+                text = "Project",
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -380,8 +428,9 @@ fun ObservationDetailContent(
                     observationImages = closeImages
                 )
             } else {
-                ObservationDetailInfo(detail, onCloseObservationClick, onImageClick)
+                ObservationDetailInfo(detail, onCloseObservationClick, onImageClick, isTranslationDone, translatedAudioUrl, onTranslateAudio, isTranslatingAudio)
             }
+        }
         }
     }
 }
@@ -390,7 +439,12 @@ fun ObservationDetailContent(
 fun ObservationDetailInfo(
     detail: ObservationDetailResponse,
     onCloseObservationClick: () -> Unit,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    isTranslationDone: Boolean,
+    translatedAudioUrl: String?,
+    onTranslateAudio: () -> Unit,
+    isTranslatingAudio: Boolean
+
 ) {
     Column {
         Text(
@@ -508,7 +562,7 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Description (AI Translated)",
+            text = "Description",
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -519,6 +573,86 @@ fun ObservationDetailInfo(
             color = AppColors.Black
         )
 
+        if (isTranslationDone) {
+            Spacer(Modifier.height(24.dp))
+
+            Text(
+                text = buildAnnotatedString {
+                    append("Description ")
+                    withStyle(
+                        SpanStyle(
+                            color = AppColors.SkyBlue,
+                            fontWeight = FontWeight.Medium
+                        )
+                    ) {
+                        append("(AI Translated)")
+                    }
+                },
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = detail.translatedDescription ?: "",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.SkyBlue
+            )
+        }
+
+        if (!detail.audioUrl.isNullOrEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            if (!translatedAudioUrl.isNullOrEmpty()) {
+                Text(
+                    text = buildAnnotatedString {
+                        append("Audio ")
+                        withStyle(
+                            SpanStyle(
+                                color = AppColors.TextGray,
+                                fontWeight = FontWeight.Medium
+                            )
+                        ) {
+                            append("(Original)")
+                        }
+                    },
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            AppAudioPlayer(
+                filePath = detail.audioUrl, 
+                isTranslationRequired = translatedAudioUrl.isNullOrEmpty(), 
+                onTranslateButtonClick = {
+                    onTranslateAudio()
+                }
+            )
+        }
+
+        if (isTranslatingAudio) {
+            Spacer(Modifier.height(24.dp))
+            AppLoader()
+        }
+
+        if (!translatedAudioUrl.isNullOrEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            Text(
+                text = buildAnnotatedString {
+                    append("Audio ")
+                    withStyle(
+                        SpanStyle(
+                            color = AppColors.SkyBlue,
+                            fontWeight = FontWeight.Medium
+                        )
+                    ) {
+                        append("(AI Translated)")
+                    }
+                },
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            AppAudioPlayer(filePath = translatedAudioUrl)
+        }
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(color = Color(0xFFF0F0F5))
         Spacer(Modifier.height(24.dp))

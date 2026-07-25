@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,6 +41,7 @@ import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_calendar
 import instaresolv.shared.generated.resources.ic_filter
 import instaresolv.shared.generated.resources.ic_arrow_left
+import instaresolv.shared.generated.resources.ic_permit_work
 import org.example.project.colors.AppColors
 import org.example.project.data.model.PendingActionItem
 import org.example.project.data.model.PendingActionStatusType
@@ -49,15 +51,19 @@ import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
+import org.example.project.ui.PermitActionBottomSheet
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import kotlin.time.Clock
+import org.example.project.utilites.ToastHost
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PendingActionListScreen(
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    onPermitClick: (Int) -> Unit = {}
 ) {
     val viewModel: PendingActionListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -69,290 +75,357 @@ fun PendingActionListScreen(
     
     val sheetState = rememberModalBottomSheetState()
     var selectedActionForSheet by remember { mutableStateOf<PendingActionItem?>(null) }
+    var selectedPermitForSheet by remember { mutableStateOf<PermitPendingActionItem?>(null) }
     
-    Scaffold(
-        containerColor = Color.White,
-        topBar = {
-            Row (
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                NavigationBackIcon(
-                    onBackClicked
-                )
-                Text(
-                    text = "Pending Actions".uppercase(),
-                    style = textStyle(
-                        size = 14.sp,
-                        weight = FontWeight.Bold
-                    ),
-                    color = AppColors.Black
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Image(
-                    painter = painterResource(Res.drawable.ic_filter),
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 20.dp).clickable {
-                        showFilterSheet = true
-                    }
-                )
+    val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
+    val pdfErrorToastMessage by viewModel.pdfErrorToastMessage.collectAsState()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+
+    androidx.compose.runtime.LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "Permit_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setPdfToastMessage("Downloading Permit Report")
+            } catch (e: Exception) {
+                viewModel.setPdfErrorToastMessage("Failed to download Permit Report")
             }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .imePadding()
-                .background(Color.White)
-        ) {
-            // Tabs Row
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                TabItem(
-                    title = "General Actions",
-                    isSelected = selectedTab == 0,
-                    onClick = { selectedTab = 0 }
-                )
-                Spacer(modifier = Modifier.width(24.dp))
-                TabItem(
-                    title = "Permit Actions",
-                    isSelected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
-                )
-            }
-            
-            // Content
-            Box(modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp)) {
-                if (selectedTab == 0) {
-                    // General Actions
-                    if (uiState.isLoading) {
-                        AppLoader()
-                    } else if (uiState.error != null) {
-                        ErrorRetryView(
-                            errorMessage = uiState.error ?: "",
-                            onRetryClick = { viewModel.fetchPendingActions() }
-                        )
-                    } else {
-                        val filteredActions = if (selectedFilters.isEmpty()) {
-                            uiState.pendingActions
-                        } else {
-                            uiState.pendingActions.filter { selectedFilters.contains(it.type) }
-                        }
-                        
-                        if (filteredActions.isEmpty()) {
-                        EmptyScreenView(
-                            "No pending actions found.",
-                        )
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(15.dp)
-                            ) {
-                                items(filteredActions) { action ->
-                                    PendingActionListItem(
-                                        action = action,
-                                        onClick = { selectedActionForSheet = action }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    // Permit Actions
-                    if (uiState.isPermitLoading) {
-                        AppLoader()
-                    } else if (uiState.permitError != null) {
-                        ErrorRetryView(
-                            errorMessage = uiState.permitError ?: "",
-                            onRetryClick = { viewModel.fetchPermitPendingActions() }
-                        )
-                    } else if (uiState.permitPendingActions.isEmpty()) {
-                        EmptyScreenView("No permit actions found.")
-                    } else {
-                        val filteredPermitActions = if (selectedPermitFilters.isEmpty()) {
-                            uiState.permitPendingActions
-                        } else {
-                            uiState.permitPendingActions.filter { selectedPermitFilters.contains(it.status) }
-                        }
-                        
-                        if (filteredPermitActions.isEmpty()) {
-                            EmptyScreenView("No permit actions found.")
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(15.dp)
-                            ) {
-                                items(filteredPermitActions) { item ->
-                                    PermitPendingActionItem(item)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            viewModel.clearPdfUrl()
         }
     }
     
-    if (showFilterSheet) {
-        var tempFilters by remember { mutableStateOf(if (selectedTab == 0) selectedFilters else selectedPermitFilters) }
-        
-        ModalBottomSheet(
-            onDismissRequest = { showFilterSheet = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
             containerColor = Color.White,
-            dragHandle = { BottomSheetDefaults.DragHandle() }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
-            ) {
-                Text(
-                    text = "Filter by",
-                    style = textStyle(size = 18.sp, weight = FontWeight.Bold),
-                    color = AppColors.Black
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                
-                val filters = if (selectedTab == 0) {
-                    listOf(
-                        PendingActionStatusType.OPEN_OBSERVATION to "Open Observation",
-                        PendingActionStatusType.REQUEST_TO_JOIN_GROUP to "Request to Join Group",
-                        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE to "Observation Responsibility Change",
-                        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION to "Request to Delete Observation",
-                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT to "Review Observation Closeout"
-                    )
-                } else {
-                    org.example.project.data.model.PermitStatus.entries.map {
-                        it.value to it.title
-                    }
-                }
-                
-                Column(
-                    modifier = Modifier.weight(1f, fill = false).verticalScroll(androidx.compose.foundation.rememberScrollState())
-                ) {
-                    filters.forEach { (type, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
-                                }
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = tempFilters.contains(type),
-                                onClick = {
-                                    tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
-                                },
-                                modifier = Modifier.size(20.dp),
-                                colors = RadioButtonDefaults.colors(
-                                    selectedColor = AppColors.Primary,
-                                    unselectedColor = AppColors.TextGray
-                                )
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = label,
-                                style = textStyle(
-                                    size = 14.sp,
-                                    weight = if (tempFilters.contains(type)) FontWeight.SemiBold else FontWeight.Normal
-                                ),
-                                color = if (tempFilters.contains(type)) AppColors.Primary else AppColors.Black
-                            )
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(30.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+            topBar = {
+                Row (
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(modifier = Modifier.weight(1f).clickable { showFilterSheet = false }.padding(15.dp), contentAlignment = Alignment.Center) {
-                        Text(text = "Cancel", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                    }
-                    Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
-                    Box(modifier = Modifier.weight(1f).clickable { 
-                        if (selectedTab == 0) {
-                            selectedFilters = tempFilters
-                        } else {
-                            selectedPermitFilters = tempFilters
+                    NavigationBackIcon(
+                        onBackClicked
+                    )
+                    Text(
+                        text = "Pending Actions".uppercase(),
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.Bold
+                        ),
+                        color = AppColors.Black
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Image(
+                        painter = painterResource(Res.drawable.ic_filter),
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 20.dp).clickable {
+                            showFilterSheet = true
                         }
-                        showFilterSheet = false 
-                    }.padding(15.dp), contentAlignment = Alignment.Center) {
-                        Text(text = "Apply", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
-                    }
+                    )
                 }
             }
-        }
-    }
-
-    if (selectedActionForSheet != null) {
-        val action = selectedActionForSheet!!
-        ModalBottomSheet(
-            onDismissRequest = { selectedActionForSheet = null },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = Color.White,
-            dragHandle = { BottomSheetDefaults.DragHandle() }
-        ) {
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .background(Color.White)
             ) {
-                val title = when (action.type) {
-                    PendingActionStatusType.OPEN_OBSERVATION -> "Open Observation"
-                    PendingActionStatusType.REQUEST_TO_JOIN_GROUP -> "Request to Join Project"
-                    PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE -> "Observation Responsibility Change"
-                    PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION -> "Request to delete observation"
-                    PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> "Review Observation Closeout"
-                    else -> ""
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    TabItem(
+                        title = "General Actions",
+                        isSelected = selectedTab == 0,
+                        onClick = { selectedTab = 0 }
+                    )
+                    TabItem(
+                        title = "Permit Actions",
+                        isSelected = selectedTab == 1,
+                        onClick = { selectedTab = 1 }
+                    )
                 }
-
-                Text(
-                    text = title,
-                    style = textStyle(size = 18.sp, weight = FontWeight.Bold),
-                    color = AppColors.Black
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-
-                when (action.type) {
-                    PendingActionStatusType.OPEN_OBSERVATION -> {
-                        ActionRow(title = "View Report")
-                        ActionRow(title = "Generate PDF")
-                        ActionRow(title = "Close Observation")
-                        ActionRow(title = "Request Observation Responsible\nPerson Change")
-                        ActionRow(title = "Request to Delete Observation")
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-                    PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> {
-                        ActionRow(title = "View Observation Closeout")
-                        Spacer(modifier = Modifier.height(30.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
-                                Text(text = "Reject", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                
+//                HorizontalDivider(thickness = 1.dp, color = AppColors.TextGray.copy(alpha = 0.3f))
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 20.dp)
+                ) {
+                    if (selectedTab == 0) {
+                        if (uiState.isLoading) {
+                            AppLoader()
+                        } else if (uiState.error != null) {
+                            ErrorRetryView(
+                                errorMessage = uiState.error ?: "",
+                                onRetryClick = { viewModel.fetchPendingActions() }
+                            )
+                        } else if (uiState.pendingActions.isEmpty()) {
+                            EmptyScreenView("No pending actions found.")
+                        } else {
+                            val filteredActions = if (selectedFilters.isEmpty()) {
+                                uiState.pendingActions
+                            } else {
+                                uiState.pendingActions.filter { selectedFilters.contains(it.type) }
                             }
-                            Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
-                            Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
-                                Text(text = "Approve", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
+                            
+                            if (filteredActions.isEmpty()) {
+                                EmptyScreenView("No pending actions found.")
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.spacedBy(15.dp)
+                                ) {
+                                    items(filteredActions) { action ->
+                                        PendingActionListItem(
+                                            action = action,
+                                            onClick = { selectedActionForSheet = action }
+                                        )
+                                    }
+                                }
                             }
                         }
-                    }
-                    else -> {
-                        Spacer(modifier = Modifier.height(20.dp))
+                    } else {
+                        // Permit Actions
+                        if (uiState.isPermitLoading) {
+                            AppLoader()
+                        } else if (uiState.permitError != null) {
+                            ErrorRetryView(
+                                errorMessage = uiState.permitError ?: "",
+                                onRetryClick = { viewModel.fetchPermitPendingActions() }
+                            )
+                        } else if (uiState.permitPendingActions.isEmpty()) {
+                            EmptyScreenView("No permit actions found.")
+                        } else {
+                            val filteredPermitActions = if (selectedPermitFilters.isEmpty()) {
+                                uiState.permitPendingActions
+                            } else {
+                                uiState.permitPendingActions.filter { selectedPermitFilters.contains(it.status) }
+                            }
+                            
+                            if (filteredPermitActions.isEmpty()) {
+                                EmptyScreenView("No permit actions found.")
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.spacedBy(15.dp)
+                                ) {
+                                    items(filteredPermitActions) { item ->
+                                        PermitPendingActionItem(
+                                            item = item,
+                                            onClick = { selectedPermitForSheet = item }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+        
+        if (showFilterSheet) {
+            var tempFilters by remember { mutableStateOf(if (selectedTab == 0) selectedFilters else selectedPermitFilters) }
+            
+            ModalBottomSheet(
+                onDismissRequest = { showFilterSheet = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                containerColor = Color.White,
+                dragHandle = { BottomSheetDefaults.DragHandle() }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = "Filter by",
+                        style = textStyle(size = 18.sp, weight = FontWeight.Bold),
+                        color = AppColors.Black
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    val filters = if (selectedTab == 0) {
+                        listOf(
+                            PendingActionStatusType.OPEN_OBSERVATION to "Open Observation",
+                            PendingActionStatusType.REQUEST_TO_JOIN_GROUP to "Request to Join Group",
+                            PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE to "Observation Responsibility Change",
+                            PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION to "Request to Delete Observation",
+                            PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT to "Review Observation Closeout"
+                        )
+                    } else {
+                        org.example.project.data.model.PermitStatus.entries.map {
+                            it.value to it.title
+                        }
+                    }
+                    
+                    Column(
+                        modifier = Modifier.weight(1f, fill = false).verticalScroll(androidx.compose.foundation.rememberScrollState())
+                    ) {
+                        filters.forEach { (type, label) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
+                                    }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = tempFilters.contains(type),
+                                    onClick = {
+                                        tempFilters = if (tempFilters.contains(type)) tempFilters - type else tempFilters + type
+                                    },
+                                    modifier = Modifier.size(20.dp),
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = AppColors.Primary,
+                                        unselectedColor = AppColors.TextGray
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = label,
+                                    style = textStyle(
+                                        size = 14.sp,
+                                        weight = if (tempFilters.contains(type)) FontWeight.SemiBold else FontWeight.Normal
+                                    ),
+                                    color = if (tempFilters.contains(type)) AppColors.Primary else AppColors.Black
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(30.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(modifier = Modifier.weight(1f).clickable { showFilterSheet = false }.padding(15.dp), contentAlignment = Alignment.Center) {
+                            Text(text = "Cancel", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                        }
+                        Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
+                        Box(modifier = Modifier.weight(1f).clickable { 
+                            if (selectedTab == 0) {
+                                selectedFilters = tempFilters
+                            } else {
+                                selectedPermitFilters = tempFilters
+                            }
+                            showFilterSheet = false 
+                        }.padding(15.dp), contentAlignment = Alignment.Center) {
+                            Text(text = "Apply", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
+                        }
+                    }
+                }
+            }
+        }
+    
+        if (selectedActionForSheet != null) {
+            val action = selectedActionForSheet!!
+            ModalBottomSheet(
+                onDismissRequest = { selectedActionForSheet = null },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                containerColor = Color.White,
+                dragHandle = { BottomSheetDefaults.DragHandle() }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                ) {
+                    val title = when (action.type) {
+                        PendingActionStatusType.OPEN_OBSERVATION -> "Open Observation"
+                        PendingActionStatusType.REQUEST_TO_JOIN_GROUP -> "Request to Join Project"
+                        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE -> "Observation Responsibility Change"
+                        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION -> "Request to delete observation"
+                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> "Review Observation Closeout"
+                        else -> ""
+                    }
+    
+                    Text(
+                        text = title,
+                        style = textStyle(size = 18.sp, weight = FontWeight.Bold),
+                        color = AppColors.Black
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+    
+                    when (action.type) {
+                        PendingActionStatusType.OPEN_OBSERVATION -> {
+                            ActionRow(title = "View Report")
+                            ActionRow(title = "Generate PDF")
+                            ActionRow(title = "Close Observation")
+                            ActionRow(title = "Request Observation Responsible\nPerson Change")
+                            ActionRow(title = "Request to Delete Observation")
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> {
+                            ActionRow(title = "View Observation Closeout")
+                            Spacer(modifier = Modifier.height(30.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
+                                    Text(text = "Reject", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                }
+                                Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
+                                Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
+                                    Text(text = "Approve", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
+                                }
+                            }
+                        }
+                        else -> {
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                    }
+                }
+            }
+        }
+    
+        if (selectedPermitForSheet != null) {
+            val permitId = selectedPermitForSheet?.permitId
+            PermitActionBottomSheet(
+                showSheet = true,
+                onDismiss = { selectedPermitForSheet = null },
+                onActionClick = { action ->
+                    when (action) {
+                        "View Permit" -> {
+                            if (permitId != null) {
+                                onPermitClick(permitId)
+                            }
+                            selectedPermitForSheet = null
+                        }
+                        "Generate PDF" -> {
+                            if (permitId != null) {
+                                viewModel.generatePermitPDF(permitId)
+                            }
+                            selectedPermitForSheet = null
+                        }
+                    }
+                }
+            )
+        }
+    
+        if (isGeneratingPdf) {
+            org.example.project.ui.components.PdfGenerationLoader()
+        }
+    
+        ToastHost(
+            modifier = Modifier.padding(horizontal = 22.dp),
+            visible = pdfToastMessage != null || pdfErrorToastMessage != null,
+            type = if (pdfErrorToastMessage != null) org.example.project.utilites.ToastType.Error else org.example.project.utilites.ToastType.Success,
+            message = pdfErrorToastMessage ?: pdfToastMessage ?: "",
+            onDismiss = { viewModel.clearToasts() }
+        )
     }
 }
 
@@ -363,7 +436,10 @@ fun TabItem(
     onClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier.clickable { onClick() }.padding(bottom = 4.dp).width(IntrinsicSize.Max)
+        modifier = Modifier.clickable(
+            indication = null,
+            interactionSource = remember { MutableInteractionSource() }
+        ) { onClick() }.padding(bottom = 4.dp).width(IntrinsicSize.Max)
     ) {
         Text(
             text = title,
@@ -558,9 +634,9 @@ fun ActionRow(title: String, onClick: () -> Unit = {}) {
 }
 
 @Composable
-fun PermitPendingActionItem(item: PermitPendingActionItem) {
+fun PermitPendingActionItem(item: PermitPendingActionItem, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(10.dp),
         border = BorderStroke(1.dp, AppColors.TextGray.copy(alpha = 0.4f)),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -590,11 +666,20 @@ fun PermitPendingActionItem(item: PermitPendingActionItem) {
 
             // Permit Code
             if (!item.permitCode.isNullOrEmpty()) {
-                Text(
-                    text = item.permitCode,
-                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-                    color = AppColors.BlackText
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_permit_work),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        colorFilter = ColorFilter.tint(AppColors.Primary)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = item.permitCode,
+                        style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                        color = AppColors.BlackText
+                    )
+                }
                 Spacer(modifier = Modifier.height(6.dp))
             }
 

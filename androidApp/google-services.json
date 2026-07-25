@@ -1,0 +1,105 @@
+{
+  "project_info": {
+    "project_number": "65115289631",
+    "project_id": "insta-resolve",
+    "storage_bucket": "insta-resolve.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65115289631:android:aa80491edfcf090fd43d2a",
+        "android_client_info": {
+          "package_name": "com.instaresolve.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2CcwoGbDWFmxlEQhgYpjZACQuTflvVYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65115289631:android:1db552dec49ac633d43d2a",
+        "android_client_info": {
+          "package_name": "com.instaresolve.app.development"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2CcwoGbDWFmxlEQhgYpjZACQuTflvVYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65115289631:android:d155aa98818e8961d43d2a",
+        "android_client_info": {
+          "package_name": "com.quality_expertise.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2CcwoGbDWFmxlEQhgYpjZACQuTflvVYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65115289631:android:82dfce5a0552e9d4d43d2a",
+        "android_client_info": {
+          "package_name": "com.quality_expertise.app.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2CcwoGbDWFmxlEQhgYpjZACQuTflvVYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65115289631:android:425acd7933a9118fd43d2a",
+        "android_client_info": {
+          "package_name": "com.qualityexpertise.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2CcwoGbDWFmxlEQhgYpjZACQuTflvVYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

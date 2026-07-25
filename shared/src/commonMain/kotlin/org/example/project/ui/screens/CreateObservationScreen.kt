@@ -202,6 +202,8 @@ fun CreateObservationScreen(
                     onValueChange = { description.value = it },
                     title = "Description *",
                     placeholder = "Enter Description",
+                    isVoiceEnabled = true,
+                    onAudioUrlProcessed = { viewModel.onAudioUrlProcessed(it) }
                 )
                 
                 uiState.observationImages.forEachIndexed { index, observationImage ->
@@ -226,7 +228,8 @@ fun CreateObservationScreen(
                             },
                             onRemoveImageClick = {
                                 viewModel.onImageRemoved(index)
-                            }
+                            },
+                            isAIDescriptionEnabled = true
                         )
                     }
                 }

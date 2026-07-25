@@ -109,6 +109,11 @@ interface AuthApiService {
         type: Int
     ): NetworkResult<ImageUploadData>
 
+    suspend fun analyzeImage(
+        imageBytes: ByteArray,
+        fileName: String
+    ): NetworkResult<org.example.project.data.model.ImageAnalyzerResponse>
+
     suspend fun getProjectDetails(
         request: ProjectDetailRequest
     ): NetworkResult<ProjectDetail>
@@ -220,6 +225,7 @@ interface AuthApiService {
     suspend fun generateIncidentPdf(request: org.example.project.data.model.GenerateIncidentPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun generateObservationPdf(request: org.example.project.data.model.GenerateObservationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun generateViolationPdf(request: org.example.project.data.model.GenerateViolationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generatePermitPdf(request: org.example.project.data.model.GeneratePermitPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
 
     suspend fun getInspectionList(
         request: org.example.project.data.model.InspectionListRequest

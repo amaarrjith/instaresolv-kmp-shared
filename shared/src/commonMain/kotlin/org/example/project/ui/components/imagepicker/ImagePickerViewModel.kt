@@ -15,7 +15,10 @@ class ImagePickerViewModel(
     private val _uiState = MutableStateFlow<ImagePickerUiState>(ImagePickerUiState.Ready)
     val uiState = _uiState.asStateFlow()
 
+    private var lastUploadedImageBytes: ByteArray? = null
+
     fun uploadImage(imageBytes: ByteArray, type: Int) {
+        lastUploadedImageBytes = imageBytes
         viewModelScope.launch {
             _uiState.value = ImagePickerUiState.Uploading
             val response = authRepository.uploadImage(
@@ -40,5 +43,27 @@ class ImagePickerViewModel(
 
     fun clearState() {
         _uiState.value = ImagePickerUiState.Ready
+        lastUploadedImageBytes = null
+    }
+
+    fun generateAiDescription(imageUrl: String) {
+        val bytes = lastUploadedImageBytes
+        if (bytes == null) {
+            _uiState.value = ImagePickerUiState.Success(imageUrl, false, null, true)
+            return
+        }
+        
+        viewModelScope.launch {
+            _uiState.value = ImagePickerUiState.Success(imageUrl, true, null)
+            val response = authRepository.analyzeImage(bytes, "picked_image.jpg")
+            when (response) {
+                is NetworkResult.Success -> {
+                    _uiState.value = ImagePickerUiState.Success(imageUrl, false, response.data.imageDescription)
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = ImagePickerUiState.Success(imageUrl, false, null, true)
+                }
+            }
+        }
     }
 }

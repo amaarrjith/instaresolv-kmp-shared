@@ -28,10 +28,11 @@ import org.example.project.ui.screens.EmptyScreenView
 import org.jetbrains.compose.resources.painterResource
 import org.example.project.ui.IncidentType
 
+import org.koin.compose.koinInject
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppFilterBottomSheet(
-    filterData: FilterContentData?,
     appliedFilterState: AppFilterState,
     isFromObservation: Boolean = false,
     isFromIncident: Boolean = false,
@@ -40,6 +41,10 @@ fun AppFilterBottomSheet(
     onApply: (AppFilterState) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val viewModel: FilterBottomSheetViewModel = koinInject()
+    val uiState by viewModel.uiState.collectAsState()
+    val filterData = uiState.filterData
+
     val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
     val tabs = remember(isFromObservation, isFromIncident, isFromPermit) {
@@ -212,13 +217,13 @@ fun AppFilterBottomSheet(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = "Not Specified", 
-                                            style = textStyle(size = 15.sp, weight = FontWeight.Medium), 
+                                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = "Show all items that are not specified to any project", 
-                                            style = textStyle(size = 12.sp, weight = FontWeight.Normal), 
+                                            style = textStyle(size = 10.sp, weight = FontWeight.Normal),
                                             color = Color(0xFF8F9098)
                                         )
                                     }
@@ -231,7 +236,7 @@ fun AppFilterBottomSheet(
                                 }
                             }
                             if (projects.isEmpty()) {
-                                item { EmptyScreenView("No Projects Found") }
+
                             } else {
                                 items(projects.size) { index ->
                                     val project = projects[index]
@@ -261,7 +266,7 @@ fun AppFilterBottomSheet(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = projects[index].groupName,
-                                                style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                                 color = AppColors.Black
                                             )
                                             Spacer(modifier = Modifier.height(4.dp))
@@ -272,7 +277,7 @@ fun AppFilterBottomSheet(
                                             ) {
                                                 Text(
                                                     text = projects[index].groupCode,
-                                                    style = textStyle(size = 10.sp, weight = FontWeight.Medium),
+                                                    style = textStyle(size = 8.sp, weight = FontWeight.Medium),
                                                     color = Color.White
                                                 )
                                             }
@@ -318,18 +323,11 @@ fun AppFilterBottomSheet(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = person.name,
-                                                style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                                 color = AppColors.Black
                                             )
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Image(
-                                                    painter = painterResource(Res.drawable.ic_email),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(12.dp),
-                                                    colorFilter = ColorFilter.tint(Color(0xFF8F9098))
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
                                                 Text(
                                                     text = person.email,
                                                     style = textStyle(size = 12.sp, weight = FontWeight.Normal),
@@ -378,18 +376,11 @@ fun AppFilterBottomSheet(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = observer.name,
-                                                style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                                 color = AppColors.Black
                                             )
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Image(
-                                                    painter = painterResource(Res.drawable.ic_email),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(12.dp),
-                                                    colorFilter = ColorFilter.tint(Color(0xFF8F9098))
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
                                                 Text(
                                                     text = observer.email,
                                                     style = textStyle(size = 12.sp, weight = FontWeight.Normal),
@@ -439,18 +430,11 @@ fun AppFilterBottomSheet(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = user.name,
-                                                style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                                 color = AppColors.Black
                                             )
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Image(
-                                                    painter = painterResource(Res.drawable.ic_email),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(12.dp),
-                                                    colorFilter = ColorFilter.tint(Color(0xFF8F9098))
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
                                                 Text(
                                                     text = user.email,
                                                     style = textStyle(size = 12.sp, weight = FontWeight.Normal),
@@ -505,7 +489,7 @@ fun AppFilterBottomSheet(
                                         val isChecked = tempIncidentTypes.contains(type.id)
                                         Text(
                                             text = type.title,
-                                            style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )
                                         Spacer(modifier = Modifier.weight(1f))

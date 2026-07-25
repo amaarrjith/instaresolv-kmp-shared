@@ -13,9 +13,6 @@ class ObservationRepositoryImpl(
         return apiService.getObservationList(request)
     }
 
-    override suspend fun getFilterContent(): NetworkResult<FilterContentData> {
-        return apiService.getFilterContent()
-    }
 
     override suspend fun createObservation(
         request: org.example.project.data.model.CreateObservationRequest

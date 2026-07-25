@@ -56,6 +56,12 @@ interface AuthRepository {
         type: Int
     ): NetworkResult<ImageUploadData>
 
+    suspend fun analyzeImage(
+        imageBytes: ByteArray,
+        fileName: String
+    ): NetworkResult<org.example.project.data.model.ImageAnalyzerResponse>
+
+
     suspend fun getHomeContents(
         userId: Int
     ): NetworkResult<HomeResponse>

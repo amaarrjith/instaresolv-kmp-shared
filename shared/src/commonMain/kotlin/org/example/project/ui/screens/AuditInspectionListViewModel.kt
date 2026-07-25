@@ -23,7 +23,6 @@ data class AuditInspectionListState(
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
-    val filterData: FilterContentData? = null,
     val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
     var errorExcel: String? = null,
     val auditItems: List<org.example.project.data.model.AuditItemContent> = emptyList(),
@@ -128,21 +127,6 @@ class AuditInspectionListViewModel(
             }
         }
     }
-
-    /*
-    private fun fetchFilterContent() {
-        viewModelScope.launch {
-            when (val result = repository.getFilterContent()) {
-                is NetworkResult.Success -> {
-                    _uiState.update { it.copy(filterData = result.data) }
-                }
-                is NetworkResult.Error -> {
-                    println("Filter API Error: ${result.message} - ${result.errorCode}")
-                }
-            }
-        }
-    }
-    */
 
     fun updateSearchKey(query: String) {
         _uiState.update { it.copy(searchKey = query) }

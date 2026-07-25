@@ -17,7 +17,8 @@ data class CreateObservationRequest(
     val responsiblePerson: Int? = null,
     val responsiblePersonName: String = "",
     val observationTitle: String = "",
-    val responsiblePersonEmail: String = ""
+    val responsiblePersonEmail: String = "",
+    val audioLink: String? = null
 )
 
 @Serializable

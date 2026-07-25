@@ -99,11 +99,13 @@ fun LessonsLearnedListScreen(
     Scaffold(
         containerColor = Color.White,
         floatingActionButton = {
-            val isExporting by viewModel.isExporting.collectAsState()
-            org.example.project.ui.components.excel.CommonExcelButton(
-                isLoading = isExporting,
-                onClick = { viewModel.exportToExcel() }
-            )
+            if (uiState.error == null && !uiState.lessons.isEmpty()) {
+                val isExporting by viewModel.isExporting.collectAsState()
+                org.example.project.ui.components.excel.CommonExcelButton(
+                    isLoading = isExporting,
+                    onClick = { viewModel.exportToExcel() }
+                )
+            }
         },
         topBar = {
             Row (
@@ -183,10 +185,9 @@ fun LessonsLearnedListScreen(
 
                 if (showFilterModal) {
                     AppFilterBottomSheet(
-                        filterData = null,
                         appliedFilterState = uiState.appliedFilterState,
-                        isFromObservation = true,
-                        moduleName = "Lessons",
+                        isFromObservation = false,
+                        moduleName = "Lessons Learned",
                         onApply = { state ->
                             viewModel.applyFilters(state)
                             showFilterModal = false

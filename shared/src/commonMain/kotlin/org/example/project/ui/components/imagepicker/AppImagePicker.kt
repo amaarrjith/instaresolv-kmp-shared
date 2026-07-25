@@ -32,9 +32,12 @@ import org.koin.compose.koinInject
 @Composable
 fun AppImagePicker(
     showPicker: MutableState<Boolean>,
+    isAIDescriptionEnabled: Boolean? = false,
     imageType: Int = 1,
     showFullScreenLoader: Boolean = true,
     onIsUploading: ((Boolean) -> Unit)? = null,
+    onAiDescriptionLoading: ((Boolean) -> Unit)? = null,
+    onAiDescriptionSuccess: ((String) -> Unit)? = null,
     onImageUploaded: (String) -> Unit
 ) {
     val viewModel: ImagePickerViewModel = koinInject()
@@ -90,8 +93,26 @@ fun AppImagePicker(
     LaunchedEffect(uiState) {
         onIsUploading?.invoke(uiState is ImagePickerUiState.Uploading)
         if (uiState is ImagePickerUiState.Success) {
-            onImageUploaded((uiState as ImagePickerUiState.Success).imageUrl)
-            viewModel.clearState()
+            val successState = uiState as ImagePickerUiState.Success
+            if (successState.isAIDescriptionLoading) {
+                onAiDescriptionLoading?.invoke(true)
+            } else if (successState.aiDescription != null || successState.aiDescriptionFailed) {
+                onAiDescriptionLoading?.invoke(false)
+                if (successState.aiDescription != null) {
+                    onAiDescriptionSuccess?.invoke(successState.aiDescription)
+                }
+                viewModel.clearState()
+            } else {
+                onAiDescriptionLoading?.invoke(false)
+                onImageUploaded(successState.imageUrl)
+                if (isAIDescriptionEnabled == true) {
+                    viewModel.generateAiDescription(successState.imageUrl)
+                } else {
+                    viewModel.clearState()
+                }
+            }
+        } else if (uiState !is ImagePickerUiState.Uploading) {
+            onAiDescriptionLoading?.invoke(false)
         }
     }
 }

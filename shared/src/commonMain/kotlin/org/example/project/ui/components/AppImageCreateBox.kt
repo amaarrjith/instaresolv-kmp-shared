@@ -30,14 +30,24 @@ import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.text.font.FontWeight
 
+import org.example.project.typography.poppinsFontFamily
 import org.example.project.ui.components.imagepicker.AppImagePicker
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import instaresolv.shared.generated.resources.ic_add_photo
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.font.FontStyle
 
 @Composable
 fun AppImageCreateBox(
     imageUrl: String?,
+    isAIDescriptionEnabled: Boolean = false,
     description: String,
     onDescriptionChange: (String) -> Unit,
     onImageUploaded: (String) -> Unit,
@@ -46,14 +56,22 @@ fun AppImageCreateBox(
 ) {
     val showPicker = remember { mutableStateOf(false) }
     val showPreview = remember { mutableStateOf(false) }
-
     val isUploading = remember { mutableStateOf(false) }
+    val isAIDescriptionLoading = remember { mutableStateOf(false) }
 
     AppImagePicker(
         showPicker = showPicker,
         showFullScreenLoader = false,
         onIsUploading = { isUploading.value = it },
-        onImageUploaded = onImageUploaded
+        onAiDescriptionLoading = { isLoading ->
+            isAIDescriptionLoading.value = isLoading
+        },
+        onAiDescriptionSuccess = { aiDescription ->
+            val newDesc = if (description.isEmpty()) aiDescription else description + "\n" + aiDescription
+            onDescriptionChange(newDesc)
+        },
+        onImageUploaded = onImageUploaded,
+        isAIDescriptionEnabled = isAIDescriptionEnabled,
     )
 
     val density = androidx.compose.ui.platform.LocalDensity.current
@@ -153,6 +171,29 @@ fun AppImageCreateBox(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            if (isAIDescriptionLoading.value) {
+                val infiniteTransition = rememberInfiniteTransition()
+                val alpha by infiniteTransition.animateFloat(
+                    initialValue = 0.3f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(800),
+                        repeatMode = RepeatMode.Reverse
+                    )
+                )
+
+                Text(
+                    text = "InstaResolv AI is analysing your image to generate a detailed and accurate description. This may take a few moments....",
+                    style = textStyle(
+                        fontStyle = FontStyle.Italic,
+                        size = 10.sp
+                    ),
+                    modifier = Modifier.padding(horizontal = 16.dp).alpha(alpha),
+                    color = AppColors.SkyBlue, // SkyBlue
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
 
             // Description TextField
             Box(

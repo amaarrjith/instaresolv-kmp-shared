@@ -13,9 +13,6 @@ class PermitRepositoryImpl(
         return apiService.getPermitList(request)
     }
 
-    override suspend fun getFilterContent(): NetworkResult<FilterContentData> {
-        return apiService.getFilterContent()
-    }
 
     override suspend fun getPermitTypes(): NetworkResult<org.example.project.data.model.PermitTypesResponse> {
         return apiService.getPermitTypes()
@@ -63,5 +60,9 @@ class PermitRepositoryImpl(
 
     override suspend fun generatePermitExcel(request: org.example.project.data.model.PermitExcelRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
         return apiService.generatePermitExcel(request)
+    }
+
+    override suspend fun generatePermitPdf(request: org.example.project.data.model.GeneratePermitPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generatePermitPdf(request)
     }
 }

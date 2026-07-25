@@ -92,11 +92,13 @@ fun ViolationListScreen(
     Scaffold(
         containerColor = Color.White,
         floatingActionButton = {
-            val isExporting by viewModel.isExporting.collectAsState()
-            org.example.project.ui.components.excel.CommonExcelButton(
-                isLoading = isExporting,
-                onClick = { viewModel.exportToExcel() }
-            )
+            if (uiState.error == null && !uiState.violations.isEmpty()) {
+                val isExporting by viewModel.isExporting.collectAsState()
+                org.example.project.ui.components.excel.CommonExcelButton(
+                    isLoading = isExporting,
+                    onClick = { viewModel.exportToExcel() }
+                )
+            }
         },
         topBar = {
             Row(
@@ -174,7 +176,6 @@ fun ViolationListScreen(
 
                 if (showFilterModal) {
                     AppFilterBottomSheet(
-                        filterData = uiState.filterData,
                         appliedFilterState = uiState.appliedFilterState,
                         isFromIncident = true, // Reusing incident filter logic since they share similar filtering fields
                         moduleName = "Violations",

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class ObservationDetailResponse(
     val observationTitle: String? = null,
     val status: Int? = null,
+    val translatedDescription: String? = null,
     val description: String? = null,
     val date: String? = null,
     val time: String? = null,

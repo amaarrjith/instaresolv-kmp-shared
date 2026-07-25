@@ -108,11 +108,13 @@ fun ObservationListScreen(
     Scaffold(
         containerColor = Color.White,
         floatingActionButton = {
-            val isExporting by viewModel.isExporting.collectAsState()
-            org.example.project.ui.components.excel.CommonExcelButton(
-                isLoading = isExporting,
-                onClick = { viewModel.exportToExcel() }
-            )
+            if (uiState.error == null && !uiState.observations.isEmpty()) {
+                val isExporting by viewModel.isExporting.collectAsState()
+                org.example.project.ui.components.excel.CommonExcelButton(
+                    isLoading = isExporting,
+                    onClick = { viewModel.exportToExcel() }
+                )
+            }
         },
         topBar = {
             Row (
@@ -192,7 +194,6 @@ fun ObservationListScreen(
                 
                 if (showFilterModal) {
                     AppFilterBottomSheet(
-                        filterData = uiState.filterData,
                         appliedFilterState = uiState.appliedFilterState,
                         isFromObservation = true,
                         moduleName = "Observations",

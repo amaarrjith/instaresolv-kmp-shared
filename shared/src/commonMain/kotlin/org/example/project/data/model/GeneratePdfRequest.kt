@@ -21,3 +21,8 @@ data class GenerateViolationPdfRequest(
 data class GenerateLessonLearnedPdfRequest(
     val lessonId: Int
 )
+
+@Serializable
+data class GeneratePermitPdfRequest(
+    val permitId: Int
+)

@@ -27,7 +27,8 @@ data class CreateObservationUiState(
     val manualResponsibleEmail: String = "",
     val selectedResponsiblePerson: GroupUser? = null,
     val selectedNotifyPerson: GroupUser? = null,
-    val observationImages: List<ObservationImage> = listOf(ObservationImage())
+    val observationImages: List<ObservationImage> = listOf(ObservationImage()),
+    val audioUrl: String? = null
 )
 
 class CreateObservationViewModel(
@@ -52,7 +53,10 @@ class CreateObservationViewModel(
             fetchGroupUsers(project.groupId ?: 0, project.groupCode ?: "")
         }
     }
-    
+    fun onAudioUrlProcessed(url: String?) {
+        println("Audio URL: $url")
+        _uiState.value = _uiState.value.copy(audioUrl = url)
+    }
     fun onManualResponsibleNameChange(name: String) {
         _uiState.value = _uiState.value.copy(manualResponsibleName = name)
     }
@@ -167,7 +171,8 @@ class CreateObservationViewModel(
                 responsiblePerson = state.selectedResponsiblePerson?.userId,
                 responsiblePersonName = if (state.selectedProject != null) "" else state.manualResponsibleName,
                 observationTitle = title,
-                responsiblePersonEmail = if (state.selectedProject != null) "" else state.manualResponsibleEmail
+                responsiblePersonEmail = if (state.selectedProject != null) "" else state.manualResponsibleEmail,
+                audioLink = state.audioUrl
             )
 
             val result = observationRepository.createObservation(request)

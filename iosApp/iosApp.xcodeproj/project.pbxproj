@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		742F44FA3015157A0035BA1E /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 742F44F93015157A0035BA1E /* FirebaseCrashlytics */; };
+		742F44FC3015157A0035BA1E /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 742F44FB3015157A0035BA1E /* FirebaseMessaging */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D2791C5D888A4E7872F9D96A /* InstaResolv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstaResolv.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -41,6 +46,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				742F44FC3015157A0035BA1E /* FirebaseMessaging in Frameworks */,
+				742F44FA3015157A0035BA1E /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +92,8 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
+				742F44F93015157A0035BA1E /* FirebaseCrashlytics */,
+				742F44FB3015157A0035BA1E /* FirebaseMessaging */,
 			);
 			productName = iosApp;
 			productReference = D2791C5D888A4E7872F9D96A /* InstaResolv.app */;
@@ -114,6 +123,9 @@
 			);
 			mainGroup = 8CBF7BAD6128D54BA7A48FC6;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				742F44F83015157A0035BA1E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0AB7E65411BC4AEBA8A1BEED /* Products */;
 			projectDirPath = "";
@@ -152,7 +164,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\n\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n  if [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    SHARED_FRAMEWORK_SRC=\"$SRCROOT/../shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework\"\n  else\n    SHARED_FRAMEWORK_SRC=\"$SRCROOT/../shared/build/bin/iosArm64/debugFramework/Shared.framework\"\n  fi\n\n  if [ -d \"$SHARED_FRAMEWORK_SRC\" ]; then\n    rm -rf \"$BUILT_PRODUCTS_DIR/Shared.framework\"\n    cp -R \"$SHARED_FRAMEWORK_SRC\" \"$BUILT_PRODUCTS_DIR/\"\n    exit 0\n  fi\nfi\n\ncd \"$SRCROOT/..\"\nexport GRADLE_USER_HOME=\"$SRCROOT/../.gradle\"\nmkdir -p \"$GRADLE_USER_HOME\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\n\ncd \"$SRCROOT/..\"\nexport GRADLE_USER_HOME=\"$SRCROOT/../.gradle\"\nmkdir -p \"$GRADLE_USER_HOME\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -173,6 +185,7 @@
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
@@ -180,7 +193,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take project photos.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires microphone access to record audio messages.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -331,6 +346,7 @@
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
@@ -338,7 +354,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take project photos.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires microphone access to record audio messages.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -382,6 +400,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		742F44F83015157A0035BA1E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.16.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		742F44F93015157A0035BA1E /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 742F44F83015157A0035BA1E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		742F44FB3015157A0035BA1E /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 742F44F83015157A0035BA1E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1059303072FB4CF484554286 /* Project object */;
 }

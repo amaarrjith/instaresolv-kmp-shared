@@ -100,11 +100,13 @@ fun AuditInspectionListScreen(
     Scaffold(
         containerColor = Color.White,
         floatingActionButton = {
-            val isExporting by viewModel.isExporting.collectAsState()
-            org.example.project.ui.components.excel.CommonExcelButton(
-                isLoading = isExporting,
-                onClick = { viewModel.exportToExcel() }
-            )
+            if (uiState.error == null && !uiState.inspections.isEmpty()) {
+                val isExporting by viewModel.isExporting.collectAsState()
+                org.example.project.ui.components.excel.CommonExcelButton(
+                    isLoading = isExporting,
+                    onClick = { viewModel.exportToExcel() }
+                )
+            }
         },
         topBar = {
             Row(
@@ -180,9 +182,8 @@ fun AuditInspectionListScreen(
 
                 if (showFilterModal) {
                     AppFilterBottomSheet(
-                        filterData = uiState.filterData,
                         appliedFilterState = uiState.appliedFilterState,
-                        isFromIncident = true, // Reusing logic
+                        isFromIncident = false, // Reusing logic
                         moduleName = "Inspections",
                         onApply = { state -> 
                             viewModel.applyFilters(state)

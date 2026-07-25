@@ -209,7 +209,8 @@ fun AppNavigation() {
                 onPendingActionViewAllClick = { navController.navigate(Screens.PendingActionListScreen.route) },
                 onPreTaskClicked = { navController.navigate(Screens.PreTaskListScreen.route) },
                 onLessonLearnedClicked = { navController.navigate(Screens.LessonsLearnedListScreen.route) },
-                onToolboxTalksClicked = { navController.navigate(Screens.ToolBoxTalkListScreen.route) }
+                onToolboxTalksClicked = { navController.navigate(Screens.ToolBoxTalkListScreen.route) },
+                onPermitDetailClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") }
             )
         }
         composable(Screens.PreTaskListScreen.route) {
@@ -356,9 +357,10 @@ fun AppNavigation() {
             )
         }
         composable(Screens.PendingActionListScreen.route) {
-            PendingActionListScreen{
-                navController.popBackStack()
-            }
+            PendingActionListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onPermitClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") }
+            )
         }
         composable(Screens.ProfileScreen.route) {
             ProfileScreen(

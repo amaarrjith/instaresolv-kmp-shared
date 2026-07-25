@@ -22,11 +22,12 @@ import kotlinx.serialization.json.Json
 import org.example.project.data.model.AuthResponse
 import org.example.project.data.model.CommonResponse
 import org.example.project.data.model.TokenRefreshRequest
+import org.example.project.data.settings.AppPreferences
 import org.example.project.data.settings.AuthPreferences
-
+import io.ktor.client.request.header
 internal const val BASE_URL = "https://instaresolv-dev.zoondia.org/api/"
 
-internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences) {
+internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, appPreferences: AppPreferences) {
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true
@@ -91,7 +92,8 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences) 
 
     defaultRequest {
         url(BASE_URL)
+        header("Language", appPreferences.getLanguage())
     }
 }
 
-expect fun createHttpClient(authPreferences: AuthPreferences): HttpClient
+expect fun createHttpClient(authPreferences: AuthPreferences, appPreferences: AppPreferences): HttpClient

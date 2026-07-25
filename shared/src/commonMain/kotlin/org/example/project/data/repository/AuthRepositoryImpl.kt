@@ -109,6 +109,14 @@ class AuthRepositoryImpl(
         return apiService.uploadImage(imageBytes, fileName, type)
     }
 
+    override suspend fun analyzeImage(
+        imageBytes: ByteArray,
+        fileName: String
+    ): NetworkResult<org.example.project.data.model.ImageAnalyzerResponse> {
+        return apiService.analyzeImage(imageBytes, fileName)
+    }
+
+
     override suspend fun getHomeContents(userId: Int): NetworkResult<HomeResponse> {
         return apiService.getHomeContents(
             request = HomeContentsRequest(

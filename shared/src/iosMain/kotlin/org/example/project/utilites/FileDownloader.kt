@@ -21,10 +21,20 @@ actual class FileDownloader {
                 val documentsPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true).first() as String
                 val destinationUrl = NSURL.fileURLWithPath("$documentsPath/$fileName")
                 
-                fileManager.removeItemAtURL(destinationUrl, null)
-                val moveError = fileManager.moveItemAtURL(location, destinationUrl, null)
+                try {
+                    fileManager.removeItemAtURL(destinationUrl, null)
+                } catch (e: Exception) {
+                    // Ignore if file doesn't exist
+                }
                 
-                if (moveError == null) {
+                val moveSuccess = try {
+                    fileManager.moveItemAtURL(location, destinationUrl, null)
+                } catch (e: Exception) {
+                    println("FileDownloader: Error moving file - ${e.message}")
+                    false
+                }
+                
+                if (moveSuccess) {
                     dispatch_async(dispatch_get_main_queue()) {
                         val activityVC = UIActivityViewController(
                             activityItems = listOf(destinationUrl),
@@ -32,6 +42,16 @@ actual class FileDownloader {
                         )
                         
                         var rootVC = UIApplication.sharedApplication.keyWindow?.rootViewController
+                        if (rootVC == null) {
+                            val windows = UIApplication.sharedApplication.windows
+                            for (window in windows) {
+                                if ((window as? UIWindow)?.isKeyWindow() == true) {
+                                    rootVC = window.rootViewController
+                                    break
+                                }
+                            }
+                        }
+                        
                         while (rootVC?.presentedViewController != null) {
                             rootVC = rootVC.presentedViewController
                         }
@@ -39,6 +59,8 @@ actual class FileDownloader {
                         rootVC?.presentViewController(activityVC, animated = true, completion = null)
                     }
                 }
+            } else if (error != null) {
+                println("FileDownloader: Error downloading file - ${error.localizedDescription}")
             }
         }
         task.resume()

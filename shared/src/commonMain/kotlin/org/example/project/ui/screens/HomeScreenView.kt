@@ -36,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,9 +80,13 @@ import org.example.project.data.settings.timeAgo
 import org.example.project.homescreen.HomeScreenViewModel
 import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
+import org.example.project.ui.components.PdfGenerationLoader
 import org.example.project.ui.components.WebImageView
 import org.example.project.ui.screens.PermitStatusBadge
+import org.example.project.utilites.ToastHost
+import org.example.project.utilites.rememberFileDownloader
 import org.koin.compose.koinInject
+import kotlin.time.Clock
 
 @Composable
 fun HomeScreenContentView(
@@ -92,11 +98,31 @@ fun HomeScreenContentView(
     onNotificationClick: () -> Unit,
     isRefreshing: Boolean,
     onClickModule: (ActionOverview) -> Unit,
-    onPendingActionViewAllClick: () -> Unit = {}
+    onPendingActionViewAllClick: () -> Unit = {},
+    onPermitClick: (Int) -> Unit = {}
 ) {
-
     val viewModel: ProfileViewModel = koinInject()
     val vm: HomeScreenViewModel = koinInject()
+    val isGeneratingPdf by vm.isGeneratingPdf.collectAsState()
+    val pdfUrl by vm.pdfUrl.collectAsState()
+    val pdfToastMessage by vm.pdfToastMessage.collectAsState()
+    val pdfErrorToastMessage by vm.pdfErrorToastMessage.collectAsState()
+    val fileDownloader = rememberFileDownloader()
+
+    val pdfModuleType by vm.pdfModuleType.collectAsState()
+
+    LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "${pdfModuleType}_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                vm.setPdfToastMessage("Downloading $pdfModuleType Report")
+            } catch (e: Exception) {
+                vm.setPdfErrorToastMessage("Failed to download $pdfModuleType Report")
+            }
+            vm.clearPdfUrl()
+        }
+    }
     Box(
         modifier = Modifier
             .background(Color.White)
@@ -133,7 +159,10 @@ fun HomeScreenContentView(
                     Spacer(modifier = Modifier.height(26.dp))
                     AssignedToMeCard(
                         assignedToMe = assignedToMe,
-                        onViewAllClick = onPendingActionViewAllClick
+                        onViewAllClick = onPendingActionViewAllClick,
+                        viewModel = vm,
+                        onRefreshList = silentRefresh,
+                        onPermitClick = onPermitClick
                     )
                     Spacer(modifier = Modifier.height(22.dp))
                     ActionOverviewSection(
@@ -145,6 +174,20 @@ fun HomeScreenContentView(
                 }
             }
         }
+
+        if (isGeneratingPdf) {
+            PdfGenerationLoader()
+        }
+
+        ToastHost(
+            modifier = Modifier.padding(horizontal = 22.dp),
+            visible = pdfToastMessage != null || pdfErrorToastMessage != null,
+            type = if (pdfErrorToastMessage != null) org.example.project.utilites.ToastType.Error else org.example.project.utilites.ToastType.Success,
+            message = pdfErrorToastMessage ?: pdfToastMessage ?: "",
+            onDismiss = {
+                vm.clearToasts()
+            }
+        )
     }
 }
 
@@ -304,10 +347,14 @@ fun PendingActionsCardView(
 @Composable
 fun AssignedToMeCard(
     assignedToMe: AssignedToMe?,
-    onViewAllClick: () -> Unit = {}
+    viewModel: HomeScreenViewModel,
+    onViewAllClick: () -> Unit = {},
+    onRefreshList: () -> Unit = {},
+    onPermitClick: (Int) -> Unit = {}
 ) {
     var showObservationDrawer by remember { mutableStateOf(false) }
     var showPermitDrawer by remember { mutableStateOf(false) }
+    var selectedObservationId by remember { mutableStateOf<Int?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val strings = LocalAppStrings.current
     assignedToMe?.let { contents ->
@@ -505,11 +552,21 @@ fun AssignedToMeCard(
             },
             onActionClick = { action ->
                 when (action) {
-                    "View Report" -> {}
-                    "Generate PDF" -> {}
-                    "Close Observation" -> {}
-                    "Request Observation Responsible Person Change" -> {}
-                    "Request to Delete Observation" -> {}
+                    "View Report" -> {
+                        selectedObservationId = assignedToMe.observation?.contentId
+                    }
+                    "Generate PDF" -> {
+                        viewModel.generatePdf(assignedToMe.observation?.contentId ?: -1)
+                    }
+                    "Close Observation" -> {
+
+                    }
+                    "Request Observation Responsible Person Change" -> {
+
+                    }
+                    "Request to Delete Observation" -> {
+
+                    }
                 }
             }
         )
@@ -520,11 +577,33 @@ fun AssignedToMeCard(
             },
             onActionClick = { action ->
                 when (action) {
-                    "View Permit" -> {}
-                    "Generate PDF" -> {}
+                    "View Permit" -> {
+                        assignedToMe.permit?.permitId?.let { onPermitClick(it) }
+                    }
+                    "Generate PDF" -> {
+                        assignedToMe.permit?.permitId?.let { viewModel.generatePermitPDF(it) }
+                    }
                 }
             }
         )
+
+        if (selectedObservationId != null) {
+            val obsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { selectedObservationId = null },
+                sheetState = obsSheetState,
+                containerColor = Color.White,
+                dragHandle = null
+            ) {
+                Box(modifier = Modifier.fillMaxHeight(0.9f)) {
+                    org.example.project.ui.screens.ObservationDetailScreen(
+                        observationId = selectedObservationId!!,
+                        onBackClicked = { selectedObservationId = null },
+                        onRefreshList = onRefreshList
+                    )
+                }
+            }
+        }
     }
 }
 
