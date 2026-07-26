@@ -434,4 +434,21 @@
     <string name="enterEmployeeCode">Enter Employee Code</string>
     <string name="provideAShortDescriptionOfWhyYouAreRequestingThisObservationToBeChanged">Provide a short description of why you are requesting this observation to be changed</string>
     <string name="gallery">Gallery</string>
+    <string name="just_now">Just now</string>
+    <string name="time_ago_year">1 year ago</string>
+    <string name="time_ago_years">%1$d years ago</string>
+    <string name="time_ago_month">1 month ago</string>
+    <string name="time_ago_months">%1$d months ago</string>
+    <string name="time_ago_week">1 week ago</string>
+    <string name="time_ago_weeks">%1$d weeks ago</string>
+    <string name="time_ago_day">1 day ago</string>
+    <string name="time_ago_days">%1$d days ago</string>
+    <string name="time_ago_hour">1 hour ago</string>
+    <string name="time_ago_hours">%1$d hours ago</string>
+    <string name="time_ago_minute">1 minute ago</string>
+    <string name="time_ago_minutes">%1$d minutes ago</string>
+    <string name="time_ago_second">1 second ago</string>
+    <string name="time_ago_seconds">%1$d seconds ago</string>
+    <string name="admin">Admin</string>
+    <string name="participant">Participant</string>
 </resources>

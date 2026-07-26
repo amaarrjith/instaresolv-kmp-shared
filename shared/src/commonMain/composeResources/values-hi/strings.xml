@@ -422,4 +422,21 @@
     <string name="enterEmployeeCode">कर्मचारी कोड दर्ज करें</string>
     <string name="provideAShortDescriptionOfWhyYouAreRequestingThisObservationToBeChanged">आप इस अवलोकन को बदलने का अनुरोध क्यों कर रहे हैं इसका संक्षिप्त विवरण प्रदान करें</string>
     <string name="gallery">गैलरी</string>
+    <string name="just_now">अभी-अभी</string>
+    <string name="time_ago_year">1 साल पहले</string>
+    <string name="time_ago_years">%1$d साल पहले</string>
+    <string name="time_ago_month">1 महीने पहले</string>
+    <string name="time_ago_months">%1$d महीने पहले</string>
+    <string name="time_ago_week">1 सप्ताह पहले</string>
+    <string name="time_ago_weeks">%1$d सप्ताह पहले</string>
+    <string name="time_ago_day">1 दिन पहले</string>
+    <string name="time_ago_days">%1$d दिन पहले</string>
+    <string name="time_ago_hour">1 घंटे पहले</string>
+    <string name="time_ago_hours">%1$d घंटे पहले</string>
+    <string name="time_ago_minute">1 मिनट पहले</string>
+    <string name="time_ago_minutes">%1$d मिनट पहले</string>
+    <string name="time_ago_second">1 सेकंड पहले</string>
+    <string name="time_ago_seconds">%1$d सेकंड पहले</string>
+    <string name="admin">प्रशासक</string>
+    <string name="participant">भागीदार</string>
 </resources>

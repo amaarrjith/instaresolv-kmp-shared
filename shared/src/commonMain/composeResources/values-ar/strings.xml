@@ -423,4 +423,21 @@
     <string name="enterEmployeeCode">أدخل رمز الموظف</string>
     <string name="provideAShortDescriptionOfWhyYouAreRequestingThisObservationToBeChanged">قدم وصفًا موجزًا ​​لسبب مطالبتك بتغيير هذه الملاحظة</string>
     <string name="gallery">معرض</string>
+    <string name="just_now">الآن</string>
+    <string name="time_ago_year">منذ سنة واحدة</string>
+    <string name="time_ago_years">منذ %1$d سنوات</string>
+    <string name="time_ago_month">منذ شهر واحد</string>
+    <string name="time_ago_months">منذ %1$d أشهر</string>
+    <string name="time_ago_week">منذ أسبوع واحد</string>
+    <string name="time_ago_weeks">منذ %1$d أسابيع</string>
+    <string name="time_ago_day">منذ يوم واحد</string>
+    <string name="time_ago_days">منذ %1$d أيام</string>
+    <string name="time_ago_hour">منذ ساعة واحدة</string>
+    <string name="time_ago_hours">منذ %1$d ساعات</string>
+    <string name="time_ago_minute">منذ دقيقة واحدة</string>
+    <string name="time_ago_minutes">منذ %1$d دقائق</string>
+    <string name="time_ago_second">منذ ثانية واحدة</string>
+    <string name="time_ago_seconds">منذ %1$d ثواني</string>
+    <string name="admin">مشرف</string>
+    <string name="participant">مشارك</string>
 </resources>

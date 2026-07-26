@@ -257,6 +257,7 @@ fun CreateProjectScreenTopBar(
     onBack: () -> Unit
 ) {
     Row(modifier = Modifier
+        .fillMaxWidth()
         .padding(vertical = 10.dp)
         .statusBarsPadding(),
         verticalAlignment = Alignment.CenterVertically

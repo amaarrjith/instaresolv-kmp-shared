@@ -21,6 +21,12 @@ import instaresolv.shared.generated.resources.poppins_medium
 import instaresolv.shared.generated.resources.poppins_regular
 import instaresolv.shared.generated.resources.poppins_italic
 import instaresolv.shared.generated.resources.poppins_semibold
+import instaresolv.shared.generated.resources.noto_naskh_arabic_regular
+import instaresolv.shared.generated.resources.noto_naskh_arabic_medium
+import instaresolv.shared.generated.resources.noto_naskh_arabic_semibold
+import instaresolv.shared.generated.resources.noto_naskh_arabic_bold
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 
 @Composable
 fun interFontFamily(): FontFamily = FontFamily(
@@ -28,6 +34,14 @@ fun interFontFamily(): FontFamily = FontFamily(
     Font(Res.font.inter_medium, FontWeight.Medium),
     Font(Res.font.inter_semibold, FontWeight.SemiBold),
     Font(Res.font.inter_bold, FontWeight.Bold)
+)
+
+@Composable
+fun notoNaskhFontFamily(): FontFamily = FontFamily(
+    Font(Res.font.noto_naskh_arabic_regular, FontWeight.Normal),
+    Font(Res.font.noto_naskh_arabic_medium, FontWeight.Medium),
+    Font(Res.font.noto_naskh_arabic_semibold, FontWeight.SemiBold),
+    Font(Res.font.noto_naskh_arabic_bold, FontWeight.Bold)
 )
 
 @Composable

@@ -807,7 +807,7 @@ fun MemberStatusIcon(isAdmin: Boolean) {
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
-            text = if (isAdmin) "ADMIN" else "PARTICIPANT",
+            text = if (isAdmin) stringResource(Res.string.admin).uppercase() else stringResource(Res.string.participant).uppercase(),
             style = textStyle(
                 size = 10.sp,
                 weight = FontWeight.SemiBold

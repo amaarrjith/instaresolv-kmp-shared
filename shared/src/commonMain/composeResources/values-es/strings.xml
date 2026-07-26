@@ -423,4 +423,21 @@
     <string name="enterEmployeeCode">Ingrese el código de empleado</string>
     <string name="provideAShortDescriptionOfWhyYouAreRequestingThisObservationToBeChanged">Proporcione una breve descripción de por qué solicita que se cambie esta observación.</string>
     <string name="gallery">Galería</string>
+    <string name="just_now">Justo ahora</string>
+    <string name="time_ago_year">hace 1 año</string>
+    <string name="time_ago_years">hace %1$d años</string>
+    <string name="time_ago_month">hace 1 mes</string>
+    <string name="time_ago_months">hace %1$d meses</string>
+    <string name="time_ago_week">hace 1 semana</string>
+    <string name="time_ago_weeks">hace %1$d semanas</string>
+    <string name="time_ago_day">hace 1 día</string>
+    <string name="time_ago_days">hace %1$d días</string>
+    <string name="time_ago_hour">hace 1 hora</string>
+    <string name="time_ago_hours">hace %1$d horas</string>
+    <string name="time_ago_minute">hace 1 minuto</string>
+    <string name="time_ago_minutes">hace %1$d minutos</string>
+    <string name="time_ago_second">hace 1 segundo</string>
+    <string name="time_ago_seconds">hace %1$d segundos</string>
+    <string name="admin">Administrador</string>
+    <string name="participant">Participante</string>
 </resources>

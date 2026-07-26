@@ -13,6 +13,10 @@ import kotlinx.datetime.periodUntil
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import androidx.compose.runtime.Composable
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Parses [input] using [inputPattern] and re-formats it as [outputPattern].
@@ -75,6 +79,7 @@ private fun buildDateTimeFormat(pattern: String): DateTimeFormat<LocalDateTime> 
     }
 }
 
+@Composable
 fun timeAgo(
     input: String,
     inputPattern: String = "yyyy-MM-dd HH:mm:ss",
@@ -99,27 +104,28 @@ fun timeAgo(
 
     val now = Clock.System.now()
 
-    if (past > now) return "Just now"
+    if (past > now) return stringResource(Res.string.just_now)
 
     val period = past.periodUntil(now, systemTimeZone)
 
     return when {
-        period.years > 0 -> pluralize(period.years, "year")
-        period.months > 0 -> pluralize(period.months, "month")
-        period.days >= 7 -> pluralize(period.days / 7, "week")
-        period.days > 0 -> pluralize(period.days, "day")
-        period.hours > 0 -> pluralize(period.hours, "hour")
-        period.minutes > 0 -> pluralize(period.minutes, "minute")
-        period.seconds > 0 -> pluralize(period.seconds, "second")
-        else -> "Just now"
+        period.years > 0 -> pluralizeTimeAgo(period.years, Res.string.time_ago_year, Res.string.time_ago_years)
+        period.months > 0 -> pluralizeTimeAgo(period.months, Res.string.time_ago_month, Res.string.time_ago_months)
+        period.days >= 7 -> pluralizeTimeAgo(period.days / 7, Res.string.time_ago_week, Res.string.time_ago_weeks)
+        period.days > 0 -> pluralizeTimeAgo(period.days, Res.string.time_ago_day, Res.string.time_ago_days)
+        period.hours > 0 -> pluralizeTimeAgo(period.hours, Res.string.time_ago_hour, Res.string.time_ago_hours)
+        period.minutes > 0 -> pluralizeTimeAgo(period.minutes, Res.string.time_ago_minute, Res.string.time_ago_minutes)
+        period.seconds > 0 -> pluralizeTimeAgo(period.seconds, Res.string.time_ago_second, Res.string.time_ago_seconds)
+        else -> stringResource(Res.string.just_now)
     }
 }
 
-private fun pluralize(value: Int, unit: String): String {
+@Composable
+private fun pluralizeTimeAgo(value: Int, singleRes: StringResource, pluralRes: StringResource): String {
     return if (value == 1) {
-        "1 $unit ago"
+        stringResource(singleRes)
     } else {
-        "$value ${unit}s ago"
+        stringResource(pluralRes, value)
     }
 }
 
