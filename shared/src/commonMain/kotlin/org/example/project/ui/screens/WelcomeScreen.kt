@@ -54,6 +54,7 @@ import instaresolv.shared.generated.resources.ic_audit_inspection
 import instaresolv.shared.generated.resources.ic_observations
 import instaresolv.shared.generated.resources.ic_right_icon
 import instaresolv.shared.generated.resources.ic_toast_success
+import org.example.project.utilites.rtlScale
 import org.example.project.typography.textStyle
 import org.example.project.welcomescreen.WelcomeScreenViewModel
 import org.jetbrains.compose.resources.DrawableResource
@@ -274,9 +275,9 @@ fun WelcomeScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_arrow_left),
-                            contentDescription = stringResource(Res.string.back),
+                            contentDescription = "Back",
                             tint = Color.Black,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp).rtlScale()
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -313,7 +314,7 @@ fun WelcomeScreen(
                         painter = painterResource(Res.drawable.ic_right_icon),
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp).rtlScale()
                     )
                 }
             }

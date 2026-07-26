@@ -69,6 +69,7 @@ import instaresolv.shared.generated.resources.ic_observations
 import instaresolv.shared.generated.resources.ic_incidents
 import instaresolv.shared.generated.resources.ic_location
 import instaresolv.shared.generated.resources.ic_right_icon
+import org.example.project.utilites.rtlScale
 import instaresolv.shared.generated.resources.ic_violations
 import instaresolv.shared.generated.resources.ic_training
 import org.example.project.colors.AppColors
@@ -692,7 +693,7 @@ private fun ObservationActionItem(
         Image(
             modifier = Modifier.padding(
                 start = 40.dp
-            ),
+            ).rtlScale(),
             painter = painterResource(Res.drawable.ic_right_icon),
             contentDescription = null
         )
@@ -777,7 +778,7 @@ private fun PermitActionItem(
         Image(
             modifier = Modifier.padding(
                 start = 40.dp
-            ),
+            ).rtlScale(),
             painter = painterResource(Res.drawable.ic_right_icon),
             contentDescription = null
         )

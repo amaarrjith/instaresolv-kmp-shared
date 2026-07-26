@@ -41,6 +41,7 @@ import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_calendar
 import instaresolv.shared.generated.resources.ic_filter
 import instaresolv.shared.generated.resources.ic_arrow_left
+import org.example.project.utilites.rtlScale
 import instaresolv.shared.generated.resources.ic_permit_work
 import org.example.project.colors.AppColors
 import org.example.project.data.model.PendingActionItem
@@ -630,7 +631,7 @@ fun ActionRow(title: String, onClick: () -> Unit = {}) {
             painter = painterResource(Res.drawable.ic_arrow_left),
             contentDescription = null,
             colorFilter = ColorFilter.tint(AppColors.Black),
-            modifier = Modifier.rotate(180f).size(20.dp)
+            modifier = Modifier.rotate(180f).size(20.dp).rtlScale()
         )
     }
 }

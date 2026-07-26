@@ -58,6 +58,7 @@ import instaresolv.shared.generated.resources.ic_edit
 import instaresolv.shared.generated.resources.ic_email
 import instaresolv.shared.generated.resources.ic_invite_email
 import instaresolv.shared.generated.resources.ic_right_icon
+import org.example.project.utilites.rtlScale
 import instaresolv.shared.generated.resources.ic_search
 import org.example.project.colors.AppColors
 import org.example.project.data.model.ProjectDetail
@@ -604,7 +605,8 @@ fun SettingsItemRow(
         Spacer(modifier = Modifier.weight(1f))
         Image(
             painter = painterResource(Res.drawable.ic_right_icon),
-            contentDescription = null
+            contentDescription = null,
+            modifier = Modifier.rtlScale()
         )
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_arrow_left
 import instaresolv.shared.generated.resources.ic_play
+import org.example.project.utilites.rtlScale
 import kotlinx.coroutines.delay
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
@@ -149,9 +150,9 @@ fun VideoPlayerContainer(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_arrow_left),
-                            contentDescription = stringResource(Res.string.back),
+                            contentDescription = "Back",
                             tint = Color.White,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp).rtlScale()
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))

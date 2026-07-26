@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_arrow_left
+import org.example.project.utilites.rtlScale
 import org.example.project.ui.viewmodel.GlobalSettingsViewModel
 import org.koin.compose.koinInject
 
@@ -29,6 +30,6 @@ fun NavigationBackIcon(
         modifier = modifier
             .clickable { onClick() }
             .padding(20.dp)
-            .scale(scaleX = if (currentLanguage.isRtl) -1f else 1f, scaleY = 1f)
+            .rtlScale()
     )
 }

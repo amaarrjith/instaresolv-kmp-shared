@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_arrow_left
 import instaresolv.shared.generated.resources.ic_right_icon
+import org.example.project.utilites.rtlScale
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
@@ -247,10 +248,9 @@ fun SettingsRow(
                 )
             } else {
                 Image(
-                modifier = Modifier
-                    .scale(scaleX = if (currentLanguage.isRtl) -1f else 1f, scaleY = 1f),
                     painter = painterResource(Res.drawable.ic_right_icon),
                     contentDescription = null,
+                    modifier = Modifier.rtlScale()
                 )
             }
         }

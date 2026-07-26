@@ -65,6 +65,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import instaresolv.shared.generated.resources.ic_right_icon
+import org.example.project.utilites.rtlScale
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -331,7 +332,7 @@ fun AuditInspectionListScreen(
                                             Image(
                                                 painter = painterResource(Res.drawable.ic_right_icon),
                                                 contentDescription = null,
-                                                modifier = Modifier.size(16.dp),
+                                                modifier = Modifier.size(16.dp).rtlScale(),
                                                 colorFilter = ColorFilter.tint(Color.Gray)
                                             )
                                         }

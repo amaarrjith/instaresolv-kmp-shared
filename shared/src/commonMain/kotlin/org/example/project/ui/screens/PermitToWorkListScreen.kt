@@ -24,6 +24,7 @@ import instaresolv.shared.generated.resources.ic_add
 import instaresolv.shared.generated.resources.ic_calendar
 import instaresolv.shared.generated.resources.ic_category
 import instaresolv.shared.generated.resources.ic_right_icon
+import org.example.project.utilites.rtlScale
 import org.example.project.colors.AppColors
 import org.example.project.data.model.PermitItem
 import org.example.project.data.model.PermitStatus
@@ -249,7 +250,7 @@ fun PermitToWorkListScreen(
                                             Image(
                                                 painter = painterResource(Res.drawable.ic_right_icon),
                                                 contentDescription = null,
-                                                modifier = Modifier.size(16.dp),
+                                                modifier = Modifier.size(16.dp).rtlScale(),
                                                 colorFilter = ColorFilter.tint(Color.Gray)
                                             )
                                         }

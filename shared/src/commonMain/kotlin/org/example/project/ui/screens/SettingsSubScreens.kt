@@ -41,6 +41,7 @@ import org.example.project.utilites.AppTextField
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_arrow_left
 import instaresolv.shared.generated.resources.ic_app_logo
+import org.example.project.utilites.rtlScale
 import instaresolv.shared.generated.resources.ic_forget_password
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
@@ -95,7 +96,8 @@ fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = fals
                         contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
-                            .padding(16.dp),
+                            .padding(16.dp)
+                            .rtlScale(),
                         tint = AppColors.Black
                     )
                 }
@@ -216,7 +218,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                         contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
-                            .padding(16.dp),
+                            .padding(16.dp).rtlScale(),
                         tint = AppColors.Black
                     )
                 }
@@ -353,7 +355,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
                         contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
-                            .padding(16.dp),
+                            .padding(16.dp).rtlScale(),
                         tint = AppColors.Black
                     )
                 }
@@ -500,7 +502,7 @@ fun AboutUsScreen(onBack: () -> Unit) {
                         contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
-                            .padding(16.dp),
+                            .padding(16.dp).rtlScale(),
                         tint = AppColors.Black
                     )
                 }
@@ -582,7 +584,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                         contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
-                            .padding(16.dp),
+                            .padding(16.dp).rtlScale(),
                         tint = AppColors.Black
                     )
                 }

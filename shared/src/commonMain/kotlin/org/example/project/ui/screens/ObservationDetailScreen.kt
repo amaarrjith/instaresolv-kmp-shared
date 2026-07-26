@@ -47,6 +47,7 @@ import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_add
 import instaresolv.shared.generated.resources.ic_camera
 import instaresolv.shared.generated.resources.ic_right_icon
+import org.example.project.utilites.rtlScale
 import instaresolv.shared.generated.resources.ic_share
 import instaresolv.shared.generated.resources.ic_translate
 import instaresolv.shared.generated.resources.ic_translate_done
@@ -728,7 +729,8 @@ fun ObservationDetailInfo(
                 }
                 Image(
                     painter = painterResource(Res.drawable.ic_right_icon),
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier.rtlScale()
                 )
             }
 
