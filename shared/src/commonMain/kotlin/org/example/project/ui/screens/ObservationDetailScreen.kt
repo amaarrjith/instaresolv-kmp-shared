@@ -551,7 +551,7 @@ fun ObservationDetailInfo(
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = status.name.uppercase(),
+                        text = status.title.uppercase(),
                         style = textStyle(size = 10.sp, weight = FontWeight.Bold),
                         color = Color.White
                     )

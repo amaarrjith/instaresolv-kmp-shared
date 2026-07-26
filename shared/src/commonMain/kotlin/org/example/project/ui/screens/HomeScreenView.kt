@@ -1041,13 +1041,14 @@ enum class ObservationStatus(
     ),
     CLOSED(
         id = 2,
-        title = "Closed",
-        backgroundColor = Color(0xFF45B743)
+        title = "Close Out Pending",
+        backgroundColor = Color(0xFFF6A03A)
+
     ),
     CLOSE_OUT_APPROVED(
         id = 3,
-        title = "Close Out Approved",
-        backgroundColor = Color(0xFFF6A03A)
+        title = "Closed",
+        backgroundColor = Color(0xFF45B743)
     );
 
     companion object {
