@@ -15,6 +15,8 @@ import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.input.pointer.pointerInput
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun RequestDeleteObservationView(
@@ -41,12 +43,12 @@ fun RequestDeleteObservationView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Open Observation",
+                text = stringResource(Res.string.openObservation),
                 style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                 color = AppColors.Black
             )
             Text(
-                text = "Back",
+                text = stringResource(Res.string.back),
                 style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                 color = AppColors.Primary,
                 modifier = Modifier.clickable { onBackClicked() }
@@ -56,7 +58,7 @@ fun RequestDeleteObservationView(
         Spacer(modifier = Modifier.height(20.dp))
         
         Text(
-            text = "Request To Delete Observation",
+            text = stringResource(Res.string.requestToDeleteObservation1),
             style = textStyle(size = 16.sp, weight = FontWeight.Medium),
             color = AppColors.Black
         )
@@ -64,7 +66,7 @@ fun RequestDeleteObservationView(
         Spacer(modifier = Modifier.height(10.dp))
         
         Text(
-            text = "Provide a short description of why you are requesting this observation to be changed",
+            text = stringResource(Res.string.provideAShortDescriptionOfWhyYouAreRequestingThisObservationToBeChanged),
             style = textStyle(size = 14.sp, weight = FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -72,12 +74,12 @@ fun RequestDeleteObservationView(
         Spacer(modifier = Modifier.height(20.dp))
         
         AppMultilineTextField(
-            title = "Description",
+            title = stringResource(Res.string.description),
             value = justification,
             onValueChange = {
                 errorMesssage = ""
                 justification = it },
-            placeholder = "Enter Description"
+            placeholder = stringResource(Res.string.enterDescription)
         )
 
         if (errorMesssage.isNotEmpty()) {
@@ -108,7 +110,7 @@ fun RequestDeleteObservationView(
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
             ) {
                 Text(
-                    text = "Continue",
+                    text = stringResource(Res.string.continueAction),
                     style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                     color = Color.White
                 )

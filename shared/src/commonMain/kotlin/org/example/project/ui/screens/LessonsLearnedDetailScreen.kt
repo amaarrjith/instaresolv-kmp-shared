@@ -43,6 +43,8 @@ import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun LessonsLearnedDetailScreen(
@@ -91,7 +93,7 @@ fun LessonsLearnedDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         AppBorderButton(
-                            title = "Generate PDF",
+                            title = stringResource(Res.string.generatePdf),
                             onClick = { viewModel.generatePdf(id) },
                             modifier = Modifier.weight(1f)
                         )
@@ -197,7 +199,7 @@ fun LessonsLearnedDetailContent(
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                 Text(
-                    text = "Title",
+                    text = stringResource(Res.string.title),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -222,7 +224,7 @@ fun LessonsLearnedDetailContent(
 
         // Project/Facility section
         Text(
-            text = "Project",
+            text = stringResource(Res.string.project),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -268,7 +270,7 @@ fun LessonsLearnedDetailContent(
 
         // Reported By
         Text(
-            text = "Reported By",
+            text = stringResource(Res.string.reportedBy),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -293,7 +295,7 @@ fun LessonsLearnedDetailContent(
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Date",
+                    text = stringResource(Res.string.date),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -314,7 +316,7 @@ fun LessonsLearnedDetailContent(
 
         // Description
         Text(
-            text = "Description",
+            text = stringResource(Res.string.description),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -328,7 +330,7 @@ fun LessonsLearnedDetailContent(
         if (!data.translatedDescription.isNullOrEmpty()) {
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Description (AI Translated)",
+                text = stringResource(Res.string.descriptionAiTranslated),
                 style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                 color = AppColors.TextGray
             )
@@ -346,7 +348,7 @@ fun LessonsLearnedDetailContent(
 
         // Uploaded Images
         Text(
-            text = "Uploaded Images",
+            text = stringResource(Res.string.uploadedImages),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -384,7 +386,7 @@ fun LessonsLearnedDetailContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No Images Found",
+                    text = stringResource(Res.string.noImagesFound),
                     style = textStyle(size = 14.sp, weight = FontWeight.Normal),
                     color = AppColors.TextGray
                 )

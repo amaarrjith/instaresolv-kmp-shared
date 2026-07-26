@@ -75,6 +75,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.LaunchedEffect
 import org.example.project.data.model.ProjectDetail
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun CreateProjectScreen(
@@ -135,7 +137,7 @@ fun CreateProjectScreen(
                 if (project != null) {
                     ToastHost(
                         visible = true,
-                        message = "Project Updated Successfully!",
+                        message = stringResource(Res.string.projectUpdatedSuccessfully),
                         onDismiss = {
                             viewModel.clearState()
                             onBack()
@@ -209,7 +211,7 @@ fun CreateProjectScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     if (projectImage.value.isBlank()) {
                         AppBorderButton(
-                            title = "Upload Project Image",
+                            title = stringResource(Res.string.uploadProjectImage),
                             onClick = {
                                 showImagePicker.value = true
                             },
@@ -217,7 +219,7 @@ fun CreateProjectScreen(
                         )
                     } else {
                         AppBorderButton(
-                            title = "Change Project Image",
+                            title = stringResource(Res.string.changeProjectImage),
                             onClick = {
                                 showImagePicker.value = true
                             },
@@ -228,15 +230,15 @@ fun CreateProjectScreen(
                     AppTextField(
                         value = projectTitle.value,
                         onValueChange = { projectTitle.value = it },
-                        title = "Project Title",
-                        placeholder = "Project Title"
+                        title = stringResource(Res.string.projectTitle),
+                        placeholder = stringResource(Res.string.projectTitle)
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     AppTextField(
                         value = projectDescription.value,
                         onValueChange = { projectDescription.value = it },
-                        title = "Project Description",
-                        placeholder = "Project Description",
+                        title = stringResource(Res.string.projectDescription),
+                        placeholder = stringResource(Res.string.projectDescription),
                         singleLine = false,
                         textFieldModifier = Modifier.fillMaxWidth().height(120.dp)
                     )
@@ -298,7 +300,7 @@ fun CreateProjectScreenBottomBar(
         horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         AppBorderButton(
-            title = "Cancel",
+            title = stringResource(Res.string.cancel),
             onClick = {
                 onCancel()
             },
@@ -349,12 +351,12 @@ fun CreateProjectScreenContent(
             ) {
                 Row() {
                     Text(
-                        text = "Code Generated",
+                        text = stringResource(Res.string.codeGenerated),
                         style = textStyle(size = 13.sp, weight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = "Copy Code",
+                        text = stringResource(Res.string.copyCode),
                         style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
                         color = AppColors.Primary
                     )
@@ -393,7 +395,7 @@ fun CreateProjectScreenContent(
             }
             Spacer(Modifier.height(28.dp))
             AppPrimaryButton(
-                title = "Close",
+                title = stringResource(Res.string.close),
                 onClick = {
                     viewModel.clearState()
                     onBack()

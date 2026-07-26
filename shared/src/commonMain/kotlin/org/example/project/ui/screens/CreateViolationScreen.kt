@@ -32,6 +32,8 @@ import org.example.project.utilites.ToastType
 import org.example.project.ui.components.AppMultilineTextField
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +67,7 @@ fun CreateViolationScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Create - Violation".uppercase(),
+                    text = stringResource(Res.string.createViolation).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -89,7 +91,7 @@ fun CreateViolationScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = {
                             viewModel.saveViolation(
                                 isDraft = true,
@@ -99,7 +101,7 @@ fun CreateViolationScreen(
                         modifier = Modifier.weight(1f)
                     )
                     AppPrimaryButton(
-                        title = "Publish",
+                        title = stringResource(Res.string.publish),
                         onClick = {
                             viewModel.saveViolation(
                                 isDraft = false,
@@ -139,7 +141,7 @@ fun CreateViolationScreen(
                 AppTextField(
                     value = viewModel.user?.name ?: "",
                     onValueChange = {  },
-                    title = "Reported By",
+                    title = stringResource(Res.string.reportedBy),
                     placeholder = "",
                     isMandatory = true,
                     readOnly = true
@@ -149,8 +151,8 @@ fun CreateViolationScreen(
                 AppTextField(
                     value = uiState.employeeName,
                     onValueChange = { viewModel.updateEmployeeName(it) },
-                    title = "Employee Name",
-                    placeholder = "Employee Name",
+                    title = stringResource(Res.string.employeeName),
+                    placeholder = stringResource(Res.string.employeeName),
                     isMandatory = true,
                 )
 
@@ -158,8 +160,8 @@ fun CreateViolationScreen(
                 AppTextField(
                     value = uiState.employeeId,
                     onValueChange = { viewModel.updateEmployeeId(it) },
-                    title = "Employee ID",
-                    placeholder = "EMP-XXXXX",
+                    title = stringResource(Res.string.employeeId),
+                    placeholder = stringResource(Res.string.empxxxxx),
                     isMandatory = true,
                 )
 
@@ -170,7 +172,7 @@ fun CreateViolationScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "Violation Date",
+                            text = stringResource(Res.string.violationDate),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -184,7 +186,7 @@ fun CreateViolationScreen(
                     // Converting YYYY-MM-DD to DD-MM-YYYY in viewmodel or passing it properly
                     // The design says "18 Aug 2025" and the API wants "dd-MM-yyyy"
                     AppDatePicker(
-                        text = "DD-MM-YYYY",
+                        text = stringResource(Res.string.ddmmyyyy),
                         selectedDateMillis = uiState.violationDateMillis,
                         onDateSelected = { timeMillis ->
                             if (timeMillis != null) {
@@ -204,16 +206,16 @@ fun CreateViolationScreen(
                     icon = Res.drawable.ic_mark_location,
                     value = uiState.location,
                     onValueChange = { viewModel.updateLocation(it) },
-                    title = "Location",
-                    placeholder = "Enter Location"
+                    title = stringResource(Res.string.location),
+                    placeholder = stringResource(Res.string.enterLocation)
                 )
 
                 // Description
                 AppMultilineTextField(
                     value = uiState.description,
                     onValueChange = { viewModel.updateDescription(it) },
-                    title = "Description",
-                    placeholder = "Enter here"
+                    title = stringResource(Res.string.description),
+                    placeholder = stringResource(Res.string.enterHere)
                 )
 
                 // Upload Images
@@ -224,7 +226,7 @@ fun CreateViolationScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Upload Image",
+                            text = stringResource(Res.string.uploadImage),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -241,7 +243,7 @@ fun CreateViolationScreen(
                     }
 
                     Text(
-                        text = "+ Add Image",
+                        text = stringResource(Res.string.addImage1),
                         style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                         color = AppColors.Primary,
                         modifier = Modifier
@@ -265,7 +267,7 @@ fun CreateViolationScreen(
         if (showSuccessDialog.value) {
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Violation created successfully.",
                 buttonText = "OK",
                 onDismiss = {

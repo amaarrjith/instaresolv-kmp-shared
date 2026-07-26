@@ -46,6 +46,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +75,7 @@ fun TrainingDetailScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "VIDEO",
+                    text = stringResource(Res.string.video),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -279,7 +281,7 @@ fun QuizSectionCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "Quiz Section",
+                        text = stringResource(Res.string.quizSection),
                         style = textStyle(size = 15.sp, weight = FontWeight.Bold, color = AppColors.Black)
                     )
                     Text(
@@ -313,7 +315,7 @@ fun QuizSectionCard(
                 )
             ) {
                 Text(
-                    text = "Start Quiz",
+                    text = stringResource(Res.string.startQuiz),
                     style = textStyle(size = 14.sp, weight = FontWeight.Bold, color = Color.White)
                 )
             }
@@ -344,7 +346,7 @@ fun DownloadMaterialCard(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "PDF",
+                text = stringResource(Res.string.pdf),
                 style = textStyle(size = 11.sp, weight = FontWeight.Bold, color = Color(0xFFD42027))
             )
         }
@@ -355,11 +357,11 @@ fun DownloadMaterialCard(
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(
-                text = "Download Lesson Material",
+                text = stringResource(Res.string.downloadLessonMaterial),
                 style = textStyle(size = 13.sp, weight = FontWeight.Bold, color = AppColors.Black)
             )
             Text(
-                text = "PDF notes and references",
+                text = stringResource(Res.string.pdfNotesAndReferences),
                 style = textStyle(size = 11.sp, weight = FontWeight.Normal, color = AppColors.DarkGray)
             )
         }
@@ -367,7 +369,7 @@ fun DownloadMaterialCard(
         // Download Action Icon
         Image(
             painter = painterResource(Res.drawable.ic_download),
-            contentDescription = "Download",
+            contentDescription = stringResource(Res.string.download),
             modifier = Modifier.size(20.dp)
         )
     }
@@ -385,7 +387,7 @@ fun TrainingProgressSection(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Training Progress",
+            text = stringResource(Res.string.trainingProgress),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = AppColors.DarkGray)
         )
 
@@ -400,7 +402,7 @@ fun TrainingProgressSection(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Video",
+                    text = stringResource(Res.string.video1),
                     style = textStyle(size = 13.sp, weight = FontWeight.Bold, color = AppColors.Black)
                 )
                 when (videoStatus) {
@@ -440,7 +442,7 @@ fun TrainingProgressSection(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Quiz",
+                    text = stringResource(Res.string.quiz),
                     style = textStyle(size = 13.sp, weight = FontWeight.Bold, color = AppColors.Black)
                 )
                 when (quizStatus) {
@@ -481,18 +483,18 @@ fun TrainingProgressSection(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Certificate",
+                    text = stringResource(Res.string.certificate),
                     style = textStyle(size = 13.sp, weight = FontWeight.Bold, color = AppColors.Black)
                 )
                 if (!certificateUrl.isNullOrBlank()) {
                     Text(
-                        text = "Download",
+                        text = stringResource(Res.string.download),
                         style = textStyle(size = 12.sp, weight = FontWeight.Bold, color = Color(0xFF2E6AC6)),
                         modifier = Modifier.clickable { onDownloadCertificate(certificateUrl) }
                     )
                 } else {
                     Text(
-                        text = "NA",
+                        text = stringResource(Res.string.na),
                         style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color.Gray)
                     )
                 }

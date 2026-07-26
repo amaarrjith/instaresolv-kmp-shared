@@ -54,6 +54,8 @@ import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun CreatePermitScreen(
@@ -110,7 +112,7 @@ fun CreatePermitScreen(
                     }
                 )
                 Text(
-                    text = "Create Permit".uppercase(),
+                    text = stringResource(Res.string.createPermit).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -133,14 +135,14 @@ fun CreatePermitScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     org.example.project.utilites.AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = {
 
                         },
                         modifier = Modifier.weight(1f)
                     )
                     org.example.project.utilites.AppPrimaryButton(
-                        title = "Save",
+                        title = stringResource(Res.string.save),
                         onClick = {
                             viewModel.submitPermit()
                         },
@@ -176,22 +178,22 @@ fun CreatePermitScreen(
                     AppTextField(
                         value = "InstaResolv Private Limited",
                         onValueChange = {},
-                        title = "Contractor Name",
+                        title = stringResource(Res.string.contractorName),
                         placeholder = "",
                         enabled = false,
                         isMandatory = true
                     )
                     AppProjectDropdown(
-                        title = "Specify Project",
+                        title = stringResource(Res.string.specifyProject),
                         isMandatory = true,
-                        placeholder = "Choose Project",
+                        placeholder = stringResource(Res.string.chooseProject),
                         selectedProject = uiState.selectedProject,
                         onProjectSelected = { viewModel.updateSelectedProject(it) },
                         projects = uiState.projects,
                     )
                     HorizontalDivider()
                     Text(
-                        text = "Permit Validity".uppercase(),
+                        text = stringResource(Res.string.permitValidity).uppercase(),
                         style = textStyle(14.sp, FontWeight.Bold),
                         color = AppColors.Primary
                     )
@@ -202,7 +204,7 @@ fun CreatePermitScreen(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = "Permit Date",
+                                text = stringResource(Res.string.permitDate),
                                 style = textStyle(
                                     size = 12.sp,
                                     weight = FontWeight.SemiBold
@@ -220,7 +222,7 @@ fun CreatePermitScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         AppDatePicker(
-                            text = "Permit Date",
+                            text = stringResource(Res.string.permitDate),
                             onDateSelected = { viewModel.updatePermitDate(it) },
                             selectedDateMillis = uiState.permitDateMillis,
                             restrictPastDates = true
@@ -238,7 +240,7 @@ fun CreatePermitScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Box {
                                 AppTimePicker(
-                                    text = "00 : 00",
+                                    text = stringResource(Res.string.txt_0000),
                                     selectedTime = uiState.startTime,
                                     onTimeSelected = { viewModel.updateStartTime(it) },
                                     enabled = uiState.permitDateMillis != null,
@@ -264,7 +266,7 @@ fun CreatePermitScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Box {
                                 AppTimePicker(
-                                    text = "00 : 00",
+                                    text = stringResource(Res.string.txt_0000),
                                     selectedTime = uiState.endTime,
                                     onTimeSelected = { endTime -> 
                                         if (uiState.startTime.isNotBlank() && parseTime(endTime) <= parseTime(uiState.startTime)) {
@@ -293,10 +295,10 @@ fun CreatePermitScreen(
                     }
                     if (uiState.selectedProject != null) {
                         AppUserDropdown(
-                            title = "Authorized Person",
+                            title = stringResource(Res.string.authorizedPerson),
                             selectedUser = uiState.selectedUser,
                             onUserSelected = { viewModel.updateSelectedUser(it) },
-                            placeholder = "Choose User",
+                            placeholder = stringResource(Res.string.chooseUser),
                             users = uiState.authorizedUsers
                         )
                     }
@@ -319,7 +321,7 @@ fun CreatePermitScreen(
                     if (uiState.generalConditions.isNotEmpty()) {
                         HorizontalDivider()
                         Text(
-                            text = "General Conditions".uppercase(),
+                            text = stringResource(Res.string.generalConditions).uppercase(),
                             style = textStyle(14.sp, FontWeight.Bold),
                             color = AppColors.Primary
                         )
@@ -339,7 +341,7 @@ fun CreatePermitScreen(
                     }
                     HorizontalDivider()
                     Text(
-                        text = "Permit Request".uppercase(),
+                        text = stringResource(Res.string.permitRequest).uppercase(),
                         style = textStyle(14.sp, FontWeight.Bold),
                         color = AppColors.Primary
                     )
@@ -348,8 +350,8 @@ fun CreatePermitScreen(
                         onValueChange = {
 
                         },
-                        title = "Reported By",
-                        placeholder = "Enter Reported By",
+                        title = stringResource(Res.string.reportedBy),
+                        placeholder = stringResource(Res.string.enterReportedBy),
                         enabled = false,
                         isMandatory = true
                     )
@@ -369,7 +371,7 @@ fun CreatePermitScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 AppTimePicker(
-                                    text = "00 : 00",
+                                    text = stringResource(Res.string.txt_0000),
                                     selectedTime = uiState.signatureTime,
                                     onTimeSelected = { },
                                     enabled = false
@@ -384,7 +386,7 @@ fun CreatePermitScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 AppDatePicker(
-                                    text = "YYYY-MM-DD",
+                                    text = stringResource(Res.string.yyyymmdd),
                                     onDateSelected = { },
                                     selectedDateMillis = uiState.signatureDateMillis,
                                     enabled = false
@@ -415,7 +417,7 @@ fun CreatePermitScreen(
             if (uiState.submitSuccess) {
                 org.example.project.ui.components.AppStatusDialog(
                     visible = uiState.submitSuccess,
-                    title = "Success",
+                    title = stringResource(Res.string.success),
                     description = uiState.successMessage ?: "Success",
                     buttonText = "OK",
                     onDismiss = {

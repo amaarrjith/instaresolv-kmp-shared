@@ -24,6 +24,8 @@ import org.example.project.utilites.AppTextField
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppSearchBar
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +52,7 @@ fun BulkEmployeeUploadSheet(
         AppSearchBar(
             value = searchQuery,
             onValueChange = onSearchQueryChange,
-            placeholder = "Search Employees",
+            placeholder = stringResource(Res.string.searchEmployees),
         )
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -92,7 +94,7 @@ fun BulkEmployeeUploadSheet(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No employees found",
+                                text = stringResource(Res.string.noEmployeesFound),
                                 style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                                 color = AppColors.TextGray
                             )

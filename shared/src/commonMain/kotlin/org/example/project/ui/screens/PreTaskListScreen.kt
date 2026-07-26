@@ -63,6 +63,8 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,7 +89,7 @@ fun PreTaskListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "BRIEFING",
+                    text = stringResource(Res.string.briefing),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -120,7 +122,7 @@ fun PreTaskListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Pre Tasks",
+                        placeholder = stringResource(Res.string.searchPreTasks),
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -178,7 +180,7 @@ fun PreTaskListScreen(
                     ) {
                         if (uiState.preTasks.isEmpty()) {
                            EmptyScreenView(
-                                message = "No pre task briefings found",
+                                message = stringResource(Res.string.noPreTaskBriefingsFound),
                            )
                         } else {
                             LazyColumn(

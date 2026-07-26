@@ -35,6 +35,8 @@ import org.jetbrains.compose.resources.painterResource
 import androidx.compose.foundation.Image
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +57,7 @@ fun ImageSourcePickerBottomSheet(
                     .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
                 Text(
-                    text = "Pick Image From",
+                    text = stringResource(Res.string.pickImageFrom),
                     style = textStyle(
                         size = 18.sp,
                         weight = FontWeight.Bold
@@ -67,7 +69,7 @@ fun ImageSourcePickerBottomSheet(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     ImageSourceOption(
-                        title = "Camera",
+                        title = stringResource(Res.string.camera),
                         isCamera = true,
                         onClick = {
                             onDismissRequest()
@@ -75,7 +77,7 @@ fun ImageSourcePickerBottomSheet(
                         }
                     )
                     ImageSourceOption(
-                        title = "Gallery",
+                        title = stringResource(Res.string.gallery),
                         isCamera = false,
                         onClick = {
                             onDismissRequest()

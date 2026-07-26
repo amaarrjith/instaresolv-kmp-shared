@@ -20,6 +20,8 @@ import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppTextField
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun AddEmployeeBlock(
@@ -51,7 +53,7 @@ fun AddEmployeeBlock(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Text(
-                    text = "Add Employee",
+                    text = stringResource(Res.string.addEmployee),
                     style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                     color = if (selectedTab == 0) AppColors.Primary else AppColors.TextGray
                 )
@@ -65,7 +67,7 @@ fun AddEmployeeBlock(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Text(
-                    text = "Bulk Employee Upload",
+                    text = stringResource(Res.string.bulkEmployeeUpload),
                     style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                     color = if (selectedTab == 1) AppColors.Primary else AppColors.TextGray
                 )
@@ -95,8 +97,8 @@ fun AddEmployeeBlock(
                         icon = null,
                         value = employeeCode,
                         onValueChange = { employeeCode = it; },
-                        title = "Employee Code",
-                        placeholder = "Enter Employee Code",
+                        title = stringResource(Res.string.employeeCode),
+                        placeholder = stringResource(Res.string.enterEmployeeCode),
                         isMandatory = true
                     )
 
@@ -104,8 +106,8 @@ fun AddEmployeeBlock(
                         icon = null,
                         value = employeeName,
                         onValueChange = { employeeName = it; },
-                        title = "Employee Name",
-                        placeholder = "Enter Employee Name",
+                        title = stringResource(Res.string.employeeName),
+                        placeholder = stringResource(Res.string.enterEmployeeName),
                         isMandatory = true,
                     )
 
@@ -113,20 +115,20 @@ fun AddEmployeeBlock(
                         icon = null,
                         value = companyName,
                         onValueChange = { companyName = it; },
-                        title = "Company Name",
-                        placeholder = "Enter Company Name"
+                        title = stringResource(Res.string.companyName),
+                        placeholder = stringResource(Res.string.enterCompanyName)
                     )
 
                     AppTextField(
                         icon = null,
                         value = profession,
                         onValueChange = { profession = it; },
-                        title = "Profession",
-                        placeholder = "Enter Profession"
+                        title = stringResource(Res.string.profession),
+                        placeholder = stringResource(Res.string.enterProfession)
                     )
 
                     AppBorderButton(
-                        title = "Add Employee",
+                        title = stringResource(Res.string.addEmployee),
                         onClick = {
                             if (employeeCode.isBlank() || employeeName.isBlank() ) {
                                 onError("Please Fill Mandatory Fields")
@@ -168,12 +170,12 @@ fun AddEmployeeBlock(
                 ) {
                     if (isProjectSelected) {
                         AppBorderButton(
-                            title = "Upload Employees",
+                            title = stringResource(Res.string.uploadEmployees),
                             onClick = onUploadEmployeesClick
                         )
                     } else {
                         Text(
-                            text = "Please select a project first",
+                            text = stringResource(Res.string.pleaseSelectAProjectFirst),
                             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                             color = AppColors.Primary
                         )

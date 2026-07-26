@@ -68,6 +68,8 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,7 +121,7 @@ fun LessonsLearnedListScreen(
                     onBackClicked
                 )
                 Text(
-                    text = "Lessons".uppercase(),
+                    text = stringResource(Res.string.lessons).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -153,7 +155,7 @@ fun LessonsLearnedListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Lesson Learned",
+                        placeholder = stringResource(Res.string.searchLessonLearned),
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -228,7 +230,7 @@ fun LessonsLearnedListScreen(
                     ) {
                         if (uiState.lessons.isEmpty()) {
                             EmptyScreenView(
-                                message = "No Lessons Found",
+                                message = stringResource(Res.string.noLessonsFound),
                             )
                         } else {
                             LazyColumn(

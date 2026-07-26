@@ -27,6 +27,8 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,7 +85,7 @@ fun CreateLessonsLearnedScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "CREATE - LESSON LEARNED",
+                    text = stringResource(Res.string.createLessonLearned),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -107,13 +109,13 @@ fun CreateLessonsLearnedScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     org.example.project.utilites.AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = {
                         },
                         modifier = Modifier.weight(1f)
                     )
                     org.example.project.utilites.AppPrimaryButton(
-                        title = "Save",
+                        title = stringResource(Res.string.save),
                         onClick = {
                             val imageRequests = images.filter { it.imageUrl?.isNotBlank() == true }.map {
                                 LessonLearnedImageRequest(
@@ -162,24 +164,24 @@ fun CreateLessonsLearnedScreen(
                     isMandatory = true,
                     value = title,
                     onValueChange = { title = it },
-                    title = "Title",
-                    placeholder = "Enter Lesson Learned Title"
+                    title = stringResource(Res.string.title),
+                    placeholder = stringResource(Res.string.enterLessonLearnedTitle)
                 )
 
                 AppTextField(
                     isMandatory = true,
                     value = reportedBy,
                     onValueChange = {  },
-                    title = "Reported By",
-                    placeholder = "Enter Reported By",
+                    title = stringResource(Res.string.reportedBy),
+                    placeholder = stringResource(Res.string.enterReportedBy),
                     enabled = false
                 )
 
                 AppMultilineTextField(
                     value = description,
                     onValueChange = { description = it },
-                    title = "Description",
-                    placeholder = "Enter Description",
+                    title = stringResource(Res.string.description),
+                    placeholder = stringResource(Res.string.enterDescription),
                 )
 
                 images.forEachIndexed { index, observationImage ->
@@ -225,13 +227,13 @@ fun CreateLessonsLearnedScreen(
                     ) {
                         Icon(
                             painter = org.jetbrains.compose.resources.painterResource(Res.drawable.ic_add),
-                            contentDescription = "Add Image",
+                            contentDescription = stringResource(Res.string.addImage),
                             modifier = Modifier.size(15.dp),
                             tint = AppColors.Primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Add Image",
+                            text = stringResource(Res.string.addImage),
                             style = textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.SemiBold
@@ -253,7 +255,7 @@ fun CreateLessonsLearnedScreen(
         if (showSuccessDialog.value) {
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Lesson Learned created successfully.",
                 buttonText = "OK",
                 onDismiss = {

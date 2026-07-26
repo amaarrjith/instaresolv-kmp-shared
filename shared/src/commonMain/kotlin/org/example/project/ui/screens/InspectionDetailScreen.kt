@@ -42,6 +42,8 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun InspectionDetailScreen(
@@ -90,7 +92,7 @@ fun InspectionDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         AppBorderButton(
-                            title = "Generate PDF",
+                            title = stringResource(Res.string.generatePdf),
                             onClick = { viewModel.generatePdf(inspectionId) },
                             modifier = Modifier.weight(1f)
                         )
@@ -196,7 +198,7 @@ fun InspectionDetailContent(
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                 Text(
-                    text = "Audit & Inspections",
+                    text = stringResource(Res.string.auditInspections),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -221,7 +223,7 @@ fun InspectionDetailContent(
 
         // Project
         Text(
-            text = "Facility / Project",
+            text = stringResource(Res.string.facilityProject),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -267,7 +269,7 @@ fun InspectionDetailContent(
 
         // Equipment Description
         Text(
-            text = "Equipment Description / Model Number..",
+            text = stringResource(Res.string.equipmentDescriptionModelNumber),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -282,7 +284,7 @@ fun InspectionDetailContent(
 
         // Inspected By
         Text(
-            text = "Inspected By",
+            text = stringResource(Res.string.inspectedBy),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -305,7 +307,7 @@ fun InspectionDetailContent(
 
         // Location
         Text(
-            text = "Location",
+            text = stringResource(Res.string.location),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -320,7 +322,7 @@ fun InspectionDetailContent(
 
         // Date
         Text(
-            text = "Date",
+            text = stringResource(Res.string.date),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -335,7 +337,7 @@ fun InspectionDetailContent(
 
         // Description
         Text(
-            text = "Description",
+            text = stringResource(Res.string.description),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -354,7 +356,7 @@ fun InspectionDetailContent(
 
         // Equipment Source
         Text(
-            text = "Equipment Source",
+            text = stringResource(Res.string.equipmentSource),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -379,7 +381,7 @@ fun InspectionDetailContent(
 
         // Equipment Static Fields
         Text(
-            text = "Equipment Static Fields",
+            text = stringResource(Res.string.equipmentStaticFields),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -411,7 +413,7 @@ fun InspectionDetailContent(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "No Questions Found!",
+                        text = stringResource(Res.string.noQuestionsFound),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Primary
                     )
@@ -454,7 +456,7 @@ fun InspectionDetailContent(
 
         // Notes
         Text(
-            text = "Notes",
+            text = stringResource(Res.string.notes),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -473,7 +475,7 @@ fun InspectionDetailContent(
 
         // Uploaded Images
         Text(
-            text = "Uploaded Images",
+            text = stringResource(Res.string.uploadedImages),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -514,7 +516,7 @@ fun InspectionDetailContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No Images Uploaded",
+                    text = stringResource(Res.string.noImagesUploaded),
                     style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )

@@ -66,6 +66,8 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import instaresolv.shared.generated.resources.ic_right_icon
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,7 +120,7 @@ fun AuditInspectionListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Inspections".uppercase(),
+                    text = stringResource(Res.string.inspections).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -150,7 +152,7 @@ fun AuditInspectionListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Inspections",
+                        placeholder = stringResource(Res.string.searchInspections),
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -225,7 +227,7 @@ fun AuditInspectionListScreen(
                     ) {
                         if (uiState.inspections.isEmpty()) {
                             EmptyScreenView(
-                                message = "No inspections found"
+                                message = stringResource(Res.string.noInspectionsFound)
                             )
                         } else {
                             LazyColumn(
@@ -284,7 +286,7 @@ fun AuditInspectionListScreen(
                             Spacer(modifier = Modifier.height(24.dp))
                             
                             Text(
-                                text = "Inspection Type",
+                                text = stringResource(Res.string.inspectionType),
                                 style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                                 color = AppColors.Black
                             )

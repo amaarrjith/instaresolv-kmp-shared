@@ -44,6 +44,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun IncidentDetailScreen(
@@ -95,7 +97,7 @@ fun IncidentDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         AppBorderButton(
-                            title = "Generate PDF",
+                            title = stringResource(Res.string.generatePdf),
                             onClick = { viewModel.generatePdf(incidentId) },
                             modifier = Modifier.weight(1f)
                         )
@@ -209,7 +211,7 @@ fun IncidentDetailContent(
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                 Text(
-                    text = "Title",
+                    text = stringResource(Res.string.title),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -234,7 +236,7 @@ fun IncidentDetailContent(
 
         // Project
         Text(
-            text = "Project",
+            text = stringResource(Res.string.project),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -280,7 +282,7 @@ fun IncidentDetailContent(
 
         // Inspected By
         Text(
-            text = "Inspected By",
+            text = stringResource(Res.string.inspectedBy),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -305,7 +307,7 @@ fun IncidentDetailContent(
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Incident Date",
+                    text = stringResource(Res.string.incidentDate),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -319,7 +321,7 @@ fun IncidentDetailContent(
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Incident Time",
+                    text = stringResource(Res.string.incidentTime),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -336,7 +338,7 @@ fun IncidentDetailContent(
 
         // Location
         Text(
-            text = "Location",
+            text = stringResource(Res.string.location),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -352,7 +354,7 @@ fun IncidentDetailContent(
 
         // Incident Type
         Text(
-            text = "Incident Type",
+            text = stringResource(Res.string.incidentType),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -369,14 +371,14 @@ fun IncidentDetailContent(
 
         // INJURED PERSON DETAILS
         Text(
-            text = "INJURED PERSON DETAILS",
+            text = stringResource(Res.string.injuredPersonDetails1),
             style = textStyle(size = 12.sp, weight = FontWeight.Bold),
             color = AppColors.Black
         )
         Spacer(Modifier.height(16.dp))
 
         Text(
-            text = "Are there any injured person ?",
+            text = stringResource(Res.string.areThereAnyInjuredPerson),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -498,7 +500,7 @@ fun IncidentDetailContent(
 
         // Description
         Text(
-            text = "Description (AI Translated)",
+            text = stringResource(Res.string.descriptionAiTranslated),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -517,7 +519,7 @@ fun IncidentDetailContent(
 
         // Immediate Corrections
         Text(
-            text = "Immediate Corrections (AI Translated)",
+            text = stringResource(Res.string.immediateCorrectionsAiTranslated),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -536,7 +538,7 @@ fun IncidentDetailContent(
 
         // Uploaded Images
         Text(
-            text = "Uploaded Images",
+            text = stringResource(Res.string.uploadedImages),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )

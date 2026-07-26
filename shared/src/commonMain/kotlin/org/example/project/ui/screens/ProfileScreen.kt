@@ -43,7 +43,6 @@ import androidx.compose.runtime.LaunchedEffect
 
 import instaresolv.shared.generated.resources.ic_pencil
 import org.example.project.colors.AppColors
-import org.example.project.localization.LocalAppStrings
 import org.example.project.profile.ProfileUiState
 import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
@@ -58,6 +57,8 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun ProfileScreen(
@@ -164,14 +165,13 @@ fun ProfileScreenContent(
         )
     }
     Spacer(Modifier.height(46.dp))
-    val strings = LocalAppStrings.current
-    ProfileScreenItem(strings.fullName, viewModel.user?.name ?: "")
-    ProfileScreenItem(strings.emailId, viewModel.user?.email ?: "")
-    ProfileScreenItem(strings.designation, viewModel.user?.designation ?: "")
-    ProfileScreenItem(strings.company, viewModel.user?.company ?: "")
+    ProfileScreenItem(stringResource(Res.string.fullName), viewModel.user?.name ?: "")
+    ProfileScreenItem(stringResource(Res.string.emailId), viewModel.user?.email ?: "")
+    ProfileScreenItem(stringResource(Res.string.designation), viewModel.user?.designation ?: "")
+    ProfileScreenItem(stringResource(Res.string.company), viewModel.user?.company ?: "")
     Spacer(modifier = Modifier.height(60.dp))
     AppBorderButton(
-        title = strings.logout,
+        title = stringResource(Res.string.logout),
         onClick = {
             viewModel.logout()
             onLogout()
@@ -191,7 +191,6 @@ fun ProfileEditScreen(
     
     val showImagePicker = remember { mutableStateOf(false) }
     val isImageUploading = remember { mutableStateOf(false) }
-    val strings = LocalAppStrings.current
 
     LaunchedEffect(viewModel) {}
 
@@ -258,7 +257,7 @@ fun ProfileEditScreen(
             }
             if (profileImage.isEmpty()) {
                 AppBorderButton(
-                    title = strings.uploadProfile,
+                    title = stringResource(Res.string.uploadProfile),
                     onClick = {
                         showImagePicker.value = true
                     }
@@ -273,30 +272,30 @@ fun ProfileEditScreen(
         AppTextField(
             value = name,
             onValueChange = { name = it },
-            title = strings.fullName,
-            placeholder = strings.fullName
+            title = stringResource(Res.string.fullName),
+            placeholder = stringResource(Res.string.fullName)
         )
         AppTextField(
             value = email,
             onValueChange = { email = it },
-            title = strings.emailId,
-            placeholder = strings.emailId,
+            title = stringResource(Res.string.emailId),
+            placeholder = stringResource(Res.string.emailId),
             enabled = false
         )
         AppTextField(
             value = designation,
             onValueChange = { designation = it },
-            title = strings.designation,
-            placeholder = strings.designation
+            title = stringResource(Res.string.designation),
+            placeholder = stringResource(Res.string.designation)
         )
         AppTextField(
             value = company,
             onValueChange = { company = it },
-            title = strings.company,
-            placeholder = strings.company
+            title = stringResource(Res.string.company),
+            placeholder = stringResource(Res.string.company)
         )
         AppPrimaryButton(
-            title = strings.save,
+            title = stringResource(Res.string.save),
             onClick = {
                 viewModel.saveProfile(name, profileImage, email, designation, company)
             }
@@ -310,7 +309,6 @@ fun ProfileScreenTopBar(
     onEditClick: () -> Unit,
     onBackClick: () -> Unit,
 ) {
-    val strings = LocalAppStrings.current
     Row(
         modifier = Modifier
             .statusBarsPadding()
@@ -325,7 +323,7 @@ fun ProfileScreenTopBar(
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = strings.profile.uppercase(),
+            text = stringResource(Res.string.profile).uppercase(),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold
@@ -344,7 +342,7 @@ fun ProfileScreenTopBar(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Edit".uppercase(),
+                    text = stringResource(Res.string.edit).uppercase(),
                     modifier = Modifier.clickable {
                         onEditClick()
                     },

@@ -43,6 +43,8 @@ import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +95,7 @@ fun ToolBoxTalkListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Toolbox Talks".uppercase(),
+                    text = stringResource(Res.string.toolboxTalks).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -125,7 +127,7 @@ fun ToolBoxTalkListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Toolbox Talks",
+                        placeholder = stringResource(Res.string.searchToolboxTalks),
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -183,7 +185,7 @@ fun ToolBoxTalkListScreen(
                     ) {
                         if (uiState.items.isEmpty()) {
                             EmptyScreenView(
-                                message = "No Toolbox Talks Found",
+                                message = stringResource(Res.string.noToolboxTalksFound),
                             )
                         } else {
                             LazyColumn(

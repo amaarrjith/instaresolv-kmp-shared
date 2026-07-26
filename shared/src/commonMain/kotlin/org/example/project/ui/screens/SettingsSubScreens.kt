@@ -60,6 +60,8 @@ import instaresolv.shared.generated.resources.ic_sms
 import instaresolv.shared.generated.resources.ic_trash
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.ui.components.AppSuccessDialog
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +92,7 @@ fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = fals
                 navigationIcon = {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_left),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
                             .padding(16.dp),
@@ -135,7 +137,7 @@ fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = fals
                             if (showAppIcon) {
                                 Image(
                                     painter = painterResource(Res.drawable.ic_app_logo),
-                                    contentDescription = "App Logo",
+                                    contentDescription = stringResource(Res.string.appLogo),
                                     modifier = Modifier
                                         .size(100.dp)
                                         .padding(bottom = 24.dp)
@@ -200,7 +202,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = "CHANGE PASSWORD",
+                        text = stringResource(Res.string.changePassword),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
@@ -211,7 +213,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_left),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
                             .padding(16.dp),
@@ -237,7 +239,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 
                 Image(
                     painter = painterResource(Res.drawable.ic_forget_password),
-                    contentDescription = "Change Password",
+                    contentDescription = stringResource(Res.string.changePassword1),
                     modifier = Modifier.size(150.dp)
                 )
 
@@ -246,8 +248,8 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                 AppTextField(
                     value = oldPassword,
                     onValueChange = { oldPassword = it },
-                    title = "Old Password",
-                    placeholder = "Old Password",
+                    title = stringResource(Res.string.oldPassword),
+                    placeholder = stringResource(Res.string.oldPassword),
                     isSecure = true
                 )
 
@@ -256,8 +258,8 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                 AppTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    title = "New Password",
-                    placeholder = "New Password",
+                    title = stringResource(Res.string.newPassword),
+                    placeholder = stringResource(Res.string.newPassword),
                     isSecure = true
                 )
 
@@ -266,15 +268,15 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                 AppTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    title = "Confirm New Password",
-                    placeholder = "Confirm New Password",
+                    title = stringResource(Res.string.confirmNewPassword),
+                    placeholder = stringResource(Res.string.confirmNewPassword),
                     isSecure = true
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 AppPrimaryButton(
-                    title = "Submit",
+                    title = stringResource(Res.string.submit),
                     onClick = {
                         if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
                             toastMessage = "Please fill all fields"
@@ -298,7 +300,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 
         org.example.project.ui.components.AppSuccessDialog(
             visible = showSuccessDialog != null,
-            title = "Success",
+            title = stringResource(Res.string.success),
             description = showSuccessDialog ?: "",
             onDismiss = {
                 showSuccessDialog = null
@@ -337,7 +339,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = "CONTACT US",
+                        text = stringResource(Res.string.contactUs),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
@@ -348,7 +350,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_left),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
                             .padding(16.dp),
@@ -375,11 +377,11 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(Res.drawable.ic_sms),
-                        contentDescription = "Location",
+                        contentDescription = stringResource(Res.string.location),
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "connect@instaresolv.com",
+                        text = stringResource(Res.string.connectinstaresolvcom),
                         style = textStyle(size = 14.sp),
                         color = Color(0xFF334155) // Slate gray
                     )
@@ -390,11 +392,11 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 Row(verticalAlignment = Alignment.Top) {
                     Image(
                         painter = painterResource(Res.drawable.ic_location),
-                        contentDescription = "Location",
+                        contentDescription = stringResource(Res.string.location),
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "33 Level, Al Saqr Business Tower,\nSheikh Zayed Road, Dubai",
+                        text = stringResource(Res.string.txt_33LevelAlSaqrBusinessTowernsheikhZayedRoadDubai),
                         style = textStyle(size = 14.sp),
                         color = Color(0xFF334155)
                     )
@@ -407,7 +409,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Message",
+                    text = stringResource(Res.string.message),
                     style = textStyle(
                         size = 18.sp,
                         weight = FontWeight.Bold
@@ -421,8 +423,8 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 AppTextField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    title = "Full Name",
-                    placeholder = "Full Name"
+                    title = stringResource(Res.string.fullName),
+                    placeholder = stringResource(Res.string.fullName)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -430,8 +432,8 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 AppTextField(
                     value = emailId,
                     onValueChange = { emailId = it },
-                    title = "Email ID",
-                    placeholder = "Email ID"
+                    title = stringResource(Res.string.emailId),
+                    placeholder = stringResource(Res.string.emailId)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -439,14 +441,14 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 AppTextField(
                     value = message,
                     onValueChange = { message = it },
-                    title = "Message *",
-                    placeholder = "Message",
+                    title = stringResource(Res.string.message1),
+                    placeholder = stringResource(Res.string.message),
                     singleLine = false,
                     textFieldModifier = Modifier.fillMaxWidth().height(120.dp)
                 )
                 Spacer(modifier = Modifier.height(32.dp))
                 AppPrimaryButton(
-                    title = "Submit",
+                    title = stringResource(Res.string.submit),
                     onClick = { viewModel.sendMessage(name = fullName, email = emailId, message = message) },
                     isLoading = uiState.isLoading
                 )
@@ -463,7 +465,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
 
             org.example.project.ui.components.AppSuccessDialog(
                 visible = uiState.isSuccess,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Your message has been sent successfully.",
                 onDismiss = {
                     viewModel.resetSuccess()
@@ -484,7 +486,7 @@ fun AboutUsScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = "ABOUT US",
+                        text = stringResource(Res.string.aboutUs),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
@@ -495,7 +497,7 @@ fun AboutUsScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_left),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
                             .padding(16.dp),
@@ -552,7 +554,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
     if (showSuccessDialog) {
         AppSuccessDialog(
             visible = true,
-            title = "Success",
+            title = stringResource(Res.string.success),
             description = "Account deleted successfully.",
             buttonText = "Close",
             onDismiss = {
@@ -569,7 +571,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = "DELETE ACCOUNT",
+                        text = stringResource(Res.string.deleteAccount),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Black
                     )
@@ -577,7 +579,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_left),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable { onBack() }
                             .padding(16.dp),
@@ -601,7 +603,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
 
                 Image(
                     painter = painterResource(Res.drawable.ic_trash),
-                    contentDescription = "Delete Account",
+                    contentDescription = stringResource(Res.string.deleteAccount1),
                     modifier = Modifier.size(100.dp)
                 )
 
@@ -621,15 +623,15 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                         AppTextField(
                             value = password,
                             onValueChange = { password = it },
-                            title = "Password",
-                            placeholder = "Enter your password",
+                            title = stringResource(Res.string.password),
+                            placeholder = stringResource(Res.string.enterYourPassword),
                             isSecure = true
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
 
                         AppPrimaryButton(
-                            title = "Confirm",
+                            title = stringResource(Res.string.confirm),
                             onClick = {
                                 if (password.isNotEmpty()) {
                                     viewModel.requestDelete(password)
@@ -644,14 +646,14 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                         AppTextField(
                             value = otp,
                             onValueChange = { otp = it },
-                            title = "OTP",
-                            placeholder = "Enter OTP sent to email"
+                            title = stringResource(Res.string.otp),
+                            placeholder = stringResource(Res.string.enterOtpSentToEmail)
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
 
                         AppPrimaryButton(
-                            title = "Submit",
+                            title = stringResource(Res.string.submit),
                             onClick = {
                                 if (otp.isNotEmpty()) {
                                     viewModel.verifyDelete(password, otp)

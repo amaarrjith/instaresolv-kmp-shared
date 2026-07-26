@@ -42,6 +42,8 @@ import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun ViolationDetailScreen(
@@ -91,7 +93,7 @@ fun ViolationDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         AppBorderButton(
-                            title = "Generate PDF",
+                            title = stringResource(Res.string.generatePdf),
                             onClick = { viewModel.generatePdf(violationId) },
                             modifier = Modifier.weight(1f)
                         )
@@ -200,7 +202,7 @@ fun ViolationDetailContent(
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                 Text(
-                    text = "Title",
+                    text = stringResource(Res.string.title),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -225,7 +227,7 @@ fun ViolationDetailContent(
 
         // Project
         Text(
-            text = "Project",
+            text = stringResource(Res.string.project),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -271,7 +273,7 @@ fun ViolationDetailContent(
 
         // Reported By
         Text(
-            text = "Reported By",
+            text = stringResource(Res.string.reportedBy),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -294,7 +296,7 @@ fun ViolationDetailContent(
         
         // Employee Name
         Text(
-            text = "Employee Name",
+            text = stringResource(Res.string.employeeName),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -311,7 +313,7 @@ fun ViolationDetailContent(
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Employee ID",
+                    text = stringResource(Res.string.employeeId),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -325,7 +327,7 @@ fun ViolationDetailContent(
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Violation Date",
+                    text = stringResource(Res.string.violationDate),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -342,7 +344,7 @@ fun ViolationDetailContent(
 
         // Location
         Text(
-            text = "Location",
+            text = stringResource(Res.string.location),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -359,7 +361,7 @@ fun ViolationDetailContent(
 
         // Description
         Text(
-            text = "Description (AI Translated)",
+            text = stringResource(Res.string.descriptionAiTranslated),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -374,7 +376,7 @@ fun ViolationDetailContent(
 
         // Uploaded Images
         Text(
-            text = "Uploaded Images",
+            text = stringResource(Res.string.uploadedImages),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )

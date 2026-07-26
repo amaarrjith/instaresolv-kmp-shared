@@ -46,6 +46,8 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import kotlin.collections.chunked
 import kotlin.collections.forEach
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun BriefsScreen(
@@ -68,7 +70,7 @@ fun BriefsScreen(
                     .padding(vertical = 20.dp),
             ) {
                 Text(
-                    text = "Briefs".uppercase(),
+                    text = stringResource(Res.string.briefs).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -90,7 +92,7 @@ fun BriefsScreen(
             ) {
                 Spacer(modifier = Modifier.height(18.dp))
                 Text(
-                    text = "Overview",
+                    text = stringResource(Res.string.overview),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold

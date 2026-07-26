@@ -35,6 +35,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import org.example.project.ui.components.signaturepad.AppSignPicker
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun AppSignCreateBox(
@@ -117,7 +119,7 @@ fun AppSignCreateBox(
                     } else if (signatureUrl.isNullOrEmpty()) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_edit),
-                            contentDescription = "Add Signature",
+                            contentDescription = stringResource(Res.string.addSignature),
                             tint = Color(0xFF8F9098),
                             modifier = Modifier.size(40.dp)
                         )
@@ -147,7 +149,7 @@ fun AppSignCreateBox(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_toast_close),
-                            contentDescription = "Remove Signature",
+                            contentDescription = stringResource(Res.string.removeSignature),
                             tint = Color(0xFFFF4B4B),
                             modifier = Modifier.size(12.dp)
                         )

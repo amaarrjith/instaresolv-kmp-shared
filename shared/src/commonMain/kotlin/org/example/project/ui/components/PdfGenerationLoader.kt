@@ -26,6 +26,8 @@ import kotlin.math.sin
 import kotlin.math.PI
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun PdfGenerationLoader() {
@@ -59,7 +61,7 @@ fun PdfGenerationLoader() {
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     Text(
-                        text = "Generating PDF",
+                        text = stringResource(Res.string.generatingPdf),
                         style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                         color = Color.Black
                     )
@@ -67,7 +69,7 @@ fun PdfGenerationLoader() {
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     Text(
-                        text = "Please wait while the document is prepared.\nThis may take some time.",
+                        text = stringResource(Res.string.pleaseWaitWhileTheDocumentIsPreparednthisMayTakeSomeTime),
                         style = textStyle(size = 12.sp, weight = FontWeight.Normal),
                         color = Color.Gray,
                         textAlign = TextAlign.Center

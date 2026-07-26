@@ -69,8 +69,10 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.ui.components.AppStatusDialog
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun ObservationDetailScreen(
@@ -152,13 +154,13 @@ fun ObservationDetailScreen(
                     ) {
                         if (isClosingObservation) {
                             AppBorderButton(
-                                title = "Back",
+                                title = stringResource(Res.string.back),
                                 onClick = { isClosingObservation = false },
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(Modifier.width(16.dp))
                             AppBorderButton(
-                                title = "Close",
+                                title = stringResource(Res.string.close),
                                 onClick = {
                                     if (closeDescription.isBlank()) {
                                         errorMessage = "Description is mandatory"
@@ -170,7 +172,7 @@ fun ObservationDetailScreen(
                             )
                         } else {
                             AppBorderButton(
-                                title = "Generate PDF",
+                                title = stringResource(Res.string.generatePdf),
                                 onClick = {
                                     viewModel.generatePdf(observationId)
                                 },
@@ -284,7 +286,7 @@ fun ObservationDetailScreen(
         if (showSuccessDialog) {
             AppStatusDialog(
                 visible = true,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Observation closed successfully.",
                 buttonText = "OK",
                 onDismiss = {
@@ -337,7 +339,7 @@ fun ObservationDetailContent(
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                 Text(
-                    text = "Title",
+                    text = stringResource(Res.string.title),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -367,7 +369,7 @@ fun ObservationDetailContent(
                 .verticalScroll(scrollState)
         ) {
             Text(
-                text = "Project",
+                text = stringResource(Res.string.project),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -448,7 +450,7 @@ fun ObservationDetailInfo(
 ) {
     Column {
         Text(
-            text = "Reported By",
+            text = stringResource(Res.string.reportedBy),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -470,7 +472,7 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Responsible Person",
+            text = stringResource(Res.string.responsiblePerson),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -494,7 +496,7 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Responsible Person Email",
+            text = stringResource(Res.string.responsiblePersonEmail),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -508,7 +510,7 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Location",
+            text = stringResource(Res.string.location),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -524,7 +526,7 @@ fun ObservationDetailInfo(
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Date",
+                    text = stringResource(Res.string.date),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -538,7 +540,7 @@ fun ObservationDetailInfo(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Status",
+                    text = stringResource(Res.string.status),
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -551,7 +553,7 @@ fun ObservationDetailInfo(
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = status.title.uppercase(),
+                        text = stringResource(status.title).uppercase(),
                         style = textStyle(size = 10.sp, weight = FontWeight.Bold),
                         color = Color.White
                     )
@@ -562,7 +564,7 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Description",
+            text = stringResource(Res.string.description),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -658,7 +660,7 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Uploaded Images",
+            text = stringResource(Res.string.uploadedImages),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -692,7 +694,7 @@ fun ObservationDetailInfo(
             }
         } else {
             EmptyScreenView(
-                message = "No Images Found"
+                message = stringResource(Res.string.noImagesFound)
             )
         }
 
@@ -701,7 +703,7 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
         if (ObservationStatus.fromId(detail.status ?: -1) == ObservationStatus.OPEN) {
             Text(
-                text = "Actions",
+                text = stringResource(Res.string.actions),
                 style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                 color = AppColors.Black
             )
@@ -713,13 +715,13 @@ fun ObservationDetailInfo(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Close Observation",
+                        text = stringResource(Res.string.closeObservation),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Primary
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Close this observation with detailed",
+                        text = stringResource(Res.string.closeThisObservationWithDetailed),
                         style = textStyle(size = 12.sp, weight = FontWeight.Normal),
                         color = AppColors.TextGray
                     )
@@ -743,7 +745,7 @@ fun CloseObservationForm(
 ) {
     Column {
         Text(
-            text = "Close Observation",
+            text = stringResource(Res.string.closeObservation),
             style = textStyle(size = 16.sp, weight = FontWeight.Bold),
             color = AppColors.Black
         )
@@ -752,8 +754,8 @@ fun CloseObservationForm(
         AppMultilineTextField(
             value = description,
             onValueChange = onDescriptionChange,
-            title = "Description",
-            placeholder = "Enter description"
+            title = stringResource(Res.string.description),
+            placeholder = stringResource(Res.string.enterDescription1)
         )
         
         Spacer(Modifier.height(24.dp))
@@ -795,13 +797,13 @@ fun CloseObservationForm(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_add),
-                    contentDescription = "Add Image",
+                    contentDescription = stringResource(Res.string.addImage),
                     modifier = Modifier.size(15.dp),
                     tint = AppColors.Primary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Add Image",
+                    text = stringResource(Res.string.addImage),
                     style = textStyle(
                         size = 12.sp,
                         weight = FontWeight.SemiBold

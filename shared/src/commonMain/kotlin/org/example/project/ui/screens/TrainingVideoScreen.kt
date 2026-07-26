@@ -27,6 +27,8 @@ import org.example.project.utilites.LockScreenOrientation
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun TrainingVideoScreen(
@@ -147,14 +149,14 @@ fun VideoPlayerContainer(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_arrow_left),
-                            contentDescription = "Back",
+                            contentDescription = stringResource(Res.string.back),
                             tint = Color.White,
                             modifier = Modifier.size(24.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "Training Video",
+                        text = stringResource(Res.string.trainingVideo),
                         style = textStyle(size = 16.sp, weight = FontWeight.Bold, color = Color.White)
                     )
                 }
@@ -189,7 +191,7 @@ fun VideoPlayerContainer(
                             // Play icon
                             Icon(
                                 painter = painterResource(Res.drawable.ic_play),
-                                contentDescription = "Play",
+                                contentDescription = stringResource(Res.string.play),
                                 tint = Color.White,
                                 modifier = Modifier.size(36.dp)
                             )
@@ -234,7 +236,7 @@ fun VideoPlayerContainer(
                             } else {
                                 Icon(
                                     painter = painterResource(Res.drawable.ic_play),
-                                    contentDescription = "Play",
+                                    contentDescription = stringResource(Res.string.play),
                                     tint = Color.White,
                                     modifier = Modifier.size(20.dp)
                                 )

@@ -7,8 +7,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import org.example.project.localization.*
+import androidx.compose.runtime.key
+import androidx.compose.runtime.LaunchedEffect
 import org.example.project.navigation.AppNavigation
+import org.example.project.utilites.setAppLocale
 import org.example.project.ui.screens.AppLanguage
 import org.example.project.ui.viewmodel.GlobalSettingsViewModel
 import org.koin.compose.koinInject
@@ -30,18 +32,14 @@ fun App() {
         LayoutDirection.Ltr
     }
 
-    val appStrings = when (currentLanguage) {
-        AppLanguage.ENGLISH -> EnStrings
-        AppLanguage.ARABIC -> ArStrings
-        AppLanguage.URDU -> UrStrings
-        AppLanguage.HINDI -> HiStrings
-        AppLanguage.SPANISH -> EsStrings
+    LaunchedEffect(currentLanguage) {
+        setAppLocale(currentLanguage.code)
     }
 
     CompositionLocalProvider(
-        LocalLayoutDirection provides layoutDirection,
-        LocalAppStrings provides appStrings
+        LocalLayoutDirection provides layoutDirection
     ) {
+        key(currentLanguage) {
         MaterialTheme {
             val focusManager = LocalFocusManager.current
             Box(
@@ -54,6 +52,7 @@ fun App() {
                     }
             ) {
                 AppNavigation()
+            }
             }
         }
     }

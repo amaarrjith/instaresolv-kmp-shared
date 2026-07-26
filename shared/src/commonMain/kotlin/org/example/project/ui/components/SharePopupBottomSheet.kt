@@ -17,6 +17,8 @@ import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_share
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +51,7 @@ fun SharePopupBottomSheet(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Share Document",
+                text = stringResource(Res.string.shareDocument),
                 style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                 color = Color.Black
             )
@@ -74,13 +76,13 @@ fun SharePopupBottomSheet(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "TXT",
+                        text = stringResource(Res.string.txt),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = Color(0xFF3B6EE3)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Text Format",
+                        text = stringResource(Res.string.textFormat),
                         style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                         color = Color(0xFF3B6EE3)
                     )
@@ -107,13 +109,13 @@ fun SharePopupBottomSheet(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "PDF",
+                        text = stringResource(Res.string.pdf),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = Color(0xFFD32F2F)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "PDF Format",
+                        text = stringResource(Res.string.pdfFormat),
                         style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                         color = Color(0xFFD32F2F)
                     )

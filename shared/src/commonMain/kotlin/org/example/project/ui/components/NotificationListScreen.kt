@@ -40,6 +40,8 @@ import org.example.project.typography.textStyle
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun NotificationListScreen(
@@ -62,7 +64,7 @@ fun NotificationListScreen(
                     onBackClicked
                 )
                 Text(
-                    text = "Notifications".uppercase(),
+                    text = stringResource(Res.string.notifications).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold

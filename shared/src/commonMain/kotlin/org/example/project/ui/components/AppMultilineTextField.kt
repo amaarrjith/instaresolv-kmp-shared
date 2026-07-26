@@ -68,6 +68,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import org.example.project.utilites.readAudioFileBytes
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.draw.clip
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -141,7 +143,7 @@ fun AppMultilineTextField(
             if (isVoiceEnabled && audioFilePath == null) {
                 Image(
                     painter = org.jetbrains.compose.resources.painterResource(Res.drawable.ic_voice_mic),
-                    contentDescription = "Voice Icon",
+                    contentDescription = stringResource(Res.string.voiceIcon),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(16.dp)
@@ -240,7 +242,7 @@ fun AppAudioPlayer(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "Translate",
+                        text = stringResource(Res.string.translate),
                         style = textStyle(size = 10.sp, weight = FontWeight.Medium),
                         color = Color.White
                     )
@@ -350,7 +352,7 @@ fun AppAudioPlayer(
             if (isDelete) {
                 Image(
                     painter = painterResource(Res.drawable.ic_trash_player),
-                    contentDescription = "Delete",
+                    contentDescription = stringResource(Res.string.delete),
                     modifier = Modifier.size(32.dp)
                         .clickable {
                             audioPlayer.stop()
@@ -484,7 +486,7 @@ fun RecordAudioContentView(onDismiss: () -> Unit, onDone: (String) -> Unit) {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 AppBorderButton(
-                    title = "Discard",
+                    title = stringResource(Res.string.discard),
                     onClick = { 
                         hasRecorded = false
                         onDismiss()
@@ -500,7 +502,7 @@ fun RecordAudioContentView(onDismiss: () -> Unit, onDone: (String) -> Unit) {
                     }
                 } else {
                     AppPrimaryButton(
-                        title = "Done",
+                        title = stringResource(Res.string.done),
                         onClick = { 
                             val path = audioRecorder.getRecordFilePath()
                             if (path != null) {

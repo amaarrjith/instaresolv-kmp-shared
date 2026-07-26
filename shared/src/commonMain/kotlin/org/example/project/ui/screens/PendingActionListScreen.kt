@@ -58,6 +58,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.example.project.utilites.ToastHost
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +112,7 @@ fun PendingActionListScreen(
                         onBackClicked
                     )
                     Text(
-                        text = "Pending Actions".uppercase(),
+                        text = stringResource(Res.string.pendingActions).uppercase(),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
@@ -142,12 +144,12 @@ fun PendingActionListScreen(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     TabItem(
-                        title = "General Actions",
+                        title = stringResource(Res.string.generalActions),
                         isSelected = selectedTab == 0,
                         onClick = { selectedTab = 0 }
                     )
                     TabItem(
-                        title = "Permit Actions",
+                        title = stringResource(Res.string.permitActions),
                         isSelected = selectedTab == 1,
                         onClick = { selectedTab = 1 }
                     )
@@ -248,7 +250,7 @@ fun PendingActionListScreen(
                         .padding(horizontal = 24.dp, vertical = 12.dp)
                 ) {
                     Text(
-                        text = "Filter by",
+                        text = stringResource(Res.string.filterBy),
                         style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                         color = AppColors.Black
                     )
@@ -311,7 +313,7 @@ fun PendingActionListScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(modifier = Modifier.weight(1f).clickable { showFilterSheet = false }.padding(15.dp), contentAlignment = Alignment.Center) {
-                            Text(text = "Cancel", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                            Text(text = stringResource(Res.string.cancel), style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
                         }
                         Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
                         Box(modifier = Modifier.weight(1f).clickable { 
@@ -322,7 +324,7 @@ fun PendingActionListScreen(
                             }
                             showFilterSheet = false 
                         }.padding(15.dp), contentAlignment = Alignment.Center) {
-                            Text(text = "Apply", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
+                            Text(text = stringResource(Res.string.apply), style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
                         }
                     }
                 }
@@ -360,26 +362,26 @@ fun PendingActionListScreen(
     
                     when (action.type) {
                         PendingActionStatusType.OPEN_OBSERVATION -> {
-                            ActionRow(title = "View Report")
-                            ActionRow(title = "Generate PDF")
-                            ActionRow(title = "Close Observation")
-                            ActionRow(title = "Request Observation Responsible\nPerson Change")
-                            ActionRow(title = "Request to Delete Observation")
+                            ActionRow(title = stringResource(Res.string.viewReport))
+                            ActionRow(title = stringResource(Res.string.generatePdf))
+                            ActionRow(title = stringResource(Res.string.closeObservation))
+                            ActionRow(title = stringResource(Res.string.requestObservationResponsiblenpersonChange))
+                            ActionRow(title = stringResource(Res.string.requestToDeleteObservation))
                             Spacer(modifier = Modifier.height(20.dp))
                         }
                         PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> {
-                            ActionRow(title = "View Observation Closeout")
+                            ActionRow(title = stringResource(Res.string.viewObservationCloseout))
                             Spacer(modifier = Modifier.height(30.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
-                                    Text(text = "Reject", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                    Text(text = stringResource(Res.string.reject), style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
                                 }
                                 Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
                                 Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
-                                    Text(text = "Approve", style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
+                                    Text(text = stringResource(Res.string.approve), style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
                                 }
                             }
                         }

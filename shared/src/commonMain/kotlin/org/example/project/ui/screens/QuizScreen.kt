@@ -31,6 +31,8 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +58,7 @@ fun QuizScreen(
                 ) {
                     NavigationBackIcon(onBackClicked)
                     Text(
-                        text = "QUIZ",
+                        text = stringResource(Res.string.quiz1),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
@@ -305,7 +307,7 @@ fun QuizResultView(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "Completed Successfully",
+                    text = stringResource(Res.string.completedSuccessfully),
                     style = textStyle(size = 20.sp, weight = FontWeight.Bold, color = Color(0xFF00A82B)),
                     textAlign = TextAlign.Center
                 )
@@ -337,7 +339,7 @@ fun QuizResultView(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "Quiz Failed",
+                    text = stringResource(Res.string.quizFailed),
                     style = textStyle(size = 20.sp, weight = FontWeight.Bold, color = Color(0xFFD42027)),
                     textAlign = TextAlign.Center
                 )
@@ -384,14 +386,14 @@ fun QuizResultView(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = "Done",
+                    text = stringResource(Res.string.done),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold, color = Color.White)
                 )
             }
 
             if (!isPassed) {
                 Text(
-                    text = "Retry Quiz",
+                    text = stringResource(Res.string.retryQuiz),
                     style = textStyle(size = 14.sp, weight = FontWeight.Bold, color = Color(0xFFD42027)),
                     modifier = Modifier.clickable { onRetryClicked() }
                 )

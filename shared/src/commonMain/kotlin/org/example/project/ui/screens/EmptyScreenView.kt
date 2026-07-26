@@ -26,6 +26,8 @@ import instaresolv.shared.generated.resources.ic_error_icon
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun EmptyScreenView(
@@ -42,7 +44,7 @@ fun EmptyScreenView(
 
         Image(
             painter = painterResource(Res.drawable.ic_empty_icon),
-            contentDescription = "Error"
+            contentDescription = stringResource(Res.string.error)
         )
 
         Spacer(modifier = Modifier.padding(top = 14.dp))

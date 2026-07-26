@@ -40,6 +40,8 @@ import instaresolv.shared.generated.resources.ic_toast_alert
 import instaresolv.shared.generated.resources.ic_toast_info
 import instaresolv.shared.generated.resources.ic_toast_close
 import org.example.project.typography.textStyle
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 data class ToastStyle(
     val title: String,
@@ -55,31 +57,32 @@ enum class ToastType {
     Info
 }
 
+@Composable
 fun ToastType.style(): ToastStyle =
     when (this) {
         ToastType.Success -> ToastStyle(
-            title = "Success",
+            title = stringResource(Res.string.success),
             accentColor = Color(0xFF22C55E),
             backgroundColor = Color(0xFFF0FDF4),
             icon = Res.drawable.ic_toast_success
         )
 
         ToastType.Error -> ToastStyle(
-            title = "Error",
+            title = stringResource(Res.string.error),
             accentColor = Color(0xFFEF4444),
             backgroundColor = Color(0xFFFEF2F2),
             icon = Res.drawable.ic_toast_alert
         )
 
         ToastType.Warning -> ToastStyle(
-            title = "Warning",
+            title = stringResource(Res.string.warning),
             accentColor = Color(0xFFF59E0B),
             backgroundColor = Color(0xFFFFFBEB),
             icon = Res.drawable.ic_toast_info
         )
 
         ToastType.Info -> ToastStyle(
-            title = "Info",
+            title = stringResource(Res.string.info),
             accentColor = Color(0xFF3B82F6),
             backgroundColor = Color(0xFFEFF6FF),
             icon = Res.drawable.ic_toast_info

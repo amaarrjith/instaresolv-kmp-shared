@@ -32,6 +32,8 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun PreTaskDetailScreen(
@@ -63,7 +65,7 @@ fun PreTaskDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                             AppBorderButton(
-                                title = "Generate PDF",
+                                title = stringResource(Res.string.generatePdf),
                                 onClick = {
 
                                 },
@@ -146,7 +148,7 @@ fun PreTaskDetailScreen(
                     // Task Title
                     Column(modifier = Modifier.padding(horizontal = 22.dp)) {
                         Text(
-                            text = "Task Title",
+                            text = stringResource(Res.string.taskTitle),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -161,7 +163,7 @@ fun PreTaskDetailScreen(
 
                         // Facility / Project
                         Text(
-                            text = "Facility / Project",
+                            text = stringResource(Res.string.facilityProject),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -197,7 +199,7 @@ fun PreTaskDetailScreen(
 
                         // Reported By
                         Text(
-                            text = "Reported By",
+                            text = stringResource(Res.string.reportedBy),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -221,7 +223,7 @@ fun PreTaskDetailScreen(
 
                         // Employee Name
                         Text(
-                            text = "Employee Name",
+                            text = stringResource(Res.string.employeeName),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -236,7 +238,7 @@ fun PreTaskDetailScreen(
 
                         // Date
                         Text(
-                            text = "Date",
+                            text = stringResource(Res.string.date),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -253,7 +255,7 @@ fun PreTaskDetailScreen(
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Start Time",
+                                    text = stringResource(Res.string.startTime),
                                     style = textStyle(12.sp, FontWeight.Normal),
                                     color = AppColors.TextGray
                                 )
@@ -266,7 +268,7 @@ fun PreTaskDetailScreen(
                             }
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "End Time",
+                                    text = stringResource(Res.string.endTime),
                                     style = textStyle(12.sp, FontWeight.Normal),
                                     color = AppColors.TextGray
                                 )
@@ -283,7 +285,7 @@ fun PreTaskDetailScreen(
 
                         // MSRA Reference
                         Text(
-                            text = "MSRA Reference",
+                            text = stringResource(Res.string.msraReference),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -298,7 +300,7 @@ fun PreTaskDetailScreen(
 
                         // Permit Reference
                         Text(
-                            text = "Permit Reference",
+                            text = stringResource(Res.string.permitReference),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -313,7 +315,7 @@ fun PreTaskDetailScreen(
 
                         // Topics of Discussion
                         Text(
-                            text = "Topics of Discussion",
+                            text = stringResource(Res.string.topicsOfDiscussion),
                             style = textStyle(14.sp, FontWeight.Bold),
                             color = AppColors.Primary
                         )
@@ -350,7 +352,7 @@ fun PreTaskDetailScreen(
 
                         if (!data.otherTopic.isNullOrEmpty()) {
                             Text(
-                                text = "OTHERS",
+                                text = stringResource(Res.string.others),
                                 style = textStyle(12.sp, FontWeight.Bold),
                                 color = AppColors.BlackText
                             )
@@ -377,7 +379,7 @@ fun PreTaskDetailScreen(
                         // AI Translated Notes
                         if (!data.notes.isNullOrBlank() || !data.translatedNotes.isNullOrBlank()) {
                             Text(
-                                text = "Step By Step Account on Today's Task (AI Translated)",
+                                text = stringResource(Res.string.stepByStepAccountOnTodaysTaskAiTranslated),
                                 style = textStyle(12.sp, FontWeight.Normal),
                                 color = AppColors.TextGray
                             )
@@ -417,7 +419,7 @@ fun PreTaskDetailScreen(
                                     }
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text(text = "0:00", style = textStyle(12.sp, FontWeight.Medium), color = AppColors.TextGray)
+                                Text(text = stringResource(Res.string.txt_000), style = textStyle(12.sp, FontWeight.Medium), color = AppColors.TextGray)
                             }
                             
                             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
@@ -463,13 +465,13 @@ fun PreTaskDetailScreen(
                         if (data.images?.isNotEmpty() == true) {
                             val imagesList = data.images ?: emptyList()
                             Text(
-                                text = "ATTENDEES EVIDENCE",
+                                text = stringResource(Res.string.attendeesEvidence),
                                 style = textStyle(12.sp, FontWeight.Bold),
                                 color = AppColors.BlackText
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "Uploaded Images",
+                                text = stringResource(Res.string.uploadedImages),
                                 style = textStyle(12.sp, FontWeight.Medium),
                                 color = AppColors.TextGray
                             )

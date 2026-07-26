@@ -54,25 +54,25 @@ import instaresolv.shared.generated.resources.ic_audit_inspection
 import instaresolv.shared.generated.resources.ic_observations
 import instaresolv.shared.generated.resources.ic_right_icon
 import instaresolv.shared.generated.resources.ic_toast_success
-import org.example.project.localization.LocalAppStrings
 import org.example.project.typography.textStyle
 import org.example.project.welcomescreen.WelcomeScreenViewModel
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun WelcomeScreen(
     onNavigateToLogin: () -> Unit,
 ) {
     val viewModel: WelcomeScreenViewModel = koinInject()
-    val strings = LocalAppStrings.current
     var currentIndex by remember { mutableStateOf(0) }
     
     val descriptions = listOf(
-        strings.loremIpsum,
-        strings.loremIpsum,
-        strings.loremIpsum
+        stringResource(Res.string.loremIpsum),
+        stringResource(Res.string.loremIpsum),
+        stringResource(Res.string.loremIpsum)
     )
 
     val primaryColor = Color(0xFFD32F2F) // Red accent
@@ -121,24 +121,24 @@ fun WelcomeScreen(
                     .padding(top = 10.dp)
             ) {
                 Text(
-                    text = "Track.",
+                    text = stringResource(Res.string.track),
                     color = Color.Black,
                     style = textStyle(size = 32.sp, weight = FontWeight.Bold)
                 )
                 Text(
-                    text = "Resolve.",
+                    text = stringResource(Res.string.resolve),
                     color = Color.Black,
                     style = textStyle(size = 32.sp, weight = FontWeight.Bold)
                 )
                 Text(
-                    text = "Stay Compliant.",
+                    text = stringResource(Res.string.stayCompliant),
                     color = primaryColor,
                     style = textStyle(size = 32.sp, weight = FontWeight.Bold)
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                AnimatedContent(targetState = currentIndex, label = "DescriptionAnimation") { targetIndex ->
+                AnimatedContent(targetState = currentIndex, label = stringResource(Res.string.descriptionanimation)) { targetIndex ->
                     Text(
                         text = descriptions[targetIndex],
                         color = Color.Black.copy(alpha = 0.6f),
@@ -180,7 +180,7 @@ fun WelcomeScreen(
                 verticalAlignment = Alignment.Top
             ) {
                 ColumnView(
-                    title = "Track",
+                    title = stringResource(Res.string.track1),
                     desc = "Capture issues\nin real-time",
                     icon = Res.drawable.ic_observations,
                     isActive = currentIndex == 0,
@@ -197,7 +197,7 @@ fun WelcomeScreen(
                 )
                 
                 ColumnView(
-                    title = "Resolve",
+                    title = stringResource(Res.string.resolve1),
                     desc = "Take action and\nclose faster",
                     icon = Res.drawable.ic_toast_success,
                     isActive = currentIndex == 1,
@@ -214,7 +214,7 @@ fun WelcomeScreen(
                 )
                 
                 ColumnView(
-                    title = "Comply",
+                    title = stringResource(Res.string.comply),
                     desc = "Ensure compliance\nwith ease",
                     icon = Res.drawable.ic_audit_inspection,
                     isActive = currentIndex == 2,
@@ -236,7 +236,7 @@ fun WelcomeScreen(
                     val isActive = index == currentIndex
                     val scale by animateFloatAsState(
                         targetValue = if (isActive) 1.25f else 1.0f,
-                        label = "DotScaleAnimation"
+                        label = stringResource(Res.string.dotscaleanimation)
                     )
                     
                     Box(
@@ -274,13 +274,13 @@ fun WelcomeScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_arrow_left),
-                            contentDescription = "Back",
+                            contentDescription = stringResource(Res.string.back),
                             tint = Color.Black,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Back",
+                            text = stringResource(Res.string.back),
                             color = Color.Black,
                             style = textStyle(size = 16.sp, weight = FontWeight.Bold)
                         )
@@ -304,7 +304,7 @@ fun WelcomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Continue",
+                        text = stringResource(Res.string.continueAction),
                         color = Color.White,
                         style = textStyle(size = 16.sp, weight = FontWeight.Bold)
                     )

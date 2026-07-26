@@ -41,6 +41,8 @@ import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,7 +87,7 @@ fun PermitToWorkListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Permit to Work".uppercase(),
+                    text = stringResource(Res.string.permitToWork).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -127,7 +129,7 @@ fun PermitToWorkListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Permits",
+                        placeholder = stringResource(Res.string.searchPermits),
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -195,7 +197,7 @@ fun PermitToWorkListScreen(
                             Spacer(modifier = Modifier.height(24.dp))
 
                             Text(
-                                text = "Permit to Work Type",
+                                text = stringResource(Res.string.permitToWorkType),
                                 style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                                 color = AppColors.Black
                             )
@@ -273,7 +275,7 @@ fun PermitToWorkListScreen(
                     ) {
                         if (uiState.permits.isEmpty()) {
                             EmptyScreenView(
-                                message = "No permits found",
+                                message = stringResource(Res.string.noPermitsFound),
                             )
                         } else {
                             LazyColumn(

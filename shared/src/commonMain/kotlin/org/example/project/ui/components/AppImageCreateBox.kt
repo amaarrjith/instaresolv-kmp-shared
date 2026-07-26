@@ -43,6 +43,8 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontStyle
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun AppImageCreateBox(
@@ -132,7 +134,7 @@ fun AppImageCreateBox(
                     } else if (imageUrl.isNullOrEmpty()) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_add_photo),
-                            contentDescription = "Add Image",
+                            contentDescription = stringResource(Res.string.addImage),
                             tint = Color(0xFF8F9098),
                             modifier = Modifier.size(40.dp)
                         )
@@ -162,7 +164,7 @@ fun AppImageCreateBox(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_toast_close),
-                            contentDescription = "Remove Image",
+                            contentDescription = stringResource(Res.string.removeImage),
                             tint = Color(0xFFFF4B4B),
                             modifier = Modifier.size(12.dp)
                         )
@@ -184,7 +186,7 @@ fun AppImageCreateBox(
                 )
 
                 Text(
-                    text = "InstaResolv AI is analysing your image to generate a detailed and accurate description. This may take a few moments....",
+                    text = stringResource(Res.string.instaresolvAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments),
                     style = textStyle(
                         fontStyle = FontStyle.Italic,
                         size = 10.sp
@@ -204,7 +206,7 @@ fun AppImageCreateBox(
             ) {
                 if (description.isEmpty()) {
                     Text(
-                        text = "Enter Description here",
+                        text = stringResource(Res.string.enterDescriptionHere),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Medium

@@ -1,7 +1,6 @@
 package org.example.project.domain.validation
 
 import androidx.compose.runtime.Composable
-import org.example.project.localization.LocalAppStrings
 
 class LoginValidator {
 

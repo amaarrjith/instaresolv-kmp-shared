@@ -62,6 +62,8 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun PermitDetailScreen(
@@ -122,7 +124,7 @@ fun PermitDetailScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Permit Detail".uppercase(),
+                    text = stringResource(Res.string.permitDetail).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -147,7 +149,7 @@ fun PermitDetailScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             AppBorderButton(
-                                title = "Generate PDF",
+                                title = stringResource(Res.string.generatePdf),
                                 onClick = { },
                                 modifier = Modifier.weight(1f)
                             )
@@ -241,7 +243,7 @@ fun PermitDetailScreen(
         if (successMessage != null) {
             AppStatusDialog(
                 visible = true,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = successMessage!!,
                 buttonText = "OK",
                 onDismiss = {
@@ -479,7 +481,7 @@ fun PermitHeaderSection(data: PermitDetailData, userType: PermitFormUserType) {
 @Composable
 fun FacilityProjectSection(data: PermitDetailData) {
     Text(
-        text = "Facility / Project",
+        text = stringResource(Res.string.facilityProject),
         style = textStyle(12.sp, FontWeight.Normal),
         color = AppColors.TextGray
     )
@@ -521,7 +523,7 @@ fun FacilityProjectSection(data: PermitDetailData) {
 @Composable
 fun RequestedBySection(data: PermitDetailData) {
     Text(
-        text = "Requested By",
+        text = stringResource(Res.string.requestedBy),
         style = textStyle(12.sp, FontWeight.Normal),
         color = AppColors.TextGray
     )
@@ -563,7 +565,7 @@ fun RequestedBySection(data: PermitDetailData) {
 fun AuthorizedPersonSection(data: PermitDetailData) {
     if (data.certificateValidity?.authorizedPerson != null) {
         Text(
-            text = "Authorized Person",
+            text = stringResource(Res.string.authorizedPerson),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -606,7 +608,7 @@ fun AuthorizedPersonSection(data: PermitDetailData) {
 fun DateAndTimesSection(data: PermitDetailData) {
     Column() {
         Text(
-            text = "Request Date",
+            text = stringResource(Res.string.requestDate),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -621,7 +623,7 @@ fun DateAndTimesSection(data: PermitDetailData) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Valid From",
+                text = stringResource(Res.string.validFrom),
                 style = textStyle(12.sp, FontWeight.Normal),
                 color = AppColors.TextGray
             )
@@ -639,7 +641,7 @@ fun DateAndTimesSection(data: PermitDetailData) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "End Time",
+                text = stringResource(Res.string.endTime),
                 style = textStyle(12.sp, FontWeight.Normal),
                 color = AppColors.TextGray
             )
@@ -662,7 +664,7 @@ fun DateAndTimesSection(data: PermitDetailData) {
 fun LocationDescriptionSection(data: PermitDetailData) {
     if (data.certificateValidity?.location != null) {
         Text(
-            text = "Location",
+            text = stringResource(Res.string.location),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -677,7 +679,7 @@ fun LocationDescriptionSection(data: PermitDetailData) {
 
     if (data.certificateValidity?.description != null) {
         Text(
-            text = "Description",
+            text = stringResource(Res.string.description),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -695,7 +697,7 @@ fun LocationDescriptionSection(data: PermitDetailData) {
 fun ValiditySectionsSection(data: PermitDetailData) {
     if (!data.certificateValidity?.certificateValiditySections.isNullOrEmpty()) {
         Text(
-            text = "Validity Sections",
+            text = stringResource(Res.string.validitySections),
             style = textStyle(14.sp, FontWeight.Bold),
             color = AppColors.Primary
         )
@@ -725,7 +727,7 @@ fun ValiditySectionsSection(data: PermitDetailData) {
 fun GeneralConditionsSection(data: PermitDetailData) {
     if (!data.certificateValidity?.generalConditions.isNullOrEmpty()) {
         Text(
-            text = "General Conditions",
+            text = stringResource(Res.string.generalConditions),
             style = textStyle(14.sp, FontWeight.Bold),
             color = AppColors.Primary
         )
@@ -773,7 +775,7 @@ fun GeneralConditionsSection(data: PermitDetailData) {
 fun PermitValiditySection(data: PermitDetailData, onImageClick: (String) -> Unit) {
     if (data.certificateValidity?.requestContractor != null || data.certificateValidity?.signatureImageUrl != null) {
         Text(
-            text = "Permit Validity",
+            text = stringResource(Res.string.permitValidity),
             style = textStyle(14.sp, FontWeight.Bold),
             color = AppColors.Primary
         )
@@ -784,7 +786,7 @@ fun PermitValiditySection(data: PermitDetailData, onImageClick: (String) -> Unit
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
             ) {
                 Text(
-                    text = "Requestor Name",
+                    text = stringResource(Res.string.requestorName),
                     style = textStyle(12.sp, FontWeight.Medium),
                     color = AppColors.Black
                 )
@@ -800,7 +802,7 @@ fun PermitValiditySection(data: PermitDetailData, onImageClick: (String) -> Unit
         
         if (!data.certificateValidity.signatureImageUrl.isNullOrBlank()) {
             Text(
-                text = "Signature",
+                text = stringResource(Res.string.signature),
                 style = textStyle(12.sp, FontWeight.Normal),
                 color = AppColors.TextGray
             )
@@ -852,7 +854,7 @@ fun PermitValiditySection(data: PermitDetailData, onImageClick: (String) -> Unit
 fun EvidenceImagesSection(data: PermitDetailData, onImageClick: (String) -> Unit) {
     if (!data.certificateValidity?.images.isNullOrEmpty()) {
         Text(
-            text = "Images",
+            text = stringResource(Res.string.images),
             style = textStyle(14.sp, FontWeight.Bold),
             color = AppColors.Primary
         )
@@ -901,15 +903,15 @@ fun AuthorizerFormSection(
     isAuthorizing: Boolean
 ) {
     Text(
-        text = "Authorization Request",
+        text = stringResource(Res.string.authorizationRequest),
         style = textStyle(14.sp, FontWeight.Bold),
         color = AppColors.Primary
     )
     Spacer(modifier = Modifier.height(16.dp))
 
     AppTextField(
-        title = "Authorizer Name",
-        placeholder = "Authorizer Name",
+        title = stringResource(Res.string.authorizerName),
+        placeholder = stringResource(Res.string.authorizerName),
         value = authorizerName,
         onValueChange = {},
         enabled = false,
@@ -920,9 +922,9 @@ fun AuthorizerFormSection(
     Spacer(modifier = Modifier.height(16.dp))
 
     AppUserDropdown(
-        title = "Responsible HSE Person",
+        title = stringResource(Res.string.responsibleHsePerson),
         isMandatory = true,
-        placeholder = "Select Person",
+        placeholder = stringResource(Res.string.selectPerson),
         users = hsePersons,
         selectedUser = selectedHsePerson,
         onUserSelected = viewModel::onHsePersonSelected
@@ -931,8 +933,8 @@ fun AuthorizerFormSection(
     Spacer(modifier = Modifier.height(16.dp))
     
     AppTextField(
-        title = "MSRA Number",
-        placeholder = "Enter MSRA Number",
+        title = stringResource(Res.string.msraNumber),
+        placeholder = stringResource(Res.string.enterMsraNumber),
         value = msraNumber,
         onValueChange = viewModel::onMsraNumberChanged,
         isMandatory = true
@@ -956,7 +958,7 @@ fun AuthorizerFormSection(
             )
             Spacer(modifier = Modifier.height(8.dp))
             AppTimePicker(
-                text = "00 : 00",
+                text = stringResource(Res.string.txt_0000),
                 selectedTime = signatureTime,
                 onTimeSelected = {  },
                 enabled = false
@@ -982,8 +984,8 @@ fun AuthorizerFormSection(
     Spacer(modifier = Modifier.height(16.dp))
 
     AppMultilineTextField(
-        title = "Additional Precautions",
-        placeholder = "Enter Additional Precautions",
+        title = stringResource(Res.string.additionalPrecautions),
+        placeholder = stringResource(Res.string.enterAdditionalPrecautions),
         value = additionalPrecautions,
         onValueChange = viewModel::onAdditionalPrecautionsChanged
     )
@@ -993,7 +995,7 @@ fun AuthorizerFormSection(
         contentAlignment = Alignment.Center
     ) {
         AppPrimaryButton(
-            title = "Submit",
+            title = stringResource(Res.string.submit),
             isLoading = isAuthorizing,
             onClick = {
                 data.permitId?.let { viewModel.authorizePermit(it) }
@@ -1012,7 +1014,7 @@ fun AuthorizerViewerSection(
     viewModel: PermitDetailViewModel
 ) {
     Text(
-        text = "Authorization Request",
+        text = stringResource(Res.string.authorizationRequest),
         style = textStyle(14.sp, FontWeight.Bold),
         color = AppColors.Primary
     )
@@ -1021,7 +1023,7 @@ fun AuthorizerViewerSection(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {
         Text(
-            text = "Requestor Name",
+            text = stringResource(Res.string.requestorName),
             style = textStyle(12.sp, FontWeight.Medium),
             color = AppColors.Black
         )
@@ -1039,7 +1041,7 @@ fun AuthorizerViewerSection(
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
             Text(
-                text = "MSRA Number",
+                text = stringResource(Res.string.msraNumber),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.Black
             )
@@ -1058,7 +1060,7 @@ fun AuthorizerViewerSection(
     // Responsible HSE Person
     if (data.authorizationRequest?.responsibleHSEPerson != null) {
         Text(
-            text = "Responsible HSE Person",
+            text = stringResource(Res.string.responsibleHsePerson),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -1098,7 +1100,7 @@ fun AuthorizerViewerSection(
 
     if (!data.authorizationRequest?.signatureImageUrl.isNullOrBlank()) {
         Text(
-            text = "Signature",
+            text = stringResource(Res.string.signature),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -1147,7 +1149,7 @@ fun AuthorizerViewerSection(
         Spacer(modifier = Modifier.height(16.dp))
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
         Text(
-            text = "Additional Precautions",
+            text = stringResource(Res.string.additionalPrecautions),
             style = textStyle(12.sp, FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -1197,7 +1199,7 @@ fun AuthorizerViewerSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             AppPrimaryButton(
-                title = "Cancel",
+                title = stringResource(Res.string.cancel),
                 onClick = { viewModel.onActionClick(1) },
                 isLoading = actionLoading == 1,
                 modifier = Modifier.weight(1f).height(48.dp),
@@ -1205,7 +1207,7 @@ fun AuthorizerViewerSection(
             )
 
             AppPrimaryButton(
-                title = "Suspend",
+                title = stringResource(Res.string.suspend),
                 onClick = { viewModel.onActionClick(2) },
                 isLoading = actionLoading == 2,
                 modifier = Modifier.weight(1f).height(48.dp),
@@ -1220,7 +1222,7 @@ fun AuthorizerViewerSection(
             horizontalArrangement = Arrangement.Center
         ) {
             AppPrimaryButton(
-                title = "Reactivate",
+                title = stringResource(Res.string.reactivate),
                 onClick = { viewModel.onActionClick(3) },
                 isLoading = actionLoading == 3,
                 modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -1235,7 +1237,7 @@ fun RequestForCertificateClosureViewerSection(data: PermitDetailData, onImageCli
     val closureDetails = data.requestForCertificateClosure ?: return
     
     Text(
-        text = "Request For Certificate Closure",
+        text = stringResource(Res.string.requestForCertificateClosure),
         style = textStyle(14.sp, FontWeight.Bold),
         color = AppColors.Primary
     )
@@ -1243,7 +1245,7 @@ fun RequestForCertificateClosureViewerSection(data: PermitDetailData, onImageCli
     
     if (closureDetails.images?.isNotEmpty() == true) {
         Text(
-            text = "Images",
+            text = stringResource(Res.string.images),
             style = textStyle(12.sp, FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -1278,7 +1280,7 @@ fun RequestForCertificateClosureViewerSection(data: PermitDetailData, onImageCli
 
     if (!closureDetails.remarks.isNullOrBlank()) {
         Text(
-            text = "Remarks",
+            text = stringResource(Res.string.remarks),
             style = textStyle(12.sp, FontWeight.Medium),
             color = AppColors.TextGray
         )
@@ -1293,7 +1295,7 @@ fun RequestForCertificateClosureViewerSection(data: PermitDetailData, onImageCli
 
     if (!closureDetails.signatureImageUrl.isNullOrBlank()) {
         Text(
-            text = "Signature",
+            text = stringResource(Res.string.signature),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )
@@ -1354,7 +1356,7 @@ fun RequestForPermitClosureSection(
     viewModel: PermitDetailViewModel
 ) {
     Text(
-        text = "Request For Certificate Closure",
+        text = stringResource(Res.string.requestForCertificateClosure),
         style = textStyle(14.sp, FontWeight.Bold),
         color = AppColors.Primary
     )
@@ -1410,7 +1412,7 @@ fun RequestForPermitClosureSection(
             Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = null, tint = AppColors.Primary)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Add Image",
+                text = stringResource(Res.string.addImage),
                 style = textStyle(
                     size = 12.sp,
                     weight = FontWeight.SemiBold
@@ -1423,8 +1425,8 @@ fun RequestForPermitClosureSection(
     Spacer(modifier = Modifier.height(16.dp))
     
     AppMultilineTextField(
-        title = "Remarks",
-        placeholder = "Enter remarks",
+        title = stringResource(Res.string.remarks),
+        placeholder = stringResource(Res.string.enterRemarks),
         value = closureRemarks,
         onValueChange = viewModel::onClosureRemarksChanged
     )
@@ -1441,12 +1443,12 @@ fun RequestForPermitClosureSection(
 
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "Time", style = textStyle(12.sp, FontWeight.SemiBold))
+            Text(text = stringResource(Res.string.time), style = textStyle(12.sp, FontWeight.SemiBold))
             Spacer(modifier = Modifier.height(8.dp))
-            AppTimePicker(text = "00 : 00", selectedTime = signatureTime, onTimeSelected = { }, enabled = false)
+            AppTimePicker(text = stringResource(Res.string.txt_0000), selectedTime = signatureTime, onTimeSelected = { }, enabled = false)
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "Date", style = textStyle(12.sp, FontWeight.SemiBold))
+            Text(text = stringResource(Res.string.date), style = textStyle(12.sp, FontWeight.SemiBold))
             Spacer(modifier = Modifier.height(8.dp))
             AppDatePicker(text = signatureDate.ifBlank { "YYYY-MM-DD" }, onDateSelected = { }, selectedDateMillis = null, enabled = false)
         }
@@ -1458,7 +1460,7 @@ fun RequestForPermitClosureSection(
         horizontalArrangement = Arrangement.Center
     ) {
         AppPrimaryButton(
-            title = "Submit",
+            title = stringResource(Res.string.submit),
             isLoading = isSubmittingClosure,
             onClick = {
                 data.permitId?.let {
@@ -1646,22 +1648,22 @@ fun PermitActionDialog(
                         .verticalScroll(rememberScrollState())
                 ) {
                     Text(
-                        text = "Permit Action",
+                        text = stringResource(Res.string.permitAction),
                         style = textStyle(16.sp, FontWeight.Bold),
                         color = AppColors.Black
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
                     AppMultilineTextField(
-                        title = "Remarks",
-                        placeholder = "Enter remarks",
+                        title = stringResource(Res.string.remarks),
+                        placeholder = stringResource(Res.string.enterRemarks),
                         value = remarks,
                         onValueChange = onRemarksChange
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Images",
+                        text = stringResource(Res.string.images),
                         style = textStyle(12.sp, FontWeight.Medium),
                         color = AppColors.Black
                     )
@@ -1700,13 +1702,13 @@ fun PermitActionDialog(
                         ) {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_add),
-                                contentDescription = "Add Image",
+                                contentDescription = stringResource(Res.string.addImage),
                                 modifier = Modifier.size(15.dp),
                                 tint = AppColors.Primary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Add Image",
+                                text = stringResource(Res.string.addImage),
                                 style = textStyle(
                                     size = 12.sp,
                                     weight = FontWeight.SemiBold
@@ -1724,12 +1726,12 @@ fun PermitActionDialog(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AppBorderButton(
-                        title = "Cancel",
+                        title = stringResource(Res.string.cancel),
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     )
                     AppPrimaryButton(
-                        title = "Submit",
+                        title = stringResource(Res.string.submit),
                         onClick = onSubmit,
                         modifier = Modifier.weight(1f)
                     )
@@ -1750,7 +1752,7 @@ fun PermitCertificateClosureSection(
     viewModel: PermitDetailViewModel
 ) {
     Text(
-        text = "Permit Closure",
+        text = stringResource(Res.string.permitClosure),
         style = textStyle(14.sp, FontWeight.Bold),
         color = AppColors.Primary
     )
@@ -1758,8 +1760,8 @@ fun PermitCertificateClosureSection(
     AppTextField(
         value = userName,
         onValueChange = {},
-        title = "Authorizer Name",
-        placeholder = "Authorizer Name",
+        title = stringResource(Res.string.authorizerName),
+        placeholder = stringResource(Res.string.authorizerName),
         modifier = Modifier.fillMaxWidth(),
         enabled = false
     )
@@ -1779,17 +1781,17 @@ fun PermitCertificateClosureSection(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "Time", style = textStyle(12.sp, FontWeight.SemiBold))
+            Text(text = stringResource(Res.string.time), style = textStyle(12.sp, FontWeight.SemiBold))
             Spacer(modifier = Modifier.height(8.dp))
             AppTimePicker(
-                text = "00 : 00",
+                text = stringResource(Res.string.txt_0000),
                 selectedTime = certificateClosureTime,
                 onTimeSelected = { },
                 enabled = false
             )
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "Date", style = textStyle(12.sp, FontWeight.SemiBold))
+            Text(text = stringResource(Res.string.date), style = textStyle(12.sp, FontWeight.SemiBold))
             Spacer(modifier = Modifier.height(8.dp))
             AppDatePicker(
                 text = certificateClosureDate.ifBlank { "YYYY-MM-DD" },
@@ -1807,7 +1809,7 @@ fun PermitCertificateClosureSection(
         horizontalArrangement = Arrangement.Center
     ) {
         AppPrimaryButton(
-            title = "Submit",
+            title = stringResource(Res.string.submit),
             isLoading = isSubmittingCertificateClosure,
             onClick = { data.permitId?.let { viewModel.submitPermitCertificateClosure(it) } },
             modifier = Modifier.fillMaxWidth().height(48.dp)
@@ -1820,7 +1822,7 @@ fun PermitCertificateClosureViewerSection(data: PermitDetailData, onImageClick: 
     val closureDetails = data.certificateClosure ?: return
 
     Text(
-        text = "Permit Closure",
+        text = stringResource(Res.string.permitClosure),
         style = textStyle(14.sp, FontWeight.Bold),
         color = AppColors.Primary
     )
@@ -1828,7 +1830,7 @@ fun PermitCertificateClosureViewerSection(data: PermitDetailData, onImageClick: 
 
     if (!closureDetails.contractorName.isNullOrBlank()) {
         Text(
-            text = "Authorizer Name",
+            text = stringResource(Res.string.authorizerName),
             style = textStyle(12.sp, FontWeight.Medium),
             color = AppColors.Black
         )
@@ -1843,7 +1845,7 @@ fun PermitCertificateClosureViewerSection(data: PermitDetailData, onImageClick: 
 
     if (!closureDetails.signatureImageUrl.isNullOrBlank()) {
         Text(
-            text = "Signature",
+            text = stringResource(Res.string.signature),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )

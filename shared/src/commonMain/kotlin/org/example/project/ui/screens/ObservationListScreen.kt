@@ -77,7 +77,9 @@ import org.example.project.utilites.AppSearchBar
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,7 +130,7 @@ fun ObservationListScreen(
                     onBackClicked
                 )
                 Text(
-                    text = "Observations".uppercase(),
+                    text = stringResource(Res.string.observations).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -162,7 +164,7 @@ fun ObservationListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Observations",
+                        placeholder = stringResource(Res.string.searchObservations),
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -240,7 +242,7 @@ fun ObservationListScreen(
                     ) {
                         if (uiState.observations.isEmpty()) {
                            EmptyScreenView(
-                                message = "No observations found",
+                                message = stringResource(Res.string.noObservationsFound),
                            )
                         } else {
                             LazyColumn(
@@ -319,7 +321,7 @@ fun DraftButton(
                 contentDescription = null
             )
             Text(
-                text = "Drafts",
+                text = stringResource(Res.string.drafts),
                 style = textStyle(
                     size = 13.sp,
                     weight = FontWeight.Bold
@@ -353,7 +355,7 @@ fun NewButton(
                 contentDescription = null
             )
             Text(
-                text = "New",
+                text = stringResource(Res.string.new),
                 style = textStyle(
                     size = 13.sp,
                     weight = FontWeight.Bold
@@ -422,7 +424,7 @@ fun ObservationListItem(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = status.title.uppercase(),
+                            text = stringResource(status.title).uppercase(),
                             style = textStyle(size = 9.sp, weight = FontWeight.Bold),
                             color = Color.White
                         )

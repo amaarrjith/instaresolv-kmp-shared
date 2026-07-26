@@ -41,6 +41,8 @@ import androidx.compose.material3.SelectableDates
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +78,7 @@ fun AppDatePicker(
     ) {
         Image(
             painter = painterResource(Res.drawable.ic_calendar),
-            contentDescription = "Select Date",
+            contentDescription = stringResource(Res.string.selectDate),
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))

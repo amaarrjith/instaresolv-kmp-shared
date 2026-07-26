@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.painterResource
-import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,6 +43,8 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +53,6 @@ fun ForgetPasswordScreen(
 ) {
     val viewModel: ForgetPasswordViewModel = koinInject()
     val email = remember { mutableStateOf("") }
-    val strings = LocalAppStrings.current
     val uiState = viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     Scaffold(
@@ -92,7 +92,7 @@ fun ForgetPasswordScreen(
                 )
                 Spacer(modifier = Modifier.height(50.dp))
                 Text(
-                    text = strings.forgotPassword,
+                    text = stringResource(Res.string.forgotPassword),
                     style = textStyle(
                         size = 18.sp,
                         weight = FontWeight.Bold
@@ -102,7 +102,7 @@ fun ForgetPasswordScreen(
                 Text(
                     modifier = Modifier
                         .padding(horizontal = 56.dp),
-                    text = strings.forgotPasswordDescription,
+                    text = stringResource(Res.string.forgotPasswordDescription),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Normal
@@ -113,12 +113,12 @@ fun ForgetPasswordScreen(
                 AppTextField(
                     value = email.value,
                     onValueChange = { email.value = it },
-                    title = strings.emailId,
-                    placeholder = strings.emailPlaceholder
+                    title = stringResource(Res.string.emailId),
+                    placeholder = stringResource(Res.string.emailPlaceholder)
                 )
                 Spacer(modifier = Modifier.height(50.dp))
                 AppPrimaryButton(
-                    title = strings.resetPassword,
+                    title = stringResource(Res.string.resetPassword),
                     onClick = {
                         viewModel.forgetPassword(email.value)
                     },

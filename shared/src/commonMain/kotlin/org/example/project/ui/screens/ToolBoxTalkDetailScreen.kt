@@ -33,6 +33,8 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun ToolBoxTalkDetailScreen(
@@ -64,7 +66,7 @@ fun ToolBoxTalkDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         AppBorderButton(
-                            title = "Generate PDF",
+                            title = stringResource(Res.string.generatePdf),
                             onClick = {
                                 // PDF generation block
                             },
@@ -162,7 +164,7 @@ fun ToolBoxTalkDetailScreen(
                     Column(modifier = Modifier.padding(horizontal = 22.dp)) {
                         // Topic
                         Text(
-                            text = "Topic",
+                            text = stringResource(Res.string.topic),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -177,7 +179,7 @@ fun ToolBoxTalkDetailScreen(
 
                         // Facility / Project
                         Text(
-                            text = "Facility / Project",
+                            text = stringResource(Res.string.facilityProject),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -215,7 +217,7 @@ fun ToolBoxTalkDetailScreen(
 
                         // Reported By
                         Text(
-                            text = "Reported By",
+                            text = stringResource(Res.string.reportedBy),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -239,7 +241,7 @@ fun ToolBoxTalkDetailScreen(
 
                         // Date
                         Text(
-                            text = "Date",
+                            text = stringResource(Res.string.date),
                             style = textStyle(12.sp, FontWeight.Normal),
                             color = AppColors.TextGray
                         )
@@ -256,7 +258,7 @@ fun ToolBoxTalkDetailScreen(
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Start Time",
+                                    text = stringResource(Res.string.startTime),
                                     style = textStyle(12.sp, FontWeight.Normal),
                                     color = AppColors.TextGray
                                 )
@@ -269,7 +271,7 @@ fun ToolBoxTalkDetailScreen(
                             }
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "End Time",
+                                    text = stringResource(Res.string.endTime),
                                     style = textStyle(12.sp, FontWeight.Normal),
                                     color = AppColors.TextGray
                                 )
@@ -287,7 +289,7 @@ fun ToolBoxTalkDetailScreen(
                         // Discussion Points
                         if (!data.discussionPoints.isNullOrEmpty()) {
                             Text(
-                                text = "Discussion Points",
+                                text = stringResource(Res.string.discussionPoints),
                                 style = textStyle(14.sp, FontWeight.Bold),
                                 color = AppColors.Primary
                             )
@@ -372,13 +374,13 @@ fun ToolBoxTalkDetailScreen(
                         if (!data.images.isNullOrEmpty()) {
                             val imagesList = data.images
                             Text(
-                                text = "ATTENDEES EVIDENCE",
+                                text = stringResource(Res.string.attendeesEvidence),
                                 style = textStyle(12.sp, FontWeight.Bold),
                                 color = AppColors.BlackText
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "Uploaded Images",
+                                text = stringResource(Res.string.uploadedImages),
                                 style = textStyle(12.sp, FontWeight.Medium),
                                 color = AppColors.TextGray
                             )

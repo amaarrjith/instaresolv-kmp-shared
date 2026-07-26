@@ -35,6 +35,8 @@ import kotlinx.coroutines.delay
 import org.example.project.splash.SplashUiState
 import org.example.project.splash.SplashViewModel
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 
 @Composable
@@ -125,7 +127,7 @@ fun SplashScreenContent(
                         containerColor = Color.Transparent
                     )
                 ) {
-                    Text(text = "Try Again")
+                    Text(text = stringResource(Res.string.tryAgain))
                 }
             }
         }

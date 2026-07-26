@@ -43,6 +43,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +75,7 @@ fun AppTimePicker(
         // Reuse calendar icon or maybe a clock icon if available. We will use ic_calendar for now unless there's an ic_clock.
         Image(
             painter = painterResource(Res.drawable.ic_calendar),
-            contentDescription = "Select Time",
+            contentDescription = stringResource(Res.string.selectTime),
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))

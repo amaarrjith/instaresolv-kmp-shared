@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.DpOffset
 import org.jetbrains.compose.resources.painterResource
-import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +54,8 @@ import org.koin.compose.koinInject
 
 import androidx.compose.runtime.saveable.rememberSaveable
 import org.example.project.data.model.Project
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun AppTabBar(
@@ -80,26 +81,25 @@ fun AppTabBar(
     val viewModel: AppTabBarViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-    val strings = LocalAppStrings.current
 
     val navItems = listOf(
         TabBarItems(
-            strings.home,
+            stringResource(Res.string.home),
             Res.drawable.ic_home_selected,
             Res.drawable.ic_home_unselected
         ),
         TabBarItems(
-            strings.project,
+            stringResource(Res.string.project),
             Res.drawable.ic_project_selected,
             Res.drawable.ic_project_unselected
         ),
         TabBarItems(
-            strings.briefs,
+            stringResource(Res.string.briefs),
             Res.drawable.ic_briefs_selected,
             Res.drawable.ic_briefs_unselected
         ),
         TabBarItems(
-            strings.settings,
+            stringResource(Res.string.settings),
             Res.drawable.ic_settings_selected,
             Res.drawable.ic_settings_unselected
         )

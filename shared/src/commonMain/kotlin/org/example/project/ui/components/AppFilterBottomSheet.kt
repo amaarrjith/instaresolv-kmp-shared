@@ -29,6 +29,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.example.project.ui.IncidentType
 
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +147,7 @@ fun AppFilterBottomSheet(
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            text = "Clear All",
+                            text = stringResource(Res.string.clearAll),
                             style = textStyle(size = 13.sp, weight = FontWeight.Bold),
                             color = AppColors.Primary,
                             modifier = Modifier.clickable { 
@@ -216,13 +217,13 @@ fun AppFilterBottomSheet(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "Not Specified", 
+                                            text = stringResource(Res.string.notSpecified), 
                                             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "Show all items that are not specified to any project", 
+                                            text = stringResource(Res.string.showAllItemsThatAreNotSpecifiedToAnyProject), 
                                             style = textStyle(size = 10.sp, weight = FontWeight.Normal),
                                             color = Color(0xFF8F9098)
                                         )
@@ -458,12 +459,12 @@ fun AppFilterBottomSheet(
                                     modifier = Modifier.padding(top = 8.dp)
                                 ) {
                                     AppDatePicker(
-                                        text = "Date Open",
+                                        text = stringResource(Res.string.dateOpen),
                                         onDateSelected = { dateOpenMillis = it },
                                         selectedDateMillis = dateOpenMillis
                                     )
                                     AppDatePicker(
-                                        text = "Date Close",
+                                        text = stringResource(Res.string.dateClose),
                                         onDateSelected = { dateCloseMillis = it },
                                         selectedDateMillis = dateCloseMillis
                                     )
@@ -528,7 +529,7 @@ fun AppFilterBottomSheet(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Export All",
+                            text = stringResource(Res.string.exportAll),
                             color = AppColors.Primary,
                             style = textStyle(size = 14.sp, weight = FontWeight.SemiBold)
                         )
@@ -556,7 +557,7 @@ fun AppFilterBottomSheet(
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
                 ) {
                     Text(
-                        text = "Apply Filter",
+                        text = stringResource(Res.string.applyFilter),
                         color = Color.White,
                         style = textStyle(size = 14.sp, weight = FontWeight.SemiBold)
                     )

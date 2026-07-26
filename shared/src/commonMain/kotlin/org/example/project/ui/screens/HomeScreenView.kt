@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
 import org.jetbrains.compose.resources.painterResource
-import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -87,6 +86,9 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.rememberFileDownloader
 import org.koin.compose.koinInject
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.StringResource
 
 @Composable
 fun HomeScreenContentView(
@@ -111,14 +113,17 @@ fun HomeScreenContentView(
 
     val pdfModuleType by vm.pdfModuleType.collectAsState()
 
+    
+    val downloadingMsg = stringResource(Res.string.downloading_report, pdfModuleType ?: "")
+    val failedMsg = stringResource(Res.string.failed_to_download_report, pdfModuleType ?: "")
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
                 val fileName = "${pdfModuleType}_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
                 fileDownloader.downloadFile(url, fileName)
-                vm.setPdfToastMessage("Downloading $pdfModuleType Report")
+                vm.setPdfToastMessage(downloadingMsg)
             } catch (e: Exception) {
-                vm.setPdfErrorToastMessage("Failed to download $pdfModuleType Report")
+                vm.setPdfErrorToastMessage(failedMsg)
             }
             vm.clearPdfUrl()
         }
@@ -209,7 +214,7 @@ fun HeaderView(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = "Hi, Welcome Back",
+                text = stringResource(Res.string.welcome_back),
                 style = textStyle(
                     size = 14.sp,
                     weight = FontWeight.Normal
@@ -235,7 +240,7 @@ fun HeaderView(
         Box(modifier = Modifier.clickable { onNotificationClick() }) {
             Image(
                 painter = painterResource(Res.drawable.ic_bell),
-                contentDescription = "Notifications"
+                contentDescription = stringResource(Res.string.notifications)
             )
 
             if ((notificationCount ?: 0) > 0) {
@@ -298,7 +303,7 @@ fun PendingActionsCardView(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Pending Actions",
+                    text = stringResource(Res.string.pendingActions),
                     style = textStyle(
                         14.sp,
                         FontWeight.Normal
@@ -324,7 +329,7 @@ fun PendingActionsCardView(
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Text(
-                        text = "Pending",
+                        text = stringResource(Res.string.pending),
                         modifier = Modifier.padding(bottom = 10.dp),
                         style = textStyle(
                             15.sp,
@@ -356,14 +361,13 @@ fun AssignedToMeCard(
     var showPermitDrawer by remember { mutableStateOf(false) }
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    val strings = LocalAppStrings.current
     assignedToMe?.let { contents ->
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
             Row() {
                 Text(
-                    strings.assignedToMe,
+                    stringResource(Res.string.assignedToMe),
                     style = textStyle(
                         14.sp,
                         FontWeight.Bold
@@ -373,7 +377,7 @@ fun AssignedToMeCard(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    strings.viewAll,
+                    stringResource(Res.string.viewAll),
                     modifier = Modifier.clickable { onViewAllClick() },
                     style = textStyle(
                         12.sp,
@@ -639,7 +643,7 @@ fun ObservationActionBottomSheet(
         ) {
 
             Text(
-                text = "Open Observation",
+                text = stringResource(Res.string.openObservation),
                 style = textStyle(
                     size = 18.sp,
                     weight = FontWeight.Bold
@@ -724,7 +728,7 @@ fun PermitActionBottomSheet(
         ) {
 
             Text(
-                text = "Permit To Work",
+                text = stringResource(Res.string.permitToWork),
                 style = textStyle(
                     size = 18.sp,
                     weight = FontWeight.Bold
@@ -785,7 +789,6 @@ fun ActionOverviewSection(
     actionOverview: ActionsOverview?,
     onClickListener: (ActionOverview) -> Unit
 ) {
-    val strings = LocalAppStrings.current
     val items = listOf(
         ActionOverviewItem(ActionOverview.AUDIT_INSPECTIONS, actionOverview?.auditAndInspectionsCount),
         ActionOverviewItem(ActionOverview.PERMIT_TO_WORK, actionOverview?.permitToWorkCount),
@@ -798,7 +801,7 @@ fun ActionOverviewSection(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            strings.actionOverview,
+            stringResource(Res.string.actionOverview),
             style = textStyle(
                 14.sp,
                 FontWeight.Bold
@@ -876,7 +879,7 @@ fun ActionOverviewCard(
             ) {
                 Image(
                     painter = painterResource(action.icon),
-                    contentDescription = action.title
+                    contentDescription = stringResource(action.title)
                 )
 
                 Text(
@@ -891,7 +894,7 @@ fun ActionOverviewCard(
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = action.title,
+                text = stringResource(action.title),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = textStyle(
@@ -917,7 +920,7 @@ fun StatusCard(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = status.title.uppercase(),
+            text = stringResource(status.title).uppercase(),
             style = textStyle(
                 10.sp,
                 FontWeight.SemiBold,
@@ -983,42 +986,42 @@ enum class HomeScreenStatus(
 }
 
 enum class ActionOverview(
-    val title: String,
+    val title: StringResource,
     val icon: DrawableResource,
     val count: Int = 0
 ) {
     AUDIT_INSPECTIONS(
-        "Audit & Inspections",
+        Res.string.audit_inspections,
         Res.drawable.ic_audit_inspection
     ),
 
     PERMIT_TO_WORK(
-        "Permit to Work",
+        Res.string.permit_to_work,
         Res.drawable.ic_permit_to_work
     ),
 
     OBSERVATIONS(
-        "Observations",
+        Res.string.observations,
         Res.drawable.ic_observations
     ),
 
     INCIDENTS(
-        "Incidents",
+        Res.string.incidents,
         Res.drawable.ic_incidents
     ),
 
     VIOLATIONS(
-        "Violations",
+        Res.string.violations,
         Res.drawable.ic_violations
     ),
 
     TRAINING(
-        "Training",
+        Res.string.training,
         Res.drawable.ic_training
     ),
-    
+
     LESSONS_LEARNED(
-        "Lessons Learned",
+        Res.string.lessons_learned,
         Res.drawable.ic_observations
     )
 }
@@ -1031,23 +1034,22 @@ data class ActionOverviewItem(
 
 enum class ObservationStatus(
     val id: Int,
-    val title: String,
+    val title: StringResource,
     val backgroundColor: Color
 ) {
     OPEN(
         id = 1,
-        title = "Open",
+        title = Res.string.open,
         backgroundColor = Color(0xFFFA6345)
     ),
     CLOSED(
         id = 2,
-        title = "Close Out Pending",
+        title = Res.string.close_out_pending,
         backgroundColor = Color(0xFFF6A03A)
-
     ),
     CLOSE_OUT_APPROVED(
         id = 3,
-        title = "Closed",
+        title = Res.string.closed,
         backgroundColor = Color(0xFF45B743)
     );
 

@@ -69,6 +69,8 @@ import org.example.project.utilites.AppSearchBar
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun ProjectListScreen(
@@ -112,7 +114,7 @@ fun ProjectListScreen(
                         searchQuery = it
                         viewModel.getProjects(searchQuery)
                                     },
-                    placeholder = "Search Projects",
+                    placeholder = stringResource(Res.string.searchProjects),
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
                 )
@@ -130,7 +132,7 @@ fun ProjectListScreen(
                     is ProjectListUiState.Success -> {
                         if ((uiState.value as ProjectListUiState.Success).projectList.isEmpty()) {
                             EmptyScreenView(
-                                message = "No Projects Found"
+                                message = stringResource(Res.string.noProjectsFound)
                             )
                         } else {
                             ProjectListScreenView(
@@ -251,7 +253,7 @@ fun ProjectListScreenTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "PROJECTS",
+            text = stringResource(Res.string.projects),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold
@@ -298,7 +300,7 @@ fun RequestButton(
                 contentDescription = null
             )
             Text(
-                text = "Request",
+                text = stringResource(Res.string.request),
                 style = textStyle(
                     size = 13.sp,
                     weight = FontWeight.Bold
@@ -332,7 +334,7 @@ fun CreateButton(
                 contentDescription = null
             )
             Text(
-                text = "Create",
+                text = stringResource(Res.string.create),
                 style = textStyle(
                     size = 13.sp,
                     weight = FontWeight.Bold
@@ -438,7 +440,7 @@ fun RequestProjectBottomSheet(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
             Text(
-                text = "Request Project Access",
+                text = stringResource(Res.string.requestProjectAccess),
                 style = textStyle(
                     size = 18.sp,
                     weight = FontWeight.Bold
@@ -447,7 +449,7 @@ fun RequestProjectBottomSheet(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Please enter the code to join the project",
+                text = stringResource(Res.string.pleaseEnterTheCodeToJoinTheProject),
                 style = textStyle(
                     size = 13.sp,
                     weight = FontWeight.Normal
@@ -505,7 +507,7 @@ fun RequestProjectBottomSheet(
             Spacer(modifier = Modifier.height(30.dp))
             
             Text(
-                text = "View Project",
+                text = stringResource(Res.string.viewProject),
                 style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                 color = AppColors.Primary,
                 modifier = Modifier.clickable { onViewProject(part1, part2) }
@@ -514,7 +516,7 @@ fun RequestProjectBottomSheet(
             Spacer(modifier = Modifier.height(30.dp))
             
             org.example.project.utilites.AppPrimaryButton(
-                title = "Continue",
+                title = stringResource(Res.string.continueAction),
                 onClick = { onContinue(part1, part2) },
                 modifier = Modifier.fillMaxWidth().height(50.dp)
             )
@@ -603,7 +605,7 @@ fun ViewProjectDialog(
                 }
                 
                 org.example.project.utilites.AppPrimaryButton(
-                    title = "Close",
+                    title = stringResource(Res.string.close),
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth().height(48.dp)
                 )

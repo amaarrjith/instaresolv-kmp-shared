@@ -65,6 +65,8 @@ import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,7 +116,7 @@ fun IncidentListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Incidents".uppercase(),
+                    text = stringResource(Res.string.incidents).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -148,7 +150,7 @@ fun IncidentListScreen(
                         onValueChange = {
                             viewModel.updateSearchKey(it)
                         },
-                        placeholder = "Search Incidents",
+                        placeholder = stringResource(Res.string.searchIncidents),
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -226,7 +228,7 @@ fun IncidentListScreen(
                     ) {
                         if (uiState.incidents.isEmpty()) {
                             EmptyScreenView(
-                                message = "No incidents found"
+                                message = stringResource(Res.string.noIncidentsFound)
                             )
                         } else {
                             LazyColumn(

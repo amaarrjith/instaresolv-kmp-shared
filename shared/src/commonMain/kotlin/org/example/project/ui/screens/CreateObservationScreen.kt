@@ -33,6 +33,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import androidx.compose.foundation.clickable
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +71,7 @@ fun CreateObservationScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "CREATE - OBSERVATION",
+                    text = stringResource(Res.string.createObservation),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -93,7 +95,7 @@ fun CreateObservationScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     org.example.project.utilites.AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = {
                             viewModel.saveObservation(
                                 title = observationTitle.value,
@@ -106,7 +108,7 @@ fun CreateObservationScreen(
                         modifier = Modifier.weight(1f)
                     )
                     org.example.project.utilites.AppPrimaryButton(
-                        title = "Save",
+                        title = stringResource(Res.string.save),
                         onClick = {
                             viewModel.saveObservation(
                                 title = observationTitle.value,
@@ -141,14 +143,14 @@ fun CreateObservationScreen(
                     isMandatory = true,
                     value = observationTitle.value,
                     onValueChange = { observationTitle.value = it },
-                    title = "Title",
-                    placeholder = "Enter Observation Title"
+                    title = stringResource(Res.string.title),
+                    placeholder = stringResource(Res.string.enterObservationTitle)
                 )
                 AppTextField(
                     isMandatory = true,
                     value = viewModel.logginedUser?.name ?: "",
                     onValueChange = { },
-                    title = "Reported By",
+                    title = stringResource(Res.string.reportedBy),
                     placeholder = "",
                     readOnly = true,
                     enabled = false
@@ -164,26 +166,26 @@ fun CreateObservationScreen(
                     AppTextField(
                         value = uiState.manualResponsibleName,
                         onValueChange = { viewModel.onManualResponsibleNameChange(it) },
-                        title = "Responsible Person",
-                        placeholder = "Enter Responsible Person Name"
+                        title = stringResource(Res.string.responsiblePerson),
+                        placeholder = stringResource(Res.string.enterResponsiblePersonName)
                     )
                     AppTextField(
                         value = uiState.manualResponsibleEmail,
                         onValueChange = { viewModel.onManualResponsibleEmailChange(it) },
-                        title = "Responsible Person Email",
-                        placeholder = "Enter Responsible Person Email"
+                        title = stringResource(Res.string.responsiblePersonEmail),
+                        placeholder = stringResource(Res.string.enterResponsiblePersonEmail)
                     )
                 } else {
                     AppUserDropdown(
-                        title = "Responsible Person",
-                        placeholder = "Select Responsible Person",
+                        title = stringResource(Res.string.responsiblePerson),
+                        placeholder = stringResource(Res.string.selectResponsiblePerson),
                         users = uiState.groupUsers,
                         selectedUser = uiState.selectedResponsiblePerson,
                         onUserSelected = { viewModel.onResponsiblePersonSelected(it) }
                     )
                     AppUserDropdown(
-                        title = "Send Notification To",
-                        placeholder = "Select Person To Notify",
+                        title = stringResource(Res.string.sendNotificationTo),
+                        placeholder = stringResource(Res.string.selectPersonToNotify),
                         users = uiState.groupUsers,
                         selectedUser = uiState.selectedNotifyPerson,
                         onUserSelected = { viewModel.onNotifyPersonSelected(it) }
@@ -194,14 +196,14 @@ fun CreateObservationScreen(
                     icon = Res.drawable.ic_mark_location,
                     value = location.value, // TODO: Use separate location state
                     onValueChange = { location.value = it },
-                    title = "Location",
-                    placeholder = "Enter Location"
+                    title = stringResource(Res.string.location),
+                    placeholder = stringResource(Res.string.enterLocation)
                 )
                 AppMultilineTextField(
                     value = description.value,
                     onValueChange = { description.value = it },
-                    title = "Description *",
-                    placeholder = "Enter Description",
+                    title = stringResource(Res.string.description1),
+                    placeholder = stringResource(Res.string.enterDescription),
                     isVoiceEnabled = true,
                     onAudioUrlProcessed = { viewModel.onAudioUrlProcessed(it) }
                 )
@@ -240,13 +242,13 @@ fun CreateObservationScreen(
                     ) {
                         androidx.compose.material3.Icon(
                             painter = org.jetbrains.compose.resources.painterResource(Res.drawable.ic_add),
-                            contentDescription = "Add Image",
+                            contentDescription = stringResource(Res.string.addImage),
                             modifier = Modifier.size(15.dp),
                             tint = org.example.project.colors.AppColors.Primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Add Image",
+                            text = stringResource(Res.string.addImage),
                             style = org.example.project.typography.textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.SemiBold
@@ -268,7 +270,7 @@ fun CreateObservationScreen(
         if (showSuccessDialog.value) {
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Observation created successfully.",
                 buttonText = "OK",
                 onDismiss = {

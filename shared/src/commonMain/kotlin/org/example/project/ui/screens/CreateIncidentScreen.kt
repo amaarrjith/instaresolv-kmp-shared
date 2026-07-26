@@ -44,6 +44,8 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.jetbrains.compose.resources.painterResource
 import org.example.project.ui.components.BulkEmployeeUploadSheet
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +79,7 @@ fun CreateIncidentScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Create - Incidents".uppercase(),
+                    text = stringResource(Res.string.createIncidents).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -101,7 +103,7 @@ fun CreateIncidentScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = {
                             viewModel.saveIncident(
                                 isDraft = true,
@@ -111,7 +113,7 @@ fun CreateIncidentScreen(
                         modifier = Modifier.weight(1f)
                     )
                     AppPrimaryButton(
-                        title = "Publish",
+                        title = stringResource(Res.string.publish),
                         onClick = {
                             viewModel.saveIncident(
                                 isDraft = false,
@@ -151,7 +153,7 @@ fun CreateIncidentScreen(
                 AppTextField(
                     value = uiState.reportedByName,
                     onValueChange = {},
-                    title = "Reported By",
+                    title = stringResource(Res.string.reportedBy),
                     placeholder = "",
                     enabled = false,
                     isMandatory = true
@@ -165,7 +167,7 @@ fun CreateIncidentScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "Incident Date",
+                            text = stringResource(Res.string.incidentDate),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -176,7 +178,7 @@ fun CreateIncidentScreen(
                         )
                     }
                     AppDatePicker(
-                        text = "YYYY-MM-DD",
+                        text = stringResource(Res.string.yyyymmdd),
                         selectedDateMillis = uiState.incidentDateMillis,
                         onDateSelected = { viewModel.onDateSelected(it) }
                     )
@@ -189,7 +191,7 @@ fun CreateIncidentScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "Incident Time",
+                            text = stringResource(Res.string.incidentTime),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -200,7 +202,7 @@ fun CreateIncidentScreen(
                         )
                     }
                     AppTimePicker(
-                        text = "HH:MM",
+                        text = stringResource(Res.string.hhmm),
                         selectedTime = uiState.incidentTime,
                         onTimeSelected = { viewModel.onTimeChanged(it) }
                     )
@@ -210,8 +212,8 @@ fun CreateIncidentScreen(
                         icon = Res.drawable.ic_mark_location,
                         value = uiState.location,
                         onValueChange = { viewModel.onLocationChanged(it) },
-                        title = "Location",
-                        placeholder = "Enter Location"
+                        title = stringResource(Res.string.location),
+                        placeholder = stringResource(Res.string.enterLocation)
                 )
 
 
@@ -222,7 +224,7 @@ fun CreateIncidentScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "Incident Type",
+                            text = stringResource(Res.string.incidentType),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -263,7 +265,7 @@ fun CreateIncidentScreen(
 
                 // Injured Person Details
                 Text(
-                    text = "Injured Person Details",
+                    text = stringResource(Res.string.injuredPersonDetails),
                     style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                     color = AppColors.Black
                 )
@@ -274,7 +276,7 @@ fun CreateIncidentScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "Are there any injured person ?",
+                            text = stringResource(Res.string.areThereAnyInjuredPerson),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -299,7 +301,7 @@ fun CreateIncidentScreen(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Yes".uppercase(),
+                                text = stringResource(Res.string.yes).uppercase(),
                                 style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                                 color = AppColors.Black
                             )
@@ -314,7 +316,7 @@ fun CreateIncidentScreen(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "No".uppercase(),
+                                text = stringResource(Res.string.no).uppercase(),
                                 style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                                 color = AppColors.Black
                             )
@@ -472,14 +474,14 @@ fun CreateIncidentScreen(
                 AppMultilineTextField(
                     value = uiState.description,
                     onValueChange = { viewModel.onDescriptionChanged(it) },
-                    title = "Description",
-                    placeholder = "Enter Description"
+                    title = stringResource(Res.string.description),
+                    placeholder = stringResource(Res.string.enterDescription)
                 )
                 AppMultilineTextField(
                     value = uiState.immediateCorrections,
                     onValueChange = { viewModel.onCorrectionsChanged(it) },
-                    title = "Immediate Corrections",
-                    placeholder = "Enter Immediate Corrections"
+                    title = stringResource(Res.string.immediateCorrections),
+                    placeholder = stringResource(Res.string.enterImmediateCorrections)
                 )
                 // Image slots
                 uiState.incidentImages.forEachIndexed { index, incidentImage ->
@@ -512,13 +514,13 @@ fun CreateIncidentScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_add),
-                            contentDescription = "Add Image",
+                            contentDescription = stringResource(Res.string.addImage),
                             modifier = Modifier.size(15.dp),
                             tint = AppColors.Primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Add Image",
+                            text = stringResource(Res.string.addImage),
                             style = textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.SemiBold
@@ -540,7 +542,7 @@ fun CreateIncidentScreen(
         if (showSuccessDialog.value) {
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Incident created successfully.",
                 buttonText = "OK",
                 onDismiss = {

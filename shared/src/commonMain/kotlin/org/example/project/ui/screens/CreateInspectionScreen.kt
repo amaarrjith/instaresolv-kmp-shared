@@ -33,6 +33,8 @@ import org.example.project.utilites.ToastType
 import org.example.project.ui.components.AppStatusDialog
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +68,7 @@ fun CreateInspectionScreen(
         topBar = {
             Row (
                 modifier = Modifier
+                    .fillMaxWidth()
                     .statusBarsPadding()
                     .padding(vertical = 10.dp)
                     .padding(end = 22.dp),
@@ -73,7 +76,7 @@ fun CreateInspectionScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "Create - Audit & Inspections".uppercase(),
+                    text = stringResource(Res.string.createAuditInspections).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -97,14 +100,14 @@ fun CreateInspectionScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = {
                             viewModel.saveInspection(isDraft = true, onSuccess = { showSuccessDialog.value = true })
                         },
                         modifier = Modifier.weight(1f)
                     )
                     AppPrimaryButton(
-                        title = "Save",
+                        title = stringResource(Res.string.save),
                         onClick = {
                             viewModel.saveInspection(isDraft = false, onSuccess = { showSuccessDialog.value = true })
                         },
@@ -130,7 +133,7 @@ fun CreateInspectionScreen(
                 // Inspection Type Header
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Inspection Type",
+                        text = stringResource(Res.string.inspectionType),
                         style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                         color = Color.Gray
                     )
@@ -159,8 +162,8 @@ fun CreateInspectionScreen(
                 AppTextField(
                     value = uiState.equipmentDescription,
                     onValueChange = { viewModel.onEquipmentDescriptionChanged(it) },
-                    title = "Model Number",
-                    placeholder = "Enter Model Number",
+                    title = stringResource(Res.string.modelNumber),
+                    placeholder = stringResource(Res.string.enterModelNumber),
                     isMandatory = true,
                 )
 
@@ -168,7 +171,7 @@ fun CreateInspectionScreen(
                 AppTextField(
                     value = viewModel.user?.name ?: "",
                     onValueChange = {},
-                    title = "Inspected By",
+                    title = stringResource(Res.string.inspectedBy),
                     placeholder = "",
                     isMandatory = true,
                     enabled = false
@@ -179,8 +182,8 @@ fun CreateInspectionScreen(
                     icon = Res.drawable.ic_mark_location,
                     value = uiState.location,
                     onValueChange = { viewModel.onLocationChanged(it) },
-                    title = "Location",
-                    placeholder = "Downtown Dubai, UAE",
+                    title = stringResource(Res.string.location),
+                    placeholder = stringResource(Res.string.downtownDubaiUae),
                     isMandatory = true
                 )
 
@@ -191,7 +194,7 @@ fun CreateInspectionScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "Date",
+                            text = stringResource(Res.string.date),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -202,7 +205,7 @@ fun CreateInspectionScreen(
                         )
                     }
                     AppDatePicker(
-                        text = "18 Aug 2025",
+                        text = stringResource(Res.string.txt_18Aug2025),
                         selectedDateMillis = uiState.inspectionDateMillis,
                         onDateSelected = { viewModel.onDateSelected(it) }
                     )
@@ -215,7 +218,7 @@ fun CreateInspectionScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "Equipment Source",
+                            text = stringResource(Res.string.equipmentSource),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -282,8 +285,8 @@ fun CreateInspectionScreen(
                     AppTextField(
                         value = uiState.equipmentSourceSecondary,
                         onValueChange = { viewModel.onEquipmentSourceSecondaryChanged(it) },
-                        title = "Subcontractor Name",
-                        placeholder = "Enter Subcontractor Name",
+                        title = stringResource(Res.string.subcontractorName),
+                        placeholder = stringResource(Res.string.enterSubcontractorName),
                         isMandatory = false
                     )
                 }
@@ -344,12 +347,12 @@ fun CreateInspectionScreen(
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                text = "No Questions Found !",
+                                text = stringResource(Res.string.noQuestionsFound1),
                                 style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                                 color = AppColors.Primary
                             )
                             Text(
-                                text = "You can't publish or save as a draft\nwithout adding at least one question.",
+                                text = stringResource(Res.string.youCantPublishOrSaveAsADraftnwithoutAddingAtLeastOneQuestion),
                                 style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                 color = AppColors.Primary
                             )
@@ -361,16 +364,16 @@ fun CreateInspectionScreen(
                 AppMultilineTextField(
                     value = uiState.description,
                     onValueChange = { viewModel.onDescriptionChanged(it) },
-                    title = "Description",
-                    placeholder = "Enter Description",
+                    title = stringResource(Res.string.description),
+                    placeholder = stringResource(Res.string.enterDescription),
                 )
 
                 // Notes
                 AppMultilineTextField(
                     value = uiState.notes,
                     onValueChange = { viewModel.onNotesChanged(it) },
-                    title = "Notes",
-                    placeholder = "Enter Notes",
+                    title = stringResource(Res.string.notes),
+                    placeholder = stringResource(Res.string.enterNotes),
                 )
 
                 // Image slots
@@ -404,13 +407,13 @@ fun CreateInspectionScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_add),
-                            contentDescription = "Add Image",
+                            contentDescription = stringResource(Res.string.addImage),
                             modifier = Modifier.size(15.dp),
                             tint = AppColors.Primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Add Image",
+                            text = stringResource(Res.string.addImage),
                             style = textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.Bold
@@ -444,7 +447,7 @@ fun CreateInspectionScreen(
         if (showSuccessDialog.value) {
             AppStatusDialog(
                 visible = showSuccessDialog.value,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Inspection created successfully.",
                 buttonText = "OK",
                 onDismiss = {

@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import org.jetbrains.compose.resources.painterResource
-import org.example.project.localization.LocalAppStrings
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -81,6 +80,8 @@ import org.example.project.utilites.AppTextField
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun RegisterScreen(
@@ -155,7 +156,6 @@ fun RegisterScreenContent(
     val showPicker = remember { mutableStateOf(false) }
     val profileImageUrl = remember { mutableStateOf("") }
     val isUploadingImage = remember { mutableStateOf(false) }
-    val strings = LocalAppStrings.current
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(uiState.value.isRegisterSuccess) {
@@ -185,7 +185,7 @@ fun RegisterScreenContent(
     ) {
         Spacer(modifier = Modifier.height(94.dp))
         Text(
-            text = strings.register,
+            text = stringResource(Res.string.register),
             style = textStyle(
                 size = 21.sp,
                 weight = FontWeight.Bold
@@ -195,7 +195,7 @@ fun RegisterScreenContent(
         Spacer(modifier = Modifier.height(10.dp))
         Row() {
             Text(
-                text = strings.alreadyHaveAccount,
+                text = stringResource(Res.string.alreadyHaveAccount),
                 style = textStyle(
                     size = 14.sp,
                     weight = FontWeight.Normal
@@ -207,7 +207,7 @@ fun RegisterScreenContent(
                 modifier = Modifier.clickable {
                     isLoginClicked()
                 },
-                text = strings.loginNow,
+                text = stringResource(Res.string.loginNow),
                 style = textStyle(
                     size = 14.sp,
                     weight = FontWeight.SemiBold
@@ -277,7 +277,7 @@ fun RegisterScreenContent(
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_camera),
-                        contentDescription = "Upload Profile",
+                        contentDescription = stringResource(Res.string.uploadProfile),
                         tint = Color.White,
                         modifier = Modifier.size(14.dp)
                     )
@@ -290,8 +290,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 fullName.value = it
             },
-            title = strings.fullName,
-            placeholder = strings.fullName,
+            title = stringResource(Res.string.fullName),
+            placeholder = stringResource(Res.string.fullName),
             isMandatory = true
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -300,8 +300,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 email.value = it
             },
-            title = strings.emailId,
-            placeholder = strings.emailPlaceholder,
+            title = stringResource(Res.string.emailId),
+            placeholder = stringResource(Res.string.emailPlaceholder),
             isMandatory = true
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -310,8 +310,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 password.value = it
             },
-            title = strings.password,
-            placeholder = strings.passwordPlaceholder,
+            title = stringResource(Res.string.password),
+            placeholder = stringResource(Res.string.passwordPlaceholder),
             isSecure = true,
             isMandatory = true
 
@@ -322,8 +322,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 confirmPassword.value = it
             },
-            title = strings.confirmPassword,
-            placeholder = strings.confirmPassword,
+            title = stringResource(Res.string.confirmPassword),
+            placeholder = stringResource(Res.string.confirmPassword),
             isSecure = true,
             isMandatory = true
         )
@@ -333,8 +333,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 designation.value = it
             },
-            title = strings.designation,
-            placeholder = strings.designation
+            title = stringResource(Res.string.designation),
+            placeholder = stringResource(Res.string.designation)
         )
         Spacer(modifier = Modifier.height(20.dp))
         AppTextField(
@@ -342,8 +342,8 @@ fun RegisterScreenContent(
             onValueChange = {
                 company.value = it
             },
-            title = strings.company,
-            placeholder = strings.company
+            title = stringResource(Res.string.company),
+            placeholder = stringResource(Res.string.company)
         )
         Spacer(modifier = Modifier.height(20.dp))
         Row() {
@@ -376,7 +376,7 @@ fun RegisterScreenContent(
             contentAlignment = Alignment.Center
         ) {
             AppPrimaryButton(
-                title = strings.register,
+                title = stringResource(Res.string.register),
                 isLoading = uiState.value.isLoading,
                 onClick = {
                     viewModel.register(
@@ -400,7 +400,6 @@ fun TermsAndPrivacyText(
     onTermsClick: () -> Unit,
     onPrivacyClick: () -> Unit
 ) {
-    val strings = LocalAppStrings.current
     val normalStyle = textStyle(
         size = 12.sp,
         weight = FontWeight.Medium,
@@ -416,7 +415,7 @@ fun TermsAndPrivacyText(
     val annotatedText = buildAnnotatedString {
 
         withStyle(normalStyle) {
-            append(strings.privacyPolicyMessage)
+            append(stringResource(Res.string.privacyPolicyMessage))
             append(" ")
         }
 
@@ -425,13 +424,13 @@ fun TermsAndPrivacyText(
             annotation = "terms"
         )
         withStyle(linkStyle) {
-            append(strings.termsAndConditions)
+            append(stringResource(Res.string.termsAndConditions))
             append(" ")
         }
         pop()
 
         withStyle(normalStyle) {
-            append(strings.andThe)
+            append(stringResource(Res.string.andThe))
             append(" ")
         }
 
@@ -440,7 +439,7 @@ fun TermsAndPrivacyText(
             annotation = "privacy"
         )
         withStyle(linkStyle) {
-            append(strings.privacyPolicy)
+            append(stringResource(Res.string.privacyPolicy))
         }
         pop()
 

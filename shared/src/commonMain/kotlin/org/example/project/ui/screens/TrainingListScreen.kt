@@ -31,6 +31,8 @@ import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +48,7 @@ fun TrainingListScreen(
         topBar = {
             Row (
                 modifier = Modifier
+                    .fillMaxWidth()
                     .statusBarsPadding()
                     .padding(vertical = 10.dp)
                     .padding(end = 22.dp),
@@ -55,7 +58,7 @@ fun TrainingListScreen(
                     onBackClicked
                 )
                 Text(
-                    text = "My Training".uppercase(),
+                    text = stringResource(Res.string.myTraining).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -87,7 +90,7 @@ fun TrainingListScreen(
                 ) {
                     if (uiState.trainings.isEmpty()) {
                         EmptyScreenView(
-                            message = "No trainings found"
+                            message = stringResource(Res.string.noTrainingsFound)
                         )
                     } else {
                         LazyColumn(

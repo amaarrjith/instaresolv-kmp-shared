@@ -43,6 +43,8 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +112,7 @@ fun CreateToolBoxTalkScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "CREATE - TOOLBOX TALK",
+                    text = stringResource(Res.string.createToolboxTalk),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -134,7 +136,7 @@ fun CreateToolBoxTalkScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = {
                             if (topic.isBlank()) {
                                 showErrorToast = "Topic is required"
@@ -160,7 +162,7 @@ fun CreateToolBoxTalkScreen(
                         modifier = Modifier.weight(1f)
                     )
                     AppPrimaryButton(
-                        title = "Save",
+                        title = stringResource(Res.string.save),
                         onClick = {
                             if (topic.isBlank()) {
                                 showErrorToast = "Topic is required"
@@ -216,7 +218,7 @@ fun CreateToolBoxTalkScreen(
                     isMandatory = true,
                     value = viewModel.logginedUser?.name ?: "",
                     onValueChange = {},
-                    title = "Reported By",
+                    title = stringResource(Res.string.reportedBy),
                     placeholder = "",
                     readOnly = true,
                     enabled = false
@@ -226,12 +228,12 @@ fun CreateToolBoxTalkScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Date *",
+                        text = stringResource(Res.string.date1),
                         style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                         color = AppColors.Black
                     )
                     AppDatePicker(
-                        text = "Select Date",
+                        text = stringResource(Res.string.selectDate),
                         selectedDateMillis = selectedDateMillis,
                         onDateSelected = { selectedDateMillis = it }
                     )
@@ -246,12 +248,12 @@ fun CreateToolBoxTalkScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Start Time *",
+                            text = stringResource(Res.string.startTime1),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
                         AppTimePicker(
-                            text = "00 : 00",
+                            text = stringResource(Res.string.txt_0000),
                             selectedTime = startTime,
                             onTimeSelected = { startTime = it }
                         )
@@ -262,12 +264,12 @@ fun CreateToolBoxTalkScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "End Time *",
+                            text = stringResource(Res.string.endTime1),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
                         AppTimePicker(
-                            text = "00 : 00",
+                            text = stringResource(Res.string.txt_0000),
                             selectedTime = endTime,
                             onTimeSelected = { endTime = it }
                         )
@@ -278,8 +280,8 @@ fun CreateToolBoxTalkScreen(
                     isMandatory = true,
                     value = topic,
                     onValueChange = { topic = it },
-                    title = "Topic",
-                    placeholder = "Enter Topic"
+                    title = stringResource(Res.string.topic),
+                    placeholder = stringResource(Res.string.enterTopic)
                 )
 
                 // Discussion Points
@@ -287,7 +289,7 @@ fun CreateToolBoxTalkScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Discussion Points",
+                        text = stringResource(Res.string.discussionPoints),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Black
                     )
@@ -297,7 +299,7 @@ fun CreateToolBoxTalkScreen(
                             value = point,
                             onValueChange = { discussionPoints[index] = it },
                             title = "Point ${index + 1}",
-                            placeholder = "Enter Discussion Point"
+                            placeholder = stringResource(Res.string.enterDiscussionPoint)
                         )
                     }
 
@@ -307,13 +309,13 @@ fun CreateToolBoxTalkScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_add),
-                            contentDescription = "Add Point",
+                            contentDescription = stringResource(Res.string.addPoint),
                             modifier = Modifier.size(15.dp),
                             tint = AppColors.Primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Add Point",
+                            text = stringResource(Res.string.addPoint),
                             style = textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.SemiBold
@@ -326,7 +328,7 @@ fun CreateToolBoxTalkScreen(
                 // Attendees List View
                 if (attendees.isNotEmpty()) {
                     Text(
-                        text = "Attendees List",
+                        text = stringResource(Res.string.attendeesList),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Black
                     )
@@ -368,7 +370,7 @@ fun CreateToolBoxTalkScreen(
                                         Box(modifier = Modifier.width(60.dp), contentAlignment = Alignment.Center) {
                                             Image(
                                                 painter = painterResource(Res.drawable.ic_trash),
-                                                contentDescription = "Remove Attendee",
+                                                contentDescription = stringResource(Res.string.removeAttendee),
                                                 modifier = Modifier.size(20.dp).clickable { attendees.removeAt(index) }
                                             )
                                         }
@@ -407,7 +409,7 @@ fun CreateToolBoxTalkScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Attendance Evidence",
+                        text = stringResource(Res.string.attendanceEvidence),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Black
                     )
@@ -444,13 +446,13 @@ fun CreateToolBoxTalkScreen(
                         ) {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_add),
-                                contentDescription = "Add Image",
+                                contentDescription = stringResource(Res.string.addImage),
                                 modifier = Modifier.size(15.dp),
                                 tint = AppColors.Primary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Add Image",
+                                text = stringResource(Res.string.addImage),
                                 style = textStyle(
                                     size = 12.sp,
                                     weight = FontWeight.SemiBold
@@ -473,7 +475,7 @@ fun CreateToolBoxTalkScreen(
         if (showSuccessDialog.value) {
             AppStatusDialog(
                 visible = showSuccessDialog.value,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = "Toolbox Talk created successfully.",
                 buttonText = "OK",
                 onDismiss = {

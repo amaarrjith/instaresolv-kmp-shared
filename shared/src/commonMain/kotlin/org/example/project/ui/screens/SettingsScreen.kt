@@ -40,10 +40,12 @@ import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.example.project.localization.LocalAppStrings
 import org.example.project.ui.viewmodel.GlobalSettingsViewModel
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.draw.scale
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +64,6 @@ fun SettingsScreen(
     var showLanguageSheet by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     val sheetState = rememberModalBottomSheetState()
-    val strings = LocalAppStrings.current
     
     Scaffold(
         containerColor = Color.White,
@@ -73,7 +74,7 @@ fun SettingsScreen(
                     .padding(vertical = 20.dp),
             ) {
                 Text(
-                    text = strings.settings.uppercase(),
+                    text = stringResource(Res.string.settings).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -89,12 +90,12 @@ fun SettingsScreen(
                 .padding(horizontal = 28.dp)
         ) {
             LazyColumn {
-                item { SettingsRow(title = strings.appLanguage, subText = currentLanguage.title, action = { showLanguageSheet = true }) }
-                item { SettingsRow(title = strings.changePassword, subText = "********", action = { onChangePasswordClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.appLanguage), subText = currentLanguage.title, action = { showLanguageSheet = true }) }
+                item { SettingsRow(title = stringResource(Res.string.changePassword), subText = stringResource(Res.string.emptyStr), action = { onChangePasswordClick() }) }
                 item { 
                     SettingsRow(
-                        title = "App Notifications", 
-                        subText = "Enable App Notifications", 
+                        title = stringResource(Res.string.appNotifications), 
+                        subText = stringResource(Res.string.enableAppNotifications), 
                         checked = isAppNotificationEnabled, 
                         isToggle = true, 
                         onCheckedChange = { 
@@ -105,8 +106,8 @@ fun SettingsScreen(
                 }
                 item { 
                     SettingsRow(
-                        title = "Email Notifications", 
-                        subText = "Enable Email Notifications", 
+                        title = stringResource(Res.string.emailNotifications), 
+                        subText = stringResource(Res.string.enableEmailNotifications), 
                         checked = isEmailNotificationEnabled, 
                         isToggle = true, 
                         onCheckedChange = { 
@@ -115,11 +116,11 @@ fun SettingsScreen(
                         }
                     ) 
                 }
-                item { SettingsRow(title = strings.contactUs, subText = "zoondia@gmail.com", action = { onContactUsClick() }) }
-                item { SettingsRow(title = "About Us", subText = "Learn about the app", action = { onAboutUsClick() }) }
-                item { SettingsRow(title = strings.termsAndConditions, subText = "Read Terms", action = { onTermsOfUseClick() }) }
-                item { SettingsRow(title = strings.privacyPolicy, subText = "Read Privacy", action = { onPrivacyPolicyClick() }) }
-                item { SettingsRow(title = strings.deleteAccount, subText = "We will miss you!", titleColor = AppColors.Error, action = { onDeleteAccountClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.contactUs), subText = stringResource(Res.string.zoondiagmailcom), action = { onContactUsClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.aboutUs1), subText = stringResource(Res.string.learnAboutTheApp), action = { onAboutUsClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.termsAndConditions), subText = stringResource(Res.string.readTerms), action = { onTermsOfUseClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.privacyPolicy), subText = stringResource(Res.string.readPrivacy), action = { onPrivacyPolicyClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.deleteAccount), subText = stringResource(Res.string.weWillMissYou), titleColor = AppColors.Error, action = { onDeleteAccountClick() }) }
             }
 
             ToastHost(
@@ -144,7 +145,7 @@ fun SettingsScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = strings.selectLanguage,
+                    text = stringResource(Res.string.selectLanguage),
                     style = textStyle(
                         size = 16.sp,
                         weight = FontWeight.SemiBold
@@ -189,6 +190,8 @@ fun SettingsRow(
     action: () -> Unit = {},
     onCheckedChange: (Boolean) -> Unit = {}
 ) {
+    val globalSettingsViewModel: GlobalSettingsViewModel = koinInject()
+    val currentLanguage by globalSettingsViewModel.currentLanguage.collectAsState()
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -244,8 +247,8 @@ fun SettingsRow(
                 )
             } else {
                 Image(
-//                modifier = Modifier
-//                    .rotate(180f),
+                modifier = Modifier
+                    .scale(scaleX = if (currentLanguage.isRtl) -1f else 1f, scaleY = 1f),
                     painter = painterResource(Res.drawable.ic_right_icon),
                     contentDescription = null,
                 )

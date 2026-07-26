@@ -19,6 +19,8 @@ import androidx.compose.ui.window.DialogProperties
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_toast_close
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun AppImagePreviewDialog(
@@ -74,7 +76,7 @@ fun AppImagePreviewDialog(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_toast_close),
-                    contentDescription = "Close",
+                    contentDescription = stringResource(Res.string.close),
                     tint = Color.White,
                     modifier = Modifier.size(16.dp)
                 )

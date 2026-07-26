@@ -83,6 +83,8 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun ProjectDetailScreen(
@@ -211,7 +213,7 @@ fun ProjectDetailScreen(
             if (inviteStatus.value is InviteStatus.Success) {
                 AppSuccessDialog(
                     visible = true,
-                    title = "Success",
+                    title = stringResource(Res.string.success),
                     description = "Member(s) invited successfully!",
                     onDismiss = {
                         viewModel.clearInviteStatus()
@@ -222,7 +224,7 @@ fun ProjectDetailScreen(
             if (successMessage.value != null) {
                 AppSuccessDialog(
                     visible = true,
-                    title = "Success",
+                    title = stringResource(Res.string.success),
                     description = successMessage.value ?: "",
                     onDismiss = {
                         successMessage.value = null
@@ -330,7 +332,7 @@ fun ProjectDetailScreenContent(
                     .padding(vertical = 20.dp)
             ) {
                 Text(
-                    text = "Project Members",
+                    text = stringResource(Res.string.projectMembers),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -355,7 +357,7 @@ fun ProjectDetailScreenContent(
                 AppSearchBar(
                     value = searchQuery.value,
                     onValueChange = { searchQuery.value = it },
-                    placeholder = "Search members...",
+                    placeholder = stringResource(Res.string.searchMembers),
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -448,7 +450,7 @@ fun ProjectDetailScreenContent(
 
     if (showLeaveProjectDialog.value != null) {
         AppExitDialog(
-            title = "Remove User ?",
+            title = stringResource(Res.string.removeUser),
             description = "Are you sure you want to remove this user",
             visible = true,
             onConfirm = {
@@ -478,7 +480,7 @@ fun SettingsContentView(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Text(
-            text = "Settings",
+            text = stringResource(Res.string.settings),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold
@@ -490,44 +492,44 @@ fun SettingsContentView(
         when {
             isProjectAdmin && isAppAdmin -> {
                 SettingsItemRow(
-                    title = "Transfer Admin Rights",
-                    subtitle = "Hand over admin rights to a project member",
+                    title = stringResource(Res.string.transferAdminRights),
+                    subtitle = stringResource(Res.string.handOverAdminRightsToAProjectMember),
                     onClick = onTransferAdminClick
                 )
 
                 if (trainingFileUrl.isNotBlank()) {
                     SettingsItemRow(
-                        title = "Export Training Details",
-                        subtitle = "Download all members' training details",
+                        title = stringResource(Res.string.exportTrainingDetails),
+                        subtitle = stringResource(Res.string.downloadAllMembersTrainingDetails),
                         onClick = {}
                     )
                 }
 
                 SettingsItemRow(
-                    title = "Delete Project",
-                    subtitle = "Permanently delete this project",
+                    title = stringResource(Res.string.deleteProject),
+                    subtitle = stringResource(Res.string.permanentlyDeleteThisProject),
                     isRed = true,
                     onClick = onDeleteProjectClick
                 )
             }
             isProjectAdmin -> {
                 SettingsItemRow(
-                    title = "Transfer Admin Rights",
-                    subtitle = "Hand over admin rights to a project member",
+                    title = stringResource(Res.string.transferAdminRights),
+                    subtitle = stringResource(Res.string.handOverAdminRightsToAProjectMember),
                     onClick = onTransferAdminClick
                 )
 
                 if (trainingFileUrl.isNotBlank()) {
                     SettingsItemRow(
-                        title = "Export Training Details",
-                        subtitle = "Download all members' training details",
+                        title = stringResource(Res.string.exportTrainingDetails),
+                        subtitle = stringResource(Res.string.downloadAllMembersTrainingDetails),
                         onClick = {}
                     )
                 }
 
                 SettingsItemRow(
-                    title = "Exit Project",
-                    subtitle = "Exit from this project",
+                    title = stringResource(Res.string.exitProject),
+                    subtitle = stringResource(Res.string.exitFromThisProject),
                     isRed = true,
                     onClick = onExitProjectClick
                 )
@@ -536,15 +538,15 @@ fun SettingsContentView(
             isAppAdmin -> {
                 if (trainingFileUrl.isNotBlank()) {
                     SettingsItemRow(
-                        title = "Export Training Details",
-                        subtitle = "Download all members' training details",
+                        title = stringResource(Res.string.exportTrainingDetails),
+                        subtitle = stringResource(Res.string.downloadAllMembersTrainingDetails),
                         onClick = {}
                     )
                 }
 
                 SettingsItemRow(
-                    title = "Delete Project",
-                    subtitle = "Permanently delete this project",
+                    title = stringResource(Res.string.deleteProject),
+                    subtitle = stringResource(Res.string.permanentlyDeleteThisProject),
                     isRed = true,
                     onClick = onDeleteProjectClick
                 )
@@ -552,8 +554,8 @@ fun SettingsContentView(
 
             else -> {
                 SettingsItemRow(
-                    title = "Exit Project",
-                    subtitle = "Exit from this project",
+                    title = stringResource(Res.string.exitProject),
+                    subtitle = stringResource(Res.string.exitFromThisProject),
                     isRed = true,
                     onClick = onExitProjectClick
                 )
@@ -619,7 +621,7 @@ fun ProjectMembersScreen(
 ) {
     if (members.isEmpty()) {
         EmptyScreenView(
-            message = "No Members Found"
+            message = stringResource(Res.string.noMembersFound)
         )
     } else {
         Column {
@@ -651,7 +653,7 @@ fun AddMemberIcon(onClick: () -> Unit = {}) {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "Member",
+            text = stringResource(Res.string.member),
             style = textStyle(
                 size = 13.sp,
                 weight = FontWeight.SemiBold
@@ -766,7 +768,7 @@ fun ProjectMembersItemRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     MemberActionButton(
-                        title = "Change Role",
+                        title = stringResource(Res.string.changeRole),
                         color = AppColors.SkyBlue,
                         onClick = onChangeRoleClick,
                         modifier = Modifier.weight(1f)
@@ -780,7 +782,7 @@ fun ProjectMembersItemRow(
                     )
                 }
                 MemberActionButton(
-                    title = "Change Designation",
+                    title = stringResource(Res.string.changeDesignation),
                     color = AppColors.SkyBlue,
                     onClick = onChangeDesignationClick,
                     modifier = Modifier.fillMaxWidth()
@@ -833,7 +835,7 @@ fun ProjectDetailScreenTopBar(
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = "Project".uppercase(),
+            text = stringResource(Res.string.project).uppercase(),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold
@@ -858,7 +860,7 @@ fun ProjectDetailScreenTopBar(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Edit".uppercase(),
+                            text = stringResource(Res.string.edit).uppercase(),
                             modifier = Modifier.clickable {
                                 onEditClick((uiState.value as ProjectDetailUiState.Success).project)
                             },
@@ -900,12 +902,12 @@ fun InviteMemberBottomSheet(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Invite Member",
+                    text = stringResource(Res.string.inviteMember),
                     style = textStyle(size = 20.sp, weight = FontWeight.Bold)
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Enter an email address to invite a user",
+                    text = stringResource(Res.string.enterAnEmailAddressToInviteAUser),
                     style = textStyle(size = 14.sp, weight = FontWeight.Normal),
                     color = AppColors.TextGray
                 )
@@ -965,7 +967,7 @@ fun InviteMemberBottomSheet(
                     ),
                     placeholder = {
                         Text(
-                            text = "Email Address",
+                            text = stringResource(Res.string.emailAddress),
                             style = textStyle(
                                 size = 14.sp,
                                 weight = FontWeight.Medium
@@ -1001,7 +1003,7 @@ fun InviteMemberBottomSheet(
                         ) {
                             Image(
                                 painter = painterResource(Res.drawable.ic_add_plus),
-                                contentDescription = "Add email"
+                                contentDescription = stringResource(Res.string.addEmail)
                             )
                         }
                     },
@@ -1016,7 +1018,7 @@ fun InviteMemberBottomSheet(
                 )
                 Spacer(modifier = Modifier.height(30.dp))
                 AppPrimaryButton(
-                    title = "Invite",
+                    title = stringResource(Res.string.invite),
                     onClick = {
                         val emailsToInvite = emailList.toMutableList()
 
@@ -1082,13 +1084,13 @@ fun DeleteProjectBottomSheet(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 Text(
-                    text = "Delete Project ?",
+                    text = stringResource(Res.string.deleteProject1),
                     style = textStyle(size = 20.sp, weight = FontWeight.Bold),
                     color = Color(0xFFD32F2F)
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Are you sure you want to delete the\nproject permanently ?",
+                    text = stringResource(Res.string.areYouSureYouWantToDeleteThenprojectPermanently),
                     style = textStyle(size = 14.sp, weight = FontWeight.Normal),
                     color = AppColors.TextGray,
                     textAlign = TextAlign.Center
@@ -1098,8 +1100,8 @@ fun DeleteProjectBottomSheet(
                 AppTextField(
                     value = password.value,
                     onValueChange = { password.value = it },
-                    title = "Password",
-                    placeholder = "********",
+                    title = stringResource(Res.string.password),
+                    placeholder = stringResource(Res.string.emptyStr),
                     isSecure = true
                 )
                 Spacer(modifier = Modifier.height(30.dp))
@@ -1125,14 +1127,14 @@ fun DeleteProjectBottomSheet(
                     )
                 ) {
                     Text(
-                        text = "Delete Permanently",
+                        text = stringResource(Res.string.deletePermanently),
                         style = textStyle(size = 16.sp, weight = FontWeight.SemiBold),
                         color = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "Not Now",
+                    text = stringResource(Res.string.notNow),
                     style = textStyle(size = 16.sp, weight = FontWeight.SemiBold),
                     color = AppColors.TextGray,
                     modifier = Modifier.clickable { onDismiss() }.padding(8.dp)
@@ -1205,12 +1207,12 @@ fun ChangeRoleBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 AppBorderButton(
-                    title = "Cancel",
+                    title = stringResource(Res.string.cancel),
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f)
                 )
                 AppPrimaryButton(
-                    title = "Submit",
+                    title = stringResource(Res.string.submit),
                     onClick = {
                         onSubmit(selectedRole.value.value)
                     },
@@ -1265,12 +1267,12 @@ fun TransferAdminBottomSheet(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Transfer Admin Rights",
+                    text = stringResource(Res.string.transferAdminRights),
                     style = textStyle(size = 20.sp, weight = FontWeight.Bold)
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Hand over admin rights to a project member.",
+                    text = stringResource(Res.string.handOverAdminRightsToAProjectMember1),
                     style = textStyle(size = 14.sp, weight = FontWeight.Normal),
                     color = AppColors.TextGray
                 )
@@ -1282,7 +1284,7 @@ fun TransferAdminBottomSheet(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
-                        text = "Select Member",
+                        text = stringResource(Res.string.selectMember),
                         style = textStyle(size = 14.sp, weight = FontWeight.Medium)
                     )
                     Text(
@@ -1305,7 +1307,7 @@ fun TransferAdminBottomSheet(
                         modifier = Modifier.fillMaxWidth().menuAnchor(),
                         placeholder = {
                             Text(
-                                text = "Select a member",
+                                text = stringResource(Res.string.selectAMember),
                                 style = textStyle(size = 14.sp, weight = FontWeight.Normal),
                                 color = Color(0xFF9E9E9E)
                             )
@@ -1367,15 +1369,15 @@ fun TransferAdminBottomSheet(
                 AppTextField(
                     value = password.value,
                     onValueChange = { password.value = it },
-                    title = "Password",
-                    placeholder = "********",
+                    title = stringResource(Res.string.password),
+                    placeholder = stringResource(Res.string.emptyStr),
                     isSecure = true
                 )
                 Spacer(modifier = Modifier.height(30.dp))
 
                 // Continue button
                 AppPrimaryButton(
-                    title = "Continue",
+                    title = stringResource(Res.string.continueAction),
                     onClick = {
                         when {
                             selectedMember.value == null -> {
@@ -1395,7 +1397,7 @@ fun TransferAdminBottomSheet(
 
                 // Cancel text
                 Text(
-                    text = "Cancel",
+                    text = stringResource(Res.string.cancel),
                     style = textStyle(size = 16.sp, weight = FontWeight.SemiBold),
                     color = AppColors.TextGray,
                     modifier = Modifier.clickable { onDismiss() }.padding(8.dp)

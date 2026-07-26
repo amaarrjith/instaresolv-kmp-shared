@@ -37,6 +37,8 @@ import org.example.project.ui.components.*
 import org.example.project.utilites.*
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +77,7 @@ fun CreatePreTaskScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "CREATE - PRE TASK BRIEFING",
+                    text = stringResource(Res.string.createPreTaskBriefing),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -99,12 +101,12 @@ fun CreatePreTaskScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AppBorderButton(
-                        title = "Save as Draft",
+                        title = stringResource(Res.string.saveAsDraft),
                         onClick = { viewModel.publishPreTask(isDraft = true) },
                         modifier = Modifier.weight(1f)
                     )
                     AppPrimaryButton(
-                        title = "Publish",
+                        title = stringResource(Res.string.publish),
                         onClick = { viewModel.publishPreTask(isDraft = false) },
                         modifier = Modifier.weight(1f),
                         isLoading = uiState.isPublishing
@@ -131,7 +133,7 @@ fun CreatePreTaskScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     AppProjectDropdown(
-                        title = "Facility / Project",
+                        title = stringResource(Res.string.facilityProject),
                         selectedProject = uiState.selectedProject,
                         onProjectSelected = viewModel::onProjectSelected
                     )
@@ -140,8 +142,8 @@ fun CreatePreTaskScreen(
                     AppTextField(
                         value = uiState.taskTitle,
                         onValueChange = viewModel::onTaskTitleChanged,
-                        title = "Task Title",
-                        placeholder = "Enter Task Title",
+                        title = stringResource(Res.string.taskTitle),
+                        placeholder = stringResource(Res.string.enterTaskTitle),
                         isMandatory = true
                     )
 
@@ -149,7 +151,7 @@ fun CreatePreTaskScreen(
                     AppTextField(
                         value = uiState.reportedBy?.name ?: "",
                         onValueChange = {},
-                        title = "Reported By",
+                        title = stringResource(Res.string.reportedBy),
                         placeholder = "",
                         isMandatory = true
                     )
@@ -164,7 +166,7 @@ fun CreatePreTaskScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     AppDatePicker(
-                        text = "Select Date",
+                        text = stringResource(Res.string.selectDate),
                         selectedDateMillis = uiState.dateMillis,
                         onDateSelected = { if (it != null) viewModel.onDateSelected(it) }
                     )
@@ -181,7 +183,7 @@ fun CreatePreTaskScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             AppTimePicker(
-                                text = "00 : 00",
+                                text = stringResource(Res.string.txt_0000),
                                 selectedTime = uiState.startTime,
                                 onTimeSelected = viewModel::onStartTimeChanged
                             )
@@ -196,7 +198,7 @@ fun CreatePreTaskScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             AppTimePicker(
-                                text = "00 : 00",
+                                text = stringResource(Res.string.txt_0000),
                                 selectedTime = uiState.endTime,
                                 onTimeSelected = viewModel::onEndTimeChanged
                             )
@@ -207,25 +209,25 @@ fun CreatePreTaskScreen(
                     AppTextField(
                         value = uiState.msraReference,
                         onValueChange = viewModel::onMsraChanged,
-                        title = "MSRA Reference",
-                        placeholder = "Enter Reference"
+                        title = stringResource(Res.string.msraReference),
+                        placeholder = stringResource(Res.string.enterReference)
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
                     AppTextField(
                         value = uiState.permitReference,
                         onValueChange = viewModel::onPermitChanged,
-                        title = "Permit Reference",
-                        placeholder = "Enter Reference"
+                        title = stringResource(Res.string.permitReference),
+                        placeholder = stringResource(Res.string.enterReference)
                     )
 
                     if (uiState.selectedProject != null) {
                         Spacer(modifier = Modifier.height(16.dp))
                         AppUserDropdown(
-                            title = "Send Notification To",
+                            title = stringResource(Res.string.sendNotificationTo),
                             selectedUser = null,
                             onUserSelected = { },
-                            placeholder = "Choose User",
+                            placeholder = stringResource(Res.string.chooseUser),
                             users = uiState.groupUsers
                         )
                     }
@@ -234,7 +236,7 @@ fun CreatePreTaskScreen(
                     HorizontalDivider()
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "Topics of Discussion".uppercase(),
+                        text = stringResource(Res.string.topicsOfDiscussion).uppercase(),
                         style = textStyle(14.sp, FontWeight.Bold),
                         color = AppColors.Primary
                     )
@@ -265,7 +267,7 @@ fun CreatePreTaskScreen(
                     // OTHERS section
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "OTHERS",
+                        text = stringResource(Res.string.others),
                         style = textStyle(12.sp, FontWeight.Bold),
                         color = Color(0xFF1E5BB2)
                     )
@@ -275,7 +277,7 @@ fun CreatePreTaskScreen(
                                 value = customQ.title,
                                 onValueChange = { viewModel.updateCustomQuestionTitle(customQ.id, it) },
                                 title = "",
-                                placeholder = "Enter Question"
+                                placeholder = stringResource(Res.string.enterQuestion)
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             AnswerRadioGroup(
@@ -293,12 +295,12 @@ fun CreatePreTaskScreen(
                     ) {
                         Image(
                             painter = painterResource(Res.drawable.ic_add),
-                            contentDescription = "Add",
+                            contentDescription = stringResource(Res.string.add),
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Add New",
+                            text = stringResource(Res.string.addNew),
                             style = textStyle(12.sp, FontWeight.Medium),
                             color = AppColors.Primary
                         )
@@ -308,13 +310,13 @@ fun CreatePreTaskScreen(
                     AppMultilineTextField(
                         value = uiState.stepByStepAccount,
                         onValueChange = viewModel::onStepByStepAccountChanged,
-                        title = "Step By Step Account of Today's Task",
-                        placeholder = "Enter here"
+                        title = stringResource(Res.string.stepByStepAccountOfTodaysTask),
+                        placeholder = stringResource(Res.string.enterHere)
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "ATTENDEES",
+                        text = stringResource(Res.string.attendees),
                         style = textStyle(12.sp, FontWeight.Bold),
                         color = Color(0xFF1E5BB2)
                     )
@@ -394,14 +396,14 @@ fun CreatePreTaskScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "ATTENDEES EVIDENCE",
+                        text = stringResource(Res.string.attendeesEvidence),
                         style = textStyle(12.sp, FontWeight.Bold),
                         color = Color(0xFF1E5BB2)
                     )
 
                     uiState.evidences.forEachIndexed { index, evidence ->
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(text = "Upload Image", style = textStyle(12.sp, FontWeight.Medium))
+                        Text(text = stringResource(Res.string.uploadImage), style = textStyle(12.sp, FontWeight.Medium))
                         Spacer(modifier = Modifier.height(8.dp))
                         AppImageCreateBox(
                             imageUrl = evidence.imagePath,
@@ -420,12 +422,12 @@ fun CreatePreTaskScreen(
                     ) {
                         Image(
                             painter = painterResource(Res.drawable.ic_add),
-                            contentDescription = "Add",
+                            contentDescription = stringResource(Res.string.add),
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Add Image",
+                            text = stringResource(Res.string.addImage),
                             style = textStyle(12.sp, FontWeight.Medium),
                             color = AppColors.Primary
                         )
@@ -470,7 +472,7 @@ fun CreatePreTaskScreen(
     if (uiState.publishSuccess) {
         AppStatusDialog(
             visible = true,
-            title = "Success",
+            title = stringResource(Res.string.success),
             description = "PreTask Briefing Created Successfully.",
             buttonText = "OK",
             onDismiss = {
@@ -508,8 +510,8 @@ fun QuestionRow(
             org.example.project.utilites.AppTextField(
                 value = remarks,
                 onValueChange = onRemarksChanged,
-                title = "Remarks (Optional)",
-                placeholder = "Enter remarks"
+                title = stringResource(Res.string.remarksOptional),
+                placeholder = stringResource(Res.string.enterRemarks)
             )
         }
     }
