@@ -98,7 +98,7 @@ val appModule = module {
     factory { ProjectViewModel(get(),get()) }
     factory { NotificationsViewModel(get()) }
     factory { AppTabBarViewModel(get(), get()) }
-    factory { HomeScreenViewModel(get(), get(), get(), get()) }
+    factory { HomeScreenViewModel(get(), get(), get(), get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get()) }
     factory { ProfileViewModel(get(), get()) }

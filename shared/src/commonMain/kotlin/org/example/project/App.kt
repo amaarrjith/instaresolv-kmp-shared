@@ -12,6 +12,12 @@ import org.example.project.navigation.AppNavigation
 import org.example.project.ui.screens.AppLanguage
 import org.example.project.ui.viewmodel.GlobalSettingsViewModel
 import org.koin.compose.koinInject
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.platform.LocalFocusManager
 
 @Composable
 fun App() {
@@ -37,7 +43,18 @@ fun App() {
         LocalAppStrings provides appStrings
     ) {
         MaterialTheme {
-            AppNavigation()
+            val focusManager = LocalFocusManager.current
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            focusManager.clearFocus()
+                        })
+                    }
+            ) {
+                AppNavigation()
+            }
         }
     }
 }

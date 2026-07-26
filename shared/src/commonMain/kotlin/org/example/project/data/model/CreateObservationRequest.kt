@@ -14,7 +14,7 @@ data class CreateObservationRequest(
     val saveAsDraft: Boolean = false,
     val description: String = "",
     val observationId: Int = -1,
-    val responsiblePerson: Int? = null,
+    val responsiblePerson: Int = -1,
     val responsiblePersonName: String = "",
     val observationTitle: String = "",
     val responsiblePersonEmail: String = "",

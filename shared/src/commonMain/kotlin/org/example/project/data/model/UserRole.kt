@@ -1,6 +1,7 @@
 package org.example.project.data.model
 
 enum class UserRole(val value: Int) {
+    SUPER_ADMIN(1),
     ADMIN(2),
     PARTICIPANT(3);
 

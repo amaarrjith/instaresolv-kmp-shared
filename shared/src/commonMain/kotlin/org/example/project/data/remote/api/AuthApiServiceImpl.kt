@@ -4,6 +4,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import org.example.project.data.model.ApproveRejectRequest
+import org.example.project.data.model.ApproveRejectResponse
 import org.example.project.data.model.CommonModelResponse
 import org.example.project.data.model.CreateProjectRequest
 import org.example.project.data.model.CreateProjectResponse
@@ -14,6 +16,9 @@ import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeContentsRequest
 import org.example.project.data.model.CommonResponse
+import org.example.project.data.model.DeleteObservationRequest
+import org.example.project.data.model.RequestDeleteObservationRequest
+import org.example.project.data.model.RequestResponsiblePersonChangeRequest
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.ImageUploadData
 import org.example.project.data.model.InviteUsersRequest
@@ -674,6 +679,30 @@ class AuthApiServiceImpl(
         request: org.example.project.data.model.PermitExcelRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
         httpClient.post("permit/generate-excel") {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun deleteObservation(request: DeleteObservationRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post("observation/delete") {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun approveOrReject(request: ApproveRejectRequest): NetworkResult<ApproveRejectResponse> = safeApiCall{
+        httpClient.post("v3/pendingAction/action") {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun requestToDeleteObservation(request: RequestDeleteObservationRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post("observation/delete-request") {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun requestResponsiblePersonChange(request: RequestResponsiblePersonChangeRequest): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post("observation/responsible-change") {
             jsonBody(request)
         }
     }

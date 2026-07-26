@@ -168,7 +168,7 @@ class CreateObservationViewModel(
                 saveAsDraft = isDraft,
                 description = description,
                 observationId = -1,
-                responsiblePerson = state.selectedResponsiblePerson?.userId,
+                responsiblePerson = state.selectedResponsiblePerson?.userId ?: -1,
                 responsiblePersonName = if (state.selectedProject != null) "" else state.manualResponsibleName,
                 observationTitle = title,
                 responsiblePersonEmail = if (state.selectedProject != null) "" else state.manualResponsibleEmail,

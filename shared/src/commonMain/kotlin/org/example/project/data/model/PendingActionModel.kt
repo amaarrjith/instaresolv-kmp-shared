@@ -30,6 +30,7 @@ data class PendingActionItem(
     val date: String? = null,
     val description: String? = null,
     val groupCode: String? = null,
+    val groupId: Int? = null,
     val userId: Int? = null,
     val justification: String? = null
 )

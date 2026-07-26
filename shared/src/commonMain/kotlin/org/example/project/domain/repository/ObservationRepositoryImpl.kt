@@ -1,5 +1,11 @@
 package org.example.project.domain.repository
 
+import org.example.project.data.model.ApproveRejectRequest
+import org.example.project.data.model.ApproveRejectResponse
+import org.example.project.data.model.CommonModelResponse
+import org.example.project.data.model.DeleteObservationRequest
+import org.example.project.data.model.RequestDeleteObservationRequest
+import org.example.project.data.model.RequestResponsiblePersonChangeRequest
 import org.example.project.data.model.ObservationData
 import org.example.project.data.model.ObservationRequest
 import org.example.project.data.remote.api.AuthApiService
@@ -42,5 +48,21 @@ class ObservationRepositoryImpl(
         request: org.example.project.data.model.GenerateObservationPdfRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse> {
         return apiService.generateObservationPdf(request)
+    }
+
+    override suspend fun deleteObservation(request: DeleteObservationRequest): NetworkResult<CommonModelResponse> {
+        return apiService.deleteObservation(request)
+    }
+
+    override suspend fun approveOrReject(request: ApproveRejectRequest): NetworkResult<ApproveRejectResponse> {
+        return apiService.approveOrReject(request)
+    }
+
+    override suspend fun requestToDeleteObservation(request: RequestDeleteObservationRequest): NetworkResult<CommonModelResponse> {
+        return apiService.requestToDeleteObservation(request)
+    }
+
+    override suspend fun requestResponsiblePersonChange(request: RequestResponsiblePersonChangeRequest): NetworkResult<CommonModelResponse> {
+        return apiService.requestResponsiblePersonChange(request)
     }
 }

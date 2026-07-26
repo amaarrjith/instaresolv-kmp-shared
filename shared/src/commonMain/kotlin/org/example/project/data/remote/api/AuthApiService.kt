@@ -43,6 +43,11 @@ import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.EmployeeListRequest
 import org.example.project.data.model.AddIncidentRequest
 import org.example.project.data.model.AddIncidentResponse
+import org.example.project.data.model.ApproveRejectRequest
+import org.example.project.data.model.ApproveRejectResponse
+import org.example.project.data.model.DeleteObservationRequest
+import org.example.project.data.model.RequestDeleteObservationRequest
+import org.example.project.data.model.RequestResponsiblePersonChangeRequest
 import org.example.project.data.model.IncidentRequest
 import org.example.project.data.model.PreTaskDetailRequest
 import org.example.project.data.model.PreTaskDetailResponseData
@@ -373,5 +378,21 @@ interface AuthApiService {
 
     suspend fun generatePermitExcel(
         request: org.example.project.data.model.PermitExcelRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun deleteObservation(
+        request: DeleteObservationRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun approveOrReject(
+        request: ApproveRejectRequest
+    ): NetworkResult<ApproveRejectResponse>
+
+    suspend fun requestToDeleteObservation(
+        request: RequestDeleteObservationRequest
+    ): NetworkResult<CommonModelResponse>
+
+    suspend fun requestResponsiblePersonChange(
+        request: RequestResponsiblePersonChangeRequest
     ): NetworkResult<CommonModelResponse>
 }

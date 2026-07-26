@@ -61,6 +61,8 @@ interface AppStrings {
     val contactUs: String
     val selectLanguage: String
     val appLanguage: String
+    val emailRequired: String
+
 }
 
 val LocalAppStrings = staticCompositionLocalOf<AppStrings> { EnStrings }

@@ -74,9 +74,9 @@ fun LoginScreen(
 
     Box(
         modifier = Modifier
+            .background(Color.White)
             .statusBarsPadding()
             .fillMaxSize()
-            .background(Color.White)
             .padding(horizontal = 28.dp)
             .imePadding()
             .verticalScroll(scrollState)

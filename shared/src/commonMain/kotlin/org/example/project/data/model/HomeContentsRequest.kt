@@ -41,7 +41,9 @@ data class PendingObservation(
     val imageUrl: String = "",
     val pendingActionType: Int = 0,
     val reportedBy: ReportedBy? = null,
-    val title: String = ""
+    val title: String = "",
+    val groupCode: String? = null,
+    val groupId: Int? = null
 )
 
 @Serializable
