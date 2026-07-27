@@ -444,4 +444,10 @@
     <string name="observationResponsibilityChange">Cambio de responsabilidad de observación</string>
     <string name="reviewObservationCloseout">Revisar el cierre de observación</string>
     <string name="viewPermit">Ver permiso</string>
+    <string name="uploadImage_key">Subir imagen %1$d</string>
+    <string name="selectProject">Seleccionar proyecto</string>
+    <string name="aiTranslated">Traducido por IA</string>
+    <string name="share">Compartir</string>
+    <string name="audio">Audio</string>
+    <string name="original">Original</string>
 </resources>

@@ -188,7 +188,7 @@ fun ObservationDetailScreen(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                                Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
                                 Spacer(Modifier.width(8.dp))
                                 Image(
                                     painter = painterResource(Res.drawable.ic_share),
@@ -590,14 +590,14 @@ fun ObservationDetailInfo(
 
             Text(
                 text = buildAnnotatedString {
-                    append("Description ")
+                    append(stringResource(Res.string.description))
                     withStyle(
                         SpanStyle(
                             color = AppColors.SkyBlue,
                             fontWeight = FontWeight.Medium
                         )
                     ) {
-                        append("(AI Translated)")
+                        append(" (${(stringResource(Res.string.aiTranslated))})")
                     }
                 },
                 style = textStyle(size = 12.sp, weight = FontWeight.Medium),
@@ -616,14 +616,14 @@ fun ObservationDetailInfo(
             if (!translatedAudioUrl.isNullOrEmpty()) {
                 Text(
                     text = buildAnnotatedString {
-                        append("Audio ")
+                        append("${stringResource(Res.string.audio)} ")
                         withStyle(
                             SpanStyle(
                                 color = AppColors.TextGray,
                                 fontWeight = FontWeight.Medium
                             )
                         ) {
-                            append("(Original)")
+                            append("(${stringResource(Res.string.original)})")
                         }
                     },
                     style = textStyle(size = 12.sp, weight = FontWeight.Medium),
@@ -649,14 +649,14 @@ fun ObservationDetailInfo(
             Spacer(Modifier.height(24.dp))
             Text(
                 text = buildAnnotatedString {
-                    append("Audio ")
+                    append("${stringResource(Res.string.audio)} ")
                     withStyle(
                         SpanStyle(
                             color = AppColors.SkyBlue,
                             fontWeight = FontWeight.Medium
                         )
                     ) {
-                        append("(AI Translated)")
+                        append(" (${(stringResource(Res.string.aiTranslated))})")
                     }
                 },
                 style = textStyle(size = 12.sp, weight = FontWeight.Medium),

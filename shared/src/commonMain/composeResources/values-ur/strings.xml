@@ -440,4 +440,10 @@
     <string name="observationResponsibilityChange">مشاہدے کی ذمہ داری کی تبدیلی</string>
     <string name="reviewObservationCloseout">مشاہدے کے اختتام کا جائزہ لیں</string>
     <string name="viewPermit">اجازت نامہ دیکھیں</string>
+    <string name="uploadImage_key">تصویر اپ لوڈ کریں %1$d</string>
+    <string name="selectProject">پروجیکٹ منتخب کریں</string>
+    <string name="aiTranslated">AI سے ترجمہ شدہ</string>
+    <string name="share">شیئر کریں</string>
+    <string name="audio">آڈیو</string>
+    <string name="original">اصل</string>
 </resources>

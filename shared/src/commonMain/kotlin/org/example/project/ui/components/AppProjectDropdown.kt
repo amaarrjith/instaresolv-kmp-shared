@@ -18,19 +18,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.project
+import instaresolv.shared.generated.resources.selectProject
 import org.example.project.colors.AppColors
 import org.example.project.data.model.Project
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.example.project.ui.screens.EmptyScreenView
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppProjectDropdown(
-    title: String = "Project",
+    title: String = stringResource(Res.string.project),
     isMandatory: Boolean = false,
-    placeholder: String = "Select Project",
+    placeholder: String = stringResource(Res.string.selectProject),
     selectedProject: Project?,
     onProjectSelected: (Project?) -> Unit,
     projects: List<Project>? = null,

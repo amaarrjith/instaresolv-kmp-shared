@@ -455,4 +455,10 @@
     <string name="observationResponsibilityChange">Observation Responsibility Change</string>
     <string name="reviewObservationCloseout">Review Observation Closeout</string>
     <string name="viewPermit">View Permit</string>
+    <string name="uploadImage_key">Upload Image %1$d</string>
+    <string name="selectProject">Select Project</string>
+    <string name="aiTranslated">AI Translated</string>
+    <string name="share">Share</string>
+    <string name="audio">Audio</string>
+    <string name="original">Original</string>
 </resources>

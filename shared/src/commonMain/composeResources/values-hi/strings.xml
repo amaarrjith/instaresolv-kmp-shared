@@ -443,4 +443,10 @@
     <string name="observationResponsibilityChange">अवलोकन ज़िम्मेदारी परिवर्तन</string>
     <string name="reviewObservationCloseout">अवलोकन समाप्ति की समीक्षा करें</string>
     <string name="viewPermit">परमिट देखें</string>
+    <string name="uploadImage_key">छवि अपलोड करें %1$d</string>
+    <string name="selectProject">प्रोजेक्ट चुनें</string>
+    <string name="aiTranslated">AI द्वारा अनुवादित</string>
+    <string name="share">शेयर करें</string>
+    <string name="audio">ऑडियो</string>
+    <string name="original">मूल</string>
 </resources>

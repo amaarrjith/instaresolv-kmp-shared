@@ -11,12 +11,10 @@ import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : ComponentActivity() {
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Permission is granted, notifications will work
-        }
+    private val requestPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // Handle permission results if needed
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,9 +26,20 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
         
+        val permissionsToRequest = mutableListOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO
+        )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+            permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO)
+        } else {
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
+
+        requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
 
         setContent {
             App()
