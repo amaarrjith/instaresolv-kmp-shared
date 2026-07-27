@@ -436,4 +436,8 @@
     <string name="time_ago_seconds">%1$d سیکنڈ پہلے</string>
     <string name="admin">ایڈمن</string>
     <string name="participant">شریک</string>
+    <string name="requestToJoinProject">پروجیکٹ میں شامل ہونے کی درخواست</string>
+    <string name="observationResponsibilityChange">مشاہدے کی ذمہ داری کی تبدیلی</string>
+    <string name="reviewObservationCloseout">مشاہدے کے اختتام کا جائزہ لیں</string>
+    <string name="viewPermit">اجازت نامہ دیکھیں</string>
 </resources>

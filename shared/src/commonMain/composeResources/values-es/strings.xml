@@ -440,4 +440,8 @@
     <string name="time_ago_seconds">hace %1$d segundos</string>
     <string name="admin">Administrador</string>
     <string name="participant">Participante</string>
+    <string name="requestToJoinProject">Solicitar unirse al proyecto</string>
+    <string name="observationResponsibilityChange">Cambio de responsabilidad de observación</string>
+    <string name="reviewObservationCloseout">Revisar el cierre de observación</string>
+    <string name="viewPermit">Ver permiso</string>
 </resources>

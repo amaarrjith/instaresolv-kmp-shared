@@ -1,6 +1,7 @@
 package org.example.project.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,7 +65,7 @@ fun SettingsScreen(
     var isEmailNotificationEnabled by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
     Scaffold(
         containerColor = Color.White,
@@ -138,10 +139,13 @@ fun SettingsScreen(
             onDismissRequest = {
                 showLanguageSheet = false
             },
-            sheetState = sheetState
+            sheetState = sheetState,
+            containerColor = Color.White
+
         ) {
             Column(
                 modifier = Modifier
+                    .background(Color.White)
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {

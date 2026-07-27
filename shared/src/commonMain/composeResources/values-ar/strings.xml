@@ -440,4 +440,8 @@
     <string name="time_ago_seconds">منذ %1$d ثواني</string>
     <string name="admin">مشرف</string>
     <string name="participant">مشارك</string>
+    <string name="requestToJoinProject">طلب الانضمام إلى المشروع</string>
+    <string name="observationResponsibilityChange">تغيير مسؤولية الملاحظة</string>
+    <string name="reviewObservationCloseout">مراجعة إغلاق الملاحظة</string>
+    <string name="viewPermit">عرض التصريح</string>
 </resources>

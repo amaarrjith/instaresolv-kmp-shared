@@ -361,6 +361,12 @@ fun AssignedToMeCard(
     var showObservationDrawer by remember { mutableStateOf(false) }
     var showPermitDrawer by remember { mutableStateOf(false) }
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
+    var closeObservationId by remember { mutableStateOf<Int?>(null) }
+    var showRequestDeleteSheet by remember { mutableStateOf(false) }
+    var showRequestResponsiblePersonSheet by remember { mutableStateOf(false) }
+    val groupUsers by viewModel.groupUsers.collectAsState()
+    var actionSuccessMessage by remember { mutableStateOf<String?>(null) }
+    var actionErrorMessage by remember { mutableStateOf<String?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     assignedToMe?.let { contents ->
         Column(
@@ -564,13 +570,17 @@ fun AssignedToMeCard(
                         viewModel.generatePdf(assignedToMe.observation?.contentId ?: -1)
                     }
                     "Close Observation" -> {
-
+                        closeObservationId = assignedToMe.observation?.contentId
                     }
                     "Request Observation Responsible Person Change" -> {
-
+                        val obs = assignedToMe.observation
+                        if (obs?.groupId != null && obs.groupCode != null) {
+                            viewModel.fetchGroupUsers(obs.groupId, obs.groupCode)
+                        }
+                        showRequestResponsiblePersonSheet = true
                     }
                     "Request to Delete Observation" -> {
-
+                        showRequestDeleteSheet = true
                     }
                 }
             }
@@ -609,6 +619,108 @@ fun AssignedToMeCard(
                 }
             }
         }
+
+        if (closeObservationId != null) {
+            val closeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { closeObservationId = null },
+                sheetState = closeSheetState,
+                containerColor = Color.White,
+                dragHandle = null
+            ) {
+                Box(modifier = Modifier.fillMaxHeight(0.9f)) {
+                    org.example.project.ui.screens.ObservationDetailScreen(
+                        observationId = closeObservationId!!,
+                        onBackClicked = { closeObservationId = null },
+                        onRefreshList = {
+                            closeObservationId = null
+                            onRefreshList()
+                        },
+                        startWithCloseForm = true
+                    )
+                }
+            }
+        }
+
+        if (showRequestDeleteSheet) {
+            val deleteSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { showRequestDeleteSheet = false },
+                sheetState = deleteSheetState,
+                containerColor = Color.White
+            ) {
+                org.example.project.ui.components.RequestDeleteObservationView(
+                    onBackClicked = { showRequestDeleteSheet = false },
+                    onContinueClicked = { justification ->
+                        val observationId = assignedToMe.observation?.contentId ?: return@RequestDeleteObservationView
+                        viewModel.requestToDeleteObservation(
+                            observationId = observationId,
+                            justification = justification,
+                            onSuccess = {
+                                showRequestDeleteSheet = false
+                                actionSuccessMessage = "Request to delete observation submitted successfully."
+                            },
+                            onError = { err ->
+                                actionErrorMessage = err
+                            }
+                        )
+                    }
+                )
+            }
+        }
+
+        if (showRequestResponsiblePersonSheet) {
+            val responsibleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { showRequestResponsiblePersonSheet = false },
+                sheetState = responsibleSheetState,
+                containerColor = Color.White
+            ) {
+                org.example.project.ui.components.RequestResponsiblePersonChangeView(
+                    users = groupUsers,
+                    onBackClicked = { showRequestResponsiblePersonSheet = false },
+                    onContinueClicked = { justification, responsiblePersonId ->
+                        val observationId = assignedToMe.observation?.contentId ?: return@RequestResponsiblePersonChangeView
+                        viewModel.requestResponsiblePersonChange(
+                            observationId = observationId,
+                            justification = justification,
+                            responsiblePerson = responsiblePersonId,
+                            onSuccess = {
+                                showRequestResponsiblePersonSheet = false
+                                actionSuccessMessage = "Request to change responsible person submitted successfully."
+                            },
+                            onError = { err ->
+                                actionErrorMessage = err
+                            }
+                        )
+                    }
+                )
+            }
+        }
+
+        actionSuccessMessage?.let { msg ->
+            org.example.project.ui.components.AppStatusDialog(
+                visible = true,
+                title = "Success",
+                description = msg,
+                buttonText = "OK",
+                onDismiss = {
+                    actionSuccessMessage = null
+                    onRefreshList()
+                }
+            )
+        }
+
+        actionErrorMessage?.let { msg ->
+            Box(modifier = Modifier.fillMaxWidth()) {
+                ToastHost(
+                    visible = true,
+                    message = msg,
+                    onDismiss = { actionErrorMessage = null },
+                    type = org.example.project.utilites.ToastType.Error
+                )
+            }
+        }
     }
 }
 
@@ -625,11 +737,11 @@ fun ObservationActionBottomSheet(
     val sheetState = rememberModalBottomSheetState()
 
     val actions = listOf(
-        "View Report",
-        "Generate PDF",
-        "Close Observation",
-        "Request Observation Responsible Person Change",
-        "Request to Delete Observation"
+        Pair("View Report", stringResource(Res.string.viewReport)),
+        Pair("Generate PDF", stringResource(Res.string.generatePdf)),
+        Pair("Close Observation", stringResource(Res.string.closeObservation)),
+        Pair("Request Observation Responsible Person Change", stringResource(Res.string.requestObservationResponsiblenpersonChange)),
+        Pair("Request to Delete Observation", stringResource(Res.string.requestToDeleteObservation))
     )
 
     ModalBottomSheet(
@@ -653,11 +765,11 @@ fun ObservationActionBottomSheet(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            actions.forEachIndexed { index, title ->
+            actions.forEach { (id, title) ->
                 ObservationActionItem(
                     title = title,
                     onClick = {
-                        onActionClick(title)
+                        onActionClick(id)
                         onDismiss()
                     }
                 )
@@ -713,8 +825,8 @@ fun PermitActionBottomSheet(
     val sheetState = rememberModalBottomSheetState()
 
     val actions = listOf(
-        "View Permit",
-        "Generate PDF",
+        Pair("View Permit", stringResource(Res.string.viewPermit)),
+        Pair("Generate PDF", stringResource(Res.string.generatePdf))
     )
 
     ModalBottomSheet(
@@ -738,11 +850,11 @@ fun PermitActionBottomSheet(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            actions.forEachIndexed { index, title ->
+            actions.forEach { (id, title) ->
                 PermitActionItem(
                     title = title,
                     onClick = {
-                        onActionClick(title)
+                        onActionClick(id)
                         onDismiss()
                     }
                 )

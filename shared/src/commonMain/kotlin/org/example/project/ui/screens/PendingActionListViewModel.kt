@@ -11,6 +11,8 @@ import org.example.project.data.model.PendingActionItem
 import org.example.project.data.model.PermitPendingActionItem
 import org.example.project.domain.repository.PendingActionRepository
 import org.example.project.domain.repository.PermitRepository
+import org.example.project.domain.repository.ObservationRepository
+import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 
 data class PendingActionListState(
@@ -25,7 +27,9 @@ data class PendingActionListState(
 
 class PendingActionListViewModel(
     private val repository: PendingActionRepository,
-    private val permitRepository: PermitRepository
+    private val permitRepository: PermitRepository,
+    private val observationRepository: ObservationRepository,
+    private val projectRepository: ProjectRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PendingActionListState())
@@ -80,6 +84,79 @@ class PendingActionListViewModel(
 
     fun clearPdfUrl() {
         _pdfUrl.value = null
+    }
+
+    private val _groupUsers = MutableStateFlow<List<org.example.project.data.model.GroupUser>>(emptyList())
+    val groupUsers: StateFlow<List<org.example.project.data.model.GroupUser>> = _groupUsers
+
+    private val _isActionLoading = MutableStateFlow(false)
+    val isActionLoading: StateFlow<Boolean> = _isActionLoading
+
+    fun generateObservationPdf(observationId: Int) {
+        viewModelScope.launch {
+            _isGeneratingPdf.value = true
+            val request = org.example.project.data.model.GenerateObservationPdfRequest(observationId = observationId)
+            when (val result = observationRepository.generatePdf(request)) {
+                is NetworkResult.Success -> {
+                    _isGeneratingPdf.value = false
+                    val url = result.data?.pdfUrl ?: result.data?.excelUrl
+                    if (!url.isNullOrBlank()) {
+                        _pdfUrl.value = url
+                    } else {
+                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _isGeneratingPdf.value = false
+                    _pdfErrorToastMessage.value = result.message ?: "Failed to generate PDF"
+                }
+            }
+        }
+    }
+
+    fun requestToDeleteObservation(observationId: Int, justification: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            _isActionLoading.value = true
+            val request = org.example.project.data.model.RequestDeleteObservationRequest(observationId, justification)
+            when (val response = observationRepository.requestToDeleteObservation(request)) {
+                is NetworkResult.Success -> {
+                    _isActionLoading.value = false
+                    if (response.data.isSuccess == true) onSuccess()
+                    else onError(response.data.statusMessage ?: "Failed to submit request")
+                }
+                is NetworkResult.Error -> {
+                    _isActionLoading.value = false
+                    onError(response.message ?: "Failed to submit request")
+                }
+            }
+        }
+    }
+
+    fun requestResponsiblePersonChange(observationId: Int, justification: String, responsiblePerson: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            _isActionLoading.value = true
+            val request = org.example.project.data.model.RequestResponsiblePersonChangeRequest(observationId, justification, responsiblePerson)
+            when (val response = observationRepository.requestResponsiblePersonChange(request)) {
+                is NetworkResult.Success -> {
+                    _isActionLoading.value = false
+                    if (response.data.isSuccess == true) onSuccess()
+                    else onError(response.data.statusMessage ?: "Failed to submit request")
+                }
+                is NetworkResult.Error -> {
+                    _isActionLoading.value = false
+                    onError(response.message ?: "Failed to submit request")
+                }
+            }
+        }
+    }
+
+    fun fetchGroupUsers(groupId: Int, groupCode: String) {
+        viewModelScope.launch {
+            when (val result = projectRepository.getGroupUsers(groupId, groupCode)) {
+                is NetworkResult.Success -> _groupUsers.value = result.data.users
+                is NetworkResult.Error -> _groupUsers.value = emptyList()
+            }
+        }
     }
 
     init {

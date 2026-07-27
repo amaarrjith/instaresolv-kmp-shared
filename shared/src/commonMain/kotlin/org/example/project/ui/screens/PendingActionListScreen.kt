@@ -79,6 +79,16 @@ fun PendingActionListScreen(
     val sheetState = rememberModalBottomSheetState()
     var selectedActionForSheet by remember { mutableStateOf<PendingActionItem?>(null) }
     var selectedPermitForSheet by remember { mutableStateOf<PermitPendingActionItem?>(null) }
+
+    // Observation action modals
+    var viewReportObservationId by remember { mutableStateOf<Int?>(null) }
+    var closeObservationId by remember { mutableStateOf<Int?>(null) }
+    var showRequestDeleteSheet by remember { mutableStateOf(false) }
+    var showRequestResponsiblePersonSheet by remember { mutableStateOf(false) }
+    var pendingActionForModal by remember { mutableStateOf<PendingActionItem?>(null) }
+    val groupUsers by viewModel.groupUsers.collectAsState()
+    var actionSuccessMessage by remember { mutableStateOf<String?>(null) }
+    var actionErrorMessage by remember { mutableStateOf<String?>(null) }
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -346,11 +356,11 @@ fun PendingActionListScreen(
                         .padding(horizontal = 24.dp, vertical = 12.dp)
                 ) {
                     val title = when (action.type) {
-                        PendingActionStatusType.OPEN_OBSERVATION -> "Open Observation"
-                        PendingActionStatusType.REQUEST_TO_JOIN_GROUP -> "Request to Join Project"
-                        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE -> "Observation Responsibility Change"
-                        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION -> "Request to delete observation"
-                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> "Review Observation Closeout"
+                        PendingActionStatusType.OPEN_OBSERVATION -> stringResource(Res.string.openObservation)
+                        PendingActionStatusType.REQUEST_TO_JOIN_GROUP -> stringResource(Res.string.requestToJoinProject)
+                        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE -> stringResource(Res.string.observationResponsibilityChange)
+                        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION -> stringResource(Res.string.requestToDeleteObservation)
+                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> stringResource(Res.string.reviewObservationCloseout)
                         else -> ""
                     }
     
@@ -363,11 +373,46 @@ fun PendingActionListScreen(
     
                     when (action.type) {
                         PendingActionStatusType.OPEN_OBSERVATION -> {
-                            ActionRow(title = stringResource(Res.string.viewReport))
-                            ActionRow(title = stringResource(Res.string.generatePdf))
-                            ActionRow(title = stringResource(Res.string.closeObservation))
-                            ActionRow(title = stringResource(Res.string.requestObservationResponsiblenpersonChange))
-                            ActionRow(title = stringResource(Res.string.requestToDeleteObservation))
+                            ActionRow(
+                                title = stringResource(Res.string.viewReport),
+                                onClick = {
+                                    viewReportObservationId = action.contentId
+                                    selectedActionForSheet = null
+                                }
+                            )
+                            ActionRow(
+                                title = stringResource(Res.string.generatePdf),
+                                onClick = {
+                                    viewModel.generateObservationPdf(action.contentId)
+                                    selectedActionForSheet = null
+                                }
+                            )
+                            ActionRow(
+                                title = stringResource(Res.string.closeObservation),
+                                onClick = {
+                                    closeObservationId = action.contentId
+                                    selectedActionForSheet = null
+                                }
+                            )
+                            ActionRow(
+                                title = stringResource(Res.string.requestObservationResponsiblenpersonChange),
+                                onClick = {
+                                    pendingActionForModal = action
+                                    if (action.groupId != null && action.groupCode != null) {
+                                        viewModel.fetchGroupUsers(action.groupId, action.groupCode)
+                                    }
+                                    showRequestResponsiblePersonSheet = true
+                                    selectedActionForSheet = null
+                                }
+                            )
+                            ActionRow(
+                                title = stringResource(Res.string.requestToDeleteObservation),
+                                onClick = {
+                                    pendingActionForModal = action
+                                    showRequestDeleteSheet = true
+                                    selectedActionForSheet = null
+                                }
+                            )
                             Spacer(modifier = Modifier.height(20.dp))
                         }
                         PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> {
@@ -420,6 +465,128 @@ fun PendingActionListScreen(
     
         if (isGeneratingPdf) {
             org.example.project.ui.components.PdfGenerationLoader()
+        }
+
+        // View Report modal
+        if (viewReportObservationId != null) {
+            val detailSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { viewReportObservationId = null },
+                sheetState = detailSheetState,
+                containerColor = Color.White,
+                dragHandle = null
+            ) {
+                Box(modifier = Modifier.fillMaxHeight(0.9f)) {
+                    ObservationDetailScreen(
+                        observationId = viewReportObservationId!!,
+                        onBackClicked = { viewReportObservationId = null },
+                        onRefreshList = {
+                            viewReportObservationId = null
+                            viewModel.fetchPendingActions()
+                        }
+                    )
+                }
+            }
+        }
+
+        // Close Observation modal
+        if (closeObservationId != null) {
+            val closeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { closeObservationId = null },
+                sheetState = closeSheetState,
+                containerColor = Color.White,
+                dragHandle = null
+            ) {
+                Box(modifier = Modifier.fillMaxHeight(0.9f)) {
+                    ObservationDetailScreen(
+                        observationId = closeObservationId!!,
+                        onBackClicked = { closeObservationId = null },
+                        onRefreshList = {
+                            closeObservationId = null
+                            viewModel.fetchPendingActions()
+                        },
+                        startWithCloseForm = true
+                    )
+                }
+            }
+        }
+
+        // Request to Delete Observation modal
+        if (showRequestDeleteSheet && pendingActionForModal != null) {
+            val deleteSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { showRequestDeleteSheet = false },
+                sheetState = deleteSheetState,
+                containerColor = Color.White
+            ) {
+                org.example.project.ui.components.RequestDeleteObservationView(
+                    onBackClicked = { showRequestDeleteSheet = false },
+                    onContinueClicked = { justification ->
+                        val observationId = pendingActionForModal!!.contentId
+                        viewModel.requestToDeleteObservation(
+                            observationId = observationId,
+                            justification = justification,
+                            onSuccess = {
+                                showRequestDeleteSheet = false
+                                actionSuccessMessage = "Request to delete observation submitted successfully."
+                                viewModel.fetchPendingActions()
+                            },
+                            onError = { err -> actionErrorMessage = err }
+                        )
+                    }
+                )
+            }
+        }
+
+        // Request Responsible Person Change modal
+        if (showRequestResponsiblePersonSheet && pendingActionForModal != null) {
+            val responsibleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = { showRequestResponsiblePersonSheet = false },
+                sheetState = responsibleSheetState,
+                containerColor = Color.White
+            ) {
+                org.example.project.ui.components.RequestResponsiblePersonChangeView(
+                    users = groupUsers,
+                    onBackClicked = { showRequestResponsiblePersonSheet = false },
+                    onContinueClicked = { justification, responsiblePersonId ->
+                        val observationId = pendingActionForModal!!.contentId
+                        viewModel.requestResponsiblePersonChange(
+                            observationId = observationId,
+                            justification = justification,
+                            responsiblePerson = responsiblePersonId,
+                            onSuccess = {
+                                showRequestResponsiblePersonSheet = false
+                                actionSuccessMessage = "Request to change responsible person submitted successfully."
+                                viewModel.fetchPendingActions()
+                            },
+                            onError = { err -> actionErrorMessage = err }
+                        )
+                    }
+                )
+            }
+        }
+
+        actionSuccessMessage?.let { msg ->
+            org.example.project.ui.components.AppStatusDialog(
+                visible = true,
+                title = "Success",
+                description = msg,
+                buttonText = "OK",
+                onDismiss = { actionSuccessMessage = null }
+            )
+        }
+
+        actionErrorMessage?.let { msg ->
+            Box(modifier = Modifier.fillMaxWidth()) {
+                ToastHost(
+                    visible = true,
+                    message = msg,
+                    onDismiss = { actionErrorMessage = null },
+                    type = org.example.project.utilites.ToastType.Error
+                )
+            }
         }
     
         ToastHost(
@@ -579,18 +746,23 @@ fun PendingActionListItem(
 
 @Composable
 fun StatusBadge(type: Int, isEditable: Boolean) {
+    val openObs = stringResource(Res.string.openObservation)
+    val joinProject = stringResource(Res.string.requestToJoinProject)
+    val responsibilityChange = stringResource(Res.string.observationResponsibilityChange)
+    val deleteObs = stringResource(Res.string.requestToDeleteObservation)
+    val reviewCloseout = stringResource(Res.string.reviewObservationCloseout)
+
     val (text, bgColor, textColor) = when (type) {
         PendingActionStatusType.OPEN_OBSERVATION ->
-            Triple("Open Observation", Color(0xFFE6FAF8), Color(0xFF28D29F))
-        PendingActionStatusType.REQUEST_TO_JOIN_GROUP -> 
-            Triple("Request to Join Project", Color(0xFFE4F7FF), Color(0xFF00B7FF))
-        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE -> 
-            Triple("Observation Responsibility Change", Color(0xFFFFEBE1), Color(0xFFFF846B))
-        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION -> 
-            Triple("Request to delete observation", Color(0xFFF5F6FF), Color(0xFF536DFF))
-        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> {
-            Triple("Review Observation Close Out", Color(0xFFFDF0D8), Color(0xFFF7B231))
-        }
+            Triple(openObs, Color(0xFFE6FAF8), Color(0xFF28D29F))
+        PendingActionStatusType.REQUEST_TO_JOIN_GROUP ->
+            Triple(joinProject, Color(0xFFE4F7FF), Color(0xFF00B7FF))
+        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE ->
+            Triple(responsibilityChange, Color(0xFFFFEBE1), Color(0xFFFF846B))
+        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION ->
+            Triple(deleteObs, Color(0xFFF5F6FF), Color(0xFF536DFF))
+        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT ->
+            Triple(reviewCloseout, Color(0xFFFDF0D8), Color(0xFFF7B231))
         else -> Triple("", Color.Transparent, Color.Transparent)
     }
     if (text.isEmpty()) return

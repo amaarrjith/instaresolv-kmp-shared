@@ -121,7 +121,7 @@ val appModule = module {
     factory { ToolBoxTalkListViewModel(get()) }
     factory { CreateToolBoxTalkViewModel(get(), get(), get()) }
     factory { ToolBoxTalkDetailViewModel(get()) }
-    factory { PendingActionListViewModel(get(), get()) }
+    factory { PendingActionListViewModel(get(), get(), get(), get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
     factory { ObservationListViewModel(get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }

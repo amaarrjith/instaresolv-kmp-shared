@@ -79,13 +79,14 @@ import instaresolv.shared.generated.resources.*
 fun ObservationDetailScreen(
     observationId: Int,
     onRefreshList: () -> Unit,
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    startWithCloseForm: Boolean = false
 ) {
     val viewModel: ObservationDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val closeUiState by viewModel.closeUiState.collectAsState()
     
-    var isClosingObservation by remember { mutableStateOf(false) }
+    var isClosingObservation by remember { mutableStateOf(startWithCloseForm) }
     var closeDescription by remember { mutableStateOf("") }
     val closeImages = remember { androidx.compose.runtime.mutableStateListOf(ObservationImage()) }
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -375,38 +376,46 @@ fun ObservationDetailContent(
             color = AppColors.TextGray
         )
         Spacer(Modifier.height(11.dp))
-        Row {
-            WebImageView(
-                imageUrl = detail.group?.groupImage,
-                modifier = Modifier.size(42.dp)
-                    .clip(RoundedCornerShape(15))
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
+            if (detail.group != null) {
+                Row {
+                    WebImageView(
+                        imageUrl = detail.group?.groupImage,
+                        modifier = Modifier.size(42.dp)
+                            .clip(RoundedCornerShape(15))
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Text(
+                            text = detail.group?.groupName ?: "",
+                            style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
+                            color = AppColors.Black
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color.Gray)
+                        ) {
+                            Text(
+                                text = detail.group?.groupCode.toString(),
+                                modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
+                                style = textStyle(
+                                    size = 10.sp,
+                                    weight = FontWeight.SemiBold
+                                ),
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            } else {
                 Text(
-                    text = detail.group?.groupName ?: "",
+                    text = "-",
                     style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
                     color = AppColors.Black
                 )
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.Gray)
-                ) {
-                    Text(
-                        text = detail.group?.groupCode.toString(),
-                        modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-                        style = textStyle(
-                            size = 10.sp,
-                            weight = FontWeight.SemiBold
-                        ),
-                        color = Color.White
-                    )
-                }
             }
-        }
 
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(color = Color(0xFFF0F0F5))
@@ -464,7 +473,7 @@ fun ObservationDetailInfo(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                text = detail.reportedBy ?: "",
+                text = detail.reportedBy ?: "-",
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
@@ -488,7 +497,7 @@ fun ObservationDetailInfo(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                text = detail.responsiblePerson?.name ?: "",
+                text = detail.responsiblePerson?.name.takeUnless { it.isNullOrEmpty() } ?: detail.responsiblePersonName.takeUnless { it.isNullOrEmpty() } ?: "-",
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
@@ -503,7 +512,7 @@ fun ObservationDetailInfo(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = detail.responsiblePerson?.email ?: "",
+            text = detail.responsiblePerson?.email ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
             color = AppColors.Black
         )
@@ -517,7 +526,7 @@ fun ObservationDetailInfo(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = detail.location ?: "",
+            text = detail.location.takeUnless { it.isNullOrEmpty() } ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
             color = AppColors.Black
         )
@@ -533,7 +542,7 @@ fun ObservationDetailInfo(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = formatDate(detail.date ?: "", inputPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", outputPattern = "dd MMM yyyy"),
+                    text = formatDate(detail.date ?: "-", inputPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", outputPattern = "dd MMM yyyy"),
                     style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                     color = AppColors.Black
                 )
@@ -571,7 +580,7 @@ fun ObservationDetailInfo(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = detail.description ?: "",
+            text = detail.description.takeUnless { it.isNullOrEmpty() } ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
             color = AppColors.Black
         )

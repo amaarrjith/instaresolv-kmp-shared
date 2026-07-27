@@ -439,4 +439,8 @@
     <string name="time_ago_seconds">%1$d सेकंड पहले</string>
     <string name="admin">प्रशासक</string>
     <string name="participant">भागीदार</string>
+    <string name="requestToJoinProject">प्रोजेक्ट में शामिल होने का अनुरोध</string>
+    <string name="observationResponsibilityChange">अवलोकन ज़िम्मेदारी परिवर्तन</string>
+    <string name="reviewObservationCloseout">अवलोकन समाप्ति की समीक्षा करें</string>
+    <string name="viewPermit">परमिट देखें</string>
 </resources>

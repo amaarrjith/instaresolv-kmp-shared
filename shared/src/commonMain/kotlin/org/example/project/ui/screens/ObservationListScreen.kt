@@ -468,30 +468,31 @@ fun ObservationListItem(
                     color = AppColors.Black,
                     maxLines = 2
                 )
-                // User row
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    WebImageView(
-                        imageUrl = observation.group?.groupImage
-                            ?: "", // dummy image
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = observation.group?.groupName ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = observation.group?.groupCode ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
+                if (observation.group != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WebImageView(
+                            imageUrl = observation.group?.groupImage
+                                ?: "", // dummy image
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = observation.group?.groupName ?: "",
+                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            color = AppColors.Black
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = observation.group?.groupCode ?: "",
+                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            color = AppColors.Black
+                        )
 
+                    }
                 }
             }
         }
