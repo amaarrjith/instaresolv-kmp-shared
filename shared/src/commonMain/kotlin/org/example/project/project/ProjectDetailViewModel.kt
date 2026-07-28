@@ -17,6 +17,7 @@ class ProjectDetailViewModel(
     val uiState = _uiState.asStateFlow()
 
     val loggedInUser = preferences.getLoggedInUser()
+    val designations = preferences.getDesignationTypes()
     fun getProjectDetails(
         groupId: Int,
         groupCode: String
@@ -139,6 +140,34 @@ class ProjectDetailViewModel(
                         getProjectDetails(groupId, groupCode)
                     } else {
                         onError(response.data.statusMessage?: "")
+                    }
+                }
+                is NetworkResult.Error -> {
+                    onError(response.message)
+                }
+            }
+        }
+    }
+
+    fun changeDesignation(userId: Int, designationIds: List<Int>, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        val currentState = _uiState.value
+        if (currentState !is ProjectDetailUiState.Success) return
+        val groupId = currentState.project.groupId
+        val groupCode = currentState.project.groupCode
+        viewModelScope.launch {
+            val response = projectRepository.changeDesignation(
+                userId = userId,
+                groupId = groupId,
+                groupCode = groupCode,
+                designationIds = designationIds
+            )
+            when(response) {
+                is NetworkResult.Success -> {
+                    if (response.data.isSuccess == true) {
+                        onSuccess(response.data.statusMessage ?: "Success")
+                        getProjectDetails(groupId, groupCode)
+                    } else {
+                        onError(response.data.statusMessage ?: "Failed to change designation")
                     }
                 }
                 is NetworkResult.Error -> {

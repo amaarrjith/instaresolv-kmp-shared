@@ -4,6 +4,7 @@ import com.russhwolf.settings.Settings
 import kotlinx.serialization.json.Json
 import org.example.project.data.model.UserDetailInfoModel
 import org.example.project.data.model.UserResponse
+import org.example.project.data.model.DesignationTypeResponse
 
 class AuthPreferences(
     private val settings: Settings
@@ -16,6 +17,7 @@ class AuthPreferences(
         private const val KEY_TOKEN_EXPIRY = "token_expiry"
         private const val LOGGED_USER = "logged_in_user"
         private const val LOGGED_USER_INFO = "logged_in_user_info"
+        private const val DESIGNATION_TYPES = "designation_types"
     }
 
     fun saveLoginStatus(isLoggedIn: Boolean) {
@@ -83,4 +85,17 @@ class AuthPreferences(
         }
     }
 
+    fun saveDesignationTypes(types: List<DesignationTypeResponse>) {
+        settings.putString(DESIGNATION_TYPES, Json.encodeToString(types))
+    }
+
+    fun getDesignationTypes(): List<DesignationTypeResponse> {
+        return settings.getStringOrNull(DESIGNATION_TYPES)?.let {
+            try {
+                Json.decodeFromString<List<DesignationTypeResponse>>(it)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } ?: emptyList()
+    }
 }

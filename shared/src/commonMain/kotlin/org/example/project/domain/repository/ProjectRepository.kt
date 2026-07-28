@@ -61,6 +61,13 @@ interface ProjectRepository {
         newRole: Int
     ): NetworkResult<CommonModelResponse>
 
+    suspend fun changeDesignation(
+        userId: Int,
+        groupId: Int,
+        groupCode: String,
+        designationIds: List<Int>
+    ): NetworkResult<org.example.project.data.model.ChangeDesignationResponse>
+
     suspend fun removeMember(
         groupId: Int,
         groupCode: String,

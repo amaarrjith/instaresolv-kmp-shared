@@ -86,6 +86,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.DesignationTypeResponse
 
 @Composable
 fun ProjectDetailScreen(
@@ -102,7 +103,7 @@ fun ProjectDetailScreen(
     val successMessage = remember { mutableStateOf<String?>(null) }
     val successToastMessage = remember { mutableStateOf<String?>(null) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
-    val isExitProjectClicked = remember { mutableStateOf(false) }
+    val designationTypes = viewModel.designations
     LaunchedEffect(Unit) {
         viewModel.getProjectDetails(
             groupId = groupId,
@@ -137,6 +138,7 @@ fun ProjectDetailScreen(
                         isAppAdmin = isAppAdmin,
                         loggedInUserId = loggedInUserId,
                         project = (uiState.value as ProjectDetailUiState.Success).project,
+                        designationTypes = designationTypes,
                         onTransferAdminSubmit = { password, userId ->
                             viewModel.transferAdmin(
                                 password = password,
@@ -184,6 +186,14 @@ fun ProjectDetailScreen(
                                 onSuccess = { msg -> successToastMessage.value = msg },
                                 onError = { msg -> errorMessage.value = msg }
                             )
+                        },
+                        onChangeDesignationSubmit = { userId, designationIds ->
+                            viewModel.changeDesignation(
+                                userId = userId,
+                                designationIds = designationIds,
+                                onSuccess = { msg -> successMessage.value = msg },
+                                onError = { msg -> errorMessage.value = msg }
+                            )
                         }
                     )
                 }
@@ -229,7 +239,7 @@ fun ProjectDetailScreen(
                     description = successMessage.value ?: "",
                     onDismiss = {
                         successMessage.value = null
-                        onBackClick()
+//                        onBackClick()
                     }
                 )
             }
@@ -264,12 +274,14 @@ fun ProjectDetailScreenContent(
     isAppAdmin: Boolean,
     loggedInUserId: Int,
     project: ProjectDetail,
+    designationTypes: List<DesignationTypeResponse>,
     onTransferAdminSubmit: (String, Int) -> Unit,
     onInviteClick: (List<String>) -> Unit,
     onDeleteClick: (String, (String?) -> Unit) -> Unit,
     onExitProjectClick: () -> Unit,
     onChangeRoleSubmit: (Int, Int) -> Unit,
-    onRemoveMemberSubmit: (Int) -> Unit
+    onRemoveMemberSubmit: (Int) -> Unit,
+    onChangeDesignationSubmit: (Int, List<Int>) -> Unit
 ) {
     val isSearchBarVisible = remember {
         mutableStateOf(false)
@@ -373,6 +385,7 @@ fun ProjectDetailScreenContent(
                 loggedInUserId = loggedInUserId,
                 onChangeRoleClick = { showChangeRoleSheet.value = it },
                 onChangeDesignationClick = { showChangeDesignationSheet.value = it },
+                designationTypes = designationTypes,
                 onLeaveProjectClick = { showLeaveProjectDialog.value = it }
             )
             HorizontalDivider(
@@ -445,7 +458,12 @@ fun ProjectDetailScreenContent(
     if (showChangeDesignationSheet.value != null) {
         ChangeDesignationBottomSheet(
             member = showChangeDesignationSheet.value!!,
-            onDismiss = { showChangeDesignationSheet.value = null }
+            designationTypes = designationTypes,
+            onDismiss = { showChangeDesignationSheet.value = null },
+            onSubmit = { newDesignationIds ->
+                onChangeDesignationSubmit(showChangeDesignationSheet.value!!.userId, newDesignationIds)
+                showChangeDesignationSheet.value = null
+            }
         )
     }
 
@@ -618,6 +636,7 @@ fun ProjectMembersScreen(
     isProjectAdmin: Boolean,
     loggedInUserId: Int,
     onChangeRoleClick: (ProjectMember) -> Unit,
+    designationTypes: List<DesignationTypeResponse>,
     onChangeDesignationClick: (ProjectMember) -> Unit,
     onLeaveProjectClick: (ProjectMember) -> Unit
 ) {
@@ -634,6 +653,7 @@ fun ProjectMembersScreen(
                     isAppAdmin = isAppAdmin,
                     isProjectAdmin = isProjectAdmin,
                     loggedInUserId = loggedInUserId,
+                    designationTypes = designationTypes,
                     onChangeRoleClick = { onChangeRoleClick(member) },
                     onChangeDesignationClick = { onChangeDesignationClick(member) },
                     onLeaveProjectClick = { onLeaveProjectClick(member) }
@@ -702,6 +722,7 @@ fun ProjectMembersItemRow(
     isAppAdmin: Boolean,
     isProjectAdmin: Boolean,
     loggedInUserId: Int,
+    designationTypes: List<DesignationTypeResponse>,
     onChangeRoleClick: () -> Unit,
     onChangeDesignationClick: () -> Unit,
     onLeaveProjectClick: () -> Unit
@@ -737,6 +758,7 @@ fun ProjectMembersItemRow(
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 horizontalAlignment = Alignment.Start
             ) {
@@ -764,8 +786,22 @@ fun ProjectMembersItemRow(
                         color = AppColors.TextGray
                     )
                 }
+                val designationTitles = member.designation.mapNotNull { id ->
+                    designationTypes.find { it.id == id }?.designation
+                }.joinToString(", ")
+                
+                if (designationTitles.isNotEmpty()) {
+                    Text(
+                        text = designationTitles,
+                        style = textStyle(
+                            size = 12.sp,
+                            weight = FontWeight.Normal
+                        ),
+                        color = AppColors.BlackText
+                    )
+                }
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
             if (isAppAdmin || isProjectAdmin) {
                 Box(
                     modifier = Modifier
@@ -1256,16 +1292,71 @@ fun ChangeRoleBottomSheet(
 @Composable
 fun ChangeDesignationBottomSheet(
     member: ProjectMember,
-    onDismiss: () -> Unit
+    designationTypes: List<DesignationTypeResponse>,
+    onDismiss: () -> Unit,
+    onSubmit: (List<Int>) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val selectedDesignations = remember { mutableStateListOf<Int>().apply { addAll(member.designation) } }
+    
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = Color.White
     ) {
-        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 40.dp, start = 22.dp, end = 22.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 40.dp, start = 22.dp, end = 22.dp)
+        ) {
             Text("Change Designation for ${member.name}", style = textStyle(size = 18.sp, weight = FontWeight.Bold))
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            designationTypes.forEach { type ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            if (selectedDesignations.contains(type.id)) {
+                                selectedDesignations.remove(type.id)
+                            } else {
+                                selectedDesignations.add(type.id)
+                            }
+                        }
+                        .padding(vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    androidx.compose.material3.Checkbox(
+                        checked = selectedDesignations.contains(type.id),
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                selectedDesignations.add(type.id)
+                            } else {
+                                selectedDesignations.remove(type.id)
+                            }
+                        },
+                        colors = androidx.compose.material3.CheckboxDefaults.colors(
+                            checkedColor = AppColors.Primary
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = type.designation,
+                        style = textStyle(size = 14.sp, weight = FontWeight.Medium)
+                    )
+                }
+                HorizontalDivider(color = Color(0xFFE0E0E0))
+            }
+            
+            Spacer(modifier = Modifier.height(30.dp))
+            
+            AppPrimaryButton(
+                title = stringResource(Res.string.continueAction),
+                onClick = {
+                    onSubmit(selectedDesignations.toList())
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

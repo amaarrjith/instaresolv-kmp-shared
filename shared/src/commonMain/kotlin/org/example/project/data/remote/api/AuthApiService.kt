@@ -108,6 +108,8 @@ interface AuthApiService {
         request: ProjectAccessRequest
     ): NetworkResult<ProjectAccessResponse>
 
+    suspend fun getDesignationTypes(): NetworkResult<List<org.example.project.data.model.DesignationTypeResponse>>
+
     suspend fun uploadImage(
         imageBytes: ByteArray,
         fileName: String,
@@ -142,6 +144,10 @@ interface AuthApiService {
     suspend fun changeMemberRole(
         request: org.example.project.data.model.ChangeRoleRequest
     ): NetworkResult<CommonModelResponse>
+
+    suspend fun changeDesignation(
+        request: org.example.project.data.model.ChangeDesignationRequest
+    ): NetworkResult<org.example.project.data.model.ChangeDesignationResponse>
 
     suspend fun removeMember(
         request: org.example.project.data.model.RemoveMemberRequest

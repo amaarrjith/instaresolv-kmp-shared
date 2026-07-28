@@ -23,6 +23,23 @@ class HomeScreenViewModel(
     val user = preferences.getLoggedInUser()
     val userInfo = preferences.getLoggedInUserInfo()
 
+    init {
+        fetchDesignationTypes()
+    }
+
+    private fun fetchDesignationTypes() {
+        viewModelScope.launch {
+            when (val result = authRepository.getDesignationTypes()) {
+                is NetworkResult.Success -> {
+                    preferences.saveDesignationTypes(result.data)
+                }
+                is NetworkResult.Error -> {
+                    // Fail silently for background config fetch
+                }
+            }
+        }
+    }
+
     private val _isGeneratingPdf = MutableStateFlow(false)
     val isGeneratingPdf: StateFlow<Boolean> = _isGeneratingPdf
 

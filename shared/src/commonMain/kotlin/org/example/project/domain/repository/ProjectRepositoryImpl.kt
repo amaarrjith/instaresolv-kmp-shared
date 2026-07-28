@@ -130,14 +130,28 @@ class ProjectRepositoryImpl(
         groupCode: String,
         newRole: Int
     ): NetworkResult<CommonModelResponse> {
-        return apiService.changeMemberRole(
-            org.example.project.data.model.ChangeRoleRequest(
-                userId = userId,
-                groupId = groupId,
-                groupCode = groupCode,
-                newRole = newRole
-            )
+        val request = org.example.project.data.model.ChangeRoleRequest(
+            userId = userId,
+            groupId = groupId,
+            groupCode = groupCode,
+            newRole = newRole
         )
+        return apiService.changeMemberRole(request)
+    }
+
+    override suspend fun changeDesignation(
+        userId: Int,
+        groupId: Int,
+        groupCode: String,
+        designationIds: List<Int>
+    ): NetworkResult<org.example.project.data.model.ChangeDesignationResponse> {
+        val request = org.example.project.data.model.ChangeDesignationRequest(
+            userId = userId,
+            groupId = groupId,
+            groupCode = groupCode,
+            designation = designationIds
+        )
+        return apiService.changeDesignation(request)
     }
 
     override suspend fun removeMember(

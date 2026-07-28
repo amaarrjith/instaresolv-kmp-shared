@@ -101,6 +101,10 @@ class AuthRepositoryImpl(
         return apiService.requestProjectAccess(request)
     }
 
+    override suspend fun getDesignationTypes(): NetworkResult<List<org.example.project.data.model.DesignationTypeResponse>> {
+        return apiService.getDesignationTypes()
+    }
+
     override suspend fun uploadImage(
         imageBytes: ByteArray,
         fileName: String,

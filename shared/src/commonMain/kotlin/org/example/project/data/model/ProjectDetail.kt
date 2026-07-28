@@ -25,7 +25,8 @@ data class ProjectMember(
     val image: String,
     val name: String,
     val email: String,
-    val role: Int
+    val role: Int,
+    val designation: List<Int>
 )
 
 @Serializable
@@ -56,4 +57,19 @@ data class HandoverSuperAdminRequest(
     val groupId: Int,
     val groupCode: String,
     val handOverTo: Int
+)
+
+@Serializable
+data class ChangeDesignationRequest(
+    val groupId: Int,
+    val groupCode: String,
+    val userId: Int,
+    val designation: List<Int>
+)
+
+@Serializable
+data class ChangeDesignationResponse(
+    val isSuccess: Boolean? = null,
+    val statusMessage: String? = null,
+    val userId: Int? = null
 )

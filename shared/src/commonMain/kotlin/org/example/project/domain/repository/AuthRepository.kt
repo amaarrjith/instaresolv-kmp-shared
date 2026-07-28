@@ -50,6 +50,8 @@ interface AuthRepository {
         request: ProjectAccessRequest
     ): NetworkResult<ProjectAccessResponse>
 
+    suspend fun getDesignationTypes(): NetworkResult<List<org.example.project.data.model.DesignationTypeResponse>>
+
     suspend fun uploadImage(
         imageBytes: ByteArray,
         fileName: String,

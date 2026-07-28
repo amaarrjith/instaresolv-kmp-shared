@@ -148,6 +148,10 @@ class AuthApiServiceImpl(
         }
     }
 
+    override suspend fun getDesignationTypes(): NetworkResult<List<org.example.project.data.model.DesignationTypeResponse>> = safeApiCall {
+        httpClient.post(ApiEndpoints.DESIGNATION_TYPES)
+    }
+
     override suspend fun uploadImage(
         imageBytes: ByteArray,
         fileName: String,
@@ -195,6 +199,12 @@ class AuthApiServiceImpl(
 
     override suspend fun changeMemberRole(request: org.example.project.data.model.ChangeRoleRequest): NetworkResult<CommonModelResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.CHANGE_ROLE) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun changeDesignation(request: org.example.project.data.model.ChangeDesignationRequest): NetworkResult<org.example.project.data.model.ChangeDesignationResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.CHANGE_DESIGNATION) {
             jsonBody(request)
         }
     }

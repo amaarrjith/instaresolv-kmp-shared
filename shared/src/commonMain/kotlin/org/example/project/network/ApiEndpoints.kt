@@ -3,6 +3,7 @@ package org.example.project.network
 object ApiEndpoints {
     const val LOGIN = "user/login"
     const val FORGOT_PASSWORD = "forgot-password"
+    const val DESIGNATION_TYPES = "user/designation-types"
     const val REGISTER = "user/registration"
     const val VERIFY_OTP = "user/email-verify"
     const val USER_CHECKOUT = "generic/user-check"
@@ -33,6 +34,7 @@ object ApiEndpoints {
     const val DELETE_PROJECT = "group/delete"
     const val EXIT_PROJECT = "group/exit"
     const val CHANGE_ROLE = "v3/group/role-change"
+    const val CHANGE_DESIGNATION = "v3/group/change-designation"
     const val REMOVE_MEMBER = "group/remove-member"
     const val HANDOVER_SUPERADMIN = "v3/group/handover/admin-rights"
     const val GENERAL_CONTENTS = "general/contents"
