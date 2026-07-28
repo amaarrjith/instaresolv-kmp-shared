@@ -561,6 +561,30 @@ class AuthApiServiceImpl(
         }
     }
 
+    override suspend fun getAssignedTrainings(
+        request: org.example.project.data.model.AssignedTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AssignedTrainingResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.ASSIGNED_TRAININGS_VIDEO_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun getAllTrainings(
+        request: org.example.project.data.model.AllTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AllTrainingResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.ALL_TRAININGS_VIDEO_LIST) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun assignTraining(
+        request: org.example.project.data.model.AssignTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AssignTrainingResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.ASSIGN_TRAINING) {
+            jsonBody(request)
+        }
+    }
+
     override suspend fun getTrainingDetail(
         request: org.example.project.data.model.TrainingDetailRequest
     ): NetworkResult<org.example.project.data.model.TrainingDetailData> = safeApiCall {

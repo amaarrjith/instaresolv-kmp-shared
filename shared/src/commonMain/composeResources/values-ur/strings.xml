@@ -448,4 +448,5 @@
     <string name="original">اصل</string>
     <string name="deleteSelectedObservationDrafts">کیا آپ واقعی منتخب کردہ مشاہداتی ڈرافٹس کو حذف کرنا چاہتے ہیں؟</string>
     <string name="draftsDeletedSuccessfully">ڈرافٹس کامیابی کے ساتھ حذف ہو گئے</string>
+    <string name="assignedTrainings">Assigned Trainings</string>
 </resources>

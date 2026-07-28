@@ -320,6 +320,18 @@ interface AuthApiService {
         request: org.example.project.data.model.TrainingListRequest
     ): NetworkResult<org.example.project.data.model.TrainingListResponse>
 
+    suspend fun getAssignedTrainings(
+        request: org.example.project.data.model.AssignedTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AssignedTrainingResponse>
+
+    suspend fun getAllTrainings(
+        request: org.example.project.data.model.AllTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AllTrainingResponse>
+
+    suspend fun assignTraining(
+        request: org.example.project.data.model.AssignTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AssignTrainingResponse>
+
     suspend fun getTrainingDetail(
         request: org.example.project.data.model.TrainingDetailRequest
     ): NetworkResult<org.example.project.data.model.TrainingDetailData>

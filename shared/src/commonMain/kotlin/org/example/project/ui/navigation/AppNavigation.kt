@@ -412,6 +412,10 @@ fun AppNavigation() {
                 onEditClick = { projectDetail ->
                     navController.currentBackStackEntry?.savedStateHandle?.set("project", Json.encodeToString(projectDetail))
                     navController.navigate(Screens.EditProjectScreen.route)
+                },
+                onTrainingClick = { member ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("member", Json.encodeToString(member))
+                    navController.navigate(Screens.AssignedTrainingsScreen.route)
                 }
             )
         }
@@ -427,6 +431,20 @@ fun AppNavigation() {
                 }
             )
 
+        }
+        composable(Screens.AssignedTrainingsScreen.route) {
+            val memberJson = navController.previousBackStackEntry?.savedStateHandle?.get<String>("member")
+            val member = memberJson?.let {
+                Json.decodeFromString<org.example.project.data.model.ProjectMember>(it)
+            }
+            if (member != null) {
+                org.example.project.ui.screens.AssignedTrainingsView(
+                    member = member,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
         composable(Screens.ChangePasswordScreen.route) {
             ChangePasswordScreen(onBack = { navController.popBackStack() })

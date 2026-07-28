@@ -91,4 +91,7 @@ object ApiEndpoints {
     const val PERMIT_ACTION = "permit/action"
     const val PERMIT_CLOSURE_REQUEST = "permit/certificate-closure-request"
     const val PERMIT_CLOSURE = "permit/certificate-closure"
+    const val ASSIGNED_TRAININGS_VIDEO_LIST = "training/assigned-trainings"
+    const val ALL_TRAININGS_VIDEO_LIST = "training/all-trainings"
+    const val ASSIGN_TRAINING = "training/assign-training"
 }

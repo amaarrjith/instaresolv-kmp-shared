@@ -15,6 +15,24 @@ class TrainingRepositoryImpl(
         return apiService.getMyTrainingList(request)
     }
 
+    override suspend fun getAssignedTrainings(
+        request: org.example.project.data.model.AssignedTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AssignedTrainingResponse> {
+        return apiService.getAssignedTrainings(request)
+    }
+
+    override suspend fun getAllTrainings(
+        request: org.example.project.data.model.AllTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AllTrainingResponse> {
+        return apiService.getAllTrainings(request)
+    }
+
+    override suspend fun assignTraining(
+        request: org.example.project.data.model.AssignTrainingRequest
+    ): NetworkResult<org.example.project.data.model.AssignTrainingResponse> {
+        return apiService.assignTraining(request)
+    }
+
     override suspend fun getTrainingDetail(
         request: org.example.project.data.model.TrainingDetailRequest
     ): NetworkResult<org.example.project.data.model.TrainingDetailData> {

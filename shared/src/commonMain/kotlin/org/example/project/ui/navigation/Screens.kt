@@ -37,6 +37,7 @@ sealed class Screens(val route: String) {
     object TrainingListScreen : Screens("training_list_screen")
     object TrainingDetailScreen : Screens("training_detail_screen")
     object TrainingDetailScreenWithArgs : Screens("training_detail_screen/{trainingId}")
+    object AssignedTrainingsScreen : Screens("assigned_trainings_screen")
     object TrainingVideoScreen : Screens("training_video_screen")
     object TrainingVideoScreenWithArgs : Screens("training_video_screen/{trainingId}")
     object QuizScreen : Screens("quiz_screen")

@@ -463,4 +463,5 @@
     <string name="original">Original</string>
     <string name="deleteSelectedObservationDrafts">Are you sure you want to delete the selected observation drafts?</string>
     <string name="draftsDeletedSuccessfully">Drafts deleted successfully</string>
+    <string name="assignedTrainings">Assigned Trainings</string>
 </resources>

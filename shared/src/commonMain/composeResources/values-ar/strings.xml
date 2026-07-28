@@ -452,4 +452,5 @@
     <string name="original">أصلي</string>
     <string name="deleteSelectedObservationDrafts">هل أنت متأكد أنك تريد حذف مسودات الملاحظات المحددة؟</string>
     <string name="draftsDeletedSuccessfully">تم حذف المسودات بنجاح</string>
+    <string name="assignedTrainings">Assigned Trainings</string>
 </resources>

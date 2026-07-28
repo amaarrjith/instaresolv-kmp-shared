@@ -93,7 +93,8 @@ fun ProjectDetailScreen(
     groupId: Int,
     groupCode: String,
     onBackClick: () -> Unit,
-    onEditClick: (ProjectDetail) -> Unit
+    onEditClick: (ProjectDetail) -> Unit,
+    onTrainingClick: (ProjectMember) -> Unit
 ) {
     val viewModel: ProjectDetailViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
@@ -194,6 +195,9 @@ fun ProjectDetailScreen(
                                 onSuccess = { msg -> successMessage.value = msg },
                                 onError = { msg -> errorMessage.value = msg }
                             )
+                        },
+                        onTrainingClick = { member ->
+                            onTrainingClick(member)
                         }
                     )
                 }
@@ -270,7 +274,7 @@ fun ProjectDetailScreen(
 }
 
 @Composable
-fun ProjectDetailScreenContent(
+fun  ProjectDetailScreenContent(
     isAppAdmin: Boolean,
     loggedInUserId: Int,
     project: ProjectDetail,
@@ -281,7 +285,8 @@ fun ProjectDetailScreenContent(
     onExitProjectClick: () -> Unit,
     onChangeRoleSubmit: (Int, Int) -> Unit,
     onRemoveMemberSubmit: (Int) -> Unit,
-    onChangeDesignationSubmit: (Int, List<Int>) -> Unit
+    onChangeDesignationSubmit: (Int, List<Int>) -> Unit,
+    onTrainingClick: (ProjectMember) -> Unit
 ) {
     val isSearchBarVisible = remember {
         mutableStateOf(false)
@@ -386,7 +391,8 @@ fun ProjectDetailScreenContent(
                 onChangeRoleClick = { showChangeRoleSheet.value = it },
                 onChangeDesignationClick = { showChangeDesignationSheet.value = it },
                 designationTypes = designationTypes,
-                onLeaveProjectClick = { showLeaveProjectDialog.value = it }
+                onLeaveProjectClick = { showLeaveProjectDialog.value = it },
+                onTrainingClick = onTrainingClick
             )
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 20.dp)
@@ -638,7 +644,8 @@ fun ProjectMembersScreen(
     onChangeRoleClick: (ProjectMember) -> Unit,
     designationTypes: List<DesignationTypeResponse>,
     onChangeDesignationClick: (ProjectMember) -> Unit,
-    onLeaveProjectClick: (ProjectMember) -> Unit
+    onLeaveProjectClick: (ProjectMember) -> Unit,
+    onTrainingClick: (ProjectMember) -> Unit
 ) {
     if (members.isEmpty()) {
         EmptyScreenView(
@@ -656,7 +663,8 @@ fun ProjectMembersScreen(
                     designationTypes = designationTypes,
                     onChangeRoleClick = { onChangeRoleClick(member) },
                     onChangeDesignationClick = { onChangeDesignationClick(member) },
-                    onLeaveProjectClick = { onLeaveProjectClick(member) }
+                    onLeaveProjectClick = { onLeaveProjectClick(member) },
+                    onTrainingClick = { onTrainingClick(member) }
                 )
             }
         }
@@ -725,7 +733,8 @@ fun ProjectMembersItemRow(
     designationTypes: List<DesignationTypeResponse>,
     onChangeRoleClick: () -> Unit,
     onChangeDesignationClick: () -> Unit,
-    onLeaveProjectClick: () -> Unit
+    onLeaveProjectClick: () -> Unit,
+    onTrainingClick: () -> Unit
 ) {
     val isExpanded = remember { mutableStateOf(false) }
     val canExpand = isAppAdmin || isProjectAdmin
@@ -808,7 +817,7 @@ fun ProjectMembersItemRow(
                         .border(1.dp, AppColors.Primary, RoundedCornerShape(16.dp))
                         .clip(RoundedCornerShape(16.dp))
                         .clickable {
-
+                            onTrainingClick()
                         }
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
