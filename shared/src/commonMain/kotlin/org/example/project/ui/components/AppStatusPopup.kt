@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -148,7 +149,8 @@ fun AppConfirmationDialog(
                         Image(
                             painter = painterResource(icon),
                             contentDescription = null,
-                            colorFilter = iconTint?.let { androidx.compose.ui.graphics.ColorFilter.tint(it) }
+                            colorFilter = iconTint?.let { androidx.compose.ui.graphics.ColorFilter.tint(it) },
+                            modifier = Modifier.size(100.dp)
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                     }
@@ -217,6 +219,8 @@ fun AppConfirmationDialog(
 fun AppExitDialog(
     title: String = "Leave this page?",
     description: String = "Are you sure you want to leave this page?\nUnsaved changes will be lost.",
+    primaryButtonText: String = "Yes, Leave",
+    secondaryButtonText: String = "No, Stay",
     visible: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
@@ -227,10 +231,10 @@ fun AppExitDialog(
         description = description,
         icon = Res.drawable.ic_toast_alert, // NOTE: Replace with Res.drawable.ic_exit_popup if available
         iconTint = null,
-        primaryButtonText = "Yes, Leave",
+        primaryButtonText = primaryButtonText,
         primaryButtonColor = Color(0xFFD32F2F),
         onPrimaryClick = onConfirm,
-        secondaryButtonText = "No, Stay",
+        secondaryButtonText = secondaryButtonText,
         secondaryButtonColor = Color(0xFF3366CC),
         onSecondaryClick = onDismiss,
         onDismiss = onDismiss

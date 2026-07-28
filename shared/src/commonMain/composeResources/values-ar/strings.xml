@@ -450,4 +450,6 @@
     <string name="share">مشاركة</string>
     <string name="audio">صوت</string>
     <string name="original">أصلي</string>
+    <string name="deleteSelectedObservationDrafts">هل أنت متأكد أنك تريد حذف مسودات الملاحظات المحددة؟</string>
+    <string name="draftsDeletedSuccessfully">تم حذف المسودات بنجاح</string>
 </resources>

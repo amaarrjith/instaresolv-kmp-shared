@@ -424,7 +424,8 @@ fun AssignedToMeCard(
                                     "dd MMM yyyy"
                                 ).uppercase(),
                                 timeAgo(
-                                    contents.observation.date
+                                    contents.observation.date,
+                                    isUtc = true
                                 )
                             )
                         }

@@ -446,4 +446,6 @@
     <string name="share">شیئر کریں</string>
     <string name="audio">آڈیو</string>
     <string name="original">اصل</string>
+    <string name="deleteSelectedObservationDrafts">کیا آپ واقعی منتخب کردہ مشاہداتی ڈرافٹس کو حذف کرنا چاہتے ہیں؟</string>
+    <string name="draftsDeletedSuccessfully">ڈرافٹس کامیابی کے ساتھ حذف ہو گئے</string>
 </resources>

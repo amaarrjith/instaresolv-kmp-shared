@@ -720,11 +720,21 @@ fun ProjectMembersItemRow(
                 .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            WebImageView(
-                imageUrl = member.image,
-                modifier = Modifier.size(50.dp)
-                    .clip(CircleShape)
-            )
+            Box(
+                modifier = Modifier
+                    .width(75.dp)
+                    .align(Alignment.CenterVertically),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                WebImageView(
+                    imageUrl = member.image,
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
+                        .size(50.dp)
+                        .clip(CircleShape)
+                )
+                MemberStatusIcon(UserRole.fromInt(member.role) == UserRole.ADMIN)
+            }
             Spacer(modifier = Modifier.width(14.dp))
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -756,7 +766,23 @@ fun ProjectMembersItemRow(
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            MemberStatusIcon(UserRole.fromInt(member.role) == UserRole.ADMIN)
+            if (isAppAdmin || isProjectAdmin) {
+                Box(
+                    modifier = Modifier
+                        .border(1.dp, AppColors.Primary, RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
+
+                        }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "Training",
+                        style = textStyle(size = 11.sp, weight = FontWeight.SemiBold),
+                        color = AppColors.Primary
+                    )
+                }
+            }
         }
 
         if (isExpanded.value) {
@@ -804,12 +830,13 @@ fun MemberStatusIcon(isAdmin: Boolean) {
                 shape = RoundedCornerShape(12.dp)
             )
             .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
             text = if (isAdmin) stringResource(Res.string.admin).uppercase() else stringResource(Res.string.participant).uppercase(),
             style = textStyle(
-                size = 10.sp,
+                size = 8.sp,
                 weight = FontWeight.SemiBold
             ),
             color = if (isAdmin) AppColors.Primary else AppColors.TextGray

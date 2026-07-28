@@ -84,6 +84,11 @@ import org.example.project.ui.screens.ToolBoxTalkDetailViewModel
 import org.example.project.domain.repository.ToolBoxTalkRepository
 import org.example.project.domain.repository.ToolBoxTalkRepositoryImpl
 import org.example.project.ui.components.FilterBottomSheetViewModel
+import org.example.project.db.DatabaseDriverFactory
+import org.example.project.db.listOfStringsAdapter
+import org.example.project.shared.db.AppDatabase
+import org.example.project.shared.db.ObservationDraft
+import org.example.project.data.repository.ObservationDraftRepository
 
 val appModule = module {
     factory { createHttpClient(get(), get()) }
@@ -108,7 +113,7 @@ val appModule = module {
     factory { ProjectDetailViewModel(get(), get()) }
     factory { RegisterViewModel(get(), get()) }
     factory { ObservationDetailViewModel(get(), get()) }
-    factory { CreateObservationViewModel(get(), get(), get()) }
+    factory { CreateObservationViewModel(get(), get(), get(), get()) }
     factory { CreateIncidentViewModel(get(), get(), get()) }
     factory { AppProjectDropdownViewModel(get()) }
     factory { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
@@ -123,7 +128,7 @@ val appModule = module {
     factory { ToolBoxTalkDetailViewModel(get()) }
     factory { PendingActionListViewModel(get(), get(), get(), get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
-    factory { ObservationListViewModel(get()) }
+    factory { ObservationListViewModel(get(), get(), get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
     factory<InspectionRepository> { InspectionRepositoryImpl(get()) }
     factory { AuditInspectionListViewModel(get()) }
@@ -169,4 +174,16 @@ val appModule = module {
     single { AuthPreferences(get()) }
     single { AppPreferences(get()) }
     single<Settings> { Settings() }
+    
+    single {
+        val driverFactory = get<DatabaseDriverFactory>()
+        AppDatabase(
+            driver = driverFactory.createDriver(),
+            ObservationDraftAdapter = ObservationDraft.Adapter(
+                imageDescriptionsJsonAdapter = listOfStringsAdapter,
+                notificationToJsonAdapter = listOfStringsAdapter
+            )
+        )
+    }
+    factory { ObservationDraftRepository(get()) }
 }

@@ -7,6 +7,6 @@ import org.koin.core.context.startKoin
 public fun initKoin(config: KoinApplication.() -> Unit = {}) {
     startKoin {
         config()
-        modules(appModule)
+        modules(appModule, platformModule())
     }
 }

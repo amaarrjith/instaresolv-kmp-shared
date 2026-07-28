@@ -24,11 +24,14 @@ data class ObservationListState(
     val error: String? = null,
     val endReached: Boolean = false,
     val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
-    var errorExcel: String? = null
+    var errorExcel: String? = null,
+    val drafts: List<org.example.project.shared.db.ObservationDraft> = emptyList()
 )
 
 class ObservationListViewModel(
-    private val repository: ObservationRepository
+    private val repository: ObservationRepository,
+    private val draftRepository: org.example.project.data.repository.ObservationDraftRepository,
+    private val authPreferences: org.example.project.data.settings.AuthPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ObservationListState())
@@ -55,6 +58,13 @@ class ObservationListViewModel(
         _exportToastMessage.value = message
     }
 
+    private val _draftToastMessage = MutableStateFlow<String?>(null)
+    val draftToastMessage: StateFlow<String?> = _draftToastMessage.asStateFlow()
+
+    fun clearDraftToast() {
+        _draftToastMessage.value = null
+    }
+
     private var currentPage = 1
     private var searchJob: Job? = null
 
@@ -74,6 +84,23 @@ class ObservationListViewModel(
     fun applyFilters(state: org.example.project.data.model.AppFilterState) {
         _uiState.update { it.copy(appliedFilterState = state) }
         fetchObservations(isRefresh = true)
+    }
+
+    fun loadDrafts() {
+        val userId = authPreferences.getLoggedInUser()?.userId ?: -1
+        _uiState.update { it.copy(drafts = draftRepository.getAllDrafts(userId)) }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            try {
+                ids.forEach { draftRepository.deleteDraft(it) }
+                loadDrafts()
+                _draftToastMessage.value = successMessage
+            } catch (e: Exception) {
+                _draftToastMessage.value = e.message ?: "Failed to delete drafts"
+            }
+        }
     }
 
     fun fetchObservations(isRefresh: Boolean = false) {

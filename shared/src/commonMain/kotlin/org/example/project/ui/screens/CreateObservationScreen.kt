@@ -17,6 +17,7 @@ import instaresolv.shared.generated.resources.ic_add
 import org.example.project.colors.AppColors
 import org.example.project.data.model.GroupUser
 import org.example.project.data.model.Project
+import org.example.project.data.model.ObservationGroup
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.AppMultilineTextField
@@ -35,10 +36,13 @@ import org.example.project.utilites.ToastType
 import androidx.compose.foundation.clickable
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateObservationScreen(
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L,
     onBackClicked: () -> Unit
 ) {
     val viewModel: CreateObservationViewModel = koinInject()
@@ -48,6 +52,19 @@ fun CreateObservationScreen(
     val description = remember { mutableStateOf("") }
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFromDraft, draftId) {
+        if (isFromDraft && draftId != -1L) {
+            val draft = viewModel.getDraftById(draftId)
+            if (draft != null) {
+                observationTitle.value = draft.title
+                location.value = draft.location
+                description.value = draft.description
+                
+                viewModel.restoreDraftData(draft)
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -99,6 +116,7 @@ fun CreateObservationScreen(
                         title = stringResource(Res.string.saveAsDraft),
                         onClick = {
                             viewModel.saveObservation(
+                                draftId = if (isFromDraft && draftId != -1L) draftId else null,
                                 title = observationTitle.value,
                                 location = location.value,
                                 description = description.value,
@@ -112,6 +130,7 @@ fun CreateObservationScreen(
                         title = stringResource(Res.string.save),
                         onClick = {
                             viewModel.saveObservation(
+                                draftId = if (isFromDraft && draftId != -1L) draftId else null,
                                 title = observationTitle.value,
                                 location = location.value,
                                 description = description.value,

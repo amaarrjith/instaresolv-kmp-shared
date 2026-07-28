@@ -281,13 +281,30 @@ fun AppNavigation() {
         composable(Screens.ObservationListScreen.route) {
             ObservationListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onCreateClicked = { navController.navigate(Screens.CreateObservationScreen.route) }
+                onCreateClicked = { navController.navigate(Screens.CreateObservationScreen.route) },
+                onDraftClicked = { navController.navigate(Screens.ObservationDraftListScreen.route) }
             )
         }
-        composable(Screens.CreateObservationScreen.route) {
-            CreateObservationScreen{
-                navController.popBackStack()
-            }
+        composable(Screens.ObservationDraftListScreen.route) {
+            org.example.project.ui.screens.ObservationDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { draftId ->
+                    navController.navigate("${Screens.CreateObservationScreen.route}?isFromDraft=true&draftId=$draftId")
+                }
+            )
+        }
+        composable(
+            route = "${Screens.CreateObservationScreen.route}?isFromDraft={isFromDraft}&draftId={draftId}"
+        ) { backStackEntry ->
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
+            CreateObservationScreen(
+                isFromDraft = isFromDraft,
+                draftId = draftId,
+                onBackClicked = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable(Screens.CreateIncidentScreen.route) {
             CreateIncidentScreen {

@@ -22,6 +22,26 @@ data class CreateObservationRequest(
 )
 
 @Serializable
+data class CreateObservationDraftRequest(
+    val draftId: Long? = null,
+    val userId: Int,
+    val location: String = "",
+    val imageDescription: List<ImageDescriptionRequest> = emptyList(),
+    val groupSpecified: Int = -1,
+    val group: ObservationGroup? = null,
+    val reportedBy: String = "",
+    val customResponsiblePerson: CustomResponsiblePersonRequest = CustomResponsiblePersonRequest(),
+    val notificationTo: List<GroupUser> = emptyList(),
+    val description: String = "",
+    val observationId: Int = -1,
+    val responsiblePerson: GroupUser? = null,
+    val responsiblePersonName: String = "",
+    val observationTitle: String = "",
+    val responsiblePersonEmail: String = "",
+    val audioLink: String? = null,
+    val createdAt: String? = null
+)
+@Serializable
 data class ImageDescriptionRequest(
     val isAiGeneratedDescription: Boolean = false,
     val image: String = "",

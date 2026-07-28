@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.skiePlugin)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -42,9 +43,11 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation("androidx.media3:media3-exoplayer:1.5.1")
             implementation("androidx.media3:media3-ui:1.5.1")
+            implementation(libs.sqldelight.android.driver)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.sqldelight.native.driver)
         }
         commonMain.dependencies {
             api(libs.koin.core)
@@ -73,6 +76,8 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
             implementation(libs.peekaboo.image.picker)
             implementation(libs.peekaboo.ui)
+            implementation(libs.sqldelight.coroutines.extensions)
+            implementation(libs.sqldelight.primitive.adapters)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -82,4 +87,12 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
+}
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("org.example.project.shared.db")
+        }
+    }
 }

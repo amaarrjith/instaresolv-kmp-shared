@@ -6,11 +6,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.example.project.data.model.CreateObservationDraftRequest
 import org.example.project.data.model.GroupUser
 import org.example.project.data.model.Project
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
+import org.example.project.data.repository.ObservationDraftRepository
+import kotlin.time.Clock
 
 data class ObservationImage(
     val imageUrl: String? = null,
@@ -34,7 +37,8 @@ data class CreateObservationUiState(
 class CreateObservationViewModel(
     private val projectRepository: ProjectRepository,
     private val observationRepository: org.example.project.domain.repository.ObservationRepository,
-    private val authPreferences: AuthPreferences
+    private val authPreferences: AuthPreferences,
+    private val observationDraftRepository: ObservationDraftRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateObservationUiState())
     val uiState: StateFlow<CreateObservationUiState> = _uiState.asStateFlow()
@@ -132,6 +136,7 @@ class CreateObservationViewModel(
     }
 
     fun saveObservation(
+        draftId: Long? = null,
         title: String,
         location: String,
         description: String,
@@ -155,38 +160,84 @@ class CreateObservationViewModel(
                 )
             }.filter { it.image.isNotBlank() }
 
-            val request = org.example.project.data.model.CreateObservationRequest(
-                location = location,
-                imageDescription = imageRequests,
-                groupSpecified = if (state.selectedProject != null) 1 else 0,
-                groupId = state.selectedProject?.groupId ?: -1,
-                reportedBy = logginedUser?.name ?: "",
-                customResponsiblePerson = org.example.project.data.model.CustomResponsiblePersonRequest(
-                    name = if (state.selectedProject == null) state.manualResponsibleName else ""
-                ),
-                notificationTo = listOfNotNull(state.selectedNotifyPerson?.userId),
-                saveAsDraft = isDraft,
-                description = description,
-                observationId = -1,
-                responsiblePerson = state.selectedResponsiblePerson?.userId ?: -1,
-                responsiblePersonName = if (state.selectedProject != null) "" else state.manualResponsibleName,
-                observationTitle = title,
-                responsiblePersonEmail = if (state.selectedProject != null) "" else state.manualResponsibleEmail,
-                audioLink = state.audioUrl
-            )
-
-            val result = observationRepository.createObservation(request)
-
-            when (result) {
-                is NetworkResult.Success -> {
+            if (isDraft) {
+                val request = CreateObservationDraftRequest(
+                    draftId = draftId,
+                    userId = authPreferences.getLoggedInUser()?.userId ?: -1,
+                    location = location,
+                    imageDescription = imageRequests,
+                    groupSpecified = if (state.selectedProject != null) 1 else 0,
+                    group = state.selectedProject?.let {
+                        org.example.project.data.model.ObservationGroup(
+                            groupId = it.groupId.toString(),
+                            groupCode = it.groupCode,
+                            groupImage = it.groupImage,
+                            groupName = it.groupName
+                        )
+                    },
+                    reportedBy = logginedUser?.name ?: "",
+                    customResponsiblePerson = org.example.project.data.model.CustomResponsiblePersonRequest(
+                        name = if (state.selectedProject == null) state.manualResponsibleName else ""
+                    ),
+                    notificationTo = listOfNotNull(state.selectedNotifyPerson),
+                    description = description,
+                    observationId = -1,
+                    responsiblePerson = state.selectedResponsiblePerson,
+                    responsiblePersonName = if (state.selectedProject != null) (state.selectedResponsiblePerson?.name ?: "") else state.manualResponsibleName,
+                    observationTitle = title,
+                    responsiblePersonEmail = if (state.selectedProject != null) (state.selectedResponsiblePerson?.email ?: "") else state.manualResponsibleEmail,
+                    audioLink = state.audioUrl,
+                    createdAt = Clock.System.now().toString()
+                )
+                try {
+                    observationDraftRepository.saveDraft(request)
                     _uiState.value = _uiState.value.copy(isLoading = false, error = null)
                     onSuccess()
-                }
-                is NetworkResult.Error -> {
+                } catch (e: Exception) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.message ?: "Failed to save observation"
+                        error = e.message ?: "Failed to save draft"
                     )
+                }
+                return@launch
+            } else {
+                val request = org.example.project.data.model.CreateObservationRequest(
+                    location = location,
+                    imageDescription = imageRequests,
+                    groupSpecified = if (state.selectedProject != null) 1 else 0,
+                    groupId = state.selectedProject?.groupId ?: -1,
+                    reportedBy = logginedUser?.name ?: "",
+                    customResponsiblePerson = org.example.project.data.model.CustomResponsiblePersonRequest(
+                        name = if (state.selectedProject == null) state.manualResponsibleName else ""
+                    ),
+                    notificationTo = listOfNotNull(state.selectedNotifyPerson?.userId),
+                    saveAsDraft = isDraft,
+                    description = description,
+                    observationId = -1,
+                    responsiblePerson = state.selectedResponsiblePerson?.userId ?: -1,
+                    responsiblePersonName = if (state.selectedProject != null) (state.selectedResponsiblePerson?.name ?: "") else state.manualResponsibleName,
+                    observationTitle = title,
+                    responsiblePersonEmail = if (state.selectedProject != null) (state.selectedResponsiblePerson?.email ?: "") else state.manualResponsibleEmail,
+                    audioLink = state.audioUrl
+                )
+
+                val result = observationRepository.createObservation(request)
+
+                when (result) {
+                    is NetworkResult.Success -> {
+                        if (draftId != null) {
+                            deleteDraftById(draftId)
+                        }
+                        _uiState.value = _uiState.value.copy(isLoading = false, error = null)
+                        onSuccess()
+                    }
+
+                    is NetworkResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = result.message ?: "Failed to save observation"
+                        )
+                    }
                 }
             }
         }
@@ -194,5 +245,81 @@ class CreateObservationViewModel(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun getDraftById(draftId: Long): org.example.project.shared.db.ObservationDraft? {
+        return observationDraftRepository.getDraftById(draftId)
+    }
+
+    fun deleteDraftById(draftId: Long) {
+        observationDraftRepository.deleteDraft(draftId)
+    }
+
+    fun restoreDraftData(draft: org.example.project.shared.db.ObservationDraft) {
+        if (!draft.groupJson.isNullOrEmpty()) {
+            try {
+                val group = kotlinx.serialization.json.Json.decodeFromString<org.example.project.data.model.ObservationGroup>(draft.groupJson)
+                onProjectSelected(Project(
+                    groupId = group.groupId?.toIntOrNull() ?: 0,
+                    groupName = group.groupName,
+                    groupImage = group.groupImage,
+                    groupCode = group.groupCode,
+                    isAdmin = false
+                ))
+            } catch (e: Exception) {}
+        }
+        
+        if (draft.customResponsiblePersonName.isNotEmpty()) {
+            onManualResponsibleNameChange(draft.customResponsiblePersonName)
+        }
+
+        if (draft.responsiblePersonId > 0 && draft.responsiblePersonName.isNotEmpty()) {
+            val user = GroupUser(
+                userId = draft.responsiblePersonId.toInt(),
+                name = draft.responsiblePersonName,
+                email = draft.responsiblePersonEmail,
+                image = "",
+                role = 0
+            )
+            onResponsiblePersonSelected(user)
+        }
+        
+        if (draft.notificationToJson.isNotEmpty()) {
+            val notifyStr = draft.notificationToJson.firstOrNull()
+            if (notifyStr != null) {
+                try {
+                    val user = kotlinx.serialization.json.Json.decodeFromString<GroupUser>(notifyStr)
+                    onNotifyPersonSelected(user)
+                } catch (e: Exception) {
+                    // Fallback in case of old draft format (just ID)
+                    val notifyId = notifyStr.toIntOrNull()
+                    if (notifyId != null) {
+                        onNotifyPersonSelected(GroupUser(
+                            userId = notifyId, 
+                            name = "Selected User", 
+                            email = "",
+                            image = "",
+                            role = 0
+                        ))
+                    }
+                }
+            }
+        }
+
+        if (draft.imageDescriptionsJson.isNotEmpty()) {
+            val images = draft.imageDescriptionsJson.mapNotNull { 
+                try {
+                    val req = kotlinx.serialization.json.Json.decodeFromString<org.example.project.data.model.ImageDescriptionRequest>(it)
+                    ObservationImage(imageUrl = req.image, description = req.description)
+                } catch (e: Exception) { null }
+            }
+            if (images.isNotEmpty()) {
+                _uiState.value = _uiState.value.copy(observationImages = images)
+            }
+        }
+        
+        if (!draft.audioLink.isNullOrEmpty()) {
+            onAudioUrlProcessed(draft.audioLink)
+        }
     }
 }

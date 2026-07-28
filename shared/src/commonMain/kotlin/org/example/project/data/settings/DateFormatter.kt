@@ -24,6 +24,7 @@ import org.jetbrains.compose.resources.stringResource
  * MM (month number), dd, HH, mm, ss.
  */
 fun formatDate(input: String, inputPattern: String, outputPattern: String): String {
+    if (input.isBlank()) return input
     val needsTime = inputPattern.hasTimeTokens() || outputPattern.hasTimeTokens()
 
     return try {
@@ -85,6 +86,7 @@ fun timeAgo(
     inputPattern: String = "yyyy-MM-dd HH:mm:ss",
     isUtc: Boolean = false
 ): String {
+    if (input.isBlank()) return ""
 
     val systemTimeZone = TimeZone.currentSystemDefault()
 
@@ -134,6 +136,7 @@ fun utcToLocal(
     inputFormat: String,
     outputFormat: String
 ): String {
+    if (date.isBlank()) return date
     return try {
         when {
             inputFormat == "HH:mm:ss" && outputFormat == "HH:mm" -> {

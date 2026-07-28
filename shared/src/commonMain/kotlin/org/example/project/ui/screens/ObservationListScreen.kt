@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -85,7 +88,8 @@ import instaresolv.shared.generated.resources.*
 @Composable
 fun ObservationListScreen(
     onBackClicked: () -> Unit,
-    onCreateClicked: () -> Unit
+    onCreateClicked: () -> Unit,
+    onDraftClicked: () -> Unit
 ) {
     val viewModel: ObservationListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -138,7 +142,9 @@ fun ObservationListScreen(
                     color = AppColors.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                DraftButton(onDraftClicked = {})
+                DraftButton(onDraftClicked = {
+                    onDraftClicked()
+                })
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = { onCreateClicked() })
             }
@@ -369,6 +375,9 @@ fun NewButton(
 @Composable
 fun ObservationListItem(
     observation: ObservationItem,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
+    onSelectionChange: ((Boolean) -> Unit)? = null,
     onClick: () -> Unit
 ) {
     Column(
@@ -381,7 +390,7 @@ fun ObservationListItem(
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Box {
+            Box(contentAlignment = Alignment.Center) {
                 WebImageView(
                     imageUrl = observation.images.firstOrNull() ?: "", // using first image if available
                     modifier = Modifier
@@ -389,6 +398,27 @@ fun ObservationListItem(
                         .height(80.dp)
                         .clip(RoundedCornerShape(8.dp))
                 )
+                
+                if (isSelectionMode) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(if (isSelected) AppColors.Primary else Color.White)
+                            .border(2.dp, AppColors.Primary, CircleShape)
+                            .clickable { onSelectionChange?.invoke(!isSelected) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isSelected) {
+                            Image(
+                                painter = painterResource(Res.drawable.ic_checkbox_on),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
                 
                 if (observation.totalImages > 1) {
                     Box(
@@ -509,6 +539,9 @@ fun ObservationListScreenPreview() {
 
         },
         onCreateClicked = {
+
+        },
+        onDraftClicked = {
 
         }
     )

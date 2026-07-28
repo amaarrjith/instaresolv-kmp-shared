@@ -1,0 +1,11 @@
+package org.example.project.db
+
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import org.example.project.shared.db.AppDatabase
+
+class NativeDatabaseDriverFactory : DatabaseDriverFactory {
+    override fun createDriver(): SqlDriver {
+        return NativeSqliteDriver(AppDatabase.Schema, "app.db")
+    }
+}

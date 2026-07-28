@@ -449,4 +449,6 @@
     <string name="share">शेयर करें</string>
     <string name="audio">ऑडियो</string>
     <string name="original">मूल</string>
+    <string name="deleteSelectedObservationDrafts">क्या आप वाकई चयनित अवलोकन ड्राफ़्ट को हटाना चाहते हैं?</string>
+    <string name="draftsDeletedSuccessfully">ड्राफ़्ट सफलतापूर्वक हटा दिए गए</string>
 </resources>

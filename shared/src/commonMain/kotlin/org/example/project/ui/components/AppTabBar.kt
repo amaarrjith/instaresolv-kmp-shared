@@ -119,7 +119,7 @@ fun AppTabBar(
                         )
                     )
                     .background(Color.White)
-                    .padding(horizontal = 25.dp)
+                    .padding(horizontal = 18.dp)
                     .padding(top = 10.dp)
             ) {
             NavigationBar(

@@ -450,4 +450,6 @@
     <string name="share">Compartir</string>
     <string name="audio">Audio</string>
     <string name="original">Original</string>
+    <string name="deleteSelectedObservationDrafts">¿Estás seguro de que deseas eliminar los borradores de observación seleccionados?</string>
+    <string name="draftsDeletedSuccessfully">Borradores eliminados con éxito</string>
 </resources>

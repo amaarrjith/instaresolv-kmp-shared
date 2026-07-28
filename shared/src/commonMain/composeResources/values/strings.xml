@@ -461,4 +461,6 @@
     <string name="share">Share</string>
     <string name="audio">Audio</string>
     <string name="original">Original</string>
+    <string name="deleteSelectedObservationDrafts">Are you sure you want to delete the selected observation drafts?</string>
+    <string name="draftsDeletedSuccessfully">Drafts deleted successfully</string>
 </resources>

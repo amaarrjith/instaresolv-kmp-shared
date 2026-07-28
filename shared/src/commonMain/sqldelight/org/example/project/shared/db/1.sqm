@@ -1,0 +1,37 @@
+import kotlin.String;
+import kotlin.collections.List;
+
+ALTER TABLE ObservationDraft RENAME TO ObservationDraft_old;
+
+CREATE TABLE ObservationDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    location TEXT NOT NULL,
+    description TEXT NOT NULL,
+    groupSpecified INTEGER NOT NULL,
+    groupJson TEXT,
+    reportedBy TEXT NOT NULL,
+    customResponsiblePersonName TEXT NOT NULL,
+    responsiblePersonId INTEGER NOT NULL,
+    responsiblePersonName TEXT NOT NULL,
+    responsiblePersonEmail TEXT NOT NULL,
+    audioLink TEXT,
+    imageDescriptionsJson TEXT AS List<String> NOT NULL,
+    notificationToJson TEXT AS List<String> NOT NULL,
+    createdAt TEXT
+);
+
+INSERT INTO ObservationDraft(
+    id, title, location, description, groupSpecified,
+    reportedBy, customResponsiblePersonName, responsiblePersonId,
+    responsiblePersonName, responsiblePersonEmail, audioLink,
+    imageDescriptionsJson, notificationToJson
+)
+SELECT
+    id, title, location, description, groupSpecified,
+    reportedBy, customResponsiblePersonName, responsiblePersonId,
+    responsiblePersonName, responsiblePersonEmail, audioLink,
+    imageDescriptionsJson, notificationToJson
+FROM ObservationDraft_old;
+
+DROP TABLE ObservationDraft_old;

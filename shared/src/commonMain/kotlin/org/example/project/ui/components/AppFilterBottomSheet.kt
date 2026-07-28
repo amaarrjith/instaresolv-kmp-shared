@@ -52,9 +52,20 @@ fun AppFilterBottomSheet(
         val baseTabs = mutableListOf("Project", "Reported By", "Date")
         if (isFromObservation) {
             baseTabs.add(0, "Status")
+            baseTabs.add(2, "Observer")
+            baseTabs.add(3, "Responsible")
+            baseTabs.remove("Reported By")
         }
         if (isFromIncident) {
             baseTabs.add("Incident Type")
+        }
+        if (isFromPermit) {
+            baseTabs.add(1, "Authorizer")
+            baseTabs.add(2, "Requestor")
+            baseTabs.add(3, "HSE Assigned")
+            baseTabs.add(4, "Permit Type")
+            baseTabs.add(6, "Validity")
+            baseTabs.remove("Reported By")
         }
         baseTabs
     }
@@ -186,7 +197,7 @@ fun AppFilterBottomSheet(
                                         val isChecked = tempStatuses.contains(option)
                                         Text(
                                             text = option,
-                                            style = textStyle(size = 15.sp, weight = FontWeight.Medium),
+                                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )
                                         Spacer(modifier = Modifier.weight(1f))
@@ -346,7 +357,7 @@ fun AppFilterBottomSheet(
                                 }
                             }
                         } else if (selectedTab == "Observer") {
-                            val observers = filterData?.observers ?: emptyList() // Fixed to use observers instead of responsiblePersons
+                            val observers = filterData?.responsiblePersons ?: emptyList() // Fixed to use observers instead of responsiblePersons
                             if (observers.isEmpty()) {
                                 item { EmptyScreenView("No Observer Found") }
                             } else {
@@ -517,25 +528,6 @@ fun AppFilterBottomSheet(
                     .padding(horizontal = 22.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                androidx.compose.material3.OutlinedButton(
-                    onClick = { /* Handle Export */ },
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.Primary),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.exportAll),
-                            color = AppColors.Primary,
-                            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold)
-                        )
-                    }
-                }
-                
                 androidx.compose.material3.Button(
                     onClick = {
                         onApply(
