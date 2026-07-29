@@ -120,6 +120,19 @@ fun VideoPlayerContainer(
             modifier = Modifier.fillMaxSize()
         )
 
+        // Transparent overlay to catch clicks on the video when controls are hidden
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
+                    showControls = !showControls
+                    interactionTrigger++
+                }
+        )
+
         // Overlay: Custom Controls
         AnimatedVisibility(
             visible = showControls,

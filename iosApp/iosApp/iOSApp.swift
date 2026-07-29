@@ -4,8 +4,34 @@ import FirebaseCore
 import FirebaseMessaging
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
+    
+    var orientationLock: UIInterfaceOrientationMask = .portrait
+    
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("OrientationLockChanged"),
+            object: nil,
+            queue: .main
+        ) { notification in
+            if let isLandscape = notification.userInfo?["landscape"] as? Bool {
+                self.orientationLock = isLandscape ? .landscape : .portrait
+                
+                if #available(iOS 16.0, *) {
+                    let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+                    windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: self.orientationLock))
+                    if let rootVC = windowScene?.windows.first?.rootViewController {
+                        rootVC.setNeedsUpdateOfSupportedInterfaceOrientations()
+                    }
+                } else {
+                    let orientation = isLandscape ? UIInterfaceOrientation.landscapeLeft.rawValue : UIInterfaceOrientation.portrait.rawValue
+                    UIDevice.current.setValue(orientation, forKey: "orientation")
+                    UIViewController.attemptRotationToDeviceOrientation()
+                }
+            }
+        }
+        
         FirebaseApp.configure()
         
         UNUserNotificationCenter.current().delegate = self
@@ -43,6 +69,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .badge])
+    }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return self.orientationLock
     }
 }
 
