@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_edit
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.interaction.MutableInteractionSource
 
 import instaresolv.shared.generated.resources.ic_pencil
 import org.example.project.colors.AppColors
@@ -59,6 +61,11 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.example.project.ui.components.AppConfirmationDialog
+import org.example.project.ui.components.AppExitDialog
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun ProfileScreen(
@@ -67,74 +74,128 @@ fun ProfileScreen(
 ) {
     val viewModel: ProfileViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
-    Scaffold(
-        topBar = {
-            ProfileScreenTopBar(
-                uiState = uiState,
-                onEditClick = { viewModel.setEditMode(true) },
-                onBackClick = {
-                    if (uiState.value is ProfileUiState.isEditing) {
-                        viewModel.setEditMode(false)
-                    } else {
-                        onBack()
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .background(Color.White)
-                .padding(paddingValues)
-                .padding(horizontal = 28.dp)
-                .imePadding()
-        ) {
-            ToastHost(
-                visible = uiState.value is ProfileUiState.Success,
-                message = (uiState.value as? ProfileUiState.Success)?.successMessage.orEmpty(),
-                onDismiss = {
-                    viewModel.updateUi()
-                },
-                type = ToastType.Success
-            )
-            ToastHost(
-                visible = uiState.value is ProfileUiState.Error,
-                message = (uiState.value as? ProfileUiState.Error)?.message.orEmpty(),
-                onDismiss = {
-                    viewModel.updateUi()
-                },
-                type = ToastType.Error
-            )
-            Column(
-                modifier = Modifier.fillMaxSize()
+    val isLogoutLoading = (uiState.value as? ProfileUiState.Ready)?.isLogoutLoading == true
+    var isLogoutAlertShown by remember {
+        mutableStateOf(false)
+    }
 
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                ProfileScreenTopBar(
+                    uiState = uiState,
+                    onEditClick = {
+                        if (!isLogoutLoading) {
+                            viewModel.setEditMode(true)
+                        }
+                    },
+                    onBackClick = {
+                        if (!isLogoutLoading) {
+                            if (uiState.value is ProfileUiState.isEditing) {
+                                viewModel.setEditMode(false)
+                            } else {
+                                onBack()
+                            }
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(Color.White)
+                    .padding(paddingValues)
+                    .padding(horizontal = 28.dp)
+                    .imePadding()
             ) {
-                when(uiState.value) {
-                    ProfileUiState.Loading -> {
-                        AppLoader()
+                ToastHost(
+                    visible = uiState.value is ProfileUiState.Success,
+                    message = (uiState.value as? ProfileUiState.Success)?.successMessage.orEmpty(),
+                    onDismiss = {
+                        viewModel.updateUi()
+                    },
+                    type = ToastType.Success
+                )
+                ToastHost(
+                    visible = uiState.value is ProfileUiState.Error,
+                    message = (uiState.value as? ProfileUiState.Error)?.message.orEmpty(),
+                    onDismiss = {
+                        viewModel.updateUi()
+                    },
+                    type = ToastType.Error
+                )
+
+                AppExitDialog(
+                    title = "Logout",
+                    description = "Are you sure you want to log out? You'll need to sign in again to access your account.",
+                    primaryButtonText = "Yes",
+                    secondaryButtonText = "Cancel",
+                    visible = isLogoutAlertShown,
+                    onConfirm = {
+                        isLogoutAlertShown = false
+                        viewModel.handleLogout {
+                            onLogout()
+                        }
+                    },
+                    onDismiss = {
+                        isLogoutAlertShown = false
                     }
-                    ProfileUiState.isEditing -> {
-                        ProfileEditScreen(
-                            viewModel = viewModel
-                        )
-                    }
-                    else -> {
-                        ProfileScreenContent(
-                            viewModel = viewModel,
-                            onLogout = onLogout
-                        )
+                )
+
+                Column(
+                    modifier = Modifier.fillMaxSize()
+
+                ) {
+                    when(uiState.value) {
+                        ProfileUiState.Loading -> {
+                            AppLoader()
+                        }
+                        ProfileUiState.isEditing -> {
+                            ProfileEditScreen(
+                                viewModel = viewModel
+                            )
+                        }
+                        is ProfileUiState.Ready -> {
+                            ProfileScreenContent(
+                                uiState = uiState.value as ProfileUiState.Ready,
+                                viewModel = viewModel,
+                                onLogout = {
+                                    if (!isLogoutLoading) {
+                                        isLogoutAlertShown = true
+                                    }
+                                }
+                            )
+                        }
+                        else -> {
+
+                        }
                     }
                 }
             }
+        }
+
+        if (isLogoutLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { }
+            )
         }
     }
 }
 
 @Composable
 fun ProfileScreenContent(
+    uiState: ProfileUiState.Ready,
     viewModel: ProfileViewModel,
     onLogout: () -> Unit
 ) {
+    var logoutAlertShown by remember {
+        mutableStateOf(false)
+    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
@@ -170,13 +231,21 @@ fun ProfileScreenContent(
     ProfileScreenItem(stringResource(Res.string.designation), viewModel.user?.designation ?: "")
     ProfileScreenItem(stringResource(Res.string.company), viewModel.user?.company ?: "")
     Spacer(modifier = Modifier.height(60.dp))
-    AppBorderButton(
-        title = stringResource(Res.string.logout),
-        onClick = {
-            viewModel.logout()
-            onLogout()
-        },
-    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        AppPrimaryButton(
+            title = stringResource(Res.string.logout),
+            isLoading = uiState.isLogoutLoading,
+            enabled = !uiState.isLogoutLoading,
+            onClick = {
+                if (!uiState.isLogoutLoading) {
+                    onLogout()
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -309,6 +378,8 @@ fun ProfileScreenTopBar(
     onEditClick: () -> Unit,
     onBackClick: () -> Unit,
 ) {
+    val isLogoutLoading = (uiState.value as? ProfileUiState.Ready)?.isLogoutLoading == true
+
     Row(
         modifier = Modifier
             .statusBarsPadding()
@@ -319,7 +390,11 @@ fun ProfileScreenTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavigationBackIcon(
-            onClick = onBackClick
+            onClick = {
+                if (!isLogoutLoading) {
+                    onBackClick()
+                }
+            }
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
@@ -343,14 +418,14 @@ fun ProfileScreenTopBar(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(Res.string.edit).uppercase(),
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.clickable(enabled = !isLogoutLoading) {
                         onEditClick()
                     },
                     style = textStyle(
                         size = 13.sp,
                         weight = FontWeight.SemiBold
                     ),
-                    color = AppColors.SkyBlue
+                    color = if (isLogoutLoading) AppColors.SkyBlue.copy(alpha = 0.5f) else AppColors.SkyBlue
                 )
             }
         }

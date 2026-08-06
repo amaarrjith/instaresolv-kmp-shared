@@ -2,19 +2,20 @@ package org.example.project.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.network.NetworkResult
+import kotlin.time.Duration.Companion.milliseconds
 
 class ProfileViewModel(
     private val preferences: AuthPreferences,
     private val repository: AuthRepository
 ): ViewModel() {
-    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Ready)
+    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Ready())
     val uiState = _uiState.asStateFlow()
     var user = preferences.getLoggedInUser()
         private set
@@ -23,8 +24,19 @@ class ProfileViewModel(
         preferences.logout()
     }
 
+    fun handleLogout(onLogout: ()-> Unit) {
+        _uiState.value = ProfileUiState.Ready(
+            isLogoutLoading = true
+        )
+        viewModelScope.launch {
+            delay(2000.milliseconds)
+            logout()
+            onLogout()
+        }
+    }
+
     fun setEditMode(isEditing: Boolean) {
-        _uiState.value = if (isEditing) ProfileUiState.isEditing else ProfileUiState.Ready
+        _uiState.value = if (isEditing) ProfileUiState.isEditing else ProfileUiState.Ready()
     }
 
     fun saveProfile(name: String, profileImage: String, email: String, designation: String, company: String) {
@@ -56,6 +68,6 @@ class ProfileViewModel(
     }
 
     fun updateUi() {
-        _uiState.value = ProfileUiState.Ready
+        _uiState.value = ProfileUiState.Ready()
     }
 }

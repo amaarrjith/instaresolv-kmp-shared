@@ -400,12 +400,22 @@ fun AssignedToMeCard(
                         .clickable { showObservationDrawer = true }
                         .padding(vertical = 8.dp)
                 ) {
-                    WebImageView(
-                        imageUrl = contents.observation.imageUrl,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(12))
-                    )
+                    if (contents.observation.imageUrl.isEmpty()) {
+                        Image(
+                            painter = painterResource(Res.drawable.ic_assigned_observation),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(RoundedCornerShape(12))
+                        )
+                    } else {
+                        WebImageView(
+                            imageUrl = contents.observation.imageUrl,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(RoundedCornerShape(12))
+                        )
+                    }
                     Spacer(
                         modifier = Modifier.width(14.dp)
                     )
@@ -416,21 +426,45 @@ fun AssignedToMeCard(
                             StatusCard(
                                 contents.observation.pendingActionType
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            DateCard(
-                                formatDate(
-                                    contents.observation.date,
-                                    "yyyy-MM-dd HH:mm:ss",
-                                    "dd MMM yyyy"
-                                ).uppercase(),
-                                timeAgo(
+                            Spacer(modifier = Modifier.weight(1f))
+                            Text(
+                                text = timeAgo(
                                     contents.observation.date,
                                     isUtc = true
+                                ),
+                                style = textStyle(
+                                    10.sp,
+                                    FontWeight.SemiBold
                                 )
                             )
                         }
                         Spacer(
-                            modifier = Modifier.height(10.dp)
+                            modifier = Modifier.height(5.dp)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.ic_calendar),
+                                contentDescription = null
+                            )
+                            Spacer(
+                                modifier = Modifier.width(4.dp)
+                            )
+                            Text(
+                                text = formatDate(
+                                    contents.observation.date,
+                                    "yyyy-MM-dd HH:mm:ss",
+                                    "dd MMM yyyy"
+                                ).uppercase(),
+                                style = textStyle(
+                                    10.sp,
+                                    FontWeight.SemiBold
+                                )
+                            )
+                        }
+                        Spacer(
+                            modifier = Modifier.height(5.dp)
                         )
                         Text(
                             contents.observation.title,
@@ -440,7 +474,7 @@ fun AssignedToMeCard(
                             )
                         )
                         Spacer(
-                            modifier = Modifier.height(10.dp)
+                            modifier = Modifier.height(5.dp)
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -462,8 +496,6 @@ fun AssignedToMeCard(
                                 )
                             )
                         }
-
-
                     }
                 }
             }
@@ -474,8 +506,9 @@ fun AssignedToMeCard(
                         .clickable { showPermitDrawer = true }
                         .padding(vertical = 8.dp)
                 ) {
-                    WebImageView(
-                        imageUrl = "",
+                    Image(
+                        painter = painterResource(Res.drawable.ic_assigned_permit),
+                        contentDescription = null,
                         modifier = Modifier
                             .size(100.dp)
                             .clip(RoundedCornerShape(12))

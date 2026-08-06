@@ -5,5 +5,7 @@ sealed class ProfileUiState {
     data class Success(val successMessage: String): ProfileUiState()
     data class Error(val message: String): ProfileUiState()
     data object isEditing: ProfileUiState()
-    data object Ready: ProfileUiState()
+    data class Ready(
+        val isLogoutLoading: Boolean = false
+    ): ProfileUiState()
 }
