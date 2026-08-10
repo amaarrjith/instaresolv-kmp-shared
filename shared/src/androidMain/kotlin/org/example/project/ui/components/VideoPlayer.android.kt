@@ -10,6 +10,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
 import kotlinx.coroutines.delay
 
 @Composable
@@ -18,6 +20,8 @@ actual fun CustomVideoPlayer(
     lastPlaybackTimeSeconds: Int,
     isPlaying: Boolean,
     onProgressUpdate: (currentSeconds: Long, totalSeconds: Long) -> Unit,
+    onIsLoadingChange: (Boolean) -> Unit,
+    onError: (String) -> Unit,
     seekToSeconds: Long?,
     onSeekCompleted: () -> Unit,
     modifier: Modifier
@@ -32,6 +36,19 @@ actual fun CustomVideoPlayer(
             if (lastPlaybackTimeSeconds > 0) {
                 seekTo(lastPlaybackTimeSeconds * 1000L)
             }
+            
+            addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    val isBuffering = playbackState == Player.STATE_BUFFERING
+                    onIsLoadingChange(isBuffering)
+                }
+
+                override fun onPlayerError(error: PlaybackException) {
+                    onIsLoadingChange(false)
+                    onError(error.message ?: "Playback error")
+                }
+            })
+            
             playWhenReady = isPlaying
         }
     }

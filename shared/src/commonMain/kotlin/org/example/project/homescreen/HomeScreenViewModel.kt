@@ -123,7 +123,7 @@ class HomeScreenViewModel(
         _pdfUrl.value = null
     }
 
-    fun approveOrRejectPendingAction(pendingActionId: Int, action: Int, onSuccess: () -> Unit, onError: () -> Unit) {
+    fun approveOrRejectPendingAction(pendingActionId: Int, action: Int, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             _isActionLoading.value = true
             val request = ApproveRejectRequest(pendingActionId, action)
@@ -131,11 +131,11 @@ class HomeScreenViewModel(
             when (response) {
                 is NetworkResult.Success -> {
                     _isActionLoading.value = false
-                    onSuccess()
+                    onSuccess(response.data.statusMessage)
                 }
                 is NetworkResult.Error -> {
                     _isActionLoading.value = false
-                    onError()
+                    onError(response.message ?: "Failed to approve or reject")
                 }
             }
         }
@@ -184,6 +184,7 @@ class HomeScreenViewModel(
     }
 
     fun fetchGroupUsers(groupId: Int, groupCode: String) {
+        println("Called fetchGroupUsers")
         viewModelScope.launch {
             when (val result = projectRepository.getGroupUsers(groupId, groupCode)) {
                 is NetworkResult.Success -> {

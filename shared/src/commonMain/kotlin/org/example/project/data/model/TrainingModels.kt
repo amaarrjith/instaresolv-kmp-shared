@@ -172,3 +172,14 @@ data class AssignTrainingRequest(
 data class AssignTrainingResponse(
     val statusMessage: String
 )
+
+@Serializable
+data class TrainingVideoProgressRequest(
+    val videoId: Int,
+    val playBackTime: Int
+)
+
+@Serializable
+data class TrainingVideoProgressResponse(
+    val statusMessage: String
+)

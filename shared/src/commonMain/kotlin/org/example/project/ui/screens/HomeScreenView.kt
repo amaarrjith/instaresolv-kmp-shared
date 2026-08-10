@@ -89,7 +89,15 @@ import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.PendingActionStatusType
+import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.AppStatusDialog
 import org.jetbrains.compose.resources.StringResource
+import org.example.project.ui.components.ObservationActionBottomSheet
+import org.example.project.ui.components.RequestDeleteObservationView
+import org.example.project.ui.components.RequestResponsiblePersonChangeView
+import org.example.project.ui.screens.ObservationDetailScreen
+import org.example.project.utilites.ToastType
 
 @Composable
 fun HomeScreenContentView(
@@ -102,7 +110,8 @@ fun HomeScreenContentView(
     isRefreshing: Boolean,
     onClickModule: (ActionOverview) -> Unit,
     onPendingActionViewAllClick: () -> Unit = {},
-    onPermitClick: (Int) -> Unit = {}
+    onPermitClick: (Int) -> Unit = {},
+    onNavigateToProject: (Int, String) -> Unit = { _, _ -> }
 ) {
     val viewModel: ProfileViewModel = koinInject()
     val vm: HomeScreenViewModel = koinInject()
@@ -111,7 +120,7 @@ fun HomeScreenContentView(
     val pdfToastMessage by vm.pdfToastMessage.collectAsState()
     val pdfErrorToastMessage by vm.pdfErrorToastMessage.collectAsState()
     val fileDownloader = rememberFileDownloader()
-
+    val actionsLoading by vm.isActionLoading.collectAsState()
     val pdfModuleType by vm.pdfModuleType.collectAsState()
 
     
@@ -168,7 +177,10 @@ fun HomeScreenContentView(
                         onViewAllClick = onPendingActionViewAllClick,
                         viewModel = vm,
                         onRefreshList = silentRefresh,
-                        onPermitClick = onPermitClick
+                        onPermitClick = onPermitClick,
+                        onNavigateToProject = { groupId, groupCode ->
+                            onNavigateToProject(groupId, groupCode)
+                        }
                     )
                     Spacer(modifier = Modifier.height(22.dp))
                     ActionOverviewSection(
@@ -185,10 +197,21 @@ fun HomeScreenContentView(
             PdfGenerationLoader()
         }
 
+        if (actionsLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Gray.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                AppLoader()
+            }
+        }
+
         ToastHost(
             modifier = Modifier.padding(horizontal = 22.dp),
             visible = pdfToastMessage != null || pdfErrorToastMessage != null,
-            type = if (pdfErrorToastMessage != null) org.example.project.utilites.ToastType.Error else org.example.project.utilites.ToastType.Success,
+            type = if (pdfErrorToastMessage != null) ToastType.Error else ToastType.Success,
             message = pdfErrorToastMessage ?: pdfToastMessage ?: "",
             onDismiss = {
                 vm.clearToasts()
@@ -356,7 +379,8 @@ fun AssignedToMeCard(
     viewModel: HomeScreenViewModel,
     onViewAllClick: () -> Unit = {},
     onRefreshList: () -> Unit = {},
-    onPermitClick: (Int) -> Unit = {}
+    onPermitClick: (Int) -> Unit = {},
+    onNavigateToProject: (Int, String) -> Unit = { _, _ -> }
 ) {
     var showObservationDrawer by remember { mutableStateOf(false) }
     var showPermitDrawer by remember { mutableStateOf(false) }
@@ -421,45 +445,29 @@ fun AssignedToMeCard(
                     )
                     Column() {
                         Row(
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             StatusCard(
                                 contents.observation.pendingActionType
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(
-                                text = timeAgo(
-                                    contents.observation.date,
-                                    isUtc = true
-                                ),
-                                style = textStyle(
-                                    10.sp,
-                                    FontWeight.SemiBold
-                                )
                             )
                         }
                         Spacer(
                             modifier = Modifier.height(5.dp)
                         )
                         Row(
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Image(
-                                painter = painterResource(Res.drawable.ic_calendar),
-                                contentDescription = null
-                            )
-                            Spacer(
-                                modifier = Modifier.width(4.dp)
-                            )
-                            Text(
-                                text = formatDate(
+                            DateCard(
+                                formatDate(
                                     contents.observation.date,
                                     "yyyy-MM-dd HH:mm:ss",
                                     "dd MMM yyyy"
                                 ).uppercase(),
-                                style = textStyle(
-                                    10.sp,
-                                    FontWeight.SemiBold
+                                timeAgo(
+                                    contents.observation.date,
+                                    isUtc = true
                                 )
                             )
                         }
@@ -476,25 +484,29 @@ fun AssignedToMeCard(
                         Spacer(
                             modifier = Modifier.height(5.dp)
                         )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            WebImageView(
-                                imageUrl = contents.observation.reportedBy?.imageUrl ?: "",
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                            )
-                            Spacer(
-                                modifier = Modifier.width(10.dp)
-                            )
-                            Text(
-                                contents.observation.reportedBy?.name ?: "",
-                                style = textStyle(
-                                    11.sp,
-                                    FontWeight.Medium
+                        contents.observation.reportedBy?.name?.takeIf { it.isNotEmpty() }?.let { name ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                WebImageView(
+                                    imageUrl = contents.observation.reportedBy?.imageUrl.orEmpty(),
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clip(CircleShape)
                                 )
-                            )
+
+                                Spacer(
+                                    modifier = Modifier.width(10.dp)
+                                )
+
+                                Text(
+                                    text = name,
+                                    style = textStyle(
+                                        11.sp,
+                                        FontWeight.Medium
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -592,12 +604,43 @@ fun AssignedToMeCard(
         }
         ObservationActionBottomSheet(
             showSheet = showObservationDrawer,
+            actionType = assignedToMe.observation?.pendingActionType ?: PendingActionStatusType.OPEN_OBSERVATION,
             onDismiss = {
                 showObservationDrawer = false
             },
             onActionClick = { action ->
+                println("action: $action")
                 when (action) {
-                    "View Report" -> {
+                    "Reject", "Reject Join", "Reject Change", "Reject Delete" -> {
+                        viewModel.approveOrRejectPendingAction(
+                            assignedToMe.observation?.pendingActionId ?: -1,
+                            action = 2,
+                            onSuccess = { msg ->
+                                actionSuccessMessage = msg
+                            },
+                            onError = { err ->
+                                actionErrorMessage = err
+                            }
+                        )
+                    }
+                    "Approve", "Approve Join", "Approve Change", "Approve Delete" -> {
+                        viewModel.approveOrRejectPendingAction(
+                            assignedToMe.observation?.pendingActionId ?: -1,
+                            action = 1,
+                            onSuccess = { msg ->
+                                actionSuccessMessage = msg
+                            },
+                            onError = { err ->
+                                actionErrorMessage = err
+                            }
+                        )
+                    }
+                    "View Project" -> {
+                        val groupCode = assignedToMe.observation?.groupCode ?: ""
+                        val groupId = groupCode.substringAfter("-").toIntOrNull()
+                        onNavigateToProject(groupId ?: -1, assignedToMe.observation?.groupCode ?: "")
+                    }
+                    "View Report", "View Observation", "View Observation Closeout" -> {
                         selectedObservationId = assignedToMe.observation?.contentId
                     }
                     "Generate PDF" -> {
@@ -608,8 +651,10 @@ fun AssignedToMeCard(
                     }
                     "Request Observation Responsible Person Change" -> {
                         val obs = assignedToMe.observation
-                        if (obs?.groupId != null && obs.groupCode != null) {
-                            viewModel.fetchGroupUsers(obs.groupId, obs.groupCode)
+                        val groupCode = assignedToMe.observation?.groupCode
+                        val groupId = groupCode?.substringAfter("-")?.toIntOrNull()
+                        if (groupCode != null && groupId != null) {
+                            viewModel.fetchGroupUsers(groupId, groupCode)
                         }
                         showRequestResponsiblePersonSheet = true
                     }
@@ -645,8 +690,8 @@ fun AssignedToMeCard(
                 dragHandle = null
             ) {
                 Box(modifier = Modifier.fillMaxHeight(0.9f)) {
-                    org.example.project.ui.screens.ObservationDetailScreen(
-                        observationId = selectedObservationId!!,
+                    ObservationDetailScreen(
+                        observationId = selectedObservationId ?: -1,
                         onBackClicked = { selectedObservationId = null },
                         onRefreshList = onRefreshList
                     )
@@ -663,8 +708,8 @@ fun AssignedToMeCard(
                 dragHandle = null
             ) {
                 Box(modifier = Modifier.fillMaxHeight(0.9f)) {
-                    org.example.project.ui.screens.ObservationDetailScreen(
-                        observationId = closeObservationId!!,
+                    ObservationDetailScreen(
+                        observationId = closeObservationId ?: -1,
                         onBackClicked = { closeObservationId = null },
                         onRefreshList = {
                             closeObservationId = null
@@ -683,7 +728,7 @@ fun AssignedToMeCard(
                 sheetState = deleteSheetState,
                 containerColor = Color.White
             ) {
-                org.example.project.ui.components.RequestDeleteObservationView(
+                RequestDeleteObservationView(
                     onBackClicked = { showRequestDeleteSheet = false },
                     onContinueClicked = { justification ->
                         val observationId = assignedToMe.observation?.contentId ?: return@RequestDeleteObservationView
@@ -710,7 +755,7 @@ fun AssignedToMeCard(
                 sheetState = responsibleSheetState,
                 containerColor = Color.White
             ) {
-                org.example.project.ui.components.RequestResponsiblePersonChangeView(
+                RequestResponsiblePersonChangeView(
                     users = groupUsers,
                     onBackClicked = { showRequestResponsiblePersonSheet = false },
                     onContinueClicked = { justification, responsiblePersonId ->
@@ -733,7 +778,7 @@ fun AssignedToMeCard(
         }
 
         actionSuccessMessage?.let { msg ->
-            org.example.project.ui.components.AppStatusDialog(
+            AppStatusDialog(
                 visible = true,
                 title = "Success",
                 description = msg,
@@ -751,98 +796,10 @@ fun AssignedToMeCard(
                     visible = true,
                     message = msg,
                     onDismiss = { actionErrorMessage = null },
-                    type = org.example.project.utilites.ToastType.Error
+                    type = ToastType.Error
                 )
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ObservationActionBottomSheet(
-    showSheet: Boolean,
-    onDismiss: () -> Unit,
-    onActionClick: (String) -> Unit
-) {
-
-    if (!showSheet) return
-
-    val sheetState = rememberModalBottomSheetState()
-
-    val actions = listOf(
-        Pair("View Report", stringResource(Res.string.viewReport)),
-        Pair("Generate PDF", stringResource(Res.string.generatePdf)),
-        Pair("Close Observation", stringResource(Res.string.closeObservation)),
-        Pair("Request Observation Responsible Person Change", stringResource(Res.string.requestObservationResponsiblenpersonChange)),
-        Pair("Request to Delete Observation", stringResource(Res.string.requestToDeleteObservation))
-    )
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = Color.White
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-        ) {
-
-            Text(
-                text = stringResource(Res.string.openObservation),
-                style = textStyle(
-                    size = 18.sp,
-                    weight = FontWeight.Bold
-                )
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            actions.forEach { (id, title) ->
-                ObservationActionItem(
-                    title = title,
-                    onClick = {
-                        onActionClick(id)
-                        onDismiss()
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-    }
-}
-
-@Composable
-private fun ObservationActionItem(
-    title: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Text(
-            text = title,
-            modifier = Modifier.weight(1f),
-            style = textStyle(
-                size = 14.sp,
-                weight = FontWeight.Medium
-            )
-        )
-
-        Image(
-            modifier = Modifier.padding(
-                start = 40.dp
-            ).rtlScale(),
-            painter = painterResource(Res.drawable.ic_right_icon),
-            contentDescription = null
-        )
     }
 }
 

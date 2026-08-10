@@ -9,6 +9,8 @@ expect fun CustomVideoPlayer(
     lastPlaybackTimeSeconds: Int,
     isPlaying: Boolean,
     onProgressUpdate: (currentSeconds: Long, totalSeconds: Long) -> Unit,
+    onIsLoadingChange: (Boolean) -> Unit,
+    onError: (String) -> Unit,
     seekToSeconds: Long?,
     onSeekCompleted: () -> Unit,
     modifier: Modifier = Modifier

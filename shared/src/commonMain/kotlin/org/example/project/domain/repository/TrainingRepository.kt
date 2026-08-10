@@ -30,6 +30,10 @@ interface TrainingRepository {
         request: org.example.project.data.model.TrainingVideoUrlRequest
     ): NetworkResult<org.example.project.data.model.TrainingVideoUrlData>
 
+    suspend fun updateVideoProgress(
+        request: org.example.project.data.model.TrainingVideoProgressRequest
+    ): NetworkResult<org.example.project.data.model.TrainingVideoProgressResponse>
+
     suspend fun getQuizQuestions(
         request: org.example.project.data.model.QuizQuestionsRequest
     ): NetworkResult<org.example.project.data.model.QuizQuestionsResponse>

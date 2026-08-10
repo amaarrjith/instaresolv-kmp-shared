@@ -601,6 +601,14 @@ class AuthApiServiceImpl(
         }
     }
 
+    override suspend fun updateVideoProgress(
+        request: org.example.project.data.model.TrainingVideoProgressRequest
+    ): NetworkResult<org.example.project.data.model.TrainingVideoProgressResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.TRAINING_VIDEO_PROGRESS) {
+            jsonBody(request)
+        }
+    }
+
     override suspend fun getQuizQuestions(
         request: org.example.project.data.model.QuizQuestionsRequest
     ): NetworkResult<org.example.project.data.model.QuizQuestionsResponse> = safeApiCall {

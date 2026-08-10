@@ -45,6 +45,12 @@ class TrainingRepositoryImpl(
         return apiService.getTrainingVideoUrl(request)
     }
 
+    override suspend fun updateVideoProgress(
+        request: org.example.project.data.model.TrainingVideoProgressRequest
+    ): NetworkResult<org.example.project.data.model.TrainingVideoProgressResponse> {
+        return apiService.updateVideoProgress(request)
+    }
+
     override suspend fun getQuizQuestions(
         request: org.example.project.data.model.QuizQuestionsRequest
     ): NetworkResult<org.example.project.data.model.QuizQuestionsResponse> {

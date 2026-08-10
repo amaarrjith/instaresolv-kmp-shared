@@ -210,7 +210,8 @@ fun AppNavigation() {
                 onPreTaskClicked = { navController.navigate(Screens.PreTaskListScreen.route) },
                 onLessonLearnedClicked = { navController.navigate(Screens.LessonsLearnedListScreen.route) },
                 onToolboxTalksClicked = { navController.navigate(Screens.ToolBoxTalkListScreen.route) },
-                onPermitDetailClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") }
+                onPermitDetailClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") },
+                onNavigateToProject = { groupId, groupCode -> navController.navigate("${Screens.ProjectDetailScreen.route}/${groupId}/${groupCode}") }
             )
         }
         composable(Screens.PreTaskListScreen.route) {

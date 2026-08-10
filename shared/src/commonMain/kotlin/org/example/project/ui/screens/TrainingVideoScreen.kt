@@ -46,6 +46,8 @@ fun TrainingVideoScreen(
 
     Box(
         modifier = Modifier
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .fillMaxSize()
             .background(Color.Black),
         contentAlignment = Alignment.Center
@@ -62,7 +64,9 @@ fun TrainingVideoScreen(
                 VideoPlayerContainer(
                     videoUrl = videoData.videoUrl,
                     initialPlaybackTimeSeconds = videoData.lastPlayBackTime ?: 0,
-                    onBackClicked = onBackClicked
+                    trainingTitle = uiState.trainingTitle,
+                    onBackClicked = onBackClicked,
+                    onUpdateProgress = { viewModel.updateVideoProgress(it) }
                 )
             }
         }
@@ -73,12 +77,17 @@ fun TrainingVideoScreen(
 fun VideoPlayerContainer(
     videoUrl: String,
     initialPlaybackTimeSeconds: Int,
-    onBackClicked: () -> Unit
+    trainingTitle: String,
+    onBackClicked: () -> Unit,
+    onUpdateProgress: (Long) -> Unit
 ) {
     var isPlaying by remember { mutableStateOf(true) }
     var currentProgressSeconds by remember { mutableStateOf(0L) }
     var totalDurationSeconds by remember { mutableStateOf(0L) }
+    var isVideoLoading by remember { mutableStateOf(true) }
+    var videoError by remember { mutableStateOf<String?>(null) }
     var seekToSeconds by remember { mutableStateOf<Long?>(null) }
+    var lastSyncedSeconds by remember { mutableStateOf(0L) }
     var showControls by remember { mutableStateOf(true) }
     var interactionTrigger by remember { mutableStateOf(0) }
 
@@ -111,8 +120,16 @@ fun VideoPlayerContainer(
                 if (seekToSeconds == null) {
                     currentProgressSeconds = current
                     totalDurationSeconds = total
+                    
+                    // Sync progress every 5 seconds
+                    if (current > 0 && current % 5 == 0L && current != lastSyncedSeconds) {
+                        lastSyncedSeconds = current
+                        onUpdateProgress(current)
+                    }
                 }
             },
+            onIsLoadingChange = { isVideoLoading = it },
+            onError = { videoError = it },
             seekToSeconds = seekToSeconds,
             onSeekCompleted = {
                 seekToSeconds = null
@@ -132,6 +149,34 @@ fun VideoPlayerContainer(
                     interactionTrigger++
                 }
         )
+
+        // Loading overlay
+        if (isVideoLoading && videoError == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                AppLoader()
+            }
+        }
+
+        // Error overlay
+        if (videoError != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = videoError ?: "Playback Error",
+                    style = textStyle(size = 14.sp, weight = FontWeight.Bold, color = Color.Red),
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
 
         // Overlay: Custom Controls
         AnimatedVisibility(
@@ -158,7 +203,10 @@ fun VideoPlayerContainer(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = onBackClicked,
+                        onClick = {
+                            onUpdateProgress(currentProgressSeconds)
+                            onBackClicked()
+                        },
                         colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Black.copy(alpha = 0.5f))
                     ) {
                         Icon(
@@ -170,7 +218,7 @@ fun VideoPlayerContainer(
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = stringResource(Res.string.trainingVideo),
+                        text = trainingTitle,
                         style = textStyle(size = 16.sp, weight = FontWeight.Bold, color = Color.White)
                     )
                 }
@@ -271,16 +319,8 @@ fun VideoPlayerContainer(
 
                     Slider(
                         value = sliderValue,
-                        onValueChange = { newValue ->
-                            if (totalDurationSeconds > 0) {
-                                currentProgressSeconds = (newValue * totalDurationSeconds).toLong()
-                                interactionTrigger++ // Keep controls visible during scrubbing!
-                            }
-                        },
-                        onValueChangeFinished = {
-                            seekToSeconds = currentProgressSeconds
-                            interactionTrigger++
-                        },
+                        onValueChange = { /* Disabled seeking */ },
+                        onValueChangeFinished = { /* Disabled seeking */ },
                         colors = SliderDefaults.colors(
                             thumbColor = Color(0xFFD42027),
                             activeTrackColor = Color(0xFFD42027),

@@ -364,7 +364,7 @@ fun QuizResultView(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Score : ${result.score}/${result.totalQuestionsCount}",
+                    text = "Score : ${result.correctAnswersCount}/${result.totalQuestionsCount}",
                     style = textStyle(size = 18.sp, weight = FontWeight.Bold, color = AppColors.Black)
                 )
             }

@@ -204,7 +204,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = stringResource(Res.string.changePassword),
+                        text = stringResource(Res.string.changePassword).uppercase(),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
@@ -341,7 +341,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = stringResource(Res.string.contactUs),
+                        text = stringResource(Res.string.contactUs).uppercase(),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
@@ -573,7 +573,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = stringResource(Res.string.deleteAccount),
+                        text = stringResource(Res.string.deleteAccount).uppercase(),
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Black
                     )

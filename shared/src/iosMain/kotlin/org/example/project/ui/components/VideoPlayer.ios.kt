@@ -13,6 +13,7 @@ import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.NSURL
 import platform.UIKit.UIView
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -21,6 +22,8 @@ actual fun CustomVideoPlayer(
     lastPlaybackTimeSeconds: Int,
     isPlaying: Boolean,
     onProgressUpdate: (currentSeconds: Long, totalSeconds: Long) -> Unit,
+    onIsLoadingChange: (Boolean) -> Unit,
+    onError: (String) -> Unit,
     seekToSeconds: Long?,
     onSeekCompleted: () -> Unit,
     modifier: Modifier
@@ -76,6 +79,26 @@ actual fun CustomVideoPlayer(
         onDispose {
             player.pause()
             player.removeTimeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(player) {
+        while (true) {
+            val status = player.currentItem?.status
+            val timeControlStatus = player.timeControlStatus
+            val error = player.currentItem?.error
+            
+            if (error != null) {
+                onIsLoadingChange(false)
+                onError(error.localizedDescription ?: "Playback error")
+            } else if (status == AVPlayerItemStatusFailed) {
+                onIsLoadingChange(false)
+                onError("Failed to load video")
+            } else {
+                val isLoading = timeControlStatus == AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate
+                onIsLoadingChange(isLoading)
+            }
+            delay(250)
         }
     }
 

@@ -745,6 +745,151 @@ fun ObservationDetailInfo(
 
             Spacer(Modifier.height(16.dp))
         }
+
+        if (detail.closeDetails != null) {
+            val closeDetails = detail.closeDetails
+            // Title row: "Observation Closeout" on left, time ago on right
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(Res.string.observationCloseout),
+                    style = textStyle(size = 16.sp, weight = FontWeight.Bold),
+                    color = AppColors.Primary
+                )
+                if (!closeDetails.date.isNullOrEmpty()) {
+                    Text(
+                        text = org.example.project.data.settings.timeAgo(closeDetails.date, isUtc = true),
+                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                        color = AppColors.TextGray
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Column() {
+                Text(
+                    text = stringResource(Res.string.date),
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = formatDate(detail.closeDetails.date ?: "-", inputPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", outputPattern = "dd MMM yyyy"),
+                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Description
+            Text(
+                text = stringResource(Res.string.description),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = closeDetails.closeDescription.takeUnless { it.isNullOrEmpty() } ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.Black
+            )
+
+            // Images
+            val validImages = closeDetails.imageDescription
+                ?.filter {
+                    !it.image.isNullOrBlank() || !it.description.isNullOrBlank()
+                }
+                .orEmpty()
+
+            if (validImages.isNotEmpty()) {
+
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(Res.string.uploadedImages),
+                    style = textStyle(
+                        size = 12.sp,
+                        weight = FontWeight.Medium
+                    ),
+                    color = AppColors.TextGray
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    validImages.forEach { img ->
+
+                        Column {
+
+                            if (!img.image.isNullOrBlank()) {
+                                WebImageView(
+                                    imageUrl = img.image,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            onImageClick(img.image)
+                                        },
+                                    contentScale = ContentScale.Crop
+                                )
+
+                                Spacer(Modifier.height(8.dp))
+                            }
+
+                            if (!img.description.isNullOrBlank()) {
+                                Text(
+                                    text = img.description,
+                                    style = textStyle(
+                                        size = 14.sp,
+                                        weight = FontWeight.Normal
+                                    ),
+                                    color = AppColors.Black
+                                )
+                            }
+                        }
+                    }
+                }
+
+            } else {
+                EmptyScreenView(
+                    stringResource(Res.string.noImagesFound)
+                )
+            }
+
+            // Closed By
+            if (closeDetails.closedBy != null) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = stringResource(Res.string.closedBy),
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    WebImageView(
+                        imageUrl = closeDetails.closedBy.image,
+                        modifier = Modifier.size(25.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = closeDetails.closedBy.name.takeUnless { it.isNullOrEmpty() } ?: "-",
+                        style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                        color = AppColors.Black
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+        }
     }
 }
 

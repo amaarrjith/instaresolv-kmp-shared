@@ -48,6 +48,7 @@ import org.koin.core.parameter.parametersOf
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.utilites.rememberFileDownloader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,7 +62,8 @@ fun TrainingDetailScreen(
         parameters = { parametersOf(trainingId) }
     )
     val uiState by viewModel.uiState.collectAsState()
-    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val fileDownloader = rememberFileDownloader()
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         containerColor = Color.White,
@@ -209,11 +211,24 @@ fun TrainingDetailScreen(
                             }
 
                             // Quiz Section Card
-                            if (data.hasQuiz) {
+                            if (data.hasQuiz && data.status != 3) {
                                 QuizSectionCard(
                                     isQuizEnabled = data.isQuizEnabled,
                                     onStartQuiz = {
                                         onStartQuizClicked(trainingId)
+                                    }
+                                )
+                            }
+
+                            if (!data.certificateUrl.isNullOrEmpty() && data.status == 3) {
+                                CertificateSectionCard(
+                                    onDownloadCertificate = {
+                                        try {
+                                            val fileName = "Certificate_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                                            fileDownloader.downloadFile(data.certificateUrl, fileName)
+                                        } catch (e: Exception) {
+                                            errorMessage = e.message ?: "Failed to download certificate"
+                                        }
                                     }
                                 )
                             }
@@ -227,7 +242,7 @@ fun TrainingDetailScreen(
                                             val fileName = "Lesson_Material_${Clock.System.now().toEpochMilliseconds()}.pdf"
                                             fileDownloader.downloadFile(materialUrl, fileName)
                                         } catch (e: Exception) {
-                                            // Handle error
+                                            errorMessage = e.message ?: "Failed to download lesson material"
                                         }
                                     }
                                 )
@@ -244,7 +259,7 @@ fun TrainingDetailScreen(
                                             val fileName = "Certificate_${Clock.System.now().toEpochMilliseconds()}.pdf"
                                             fileDownloader.downloadFile(certUrl, fileName)
                                         } catch (e: Exception) {
-                                            // Handle error
+                                            errorMessage = e.message ?: "Failed to download certificate"
                                         }
                                     }
                                 )
@@ -253,6 +268,13 @@ fun TrainingDetailScreen(
                     }
                 }
             }
+
+            ToastHost(
+                visible = errorMessage != null,
+                type = ToastType.Error,
+                message = errorMessage ?: "",
+                onDismiss = { errorMessage = null }
+            )
         }
     }
 }
@@ -316,6 +338,65 @@ fun QuizSectionCard(
             ) {
                 Text(
                     text = stringResource(Res.string.startQuiz),
+                    style = textStyle(size = 14.sp, weight = FontWeight.Bold, color = Color.White)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CertificateSectionCard(
+    onDownloadCertificate: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF8F9FA), shape = RoundedCornerShape(12.dp))
+            .border(1.dp, Color(0xFFE9ECEF), shape = RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f).padding(end = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.certificate),
+                        style = textStyle(size = 15.sp, weight = FontWeight.Bold, color = AppColors.Black)
+                    )
+                    Text(
+                        text = "Training completed. Download your certificate now",
+                        style = textStyle(size = 12.sp, weight = FontWeight.Normal, color = AppColors.DarkGray)
+                    )
+                }
+
+                Image(
+                    painter = painterResource(Res.drawable.ic_download_certificate),
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp)
+                )
+            }
+
+            // Start Quiz Button
+            Button(
+                onClick = { onDownloadCertificate() },
+                modifier = Modifier.fillMaxWidth().height(44.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AppColors.Primary,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = stringResource(Res.string.download),
                     style = textStyle(size = 14.sp, weight = FontWeight.Bold, color = Color.White)
                 )
             }

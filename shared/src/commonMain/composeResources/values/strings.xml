@@ -270,6 +270,8 @@
     <string name="searchInspections">Search Inspections</string>
     <string name="searchPreTasks">Search Pre Tasks</string>
     <string name="viewObservationCloseout">View Observation Closeout</string>
+    <string name="observationCloseout">Observation Closeout</string>
+    <string name="closedBy">Closed By</string>
     <string name="createToolboxTalk">CREATE - TOOLBOX TALK</string>
     <string name="uploadImage">Upload Image</string>
     <string name="employeeId">Employee ID</string>
@@ -282,6 +284,8 @@
     <string name="status">Status</string>
     <string name="done">Done</string>
     <string name="viewReport">View Report</string>
+    <string name="viewObservation">View Observation</string>
+    <string name="viewJustification">View Justification</string>
     <string name="dateOpen">Date Open</string>
     <string name="searchObservations">Search Observations</string>
     <string name="violationDate">Violation Date</string>
@@ -338,6 +342,7 @@
     <string name="enterObservationTitle">Enter Observation Title</string>
     <string name="upload">Upload</string>
     <string name="viewProject">View Project</string>
+    <string name="viewProfile">View Profile</string>
     <string name="resolve1">Resolve</string>
     <string name="message">Message</string>
     <string name="authorizedPerson">Authorized Person</string>

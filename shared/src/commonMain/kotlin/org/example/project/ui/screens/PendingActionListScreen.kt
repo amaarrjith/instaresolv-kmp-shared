@@ -61,6 +61,7 @@ import kotlin.time.Clock
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.ui.components.ObservationActionBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -344,99 +345,36 @@ fun PendingActionListScreen(
     
         if (selectedActionForSheet != null) {
             val action = selectedActionForSheet!!
-            ModalBottomSheet(
-                onDismissRequest = { selectedActionForSheet = null },
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                containerColor = Color.White,
-                dragHandle = { BottomSheetDefaults.DragHandle() }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 12.dp)
-                ) {
-                    val title = when (action.type) {
-                        PendingActionStatusType.OPEN_OBSERVATION -> stringResource(Res.string.openObservation)
-                        PendingActionStatusType.REQUEST_TO_JOIN_GROUP -> stringResource(Res.string.requestToJoinProject)
-                        PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE -> stringResource(Res.string.observationResponsibilityChange)
-                        PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION -> stringResource(Res.string.requestToDeleteObservation)
-                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> stringResource(Res.string.reviewObservationCloseout)
-                        else -> ""
-                    }
-    
-                    Text(
-                        text = title,
-                        style = textStyle(size = 18.sp, weight = FontWeight.Bold),
-                        color = AppColors.Black
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-    
-                    when (action.type) {
-                        PendingActionStatusType.OPEN_OBSERVATION -> {
-                            ActionRow(
-                                title = stringResource(Res.string.viewReport),
-                                onClick = {
-                                    viewReportObservationId = action.contentId
-                                    selectedActionForSheet = null
-                                }
-                            )
-                            ActionRow(
-                                title = stringResource(Res.string.generatePdf),
-                                onClick = {
-                                    viewModel.generateObservationPdf(action.contentId)
-                                    selectedActionForSheet = null
-                                }
-                            )
-                            ActionRow(
-                                title = stringResource(Res.string.closeObservation),
-                                onClick = {
-                                    closeObservationId = action.contentId
-                                    selectedActionForSheet = null
-                                }
-                            )
-                            ActionRow(
-                                title = stringResource(Res.string.requestObservationResponsiblenpersonChange),
-                                onClick = {
-                                    pendingActionForModal = action
-                                    if (action.groupId != null && action.groupCode != null) {
-                                        viewModel.fetchGroupUsers(action.groupId, action.groupCode)
-                                    }
-                                    showRequestResponsiblePersonSheet = true
-                                    selectedActionForSheet = null
-                                }
-                            )
-                            ActionRow(
-                                title = stringResource(Res.string.requestToDeleteObservation),
-                                onClick = {
-                                    pendingActionForModal = action
-                                    showRequestDeleteSheet = true
-                                    selectedActionForSheet = null
-                                }
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
+            ObservationActionBottomSheet(
+                showSheet = true,
+                actionType = action.type,
+                onDismiss = { selectedActionForSheet = null },
+                onActionClick = { actionName ->
+                    when(actionName) {
+                        "View Report" -> {
+                            viewReportObservationId = action.contentId
                         }
-                        PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT -> {
-                            ActionRow(title = stringResource(Res.string.viewObservationCloseout))
-                            Spacer(modifier = Modifier.height(30.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
-                                    Text(text = stringResource(Res.string.reject), style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                                }
-                                Box(modifier = Modifier.width(1.dp).height(20.dp).background(AppColors.TextGray.copy(alpha = 0.3f)))
-                                Box(modifier = Modifier.weight(1f).clickable { selectedActionForSheet = null }.padding(15.dp), contentAlignment = Alignment.Center) {
-                                    Text(text = stringResource(Res.string.approve), style = textStyle(size = 16.sp, weight = FontWeight.Medium), color = AppColors.Primary)
-                                }
+                        "Generate PDF" -> {
+                            viewModel.generateObservationPdf(action.contentId)
+                        }
+                        "Close Observation" -> {
+                            closeObservationId = action.contentId
+                        }
+                        "Request Observation Responsible Person Change" -> {
+                            pendingActionForModal = action
+                            if (action.groupId != null && action.groupCode != null) {
+                                viewModel.fetchGroupUsers(action.groupId, action.groupCode)
                             }
+                            showRequestResponsiblePersonSheet = true
                         }
-                        else -> {
-                            Spacer(modifier = Modifier.height(20.dp))
+                        "Request to Delete Observation" -> {
+                            pendingActionForModal = action
+                            showRequestDeleteSheet = true
                         }
+                        // Add handlers for Approve/Reject here if they actually do something, right now original code just closed the modal.
                     }
                 }
-            }
+            )
         }
     
         if (selectedPermitForSheet != null) {

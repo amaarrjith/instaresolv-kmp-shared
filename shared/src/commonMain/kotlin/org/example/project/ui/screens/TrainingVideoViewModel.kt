@@ -15,6 +15,7 @@ import org.example.project.network.NetworkResult
 data class TrainingVideoState(
     val isLoading: Boolean = false,
     val videoData: TrainingVideoUrlData? = null,
+    val trainingTitle: String = "Training Video",
     val error: String? = null
 )
 
@@ -50,6 +51,32 @@ class TrainingVideoViewModel(
                             error = result.message
                         )
                     }
+                }
+            }
+            
+            // Fetch training title
+            val detailRequest = org.example.project.data.model.TrainingDetailRequest(id = trainingId)
+            val detailResult = repository.getTrainingDetail(detailRequest)
+            if (detailResult is NetworkResult.Success) {
+                _uiState.update { state ->
+                    state.copy(trainingTitle = detailResult.data.title)
+                }
+            }
+        }
+    }
+
+    fun updateVideoProgress(progressSeconds: Long) {
+        viewModelScope.launch {
+            val request = org.example.project.data.model.TrainingVideoProgressRequest(
+                videoId = trainingId,
+                playBackTime = progressSeconds.toInt()
+            )
+            when (val result = repository.updateVideoProgress(request)) {
+                is NetworkResult.Success -> {
+                    println("Video progress synced: ${result.data.statusMessage}")
+                }
+                is NetworkResult.Error -> {
+                    println("Failed to sync video progress: ${result.message}")
                 }
             }
         }
