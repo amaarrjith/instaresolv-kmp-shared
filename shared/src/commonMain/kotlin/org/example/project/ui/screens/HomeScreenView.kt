@@ -1059,7 +1059,7 @@ fun StatusCard(
     status: Int,
     modifier: Modifier = Modifier
 ) {
-    val status = ObservationStatus.fromId(status)
+    val status = PendingActionType.fromValue(status)
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
@@ -1067,13 +1067,13 @@ fun StatusCard(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = stringResource(status.title).uppercase(),
+            text = stringResource(status.titleRes).uppercase(),
             style = textStyle(
                 10.sp,
                 FontWeight.SemiBold,
                 letterSpacing = 0.5.sp
             ),
-            color = Color.White,
+            color = status.textColor,
             modifier = Modifier.padding(
                 6.dp
             )
@@ -1205,4 +1205,40 @@ enum class ObservationStatus(
             return entries.find { it.id == id } ?: OPEN
         }
     }
+}
+
+enum class PendingActionType(
+    val value: Int,
+    val titleRes: StringResource
+) {
+    OPEN_OBSERVATION(1, Res.string.open),
+    REQUEST_TO_JOIN_PROJECT(2, Res.string.requestToJoinProject),
+    OBSERVATION_RESPONSIBILITY_CHANGE(3, Res.string.observationResponsibilityChange),
+    REQUEST_TO_DELETE_OBSERVATION(4, Res.string.requestToDeleteObservation),
+    REVIEW_OBSERVATION_CLOSE_OUT(5, Res.string.reviewObservationCloseout);
+
+    companion object {
+        fun fromValue(value: Int) =
+            entries.firstOrNull { it.value == value } ?: OPEN_OBSERVATION
+    }
+
+    val textColor: Color
+        get() = when (this) {
+            OPEN_OBSERVATION -> AppColors.PendingStatusTeal
+            REQUEST_TO_JOIN_PROJECT -> AppColors.PendingStatusSkyBlue
+            OBSERVATION_RESPONSIBILITY_CHANGE -> AppColors.PendingStatusSalmon
+            REQUEST_TO_DELETE_OBSERVATION -> AppColors.PendingStatusBlue
+            REVIEW_OBSERVATION_CLOSE_OUT -> AppColors.PendingStatusOrange
+        }
+
+    val backgroundColor: Color
+        get() = when (this) {
+            OPEN_OBSERVATION -> AppColors.PendingStatusTealBackground
+            REQUEST_TO_JOIN_PROJECT -> AppColors.PendingStatusSkyBlueBackground
+            OBSERVATION_RESPONSIBILITY_CHANGE -> AppColors.PendingStatusSalmonBackground
+            REQUEST_TO_DELETE_OBSERVATION -> AppColors.PendingStatusBlueBackground
+            REVIEW_OBSERVATION_CLOSE_OUT -> AppColors.PendingStatusOrangeBackground
+        }
+
+    // colors...
 }
