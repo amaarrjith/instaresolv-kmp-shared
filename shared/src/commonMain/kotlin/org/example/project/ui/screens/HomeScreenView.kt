@@ -169,7 +169,8 @@ fun HomeScreenContentView(
                 ) {
                     Spacer(modifier = Modifier.height(22.dp))
                     PendingActionsCardView(
-                        actionOverview?.pendingActionsCount ?: 0
+                        actionOverview?.pendingActionsCount ?: 0,
+                        onPendingActionViewAllClick
                     )
                     Spacer(modifier = Modifier.height(26.dp))
                     AssignedToMeCard(
@@ -299,7 +300,8 @@ fun HeaderView(
 
 @Composable
 fun PendingActionsCardView(
-    pendingActionsCount: Int
+    pendingActionsCount: Int,
+    onViewAllClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -314,6 +316,9 @@ fun PendingActionsCardView(
                     )
                 )
             )
+            .clickable {
+                onViewAllClick()
+            }
     ) {
         Row(
             modifier = Modifier
