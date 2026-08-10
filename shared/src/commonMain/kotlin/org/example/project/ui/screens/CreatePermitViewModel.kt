@@ -271,7 +271,7 @@ class CreatePermitViewModel(
                     groupName = project.groupName ?: "",
                     groupImage = project.groupImage ?: "",
                     userRole = 1,
-                    isAdmin = project.isAdmin,
+                    isAdmin = project.isAdmin == true,
                     isSelected = true
                 ),
                 authorizedPersonId = user.userId,

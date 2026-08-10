@@ -20,5 +20,5 @@ data class Project(
     val groupImage: String?,
     val groupCode: String?,
     val description: String? = null,
-    val isAdmin: Boolean
+    val isAdmin: Boolean? = false
 )

@@ -67,7 +67,8 @@ import org.example.project.ui.components.ObservationActionBottomSheet
 @Composable
 fun PendingActionListScreen(
     onBackClicked: () -> Unit,
-    onPermitClick: (Int) -> Unit = {}
+    onPermitClick: (Int) -> Unit = {},
+    onNavigateToProject: (Int, String) -> Unit = { _, _ -> }
 ) {
     val viewModel: PendingActionListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -96,6 +97,7 @@ fun PendingActionListScreen(
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val pdfErrorToastMessage by viewModel.pdfErrorToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val isActionLoading by viewModel.isActionLoading.collectAsState()
 
     androidx.compose.runtime.LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
@@ -351,14 +353,51 @@ fun PendingActionListScreen(
                 onDismiss = { selectedActionForSheet = null },
                 onActionClick = { actionName ->
                     when(actionName) {
-                        "View Report" -> {
+                        "Reject", "Reject Join", "Reject Change", "Reject Delete" -> {
+                            viewModel.approveOrRejectPendingAction(
+                                action.id,
+                                action = 2,
+                                onSuccess = { msg ->
+                                    actionSuccessMessage = msg
+                                    selectedActionForSheet = null
+                                },
+                                onError = { err ->
+                                    actionErrorMessage = err
+                                    selectedActionForSheet = null
+                                }
+                            )
+                        }
+                        "Approve", "Approve Join", "Approve Change", "Approve Delete" -> {
+                            viewModel.approveOrRejectPendingAction(
+                                action.id,
+                                action = 1,
+                                onSuccess = { msg ->
+                                    actionSuccessMessage = msg
+                                    selectedActionForSheet = null
+                                },
+                                onError = { err ->
+                                    actionErrorMessage = err
+                                    selectedActionForSheet = null
+                                }
+                            )
+                        }
+                        "View Project" -> {
+                            val groupCode = action.groupCode ?: ""
+                            val groupId = action.groupId ?: groupCode.substringAfter("-").toIntOrNull() ?: -1
+                            onNavigateToProject(groupId, groupCode)
+                            selectedActionForSheet = null
+                        }
+                        "View Report", "View Observation", "View Observation Closeout" -> {
                             viewReportObservationId = action.contentId
+                            selectedActionForSheet = null
                         }
                         "Generate PDF" -> {
                             viewModel.generateObservationPdf(action.contentId)
+                            selectedActionForSheet = null
                         }
                         "Close Observation" -> {
                             closeObservationId = action.contentId
+                            selectedActionForSheet = null
                         }
                         "Request Observation Responsible Person Change" -> {
                             pendingActionForModal = action
@@ -366,12 +405,13 @@ fun PendingActionListScreen(
                                 viewModel.fetchGroupUsers(action.groupId, action.groupCode)
                             }
                             showRequestResponsiblePersonSheet = true
+                            selectedActionForSheet = null
                         }
                         "Request to Delete Observation" -> {
                             pendingActionForModal = action
                             showRequestDeleteSheet = true
+                            selectedActionForSheet = null
                         }
-                        // Add handlers for Approve/Reject here if they actually do something, right now original code just closed the modal.
                     }
                 }
             )
@@ -403,6 +443,17 @@ fun PendingActionListScreen(
     
         if (isGeneratingPdf) {
             org.example.project.ui.components.PdfGenerationLoader()
+        }
+
+        if (isActionLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Gray.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                AppLoader()
+            }
         }
 
         // View Report modal

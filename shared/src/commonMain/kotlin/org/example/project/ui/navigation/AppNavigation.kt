@@ -377,7 +377,8 @@ fun AppNavigation() {
         composable(Screens.PendingActionListScreen.route) {
             PendingActionListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onPermitClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") }
+                onPermitClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") },
+                onNavigateToProject = { groupId, groupCode -> navController.navigate("${Screens.ProjectDetailScreen.route}/${groupId}/${groupCode}") }
             )
         }
         composable(Screens.ProfileScreen.route) {

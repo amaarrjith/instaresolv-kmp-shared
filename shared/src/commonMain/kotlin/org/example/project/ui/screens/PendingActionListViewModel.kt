@@ -114,6 +114,24 @@ class PendingActionListViewModel(
         }
     }
 
+    fun approveOrRejectPendingAction(pendingActionId: Int, action: Int, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            _isActionLoading.value = true
+            val request = org.example.project.data.model.ApproveRejectRequest(pendingActionId, action)
+            when (val response = observationRepository.approveOrReject(request)) {
+                is NetworkResult.Success -> {
+                    _isActionLoading.value = false
+                    onSuccess(response.data.statusMessage)
+                    fetchPendingActions()
+                }
+                is NetworkResult.Error -> {
+                    _isActionLoading.value = false
+                    onError(response.message ?: "Failed to approve or reject")
+                }
+            }
+        }
+    }
+
     fun requestToDeleteObservation(observationId: Int, justification: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             _isActionLoading.value = true

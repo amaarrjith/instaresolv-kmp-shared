@@ -508,19 +508,9 @@ fun InspectionDetailContent(
                 }
             }
         } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(4.dp))
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(Res.string.noImagesUploaded),
-                    style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-                    color = AppColors.TextGray
-                )
-            }
+            EmptyScreenView(
+                stringResource(Res.string.noImagesFound),
+            )
         }
         
         Spacer(Modifier.height(40.dp))

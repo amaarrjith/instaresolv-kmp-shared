@@ -399,7 +399,7 @@ fun ProjectListCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(6.dp))
-                if (project.isAdmin) {
+                if (project.isAdmin == true) {
                     MemberStatusIcon(true)
                 }
             }
