@@ -186,7 +186,7 @@ fun ObservationActionBottomSheet(
                         title = stringResource(Res.string.viewJustification),
                         onClick = {
                             onActionClick("View Justification")
-                            onDismiss()
+//                            onDismiss()
                         }
                     )
                     Spacer(modifier = Modifier.height(30.dp))

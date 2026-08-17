@@ -56,6 +56,7 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.ui.components.AppExitPopup
 
 @Composable
 fun CreatePermitScreen(
@@ -66,6 +67,7 @@ fun CreatePermitScreen(
     val viewModel: CreatePermitViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var localError by remember { mutableStateOf<String?>(null) }
+    val showExitPopup = remember { mutableStateOf(false) }
 
     val isToday = remember(uiState.permitDateMillis) {
         uiState.permitDateMillis?.let { millis ->
@@ -106,11 +108,9 @@ fun CreatePermitScreen(
                     .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(
-                    onClick = {
-                        onBackClicked()
-                    }
-                )
+                NavigationBackIcon(onClick = {
+                    showExitPopup.value = true
+                })
                 Text(
                     text = stringResource(Res.string.createPermit).uppercase(),
                     style = textStyle(
@@ -426,6 +426,20 @@ fun CreatePermitScreen(
                     }
                 )
             }
+
+            AppExitPopup(
+                visible = showExitPopup.value,
+                onPrimaryClick = {
+                    showExitPopup.value = false
+                    onBackClicked()
+                },
+                onSecondaryClick = {
+                    showExitPopup.value = false
+                },
+                onDismiss = {
+                    showExitPopup.value = false
+                }
+            )
         }
     }
 }

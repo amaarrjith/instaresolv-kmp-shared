@@ -46,6 +46,11 @@ import org.jetbrains.compose.resources.painterResource
 import org.example.project.ui.components.BulkEmployeeUploadSheet
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.example.project.ui.components.AppExitPopup
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +61,7 @@ fun CreateIncidentScreen(
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
-
+    val showExitPopup = remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -77,7 +82,9 @@ fun CreateIncidentScreen(
                     .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(onBackClicked)
+                NavigationBackIcon(onClick = {
+                    showExitPopup.value = true
+                })
                 Text(
                     text = stringResource(Res.string.createIncidents).uppercase(),
                     style = textStyle(
@@ -180,7 +187,8 @@ fun CreateIncidentScreen(
                     AppDatePicker(
                         text = stringResource(Res.string.yyyymmdd),
                         selectedDateMillis = uiState.incidentDateMillis,
-                        onDateSelected = { viewModel.onDateSelected(it) }
+                        onDateSelected = { viewModel.onDateSelected(it) },
+                        restrictFutureDates = true
                     )
                 }
 
@@ -201,10 +209,22 @@ fun CreateIncidentScreen(
                             color = Color.Red
                         )
                     }
+
+                    val isTodaySelected = remember(uiState.incidentDateMillis) {
+                        if (uiState.incidentDateMillis != null) {
+                            val selectedDate = Instant.fromEpochMilliseconds(uiState.incidentDateMillis!!)
+                                .toLocalDateTime(TimeZone.UTC).date
+                            val todayDate = Clock.System.now()
+                                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                            selectedDate == todayDate
+                        } else false
+                    }
+
                     AppTimePicker(
                         text = stringResource(Res.string.hhmm),
                         selectedTime = uiState.incidentTime,
-                        onTimeSelected = { viewModel.onTimeChanged(it) }
+                        onTimeSelected = { viewModel.onTimeChanged(it) },
+                        restrictFutureTime = isTodaySelected
                     )
                 }
 
@@ -573,4 +593,18 @@ fun CreateIncidentScreen(
             )
         }
     }
+
+    AppExitPopup(
+        visible = showExitPopup.value,
+        onPrimaryClick = {
+            showExitPopup.value = false
+            onBackClicked()
+        },
+        onSecondaryClick = {
+            showExitPopup.value = false
+        },
+        onDismiss = {
+            showExitPopup.value = false
+        }
+    )
 }

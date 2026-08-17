@@ -45,6 +45,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.ui.components.AppExitPopup
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +76,7 @@ fun CreateToolBoxTalkScreen(
     val images = remember { mutableStateListOf(org.example.project.ui.screens.ObservationImage()) }
 
     var showErrorToast by remember { mutableStateOf<String?>(null) }
-
+    val showExitPopup = remember { mutableStateOf(false) }
     LaunchedEffect(uiState) {
         when (uiState) {
             is CreateToolBoxTalkUiState.Success -> {
@@ -110,7 +111,9 @@ fun CreateToolBoxTalkScreen(
                     .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(onBackClicked)
+                NavigationBackIcon(onClick = {
+                    showExitPopup.value = true
+                })
                 Text(
                     text = stringResource(Res.string.createToolboxTalk),
                     style = textStyle(
@@ -484,6 +487,20 @@ fun CreateToolBoxTalkScreen(
                 }
             )
         }
+
+        AppExitPopup(
+            visible = showExitPopup.value,
+            onPrimaryClick = {
+                showExitPopup.value = false
+                onBackClicked()
+            },
+            onSecondaryClick = {
+                showExitPopup.value = false
+            },
+            onDismiss = {
+                showExitPopup.value = false
+            }
+        )
 
         // Bulk Employee Upload Sheet
         val isBulkUploadSheetVisible by viewModel.isBulkUploadSheetVisible.collectAsState()

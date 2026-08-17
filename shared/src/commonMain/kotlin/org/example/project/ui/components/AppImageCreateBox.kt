@@ -1,16 +1,27 @@
 package org.example.project.ui.components
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
@@ -20,31 +31,28 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.ic_gallery
+import instaresolv.shared.generated.resources.addImage
+import instaresolv.shared.generated.resources.enterDescriptionHere
+import instaresolv.shared.generated.resources.ic_add_photo
 import instaresolv.shared.generated.resources.ic_toast_close
+import instaresolv.shared.generated.resources.instaresolvAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments
+import instaresolv.shared.generated.resources.removeImage
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
-import org.jetbrains.compose.resources.painterResource
-import androidx.compose.ui.text.font.FontWeight
-
-import org.example.project.typography.poppinsFontFamily
 import org.example.project.ui.components.imagepicker.AppImagePicker
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import instaresolv.shared.generated.resources.ic_add_photo
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.font.FontStyle
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import instaresolv.shared.generated.resources.*
+
+private enum class ImageFlowState {
+    IDLE,
+    CROP,
+    ANNOTATE
+}
 
 @Composable
 fun AppImageCreateBox(
@@ -61,9 +69,15 @@ fun AppImageCreateBox(
     val isUploading = remember { mutableStateOf(false) }
     val isAIDescriptionLoading = remember { mutableStateOf(false) }
 
+    var imageFlowState by remember { mutableStateOf(ImageFlowState.IDLE) }
+    var rawPickedBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var croppedBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var finalBytesToUpload by remember { mutableStateOf<ByteArray?>(null) }
+
     AppImagePicker(
         showPicker = showPicker,
         showFullScreenLoader = false,
+        pendingUploadBytes = finalBytesToUpload,
         onIsUploading = { isUploading.value = it },
         onAiDescriptionLoading = { isLoading ->
             isAIDescriptionLoading.value = isLoading
@@ -72,7 +86,14 @@ fun AppImageCreateBox(
             val newDesc = if (description.isEmpty()) aiDescription else description + "\n" + aiDescription
             onDescriptionChange(newDesc)
         },
-        onImageUploaded = onImageUploaded,
+        onImagePicked = { bytes ->
+            rawPickedBytes = bytes
+            imageFlowState = ImageFlowState.CROP
+        },
+        onImageUploaded = { url ->
+            finalBytesToUpload = null
+            onImageUploaded(url)
+        },
         isAIDescriptionEnabled = isAIDescriptionEnabled,
     )
 
@@ -86,10 +107,46 @@ fun AppImageCreateBox(
         pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashLengthPx, gapLengthPx), 0f)
     )
 
+    // Full Screen Image Preview
     if (showPreview.value && !imageUrl.isNullOrEmpty()) {
-        org.example.project.ui.components.AppImagePreviewDialog(
+        AppImagePreviewDialog(
             imageUrl = imageUrl,
             onDismiss = { showPreview.value = false }
+        )
+    }
+
+    // Sequential Step 1: Crop Dialog
+    if (imageFlowState == ImageFlowState.CROP && rawPickedBytes != null) {
+        AppImageCropDialog(
+            imageBytes = rawPickedBytes,
+            onDismiss = {
+                imageFlowState = ImageFlowState.IDLE
+                rawPickedBytes = null
+            },
+            onCropApplied = { cropped ->
+                croppedBytes = cropped
+                imageFlowState = ImageFlowState.ANNOTATE
+            }
+        )
+    }
+
+    // Sequential Step 2: Edit / Annotate Dialog
+    if (imageFlowState == ImageFlowState.ANNOTATE && (croppedBytes != null || rawPickedBytes != null)) {
+        val bytesForEditing = croppedBytes ?: rawPickedBytes!!
+        AppImageEditorDialog(
+            imageBytes = bytesForEditing,
+            onDismiss = {
+                imageFlowState = ImageFlowState.IDLE
+                rawPickedBytes = null
+                croppedBytes = null
+            },
+            onEditApplied = { finalAnnotatedBytes ->
+                imageFlowState = ImageFlowState.IDLE
+                rawPickedBytes = null
+                croppedBytes = null
+                // Step 3: Automatically upload final cropped & annotated image
+                finalBytesToUpload = finalAnnotatedBytes
+            }
         )
     }
 
@@ -107,12 +164,12 @@ fun AppImageCreateBox(
                     .height(160.dp)
                     .padding(top = 16.dp, start = 16.dp, end = 16.dp)
             ) {
-                // Dashed border or Image
+                // Dashed border or Image Box
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.White)
-                        .clip(RoundedCornerShape(8))
+                        .clip(RoundedCornerShape(8.dp))
                         .drawBehind {
                             drawRoundRect(
                                 color = Color(0xFFDCDCDC),
@@ -126,7 +183,7 @@ fun AppImageCreateBox(
                     contentAlignment = Alignment.Center
                 ) {
                     if (isUploading.value) {
-                        androidx.compose.material3.CircularProgressIndicator(
+                        CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = AppColors.Primary,
                             strokeWidth = 2.dp
@@ -192,7 +249,7 @@ fun AppImageCreateBox(
                         size = 10.sp
                     ),
                     modifier = Modifier.padding(horizontal = 16.dp).alpha(alpha),
-                    color = AppColors.SkyBlue, // SkyBlue
+                    color = AppColors.SkyBlue,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }

@@ -34,6 +34,7 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.ui.components.AppExitPopup
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +45,7 @@ fun CreateViolationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
-
+    val showExitPopup = remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +66,9 @@ fun CreateViolationScreen(
                     .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(onBackClicked)
+                NavigationBackIcon(onClick = {
+                    showExitPopup.value = true
+                })
                 Text(
                     text = stringResource(Res.string.createViolation).uppercase(),
                     style = textStyle(
@@ -276,5 +279,19 @@ fun CreateViolationScreen(
                 }
             )
         }
+
+        AppExitPopup(
+            visible = showExitPopup.value,
+            onPrimaryClick = {
+                showExitPopup.value = false
+                onBackClicked()
+            },
+            onSecondaryClick = {
+                showExitPopup.value = false
+            },
+            onDismiss = {
+                showExitPopup.value = false
+            }
+        )
     }
 }

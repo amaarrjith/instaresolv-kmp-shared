@@ -35,30 +35,44 @@ fun AppImagePicker(
     isAIDescriptionEnabled: Boolean? = false,
     imageType: Int = 1,
     showFullScreenLoader: Boolean = true,
+    pendingUploadBytes: ByteArray? = null,
     onIsUploading: ((Boolean) -> Unit)? = null,
     onAiDescriptionLoading: ((Boolean) -> Unit)? = null,
     onAiDescriptionSuccess: ((String) -> Unit)? = null,
+    onImagePicked: ((ByteArray) -> Unit)? = null,
     onImageUploaded: (String) -> Unit
 ) {
     val viewModel: ImagePickerViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
 
-
+    LaunchedEffect(pendingUploadBytes) {
+        if (pendingUploadBytes != null) {
+            viewModel.uploadImage(pendingUploadBytes, imageType)
+        }
+    }
 
     val imagePicker = rememberImagePickerLauncher(
         selectionMode = SelectionMode.Single,
         scope = scope,
         onResult = { byteArrays ->
             byteArrays.firstOrNull()?.let { bytes ->
-                viewModel.uploadImage(bytes, imageType)
+                if (onImagePicked != null) {
+                    onImagePicked(bytes)
+                } else {
+                    viewModel.uploadImage(bytes, imageType)
+                }
             }
         }
     )
 
     val cameraLauncher = rememberAppCameraLauncher(onResult = { bytes ->
         if (bytes != null) {
-            viewModel.uploadImage(bytes, imageType)
+            if (onImagePicked != null) {
+                onImagePicked(bytes)
+            } else {
+                viewModel.uploadImage(bytes, imageType)
+            }
         }
     })
 
@@ -98,21 +112,16 @@ fun AppImagePicker(
                 onAiDescriptionLoading?.invoke(true)
             } else if (successState.aiDescription != null || successState.aiDescriptionFailed) {
                 onAiDescriptionLoading?.invoke(false)
-                if (successState.aiDescription != null) {
-                    onAiDescriptionSuccess?.invoke(successState.aiDescription)
-                }
-                viewModel.clearState()
-            } else {
-                onAiDescriptionLoading?.invoke(false)
                 onImageUploaded(successState.imageUrl)
-                if (isAIDescriptionEnabled == true) {
-                    viewModel.generateAiDescription(successState.imageUrl)
-                } else {
-                    viewModel.clearState()
+                successState.aiDescription?.let {
+                    onAiDescriptionSuccess?.invoke(it)
                 }
+            } else if (isAIDescriptionEnabled == true) {
+                onAiDescriptionLoading?.invoke(true)
+                viewModel.generateAiDescription(successState.imageUrl)
+            } else {
+                onImageUploaded(successState.imageUrl)
             }
-        } else if (uiState !is ImagePickerUiState.Uploading) {
-            onAiDescriptionLoading?.invoke(false)
         }
     }
 }

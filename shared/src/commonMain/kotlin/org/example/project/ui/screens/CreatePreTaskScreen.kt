@@ -48,7 +48,7 @@ fun CreatePreTaskScreen(
     val viewModel: CreatePreTaskViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
-    
+    val showExitPopup = remember { mutableStateOf(false) }
     LaunchedEffect(uiState.publishSuccess) {
         if (uiState.publishSuccess) {
             onBackClicked()
@@ -75,7 +75,9 @@ fun CreatePreTaskScreen(
                     .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(onBackClicked)
+                NavigationBackIcon(onClick = {
+                    showExitPopup.value = true
+                })
                 Text(
                     text = stringResource(Res.string.createPreTaskBriefing),
                     style = textStyle(
@@ -481,6 +483,20 @@ fun CreatePreTaskScreen(
             }
         )
     }
+
+    AppExitPopup(
+        visible = showExitPopup.value,
+        onPrimaryClick = {
+            showExitPopup.value = false
+            onBackClicked()
+        },
+        onSecondaryClick = {
+            showExitPopup.value = false
+        },
+        onDismiss = {
+            showExitPopup.value = false
+        }
+    )
 }
 
 @Composable

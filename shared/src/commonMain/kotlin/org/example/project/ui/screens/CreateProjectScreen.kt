@@ -77,6 +77,7 @@ import androidx.compose.runtime.LaunchedEffect
 import org.example.project.data.model.ProjectDetail
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.ui.components.AppExitPopup
 
 @Composable
 fun CreateProjectScreen(
@@ -90,7 +91,7 @@ fun CreateProjectScreen(
     val projectDescription = remember { mutableStateOf(project?.description ?: "") }
     val showImagePicker = remember { mutableStateOf(false) }
     val isImageUploading = remember { mutableStateOf(false) }
-
+    val showExitPopup = remember { mutableStateOf(false) }
     LaunchedEffect(project) {
         project?.groupImage?.let {
             viewModel.setUploadedImageUrl(it)
@@ -111,7 +112,9 @@ fun CreateProjectScreen(
         topBar = {
             CreateProjectScreenTopBar(
                 isEdit = project != null,
-                onBack = {onBack()}
+                onBack = {
+                    showExitPopup.value = true
+                }
             )
         },
         bottomBar = {
@@ -246,6 +249,20 @@ fun CreateProjectScreen(
             }
             }
         }
+
+        AppExitPopup(
+            visible = showExitPopup.value,
+            onPrimaryClick = {
+                showExitPopup.value = false
+                onBack()
+            },
+            onSecondaryClick = {
+                showExitPopup.value = false
+            },
+            onDismiss = {
+                showExitPopup.value = false
+            }
+        )
     }
 }
 
@@ -308,7 +325,7 @@ fun CreateProjectScreenBottomBar(
             modifier = Modifier.weight(1f)
         )
         AppPrimaryButton(
-            title = if (isEdit) "Update Project" else "Create Project",
+            title = if (isEdit) "Update" else "Create",
             onClick = {
                 onCreate()
             },

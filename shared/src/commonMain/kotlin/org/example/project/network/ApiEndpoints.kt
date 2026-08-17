@@ -35,7 +35,7 @@ object ApiEndpoints {
     const val EXIT_PROJECT = "group/exit"
     const val CHANGE_ROLE = "v3/group/role-change"
     const val CHANGE_DESIGNATION = "v3/group/change-designation"
-    const val REMOVE_MEMBER = "group/remove-member"
+    const val REMOVE_MEMBER = "group/ic_rejected-member"
     const val HANDOVER_SUPERADMIN = "v3/group/handover/admin-rights"
     const val GENERAL_CONTENTS = "general/contents"
     const val CHANGE_PASSWORD = "change-password"

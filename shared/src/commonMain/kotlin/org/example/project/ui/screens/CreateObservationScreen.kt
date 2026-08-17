@@ -37,6 +37,7 @@ import androidx.compose.foundation.clickable
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import kotlinx.serialization.json.Json
+import org.example.project.ui.components.AppExitPopup
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +46,7 @@ fun CreateObservationScreen(
     draftId: Long = -1L,
     onBackClicked: () -> Unit
 ) {
+    val showExitPopup = remember { mutableStateOf(false) }
     val viewModel: CreateObservationViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val observationTitle = remember { mutableStateOf("") }
@@ -87,7 +89,9 @@ fun CreateObservationScreen(
                     .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(onBackClicked)
+                NavigationBackIcon(onClick = {
+                    showExitPopup.value = true
+                })
                 Text(
                     text = stringResource(Res.string.createObservation),
                     style = textStyle(
@@ -299,5 +303,19 @@ fun CreateObservationScreen(
                 }
             )
         }
+
+        AppExitPopup(
+            visible = showExitPopup.value,
+            onPrimaryClick = {
+                showExitPopup.value = false
+                onBackClicked()
+            },
+            onSecondaryClick = {
+                showExitPopup.value = false
+            },
+            onDismiss = {
+                showExitPopup.value = false
+            }
+        )
     }
 }

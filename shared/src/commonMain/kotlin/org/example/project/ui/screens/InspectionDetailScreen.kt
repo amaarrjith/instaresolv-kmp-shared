@@ -25,7 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.inspectable
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -183,11 +187,18 @@ fun InspectionDetailContent(
     onImageClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
-
+    var isTranslationDone by remember { mutableStateOf(false)}
+    LaunchedEffect(Unit) {
+        if (
+            !detail.translatedDescription.isNullOrBlank() ||
+            !detail.translatedNotes.isNullOrBlank()
+        ) {
+            isTranslationDone = true
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
             .padding(horizontal = 22.dp, vertical = 16.dp),
     ) {
         // Title Row
@@ -210,309 +221,348 @@ fun InspectionDetailContent(
                 )
             }
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFF8F9098)),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF8F9098))
+                    .clickable {
+                        isTranslationDone = !isTranslationDone
+                    }
+                ,
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_translate),
+                    painter = painterResource( if (isTranslationDone) {Res.drawable.ic_translate_done} else {Res.drawable.ic_translate}),
                     contentDescription = null,
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
-
-        // Project
-        Text(
-            text = stringResource(Res.string.facilityProject),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(11.dp))
-        Row {
-            WebImageView(
-                imageUrl = detail.facilities?.groupImage,
-                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+        Column(
+            modifier = Modifier.verticalScroll(scrollState)
+        ) {
+            // Project
+            Text(
+                text = stringResource(Res.string.facilityProject),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
             )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Text(
-                    text = detail.facilities?.groupName ?: "",
-                    style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
-                    color = AppColors.Black
+            Spacer(Modifier.height(11.dp))
+            Row {
+                WebImageView(
+                    imageUrl = detail.facilities?.groupImage,
+                    modifier = Modifier.size(42.dp).clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
                 )
-                if (!detail.facilities?.groupCode.isNullOrEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.Gray)
-                    ) {
-                        Text(
-                            text = detail.facilities?.groupCode ?: "",
-                            modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-                            style = textStyle(
-                                size = 10.sp,
-                                weight = FontWeight.SemiBold
-                            ),
-                            color = Color.White
-                        )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Text(
+                        text = detail.facilities?.groupName ?: "",
+                        style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
+                        color = AppColors.Black
+                    )
+                    if (!detail.facilities?.groupCode.isNullOrEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color.Gray)
+                        ) {
+                            Text(
+                                text = detail.facilities?.groupCode ?: "",
+                                modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
+                                style = textStyle(
+                                    size = 10.sp,
+                                    weight = FontWeight.SemiBold
+                                ),
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider(color = Color(0xFFF0F0F5))
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider(color = Color(0xFFF0F0F5))
+            Spacer(Modifier.height(24.dp))
 
-        // Equipment Description
-        Text(
-            text = stringResource(Res.string.equipmentDescriptionModelNumber),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = detail.modelNumber ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        // Inspected By
-        Text(
-            text = stringResource(Res.string.inspectedBy),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            WebImageView(
-                imageUrl = "",
-                modifier = Modifier.size(25.dp).clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(Modifier.width(8.dp))
+            // Inspected By
             Text(
-                text = detail.inspectedBy ?: "",
+                text = stringResource(Res.string.inspectedBy),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                WebImageView(
+                    imageUrl = "",
+                    modifier = Modifier.size(25.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = detail.inspectedBy ?: "",
+                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Location
+            Text(
+                text = stringResource(Res.string.location),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = detail.location ?: "-",
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
-        }
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-        // Location
-        Text(
-            text = stringResource(Res.string.location),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = detail.location ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-            color = AppColors.Black
-        )
+            // Date
+            Text(
+                text = stringResource(Res.string.date),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = detail.inspectionDate?.takeIf { it.isNotBlank() } ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                color = AppColors.Black
+            )
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-        // Date
-        Text(
-            text = stringResource(Res.string.date),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = detail.inspectionDate?.takeIf { it.isNotBlank() } ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-            color = AppColors.Black
-        )
+            // Description
+            Text(
+                text = stringResource(Res.string.description),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = detail.description
+                        ?.takeIf { it.isNotBlank() }
+                    ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.Black
+            )
 
-        Spacer(Modifier.height(24.dp))
-
-        // Description
-        Text(
-            text = stringResource(Res.string.description),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = detail.translatedDescription
-                ?.takeIf { it.isNotBlank() }
-                ?: detail.description
-                    ?.takeIf { it.isNotBlank() }
-                ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        // Equipment Source
-        Text(
-            text = stringResource(Res.string.equipmentSource),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(4.dp))
-        
-        val equipmentSourceText = when(detail.equipmentSource) {
-            "1" -> "ALNASR"
-            "2" -> "Rental"
-            "3" -> "Subcontractor" + (detail.subContractor?.let { " ($it)" } ?: "")
-            else -> detail.equipmentSource ?: "-"
-        }
-        
-        Text(
-            text = equipmentSourceText,
-            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider(color = Color(0xFFF0F0F5))
-        Spacer(Modifier.height(24.dp))
-
-        // Equipment Static Fields
-        Text(
-            text = stringResource(Res.string.equipmentStaticFields),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(12.dp))
-
-        if (detail.staticEquipment.isNullOrEmpty()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-                    .background(
-                        color = Color(0xFFFFF3EE),
-                        shape = RoundedCornerShape(4.dp)
-                    )
-            ) {
-                // Left red rectangle
-                Box(
-                    modifier = Modifier
-                        .width(5.dp)
-                        .fillMaxHeight()
-                        .background(
-                            color = AppColors.Primary,
-                            shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp)
-                        )
-                )
-
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = stringResource(Res.string.noQuestionsFound),
-                        style = textStyle(size = 14.sp, weight = FontWeight.Bold),
-                        color = AppColors.Primary
-                    )
-
-                    Text(
-                        text = "-",
-                        style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                        color = AppColors.Primary
-                    )
-                }
-            }
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                detail.staticEquipment.forEach { question ->
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = question.title ?: "",
-                            style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
-                            color = AppColors.Black
-                        )
-                        val answerText = when(question.selectedValue) {
-                            1 -> "YES"
-                            2 -> "NO"
-                            3 -> "NA"
-                            else -> "-"
+            if (isTranslationDone) {
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    text = buildAnnotatedString {
+                        append(stringResource(Res.string.description))
+                        withStyle(
+                            SpanStyle(
+                                color = AppColors.SkyBlue,
+                                fontWeight = FontWeight.Medium
+                            )
+                        ) {
+                            append(" (${(stringResource(Res.string.aiTranslated))})")
                         }
+                    },
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = detail.translatedDescription
+                        ?.takeIf { it.isNotBlank() }
+                        ?: "-",
+                    style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                    color = AppColors.SkyBlue
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider(color = Color(0xFFF0F0F5))
+            Spacer(Modifier.height(24.dp))
+
+            // Equipment Static Fields
+            Text(
+                text = stringResource(Res.string.equipmentStaticFields),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(12.dp))
+
+            if (detail.staticEquipment.isNullOrEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .background(
+                            color = Color(0xFFFFF3EE),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                ) {
+                    // Left red rectangle
+                    Box(
+                        modifier = Modifier
+                            .width(5.dp)
+                            .fillMaxHeight()
+                            .background(
+                                color = AppColors.Primary,
+                                shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp)
+                            )
+                    )
+
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            text = answerText,
-                            style = textStyle(size = 13.sp, weight = FontWeight.Medium),
+                            text = stringResource(Res.string.noQuestionsFound),
+                            style = textStyle(size = 14.sp, weight = FontWeight.Bold),
+                            color = AppColors.Primary
+                        )
+
+                        Text(
+                            text = "-",
+                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                             color = AppColors.Primary
                         )
                     }
                 }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider(color = Color(0xFFF0F0F5))
-        Spacer(Modifier.height(24.dp))
-
-        // Notes
-        Text(
-            text = stringResource(Res.string.notes),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = detail.translatedNotes
-                ?.takeIf { it.isNotBlank() }
-                ?: detail.notes
-                    ?.takeIf { it.isNotBlank() }
-                ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        // Uploaded Images
-        Text(
-            text = stringResource(Res.string.uploadedImages),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(12.dp))
-
-        if (!detail.images.isNullOrEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                detail.images.forEach { img ->
-                    Column {
-                        if (!img.image.isNullOrEmpty()) {
-                            WebImageView(
-                                imageUrl = img.image,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onImageClick(img.image) },
-                                contentScale = ContentScale.Crop
-                            )
-                            Spacer(Modifier.height(8.dp))
-                        }
-                        if (!img.description.isNullOrEmpty()) {
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    detail.staticEquipment.forEach { question ->
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                text = img.description,
-                                style = textStyle(size = 14.sp, weight = FontWeight.Normal),
+                                text = question.title ?: "",
+                                style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
                                 color = AppColors.Black
+                            )
+                            val answerText = when (question.selectedValue) {
+                                1 -> "YES"
+                                2 -> "NO"
+                                3 -> "NA"
+                                else -> "-"
+                            }
+                            Text(
+                                text = answerText,
+                                style = textStyle(size = 13.sp, weight = FontWeight.Medium),
+                                color = AppColors.Primary
                             )
                         }
                     }
                 }
             }
-        } else {
-            EmptyScreenView(
-                stringResource(Res.string.noImagesFound),
+
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider(color = Color(0xFFF0F0F5))
+            Spacer(Modifier.height(24.dp))
+
+            // Notes
+            Text(
+                text = stringResource(Res.string.notes),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
             )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = detail.notes
+                    ?.takeIf { it.isNotBlank() }
+                    ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.Black
+            )
+
+            if (isTranslationDone) {
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    text = buildAnnotatedString {
+                        append(stringResource(Res.string.notes))
+                        withStyle(
+                            SpanStyle(
+                                color = AppColors.SkyBlue,
+                                fontWeight = FontWeight.Medium
+                            )
+                        ) {
+                            append(" (${(stringResource(Res.string.aiTranslated))})")
+                        }
+                    },
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = detail.translatedNotes
+                        ?.takeIf { it.isNotBlank() }
+                        ?: "-",
+                    style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                    color = AppColors.SkyBlue
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Uploaded Images
+            Text(
+                text = stringResource(Res.string.uploadedImages),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(12.dp))
+
+            if (!detail.images.isNullOrEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    detail.images.forEach { img ->
+                        Column {
+                            if (!img.image.isNullOrEmpty()) {
+                                WebImageView(
+                                    imageUrl = img.image,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable { onImageClick(img.image) },
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(Modifier.height(8.dp))
+                            }
+                            if (!img.description.isNullOrEmpty()) {
+                                Text(
+                                    text = img.description,
+                                    style = textStyle(size = 14.sp, weight = FontWeight.Normal),
+                                    color = AppColors.Black
+                                )
+                            }
+                            if (isTranslationDone) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        img.translatedImageDescription
+                                        withStyle(
+                                            SpanStyle(
+                                                color = AppColors.SkyBlue,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        ) {
+                                            append(" (${(stringResource(Res.string.aiTranslated))})")
+                                        }
+                                    },
+                                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                                    color = AppColors.SkyBlue
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                EmptyScreenView(
+                    stringResource(Res.string.noImagesFound),
+                )
+            }
+
+            Spacer(Modifier.height(40.dp))
         }
-        
-        Spacer(Modifier.height(40.dp))
     }
 }

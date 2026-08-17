@@ -141,7 +141,7 @@ fun AddEmployeeBlock(
                                         profession = profession
                                     )
                                 )
-                                // Clear form
+                                // Clear ic_justification
                                 employeeCode = ""
                                 employeeName = ""
                                 companyName = ""

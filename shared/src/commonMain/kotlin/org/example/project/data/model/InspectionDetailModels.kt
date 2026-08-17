@@ -38,5 +38,6 @@ data class InspectionFacility(
 @Serializable
 data class InspectionImageDetail(
     val image: String? = null,
-    val description: String? = null
+    val description: String? = null,
+    val translatedImageDescription: String? = null
 )

@@ -2,6 +2,7 @@ package org.example.project.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,6 +14,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -35,6 +37,7 @@ import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.ui.components.AppExitPopup
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,15 +53,15 @@ fun CreateInspectionScreen(
     }
     
     val uiState by viewModel.uiState.collectAsState()
-    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val focusManager = LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
-
+    val showExitPopup = remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .imePadding()
             .clickable(
-                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
                 focusManager.clearFocus()
@@ -74,7 +77,9 @@ fun CreateInspectionScreen(
                     .padding(end = 22.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationBackIcon(onBackClicked)
+                NavigationBackIcon(onClick = {
+                    showExitPopup.value = true
+                })
                 Text(
                     text = stringResource(Res.string.createAuditInspections).uppercase(),
                     style = textStyle(
@@ -159,13 +164,13 @@ fun CreateInspectionScreen(
                 }
 
                 // Equipment Description
-                AppTextField(
-                    value = uiState.equipmentDescription,
-                    onValueChange = { viewModel.onEquipmentDescriptionChanged(it) },
-                    title = stringResource(Res.string.modelNumber),
-                    placeholder = stringResource(Res.string.enterModelNumber),
-                    isMandatory = true,
-                )
+//                AppTextField(
+//                    value = uiState.equipmentDescription,
+//                    onValueChange = { viewModel.onEquipmentDescriptionChanged(it) },
+//                    title = stringResource(Res.string.modelNumber),
+//                    placeholder = stringResource(Res.string.enterModelNumber),
+//                    isMandatory = true,
+//                )
 
                 // Inspected By
                 AppTextField(
@@ -212,84 +217,84 @@ fun CreateInspectionScreen(
                 }
 
                 // Equipment Source (Radio)
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.equipmentSource),
-                            style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
-                            color = AppColors.Black
-                        )
-                        Text(
-                            text = "*",
-                            style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
-                            color = Color.Red
-                        )
-                    }
-                    val sources = listOf("ALNASR", "SUBCONTRACTOR", "RENTAL")
+//                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+//                    Row(
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+//                    ) {
+//                        Text(
+//                            text = stringResource(Res.string.equipmentSource),
+//                            style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
+//                            color = AppColors.Black
+//                        )
+//                        Text(
+//                            text = "*",
+//                            style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
+//                            color = Color.Red
+//                        )
+//                    }
+//                    val sources = listOf("ALNASR", "SUBCONTRACTOR", "RENTAL")
+//
+//                    Column(
+//                        verticalArrangement = Arrangement.spacedBy(12.dp)
+//                    ) {
+//                        sources.chunked(2).forEach { rowItems ->
+//                            Row(
+//                                modifier = Modifier.fillMaxWidth(),
+//                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+//                            ) {
+//                                rowItems.forEach { source ->
+//                                    Row(
+//                                        modifier = Modifier
+//                                            .weight(1f)
+//                                            .clickable {
+//                                                viewModel.onEquipmentSourceChanged(source)
+//                                            },
+//                                        verticalAlignment = Alignment.CenterVertically
+//                                    ) {
+//                                        Box(
+//                                            modifier = Modifier.size(24.dp),
+//                                            contentAlignment = Alignment.Center
+//                                        ) {
+//                                            RadioButton(
+//                                                selected = uiState.equipmentSource == source,
+//                                                onClick = { viewModel.onEquipmentSourceChanged(source) },
+//                                                colors = RadioButtonDefaults.colors(
+//                                                    selectedColor = AppColors.Primary
+//                                                )
+//                                            )
+//                                        }
+//
+//                                        Spacer(modifier = Modifier.width(4.dp))
+//
+//                                        Text(
+//                                            text = source,
+//                                            style = textStyle(size = 13.sp, weight = FontWeight.Medium),
+//                                            color = AppColors.Black,
+//                                            maxLines = 1
+//                                        )
+//                                    }
+//                                }
+//
+//                                // Fill remaining space if last row has only one item
+//                                if (rowItems.size == 1) {
+//                                    Spacer(modifier = Modifier.weight(1f))
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        sources.chunked(2).forEach { rowItems ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                rowItems.forEach { source ->
-                                    Row(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable {
-                                                viewModel.onEquipmentSourceChanged(source)
-                                            },
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(
-                                            modifier = Modifier.size(24.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            RadioButton(
-                                                selected = uiState.equipmentSource == source,
-                                                onClick = { viewModel.onEquipmentSourceChanged(source) },
-                                                colors = RadioButtonDefaults.colors(
-                                                    selectedColor = AppColors.Primary
-                                                )
-                                            )
-                                        }
-
-                                        Spacer(modifier = Modifier.width(4.dp))
-
-                                        Text(
-                                            text = source,
-                                            style = textStyle(size = 13.sp, weight = FontWeight.Medium),
-                                            color = AppColors.Black,
-                                            maxLines = 1
-                                        )
-                                    }
-                                }
-
-                                // Fill remaining space if last row has only one item
-                                if (rowItems.size == 1) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Subcontractor Text Field (Conditionally visible)
-                if (uiState.equipmentSource == "SUBCONTRACTOR") {
-                    AppTextField(
-                        value = uiState.equipmentSourceSecondary,
-                        onValueChange = { viewModel.onEquipmentSourceSecondaryChanged(it) },
-                        title = stringResource(Res.string.subcontractorName),
-                        placeholder = stringResource(Res.string.enterSubcontractorName),
-                        isMandatory = false
-                    )
-                }
+//                // Subcontractor Text Field (Conditionally visible)
+//                if (uiState.equipmentSource == "SUBCONTRACTOR") {
+//                    AppTextField(
+//                        value = uiState.equipmentSourceSecondary,
+//                        onValueChange = { viewModel.onEquipmentSourceSecondaryChanged(it) },
+//                        title = stringResource(Res.string.subcontractorName),
+//                        placeholder = stringResource(Res.string.enterSubcontractorName),
+//                        isMandatory = false
+//                    )
+//                }
 
                 if (uiState.isFetchingQuestions) {
                     Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -456,5 +461,19 @@ fun CreateInspectionScreen(
                 }
             )
         }
+
+        AppExitPopup(
+            visible = showExitPopup.value,
+            onPrimaryClick = {
+                showExitPopup.value = false
+                onBackClicked()
+            },
+            onSecondaryClick = {
+                showExitPopup.value = false
+            },
+            onDismiss = {
+                showExitPopup.value = false
+            }
+        )
     }
 }

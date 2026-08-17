@@ -110,7 +110,37 @@ class CreateIncidentViewModel(
     }
 
     fun onDateSelected(millis: Long?) {
-        _uiState.value = _uiState.value.copy(incidentDateMillis = millis)
+        val state = _uiState.value
+        var time = state.incidentTime
+        if (millis != null) {
+            val selectedDate = kotlinx.datetime.Instant.fromEpochMilliseconds(millis)
+                .toLocalDateTime(kotlinx.datetime.TimeZone.UTC).date
+            val todayDate = kotlin.time.Clock.System.now()
+                .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+            if (selectedDate == todayDate && time.isNotBlank()) {
+                val now = kotlin.time.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+                try {
+                    val cleanTime = time.replace(" : ", ":")
+                    val parts = cleanTime.split(":", " ")
+                    if (parts.size >= 3) {
+                        var h = parts[0].toInt()
+                        val m = parts[1].toInt()
+                        val amPm = parts[2]
+                        if (amPm.equals("PM", ignoreCase = true) && h < 12) h += 12
+                        if (amPm.equals("AM", ignoreCase = true) && h == 12) h = 0
+                        if (h > now.hour || (h == now.hour && m > now.minute)) {
+                            time = ""
+                        }
+                    }
+                } catch (e: Exception) {
+                    // ignore
+                }
+            }
+        }
+        _uiState.value = state.copy(
+            incidentDateMillis = millis,
+            incidentTime = time
+        )
     }
 
     fun onTimeChanged(time: String) {
@@ -217,11 +247,6 @@ class CreateIncidentViewModel(
 
         if (state.hasInjuredPerson == true && state.injuredEmployees.isEmpty()) {
             _uiState.value = state.copy(error = "Injured Person Details is required")
-            return
-        }
-
-        if (state.selectedProject == null) {
-            _uiState.update { it.copy(error = "Please select a project") }
             return
         }
 

@@ -391,6 +391,7 @@ fun AssignedToMeCard(
     var showPermitDrawer by remember { mutableStateOf(false) }
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
     var closeObservationId by remember { mutableStateOf<Int?>(null) }
+    var justification by remember { mutableStateOf<String?>(null) }
     var showRequestDeleteSheet by remember { mutableStateOf(false) }
     var showRequestResponsiblePersonSheet by remember { mutableStateOf(false) }
     val groupUsers by viewModel.groupUsers.collectAsState()
@@ -666,6 +667,9 @@ fun AssignedToMeCard(
                     "Request to Delete Observation" -> {
                         showRequestDeleteSheet = true
                     }
+                    "View Justification" -> {
+                        justification = assignedToMe.observation?.justification
+                    }
                 }
             }
         )
@@ -804,6 +808,19 @@ fun AssignedToMeCard(
                     type = ToastType.Error
                 )
             }
+        }
+
+        justification?.let { msg ->
+            AppStatusDialog(
+                visible = true,
+                title = "Justification",
+                description = msg,
+                buttonText = "OK",
+                icon = Res.drawable.ic_justification,
+                onDismiss = {
+                    justification = null
+                }
+            )
         }
     }
 }

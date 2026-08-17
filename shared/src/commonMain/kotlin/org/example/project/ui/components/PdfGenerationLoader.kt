@@ -107,7 +107,7 @@ fun AnimatedClockIcon(
             style = Stroke(width = strokeWidth)
         )
 
-        // Draw hour hand (static, pointing to roughly 4 o'clock)
+        // Draw hour hand (static, pointing to roughly 4 o'ic_time)
         val hourAngle = PI / 6 // 30 degrees from bottom right
         val hourLength = radius * 0.5f
         val hourEndX = center.x + hourLength * cos(hourAngle).toFloat()
@@ -122,7 +122,7 @@ fun AnimatedClockIcon(
         )
 
         // Draw minute hand (animated, pointing up and rotating)
-        val minuteAngle = (rotationAngle - 90.0) * PI / 180.0 // Start at 12 o'clock (-90 deg)
+        val minuteAngle = (rotationAngle - 90.0) * PI / 180.0 // Start at 12 o'ic_time (-90 deg)
         val minuteLength = radius * 0.7f
         val minuteEndX = center.x + minuteLength * cos(minuteAngle).toFloat()
         val minuteEndY = center.y + minuteLength * sin(minuteAngle).toFloat()

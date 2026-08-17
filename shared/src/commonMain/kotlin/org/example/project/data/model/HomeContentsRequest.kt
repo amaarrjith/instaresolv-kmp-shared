@@ -44,7 +44,8 @@ data class PendingObservation(
     val title: String = "",
     val groupCode: String? = null,
     val groupId: Int? = null,
-    val pendingActionId: Int? = null
+    val pendingActionId: Int? = null,
+    val justification: String? = null
 )
 
 @Serializable

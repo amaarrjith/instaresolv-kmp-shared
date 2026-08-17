@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.model.Project
 import org.example.project.data.settings.AuthPreferences
-import org.example.project.ui.screens.IncidentImage
 
 data class CreateInspectionState(
     val isLoading: Boolean = false,
@@ -145,16 +144,8 @@ class CreateInspectionViewModel(
 
     fun saveInspection(isDraft: Boolean, onSuccess: () -> Unit) {
         val state = _uiState.value
-        if (state.equipmentDescription.isBlank()) {
-            _uiState.value = state.copy(error = "Model Number is required")
-            return
-        }
         if (state.inspectionDateMillis == null) {
             _uiState.value = state.copy(error = "Date is required")
-            return
-        }
-        if (state.equipmentSource.isBlank()) {
-            _uiState.value = state.copy(error = "Equipment Source is required")
             return
         }
         if (state.questions.isNotEmpty() && state.answers.size < state.questions.size) {
@@ -164,22 +155,16 @@ class CreateInspectionViewModel(
         
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true, error = null)
-            
-            val equipmentSourceInt = when (state.equipmentSource) {
-                "ALNASR" -> 1
-                "RENTAL" -> 2
-                "SUBCONTRACTOR" -> 3
-                else -> 1
-            }
-
             val staticEquipments = state.answers.map { (id, answer) ->
                 val selectedValue = when (answer) {
                     "Yes" -> 1
                     "No" -> 2
                     else -> 3 // NA
                 }
-                org.example.project.data.model.StaticEquipmentAnswer(
-                    equipmentId = id,
+                val questionTitle = state.questions.find { it.id == id }?.title ?: ""
+                org.example.project.data.model.InspectionStaticEquipment(
+                    id = id,
+                    title = questionTitle,
                     selectedValue = selectedValue
                 )
             }
@@ -197,13 +182,11 @@ class CreateInspectionViewModel(
             val request = org.example.project.data.model.AddInspectionRequest(
                 auditItemId = state.inspectionTypeId,
                 facilities = state.selectedProject?.groupId,
-                modelNumber = state.equipmentDescription,
                 inspectedBy = user?.name ?: "",
                 location = state.location,
                 inspectionDate = dateStr,
                 description = state.description,
-                equipmentSource = equipmentSourceInt,
-                subContractor = if (state.equipmentSource == "SUBCONTRACTOR") state.equipmentSourceSecondary else null,
+                subContractor =  "",
                 staticEquipment = staticEquipments,
                 notes = state.notes,
                 images = images

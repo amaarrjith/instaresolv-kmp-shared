@@ -6,21 +6,19 @@ import kotlinx.serialization.Serializable
 data class AddInspectionRequest(
     val auditItemId: Int,
     val facilities: Int? = null,
-    val modelNumber: String,
     val inspectedBy: String,
     val location: String,
     val inspectionDate: String,
     val description: String,
-    val equipmentSource: Int,
     val subContractor: String? = null,
-    val staticEquipment: List<StaticEquipmentAnswer>,
+    val staticEquipment: List<InspectionStaticEquipment>,
     val notes: String,
     val images: List<InspectionImageRequest>
 )
 
 @Serializable
 data class StaticEquipmentAnswer(
-    val equipmentId: Int,
+    val id: Int,
     val selectedValue: Int
 )
 

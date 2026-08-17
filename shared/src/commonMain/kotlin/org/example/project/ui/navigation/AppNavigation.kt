@@ -27,6 +27,7 @@ import org.example.project.ui.screens.ToolBoxTalkListScreen
 import org.example.project.ui.screens.CreateToolBoxTalkScreen
 import org.example.project.ui.screens.ToolBoxTalkDetailScreen
 import org.example.project.ui.components.NotificationListScreen
+import org.example.project.ui.components.AppNotificationClickListener
 import org.example.project.ui.screens.ObservationListScreen
 import org.example.project.ui.screens.CreateObservationScreen
 import org.example.project.ui.screens.CreateIncidentScreen
@@ -151,9 +152,17 @@ fun AppNavigation() {
             }
         }
         composable(Screens.NotificationListScreen.route) {
-            NotificationListScreen {
-                navController.popBackStack()
-            }
+            NotificationListScreen(
+                onBackClicked = {
+                    navController.popBackStack()
+                },
+                onNotificationClick = { notification ->
+                    AppNotificationClickListener(
+                        notification = notification,
+                        navController = navController
+                    )
+                }
+            )
         }
         composable(Screens.TabBar.route) {
             AppTabBar(

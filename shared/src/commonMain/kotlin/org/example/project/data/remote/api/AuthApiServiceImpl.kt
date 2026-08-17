@@ -738,7 +738,7 @@ class AuthApiServiceImpl(
     }
 
     override suspend fun requestToDeleteObservation(request: RequestDeleteObservationRequest): NetworkResult<CommonModelResponse> = safeApiCall {
-        httpClient.post("observation/delete-request") {
+        httpClient.post("v3/observation/delete-request") {
             jsonBody(request)
         }
     }

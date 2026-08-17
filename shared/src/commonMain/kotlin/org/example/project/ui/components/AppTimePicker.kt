@@ -72,9 +72,9 @@ fun AppTimePicker(
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Reuse calendar icon or maybe a clock icon if available. We will use ic_calendar for now unless there's an ic_clock.
+        // Reuse calendar icon or maybe a ic_time icon if available. We will use ic_calendar for now unless there's an ic_clock.
         Image(
-            painter = painterResource(Res.drawable.ic_calendar),
+            painter = painterResource(Res.drawable.ic_time),
             contentDescription = stringResource(Res.string.selectTime),
             modifier = Modifier.size(20.dp)
         )
