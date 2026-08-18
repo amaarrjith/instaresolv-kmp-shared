@@ -480,4 +480,6 @@
     <string name="appVersion">v1.0 (Development)</string>
     <string name="copyrightText">© %1$d InstaResolv All Rights Reserved</string>
     <string name="noTranslationInfoAvailable">No translation info available</string>
+    <string name="preTaskBriefing">Pre Task Briefing</string>
+    <string name="lessonLearned">Lesson Learned</string>
 </resources>

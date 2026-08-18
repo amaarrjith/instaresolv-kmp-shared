@@ -1,5 +1,5 @@
 package org.example.project.ui.screens
-
+import org.jetbrains.compose.resources.StringResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -141,22 +141,24 @@ fun BriefsScreen(
     }
 }
 
+
+
 enum class BriefOverview(
-    val title: String,
+    val title: StringResource,
     val icon: DrawableResource
 ) {
     PRE_TASK(
-        "Pre Task Briefing",
+        Res.string.preTaskBriefing,
         Res.drawable.ic_permit_work
     ),
 
     TOOLBOX_TALKS(
-        "Toolbox Talks",
+        Res.string.toolboxTalks,
         Res.drawable.ic_toolbox_talks
     ),
 
     LESSON(
-        "Lesson Learned",
+        Res.string.lessonLearned,
         Res.drawable.ic_lesson
     )
 }
@@ -202,7 +204,7 @@ fun BriefOverviewCard(
             ) {
                 Image(
                     painter = painterResource(action.icon),
-                    contentDescription = action.title
+                    contentDescription = stringResource(action.title)
                 )
 
                 Text(
@@ -217,7 +219,7 @@ fun BriefOverviewCard(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = action.title,
+                text = stringResource(action.title),
                 style = textStyle(
                     14.sp,
                     FontWeight.SemiBold
