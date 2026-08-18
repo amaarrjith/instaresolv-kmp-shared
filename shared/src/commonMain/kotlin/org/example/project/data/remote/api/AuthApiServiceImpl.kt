@@ -16,6 +16,7 @@ import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeContentsRequest
 import org.example.project.data.model.CommonResponse
+import org.example.project.data.model.ContactInfo
 import org.example.project.data.model.DeleteObservationRequest
 import org.example.project.data.model.RequestDeleteObservationRequest
 import org.example.project.data.model.RequestResponsiblePersonChangeRequest
@@ -281,6 +282,10 @@ class AuthApiServiceImpl(
         httpClient.post(ApiEndpoints.CONTACT_SEND_MESSAGE) {
             jsonBody(request)
         }
+     }
+
+    override suspend fun getContactInfo(): NetworkResult<ContactInfo> = safeApiCall {
+        httpClient.post(ApiEndpoints.CONTACT_INFO)
     }
 
     override suspend fun getPendingActions(request: org.example.project.data.model.PendingActionRequest): NetworkResult<org.example.project.data.model.PendingActionData> = safeApiCall {

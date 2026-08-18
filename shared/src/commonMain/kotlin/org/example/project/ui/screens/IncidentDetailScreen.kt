@@ -29,12 +29,17 @@ import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_share
 import instaresolv.shared.generated.resources.ic_translate
+import instaresolv.shared.generated.resources.ic_translate_done
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import org.example.project.colors.AppColors
 import org.example.project.data.model.IncidentDetailResponse
 import org.example.project.data.settings.formatDate
 import org.example.project.typography.textStyle
 import org.example.project.ui.IncidentType
 import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
@@ -46,6 +51,7 @@ import androidx.compose.runtime.setValue
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.utilites.ToastHost
 
 @Composable
 fun IncidentDetailScreen(
@@ -57,7 +63,9 @@ fun IncidentDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showSharePopup by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var infoMessage by remember { mutableStateOf<String?>(null) }
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -144,11 +152,21 @@ fun IncidentDetailScreen(
                 is IncidentDetailUiState.Success -> {
                     IncidentDetailContent(
                         detail = state.detail,
-                        onImageClick = { previewImageUrl = it }
+                        onImageClick = { previewImageUrl = it },
+                        onNoTranslation = { infoMessage = noTranslationText }
                     )
                 }
             }
+
+            ToastHost(
+                visible = infoMessage != null,
+                message = infoMessage.orEmpty(),
+                onDismiss = { infoMessage = null },
+                type = org.example.project.utilites.ToastType.Info,
+                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter)
+            )
         }
+
         
         if (showSharePopup) {
             org.example.project.ui.components.SharePopupBottomSheet(
@@ -168,28 +186,21 @@ fun IncidentDetailScreen(
                 onDismiss = { previewImageUrl = null }
             )
         }
-        
-//        ToastHost(
-//            visible = pdfToastMessage != null,
-//            message = pdfToastMessage.orEmpty(),
-//            onDismiss = { viewModel.clearPdfToastMessage() },
-//            type = org.example.project.utilites.ToastType.Success,
-//            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
-//        )
     }
 }
 
 @Composable
 fun IncidentDetailContent(
     detail: IncidentDetailResponse,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onNoTranslation: () -> Unit
 ) {
+    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
             .padding(horizontal = 22.dp, vertical = 16.dp),
     ) {
         // Drag handle
@@ -223,359 +234,369 @@ fun IncidentDetailContent(
                 )
             }
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFF8F9098)),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
+                    .clickable {
+                        val hasTranslation = !detail.translatedDescription.isNullOrBlank() ||
+                                !detail.translatedCorrections.isNullOrBlank() ||
+                                detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                        if (hasTranslation) {
+                            isTranslationDone = !isTranslationDone
+                        } else {
+                            onNoTranslation()
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_translate),
+                    painter = painterResource(if (isTranslationDone) Res.drawable.ic_translate_done else Res.drawable.ic_translate),
                     contentDescription = null,
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
-
-        // Project
-        Text(
-            text = stringResource(Res.string.project),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(11.dp))
-        Row {
-            WebImageView(
-                imageUrl = detail.facilities?.groupImage,
-                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+        Column(
+            modifier = Modifier.verticalScroll(scrollState)
+        ) {
+            // Project
+            Text(
+                text = stringResource(Res.string.project),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
             )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Text(
-                    text = detail.facilities?.groupName ?: "",
-                    style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
-                    color = AppColors.Black
+            Spacer(Modifier.height(11.dp))
+            Row {
+                WebImageView(
+                    imageUrl = detail.facilities?.groupImage,
+                    modifier = Modifier.size(42.dp).clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
                 )
-                if (!detail.facilities?.groupCode.isNullOrEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.Gray)
-                    ) {
-                        Text(
-                            text = detail.facilities?.groupCode ?: "",
-                            modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-                            style = textStyle(
-                                size = 10.sp,
-                                weight = FontWeight.SemiBold
-                            ),
-                            color = Color.White
-                        )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Text(
+                        text = detail.facilities?.groupName ?: "",
+                        style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
+                        color = AppColors.Black
+                    )
+                    if (!detail.facilities?.groupCode.isNullOrEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color.Gray)
+                        ) {
+                            Text(
+                                text = detail.facilities?.groupCode ?: "",
+                                modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
+                                style = textStyle(
+                                    size = 10.sp,
+                                    weight = FontWeight.SemiBold
+                                ),
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider(color = Color(0xFFF0F0F5))
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider(color = Color(0xFFF0F0F5))
+            Spacer(Modifier.height(24.dp))
 
-        // Inspected By
-        Text(
-            text = stringResource(Res.string.inspectedBy),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            WebImageView(
-                imageUrl = "",
-                modifier = Modifier.size(25.dp).clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(Modifier.width(8.dp))
+            // Inspected By
             Text(
-                text = detail.reportedBy ?: "",
+                text = stringResource(Res.string.inspectedBy),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                WebImageView(
+                    imageUrl = "",
+                    modifier = Modifier.size(25.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = detail.reportedBy ?: "",
+                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Date and Time Row
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(Res.string.incidentDate),
+                        style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                        color = AppColors.TextGray
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = formatDate(
+                            detail.incidentDate ?: "",
+                            inputPattern = "yyyy-MM-dd HH:mm:ss",
+                            outputPattern = "dd MMM yyyy"
+                        ).ifEmpty { detail.createdAt ?: "" },
+                        style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                        color = AppColors.Black
+                    )
+
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(Res.string.incidentTime),
+                        style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                        color = AppColors.TextGray
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = detail.incidentTime ?: "",
+                        style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                        color = AppColors.Black
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Location
+            Text(
+                text = stringResource(Res.string.location),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = detail.incidentLocation ?: "-",
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
-        }
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-        // Date and Time Row
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(Res.string.incidentDate),
-                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                    color = AppColors.TextGray
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = formatDate(detail.incidentDate ?: "", inputPattern = "yyyy-MM-dd HH:mm:ss", outputPattern = "dd MMM yyyy").ifEmpty { detail.createdAt ?: "" },
-                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-                    color = AppColors.Black
-                )
 
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(Res.string.incidentTime),
-                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                    color = AppColors.TextGray
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = detail.incidentTime ?: "",
-                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-                    color = AppColors.Black
-                )
-            }
-        }
+            // Incident Type
+            Text(
+                text = stringResource(Res.string.incidentType),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = IncidentType.getTitlesFromIds(detail.incidentType),
+                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                color = AppColors.Black
+            )
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider(color = Color(0xFFF0F0F5))
+            Spacer(Modifier.height(24.dp))
 
-        // Location
-        Text(
-            text = stringResource(Res.string.location),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = detail.incidentLocation ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-        
-
-        // Incident Type
-        Text(
-            text = stringResource(Res.string.incidentType),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = IncidentType.getTitlesFromIds(detail.incidentType),
-            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider(color = Color(0xFFF0F0F5))
-        Spacer(Modifier.height(24.dp))
-
-        // INJURED PERSON DETAILS
-        Text(
-            text = stringResource(Res.string.injuredPersonDetails1),
-            style = textStyle(size = 12.sp, weight = FontWeight.Bold),
-            color = AppColors.Black
-        )
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            text = stringResource(Res.string.areThereAnyInjuredPerson),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = if (!detail.injuredEmployees.isNullOrEmpty()) "Yes" else "No",
-            style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-            color = AppColors.Black
-        )
-
-        if (!detail.injuredEmployees.isNullOrEmpty()) {
+            // INJURED PERSON DETAILS
+            Text(
+                text = stringResource(Res.string.injuredPersonDetails1),
+                style = textStyle(size = 12.sp, weight = FontWeight.Bold),
+                color = AppColors.Black
+            )
             Spacer(Modifier.height(16.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-                    .border(1.dp, Color(0xFFE5E5E5), RoundedCornerShape(8.dp))
-                    .background(Color.White, RoundedCornerShape(8.dp))
-                    .clip(RoundedCornerShape(8.dp))
-            ) {
-                Row(
+
+            Text(
+                text = stringResource(Res.string.areThereAnyInjuredPerson),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = if (!detail.injuredEmployees.isNullOrEmpty()) "Yes" else "No",
+                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                color = AppColors.Black
+            )
+
+            if (!detail.injuredEmployees.isNullOrEmpty()) {
+                Spacer(Modifier.height(16.dp))
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
+                        .padding(bottom = 16.dp)
+                        .border(1.dp, Color(0xFFE5E5E5), RoundedCornerShape(8.dp))
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
                 ) {
-                    Column {
-                        // Header Row
-                        Row(
-                            modifier = Modifier
-                                .background(Color(0xFFF5F5F5))
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                        ) {
-                            Text(
-                                "Employee & ID",
-                                modifier = Modifier.width(200.dp),
-                                style = textStyle(
-                                    size = 12.sp,
-                                    weight = FontWeight.Medium
-                                ),
-                                color = AppColors.TextGray
-                            )
-                            Text(
-                                "Company Name",
-                                modifier = Modifier.width(150.dp),
-                                style = textStyle(
-                                    size = 12.sp,
-                                    weight = FontWeight.Medium
-                                ),
-                                color = AppColors.TextGray
-                            )
-                            Text(
-                                "Profession",
-                                modifier = Modifier.width(150.dp),
-                                style = textStyle(
-                                    size = 12.sp,
-                                    weight = FontWeight.Medium
-                                ),
-                                color = AppColors.TextGray
-                            )
-                        }
-
-                        // Data Rows
-                        detail.injuredEmployees.forEachIndexed { index, employee ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                    ) {
+                        Column {
+                            // Header Row
                             Row(
                                 modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .background(Color(0xFFF5F5F5))
+                                    .padding(horizontal = 16.dp, vertical = 12.dp)
                             ) {
-                                Column(modifier = Modifier.width(200.dp)) {
+                                Text(
+                                    "Employee & ID",
+                                    modifier = Modifier.width(200.dp),
+                                    style = textStyle(
+                                        size = 12.sp,
+                                        weight = FontWeight.Medium
+                                    ),
+                                    color = AppColors.TextGray
+                                )
+                                Text(
+                                    "Company Name",
+                                    modifier = Modifier.width(150.dp),
+                                    style = textStyle(
+                                        size = 12.sp,
+                                        weight = FontWeight.Medium
+                                    ),
+                                    color = AppColors.TextGray
+                                )
+                                Text(
+                                    "Profession",
+                                    modifier = Modifier.width(150.dp),
+                                    style = textStyle(
+                                        size = 12.sp,
+                                        weight = FontWeight.Medium
+                                    ),
+                                    color = AppColors.TextGray
+                                )
+                            }
+
+                            // Data Rows
+                            detail.injuredEmployees.forEachIndexed { index, employee ->
+                                Row(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.width(200.dp)) {
+                                        Text(
+                                            employee.employeeName ?: "",
+                                            style = textStyle(
+                                                size = 13.sp,
+                                                weight = FontWeight.SemiBold
+                                            ),
+                                            color = AppColors.Black
+                                        )
+                                        Text(
+                                            employee.employeeCode ?: "",
+                                            style = textStyle(
+                                                size = 11.sp,
+                                                weight = FontWeight.Normal
+                                            ),
+                                            color = AppColors.TextGray
+                                        )
+                                    }
                                     Text(
-                                        employee.employeeName ?: "",
+                                        employee.companyName ?: "",
+                                        modifier = Modifier.width(150.dp),
                                         style = textStyle(
                                             size = 13.sp,
-                                            weight = FontWeight.SemiBold
+                                            weight = FontWeight.Normal
                                         ),
                                         color = AppColors.Black
                                     )
                                     Text(
-                                        employee.employeeCode ?: "",
+                                        employee.profession ?: "",
+                                        modifier = Modifier.width(150.dp),
                                         style = textStyle(
-                                            size = 11.sp,
+                                            size = 13.sp,
                                             weight = FontWeight.Normal
                                         ),
-                                        color = AppColors.TextGray
+                                        color = AppColors.Black
                                     )
                                 }
-                                Text(
-                                    employee.companyName ?: "",
-                                    modifier = Modifier.width(150.dp),
-                                    style = textStyle(
-                                        size = 13.sp,
-                                        weight = FontWeight.Normal
-                                    ),
-                                    color = AppColors.Black
-                                )
-                                Text(
-                                    employee.profession ?: "",
-                                    modifier = Modifier.width(150.dp),
-                                    style = textStyle(
-                                        size = 13.sp,
-                                        weight = FontWeight.Normal
-                                    ),
-                                    color = AppColors.Black
-                                )
-                            }
-                            if (index < detail.injuredEmployees.lastIndex) {
-                                HorizontalDivider(
-                                    color = Color(0xFFF5F5F5),
-                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                )
+                                if (index < detail.injuredEmployees.lastIndex) {
+                                    HorizontalDivider(
+                                        color = Color(0xFFF5F5F5),
+                                        modifier = Modifier.padding(horizontal = 16.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-        // Description
-        Text(
-            text = stringResource(Res.string.descriptionAiTranslated),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = detail.translatedDescription
-                ?.takeIf { it.isNotBlank() }
-                ?: detail.description
-                    ?.takeIf { it.isNotBlank() }
-                ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        // Immediate Corrections
-        Text(
-            text = stringResource(Res.string.immediateCorrectionsAiTranslated),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = detail.translatedCorrections
-                ?.takeIf { it.isNotBlank() }
-                ?: detail.corrections
-                    ?.takeIf { it.isNotBlank() }
-                ?: "-",
-            style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = AppColors.Black
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        // Uploaded Images
-        Text(
-            text = stringResource(Res.string.uploadedImages),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
-        )
-        Spacer(Modifier.height(12.dp))
-
-        if (!detail.images.isNullOrEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                detail.images.forEach { img ->
-                    Column {
-                        if (!img.image.isNullOrEmpty()) {
-                            WebImageView(
-                                imageUrl = img.image,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onImageClick(img.image) },
-                                contentScale = ContentScale.Crop
+            // Description
+            Text(
+                text = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) {
+                    buildAnnotatedString {
+                        append(stringResource(Res.string.description))
+                        withStyle(
+                            SpanStyle(
+                                color = AppColors.SkyBlue,
+                                fontWeight = FontWeight.Medium
                             )
-                            Spacer(Modifier.height(8.dp))
-                        }
-                        if (!img.description.isNullOrEmpty()) {
-                            Text(
-                                text = img.description,
-                                style = textStyle(size = 14.sp, weight = FontWeight.Normal),
-                                color = AppColors.Black
-                            )
+                        ) {
+                            append(" (${stringResource(Res.string.aiTranslated)})")
                         }
                     }
-                }
-            }
-        } else {
-            EmptyScreenView(
-                "No Images Uploaded"
+                } else {
+                    buildAnnotatedString { append(stringResource(Res.string.description)) }
+                },
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
             )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = (if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) detail.translatedDescription else detail.description)
+                    ?.takeIf { it.isNotBlank() } ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            // Immediate Corrections
+            Text(
+                text = if (isTranslationDone && !detail.translatedCorrections.isNullOrBlank()) {
+                    buildAnnotatedString {
+                        append(stringResource(Res.string.immediateCorrections))
+                        withStyle(
+                            SpanStyle(
+                                color = AppColors.SkyBlue,
+                                fontWeight = FontWeight.Medium
+                            )
+                        ) {
+                            append(" (${stringResource(Res.string.aiTranslated)})")
+                        }
+                    }
+                } else {
+                    buildAnnotatedString { append(stringResource(Res.string.immediateCorrections)) }
+                },
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = (if (isTranslationDone && !detail.translatedCorrections.isNullOrBlank()) detail.translatedCorrections else detail.corrections)
+                    ?.takeIf { it.isNotBlank() } ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = if (isTranslationDone && !detail.translatedCorrections.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            // Uploaded Images
+            UploadedImagesSection(
+                images = detail.images,
+                onImageClick = onImageClick,
+                isTranslationDone = isTranslationDone,
+                emptyMessage = "No Images Uploaded"
+            )
+
+            Spacer(Modifier.height(40.dp))
         }
-        
-        Spacer(Modifier.height(40.dp))
     }
 }

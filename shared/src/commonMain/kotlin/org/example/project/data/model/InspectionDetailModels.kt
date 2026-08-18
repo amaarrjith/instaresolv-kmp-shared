@@ -35,9 +35,4 @@ data class InspectionFacility(
     val groupImage: String? = null
 )
 
-@Serializable
-data class InspectionImageDetail(
-    val image: String? = null,
-    val description: String? = null,
-    val translatedImageDescription: String? = null
-)
+typealias InspectionImageDetail = UploadedImageData

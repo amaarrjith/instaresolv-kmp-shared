@@ -3,6 +3,7 @@ package org.example.project.domain.repository
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.CommonResponse
+import org.example.project.data.model.ContactInfo
 import org.example.project.data.model.ImageUploadData
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.NotificationListResponse
@@ -100,4 +101,6 @@ interface AuthRepository {
     suspend fun sendContactMessage(
         request: org.example.project.data.model.ContactMessageRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun getContactInfo(): NetworkResult<ContactInfo>
 }

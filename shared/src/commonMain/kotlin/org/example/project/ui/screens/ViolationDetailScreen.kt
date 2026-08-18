@@ -30,11 +30,16 @@ import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_share
 import instaresolv.shared.generated.resources.ic_translate
+import instaresolv.shared.generated.resources.ic_translate_done
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import org.example.project.colors.AppColors
 import org.example.project.data.model.ViolationData
 import org.example.project.data.settings.formatDate
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
@@ -54,6 +59,8 @@ fun ViolationDetailScreen(
     val viewModel: ViolationDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    var infoMessage by remember { mutableStateOf<String?>(null) }
+    val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
 
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -140,7 +147,8 @@ fun ViolationDetailScreen(
                 uiState.detail != null -> {
                     ViolationDetailContent(
                         detail = uiState.detail!!,
-                        onImageClick = { previewImageUrl = it }
+                        onImageClick = { previewImageUrl = it },
+                        onNoTranslation = { infoMessage = noTranslationText }
                     )
                 }
                 else -> {
@@ -160,6 +168,14 @@ fun ViolationDetailScreen(
             }
             
             ToastHost(
+                visible = infoMessage != null,
+                message = infoMessage.orEmpty(),
+                onDismiss = { infoMessage = null },
+                type = org.example.project.utilites.ToastType.Info,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
                 visible = pdfToastMessage != null,
                 message = pdfToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearPdfToastMessage() },
@@ -173,14 +189,15 @@ fun ViolationDetailScreen(
 @Composable
 fun ViolationDetailContent(
     detail: ViolationData,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onNoTranslation: () -> Unit
 ) {
+    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
             .padding(horizontal = 22.dp, vertical = 16.dp),
     ) {
         // Drag handle
@@ -214,16 +231,31 @@ fun ViolationDetailContent(
                 )
             }
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFF8F9098)),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
+                    .clickable {
+                        val hasTranslation = !detail.translatedDescription.isNullOrBlank() ||
+                            detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                        if (hasTranslation) {
+                            isTranslationDone = !isTranslationDone
+                        } else {
+                            onNoTranslation()
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_translate),
+                    painter = painterResource(if (isTranslationDone) Res.drawable.ic_translate_done else Res.drawable.ic_translate),
                     contentDescription = null,
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
+        Column(
+            modifier = Modifier.verticalScroll(scrollState)
+        ) {
 
         // Project
         Text(
@@ -361,59 +393,38 @@ fun ViolationDetailContent(
 
         // Description
         Text(
-            text = stringResource(Res.string.descriptionAiTranslated),
+            text = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) {
+                buildAnnotatedString {
+                    append(stringResource(Res.string.description))
+                    withStyle(SpanStyle(color = AppColors.SkyBlue, fontWeight = FontWeight.Medium)) {
+                        append(" (${stringResource(Res.string.aiTranslated)})")
+                    }
+                }
+            } else {
+                buildAnnotatedString { append(stringResource(Res.string.description)) }
+            },
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = detail.translatedDescription ?: detail.description ?: "-",
+            text = (if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) detail.translatedDescription else detail.description)
+                ?.takeIf { it.isNotBlank() } ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = AppColors.Black
+            color = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
         )
 
         Spacer(Modifier.height(24.dp))
 
         // Uploaded Images
-        Text(
-            text = stringResource(Res.string.uploadedImages),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
+        UploadedImagesSection(
+            images = detail.images,
+            onImageClick = onImageClick,
+            isTranslationDone = isTranslationDone,
+            emptyMessage = "No Images Uploaded"
         )
-        Spacer(Modifier.height(12.dp))
-
-        if (!detail.images.isNullOrEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                detail.images.forEach { img ->
-                    Column {
-                        if (!img.image.isNullOrEmpty()) {
-                            WebImageView(
-                                imageUrl = img.image,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onImageClick(img.image) },
-                                contentScale = ContentScale.Crop
-                            )
-                            Spacer(Modifier.height(8.dp))
-                        }
-                        if (!img.description.isNullOrEmpty()) {
-                            Text(
-                                text = img.description,
-                                style = textStyle(size = 14.sp, weight = FontWeight.Normal),
-                                color = AppColors.Black
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            EmptyScreenView(
-                "No Images Uploaded"
-            )
-        }
         
         Spacer(Modifier.height(40.dp))
+        } // end scrollable Column
     }
 }

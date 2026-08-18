@@ -45,12 +45,7 @@ data class ObservationNotificationUser(
     val role: Int? = null
 )
 
-@Serializable
-data class ObservationImageDescription(
-    val image: String? = null,
-    val description: String? = null,
-    val isAiGeneratedDescription: Boolean? = null
-)
+typealias ObservationImageDescription = UploadedImageData
 
 @Serializable
 data class ObservationResponsiblePerson(

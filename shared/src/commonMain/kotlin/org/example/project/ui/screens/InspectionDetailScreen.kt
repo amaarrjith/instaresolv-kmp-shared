@@ -40,6 +40,7 @@ import org.example.project.colors.AppColors
 import org.example.project.data.model.InspectionDetailResponse
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
@@ -48,6 +49,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.utilites.ToastHost
 
 @Composable
 fun InspectionDetailScreen(
@@ -57,7 +59,9 @@ fun InspectionDetailScreen(
     val viewModel: InspectionDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showSharePopup by remember { mutableStateOf(false) }
+    var infoMessage by remember { mutableStateOf<String?>(null) }
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -153,10 +157,18 @@ fun InspectionDetailScreen(
                     is InspectionDetailUiState.Success -> {
                         InspectionDetailContent(
                             detail = state.detail,
-                            onImageClick = { previewImageUrl = it }
+                            onImageClick = { previewImageUrl = it },
+                            onNoTranslation = { infoMessage = noTranslationText }
                         )
                     }
                 }
+                ToastHost(
+                    visible = infoMessage != null,
+                    message = infoMessage.orEmpty(),
+                    onDismiss = { infoMessage = null },
+                    type = org.example.project.utilites.ToastType.Info,
+                    modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter)
+                )
             }
         }
         
@@ -184,22 +196,14 @@ fun InspectionDetailScreen(
 @Composable
 fun InspectionDetailContent(
     detail: InspectionDetailResponse,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onNoTranslation: () -> Unit
 ) {
+    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
-    var isTranslationDone by remember { mutableStateOf(false)}
-    LaunchedEffect(Unit) {
-        if (
-            !detail.translatedDescription.isNullOrBlank() ||
-            !detail.translatedNotes.isNullOrBlank()
-        ) {
-            isTranslationDone = true
-        }
-    }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 22.dp, vertical = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 16.dp)
     ) {
         // Title Row
         Row(
@@ -224,11 +228,17 @@ fun InspectionDetailContent(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF8F9098))
+                    .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
                     .clickable {
-                        isTranslationDone = !isTranslationDone
-                    }
-                ,
+                        val hasTranslation = !detail.translatedDescription.isNullOrBlank() ||
+                            !detail.translatedNotes.isNullOrBlank() ||
+                            detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                        if (hasTranslation) {
+                            isTranslationDone = !isTranslationDone
+                        } else {
+                            onNoTranslation()
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -506,61 +516,11 @@ fun InspectionDetailContent(
             Spacer(Modifier.height(24.dp))
 
             // Uploaded Images
-            Text(
-                text = stringResource(Res.string.uploadedImages),
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray
+            UploadedImagesSection(
+                images = detail.images,
+                onImageClick = onImageClick,
+                isTranslationDone = isTranslationDone
             )
-            Spacer(Modifier.height(12.dp))
-
-            if (!detail.images.isNullOrEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    detail.images.forEach { img ->
-                        Column {
-                            if (!img.image.isNullOrEmpty()) {
-                                WebImageView(
-                                    imageUrl = img.image,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(200.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable { onImageClick(img.image) },
-                                    contentScale = ContentScale.Crop
-                                )
-                                Spacer(Modifier.height(8.dp))
-                            }
-                            if (!img.description.isNullOrEmpty()) {
-                                Text(
-                                    text = img.description,
-                                    style = textStyle(size = 14.sp, weight = FontWeight.Normal),
-                                    color = AppColors.Black
-                                )
-                            }
-                            if (isTranslationDone) {
-                                Text(
-                                    text = buildAnnotatedString {
-                                        img.translatedImageDescription
-                                        withStyle(
-                                            SpanStyle(
-                                                color = AppColors.SkyBlue,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                        ) {
-                                            append(" (${(stringResource(Res.string.aiTranslated))})")
-                                        }
-                                    },
-                                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                                    color = AppColors.SkyBlue
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                EmptyScreenView(
-                    stringResource(Res.string.noImagesFound),
-                )
-            }
 
             Spacer(Modifier.height(40.dp))
         }

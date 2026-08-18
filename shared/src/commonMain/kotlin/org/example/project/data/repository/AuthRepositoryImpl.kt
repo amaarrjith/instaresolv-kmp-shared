@@ -4,6 +4,7 @@ import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeContentsRequest
 import org.example.project.data.model.CommonResponse
+import org.example.project.data.model.ContactInfo
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.ImageUploadData
 import org.example.project.data.model.LoginRequest
@@ -185,5 +186,9 @@ class AuthRepositoryImpl(
 
     override suspend fun sendContactMessage(request: org.example.project.data.model.ContactMessageRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
         return apiService.sendContactMessage(request)
+    }
+
+    override suspend fun getContactInfo(): NetworkResult<ContactInfo> {
+        return apiService.getContactInfo()
     }
 }

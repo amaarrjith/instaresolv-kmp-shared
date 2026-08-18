@@ -14,15 +14,23 @@ import org.example.project.network.NetworkResult
 data class ContactUsUiState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val email: String? = null,
+    val address: String? = null,
+    val phone: String? = null
 )
 
 class ContactUsViewModel(
     private val repository: AuthRepository
 ) : ViewModel() {
 
+
     private val _uiState = MutableStateFlow(ContactUsUiState())
     val uiState: StateFlow<ContactUsUiState> = _uiState.asStateFlow()
+
+    init {
+        getContactDetails()
+    }
 
     fun sendMessage(name: String, email: String, message: String) {
         if (name.isBlank() || email.isBlank() || message.isBlank()) {
@@ -41,6 +49,21 @@ class ContactUsViewModel(
                     } else {
                         _uiState.update { it.copy(isLoading = false, error = result.data.statusMessage ?: "Failed to send message") }
                     }
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = result.message ?: "Network error") }
+                }
+            }
+        }
+    }
+
+    fun getContactDetails() {
+        viewModelScope.launch {
+//            _uiState.update { it.copy(isLoading = true, error = null) }
+            val result = repository.getContactInfo()
+            when(result) {
+                is NetworkResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false, email = result.data.email, address = result.data.address, phone = result.data.phone) }
                 }
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.message ?: "Network error") }

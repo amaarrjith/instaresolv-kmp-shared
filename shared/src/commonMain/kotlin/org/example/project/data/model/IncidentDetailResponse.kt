@@ -37,8 +37,4 @@ data class IncidentDetailFacilities(
     val groupImage: String? = null
 )
 
-@Serializable
-data class IncidentDetailImage(
-    val image: String? = null,
-    val description: String? = null
-)
+typealias IncidentDetailImage = UploadedImageData

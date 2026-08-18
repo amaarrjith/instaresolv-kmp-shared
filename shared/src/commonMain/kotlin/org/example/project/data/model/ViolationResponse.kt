@@ -25,8 +25,4 @@ data class ViolationFacility(
     val groupImage: String? = null
 )
 
-@Serializable
-data class ViolationImage(
-    val image: String? = null,
-    val description: String? = null
-)
+typealias ViolationImage = UploadedImageData

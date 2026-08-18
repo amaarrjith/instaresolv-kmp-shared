@@ -52,7 +52,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import org.example.project.login.LoginUiState
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
+import org.example.project.utilites.getAppInfo
 import org.koin.compose.koinInject
+import androidx.compose.ui.text.style.TextAlign
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -119,11 +123,15 @@ fun LoginScreenContent(
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val appInfo = remember { getAppInfo() }
+    val currentYear = remember {
+        kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
+    }
     
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        Spacer(modifier = Modifier.height(163.dp))
+        Spacer(modifier = Modifier.height(100.dp))
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
@@ -133,7 +141,7 @@ fun LoginScreenContent(
                 contentDescription = null
             )
         }
-        Spacer(modifier = Modifier.height(104.dp))
+        Spacer(modifier = Modifier.height(100.dp))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -217,6 +225,31 @@ fun LoginScreenContent(
                         weight = FontWeight.Medium
                     ),
                     color = AppColors.Primary
+                )
+            }
+            Spacer(modifier = Modifier.height(30.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = appInfo.formattedVersionInfo,
+                    style = textStyle(
+                        size = 10.sp,
+                        weight = FontWeight.Normal
+                    ),
+                    color = AppColors.TextGray,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.copyrightText, currentYear),
+                    style = textStyle(
+                        size = 10.sp,
+                        weight = FontWeight.Normal
+                    ),
+                    color = AppColors.TextGray,
+                    textAlign = TextAlign.Center
                 )
             }
             Spacer(modifier = Modifier.height(30.dp))

@@ -82,13 +82,7 @@ data class PermitCertificateValidity(
     val requestDate: String? = null
 )
 
-@Serializable
-data class PermitImage(
-    val id: Int? = null,
-    val image: String? = null,
-    val imageCount: Int? = null,
-    val description: String? = null
-)
+typealias PermitImage = UploadedImageData
 
 @Serializable
 data class PermitValiditySectionDetail(

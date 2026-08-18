@@ -122,6 +122,7 @@ fun HomeScreenContentView(
     val fileDownloader = rememberFileDownloader()
     val actionsLoading by vm.isActionLoading.collectAsState()
     val pdfModuleType by vm.pdfModuleType.collectAsState()
+    var actionErrorMessage: String? by remember { mutableStateOf(null) }
 
     
     val downloadingMsg = stringResource(Res.string.downloading_report, pdfModuleType ?: "")
@@ -181,6 +182,9 @@ fun HomeScreenContentView(
                         onPermitClick = onPermitClick,
                         onNavigateToProject = { groupId, groupCode ->
                             onNavigateToProject(groupId, groupCode)
+                        },
+                        onActionError = { err ->
+                            actionErrorMessage = err
                         }
                     )
                     Spacer(modifier = Modifier.height(22.dp))
@@ -216,6 +220,16 @@ fun HomeScreenContentView(
             message = pdfErrorToastMessage ?: pdfToastMessage ?: "",
             onDismiss = {
                 vm.clearToasts()
+            }
+        )
+
+        ToastHost(
+            modifier = Modifier.padding(horizontal = 22.dp),
+            visible = actionErrorMessage != null ,
+            type = ToastType.Error,
+            message = actionErrorMessage ?: "",
+            onDismiss = {
+                actionErrorMessage = null
             }
         )
     }
@@ -385,7 +399,8 @@ fun AssignedToMeCard(
     onViewAllClick: () -> Unit = {},
     onRefreshList: () -> Unit = {},
     onPermitClick: (Int) -> Unit = {},
-    onNavigateToProject: (Int, String) -> Unit = { _, _ -> }
+    onNavigateToProject: (Int, String) -> Unit = { _, _ -> },
+    onActionError: (String) -> Unit
 ) {
     var showObservationDrawer by remember { mutableStateOf(false) }
     var showPermitDrawer by remember { mutableStateOf(false) }
@@ -396,9 +411,8 @@ fun AssignedToMeCard(
     var showRequestResponsiblePersonSheet by remember { mutableStateOf(false) }
     val groupUsers by viewModel.groupUsers.collectAsState()
     var actionSuccessMessage by remember { mutableStateOf<String?>(null) }
-    var actionErrorMessage by remember { mutableStateOf<String?>(null) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     assignedToMe?.let { contents ->
+        Box(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -625,7 +639,7 @@ fun AssignedToMeCard(
                                 actionSuccessMessage = msg
                             },
                             onError = { err ->
-                                actionErrorMessage = err
+                                onActionError(err)
                             }
                         )
                     }
@@ -637,7 +651,7 @@ fun AssignedToMeCard(
                                 actionSuccessMessage = msg
                             },
                             onError = { err ->
-                                actionErrorMessage = err
+                                onActionError(err)
                             }
                         )
                     }
@@ -749,7 +763,8 @@ fun AssignedToMeCard(
                                 actionSuccessMessage = "Request to delete observation submitted successfully."
                             },
                             onError = { err ->
-                                actionErrorMessage = err
+                                showRequestDeleteSheet = false
+                                onActionError(err)
                             }
                         )
                     }
@@ -778,7 +793,8 @@ fun AssignedToMeCard(
                                 actionSuccessMessage = "Request to change responsible person submitted successfully."
                             },
                             onError = { err ->
-                                actionErrorMessage = err
+                                showRequestResponsiblePersonSheet = false
+                                onActionError(err)
                             }
                         )
                     }
@@ -799,17 +815,6 @@ fun AssignedToMeCard(
             )
         }
 
-        actionErrorMessage?.let { msg ->
-            Box(modifier = Modifier.fillMaxWidth()) {
-                ToastHost(
-                    visible = true,
-                    message = msg,
-                    onDismiss = { actionErrorMessage = null },
-                    type = ToastType.Error
-                )
-            }
-        }
-
         justification?.let { msg ->
             AppStatusDialog(
                 visible = true,
@@ -822,6 +827,7 @@ fun AssignedToMeCard(
                 }
             )
         }
+        } // end outer Box
     }
 }
 

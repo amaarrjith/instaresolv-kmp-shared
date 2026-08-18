@@ -38,11 +38,7 @@ data class PreTaskFacility(
     val groupImage: String? = null
 )
 
-@Serializable
-data class PreTaskImage(
-    val image: String? = null,
-    val description: String? = null
-)
+typealias PreTaskImage = UploadedImageData
 
 @Serializable
 data class PreTaskContentRequest(
@@ -192,11 +188,7 @@ data class PreTaskAttendeeDetail(
     val profession: String? = null
 )
 
-@kotlinx.serialization.Serializable
-data class PreTaskImageDetail(
-    val image: String? = null,
-    val description: String? = null
-)
+typealias PreTaskImageDetail = UploadedImageData
 
 @kotlinx.serialization.Serializable
 data class PreTaskFacilityData(

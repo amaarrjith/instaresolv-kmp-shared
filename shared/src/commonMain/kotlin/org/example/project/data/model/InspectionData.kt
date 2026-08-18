@@ -35,11 +35,7 @@ data class InspectionStaticEquipment(
     val selectedValue: Int? = null
 )
 
-@Serializable
-data class InspectionImage(
-    val image: String? = null,
-    val description: String? = null
-)
+typealias InspectionImage = UploadedImageData
 
 @Serializable
 data class InspectionAuditItem(

@@ -22,24 +22,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_exit
-import org.example.project.App
+import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.leave_page_description
+import instaresolv.shared.generated.resources.leave_page_title
+import instaresolv.shared.generated.resources.no_stay
+import instaresolv.shared.generated.resources.yes_leave
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AppExitPopup(
     visible: Boolean,
-    title: String = "Leave this page?",
-    description: String = "Are you sure you want to leave this page? Unsaved changes will be lost.",
+    title: String = stringResource(Res.string.leave_page_title),
+    description: String = stringResource(Res.string.leave_page_description),
     icon: DrawableResource = Res.drawable.ic_exit,
-    primaryButtonText: String = "Yes, Leave",
+    primaryButtonText: String = stringResource(Res.string.yes_leave),
     primaryButtonColor: Color = AppColors.Primary,
     onPrimaryClick: () -> Unit,
-    secondaryButtonText: String = "No, Stay",
+    secondaryButtonText: String = stringResource(Res.string.no_stay),
     secondaryButtonColor: Color = AppColors.SkyBlue,
     onSecondaryClick: () -> Unit,
     onDismiss: () -> Unit

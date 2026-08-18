@@ -48,6 +48,7 @@ import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.ui.components.AppImagePreviewDialog
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.AppMultilineTextField
+import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.AppSignCreateBox
 import org.example.project.ui.components.AppStatusDialog
 import org.example.project.ui.components.AppTimePicker
@@ -853,37 +854,12 @@ fun PermitValiditySection(data: PermitDetailData, onImageClick: (String) -> Unit
 @Composable
 fun EvidenceImagesSection(data: PermitDetailData, onImageClick: (String) -> Unit) {
     if (!data.certificateValidity?.images.isNullOrEmpty()) {
-        Text(
-            text = stringResource(Res.string.images),
-            style = textStyle(14.sp, FontWeight.Bold),
-            color = AppColors.Primary
+        UploadedImagesSection(
+            images = data.certificateValidity?.images,
+            onImageClick = onImageClick,
+            title = stringResource(Res.string.images),
+            showEmptyView = false
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            data.certificateValidity?.images?.forEach { imageDetail ->
-                if (imageDetail.image?.isNotBlank() == true) {
-                    Column {
-                        WebImageView(
-                            imageUrl = imageDetail.image,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { onImageClick(imageDetail.image) },
-                            contentScale = ContentScale.Crop
-                        )
-                        if (!imageDetail.description.isNullOrEmpty()) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = imageDetail.description,
-                                style = textStyle(14.sp, FontWeight.Normal),
-                                color = AppColors.Black
-                            )
-                        }
-                    }
-                }
-            }
-        }
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
     }
 }
@@ -1244,37 +1220,12 @@ fun RequestForCertificateClosureViewerSection(data: PermitDetailData, onImageCli
     Spacer(modifier = Modifier.height(16.dp))
     
     if (closureDetails.images?.isNotEmpty() == true) {
-        Text(
-            text = stringResource(Res.string.images),
-            style = textStyle(12.sp, FontWeight.Medium),
-            color = AppColors.TextGray
+        UploadedImagesSection(
+            images = closureDetails.images,
+            onImageClick = onImageClick,
+            title = stringResource(Res.string.images),
+            showEmptyView = false
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            closureDetails.images.forEach { img ->
-                Column {
-                    if (!img.image.isNullOrBlank()) {
-                        WebImageView(
-                            imageUrl = img.image,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { onImageClick(img.image) },
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    if (!img.description.isNullOrBlank()) {
-                        Text(
-                            text = img.description,
-                            style = textStyle(size = 14.sp, weight = FontWeight.Normal),
-                            color = AppColors.Black
-                        )
-                    }
-                }
-            }
-        }
         Spacer(modifier = Modifier.height(16.dp))
     }
 

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import instaresolv.shared.generated.resources.ic_location
 import instaresolv.shared.generated.resources.ic_sms
 import instaresolv.shared.generated.resources.ic_trash
@@ -63,6 +65,13 @@ import org.example.project.utilites.AppPrimaryButton
 import org.example.project.ui.components.AppSuccessDialog
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.settings.ChangePasswordUiState
+import org.example.project.settings.ChangePasswordViewModel
+import org.example.project.settings.ContactUsViewModel
+import org.example.project.settings.DeleteAccountStep
+import org.example.project.settings.DeleteAccountViewModel
+import org.example.project.ui.components.AppMultilineTextField
+import org.example.project.utilites.AppWebView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -172,7 +181,7 @@ fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = fals
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangePasswordScreen(onBack: () -> Unit) {
-    val viewModel: org.example.project.settings.ChangePasswordViewModel = koinInject()
+    val viewModel: ChangePasswordViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var oldPassword by remember { mutableStateOf("") }
@@ -184,11 +193,11 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
-            is org.example.project.settings.ChangePasswordUiState.Success -> {
+            is ChangePasswordUiState.Success -> {
                 showSuccessDialog = state.message
                 viewModel.resetState()
             }
-            is org.example.project.settings.ChangePasswordUiState.Error -> {
+            is ChangePasswordUiState.Error -> {
                 toastMessage = state.message
                 toastType = ToastType.Error
                 viewModel.resetState()
@@ -290,7 +299,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                             viewModel.changePassword(oldPassword, newPassword)
                         }
                     },
-                    isLoading = uiState is org.example.project.settings.ChangePasswordUiState.Loading
+                    isLoading = uiState is ChangePasswordUiState.Loading
                 )
             }
         ToastHost(
@@ -300,15 +309,15 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
             type = toastType
         )
 
-        org.example.project.ui.components.AppSuccessDialog(
-            visible = showSuccessDialog != null,
-            title = stringResource(Res.string.success),
-            description = showSuccessDialog ?: "",
-            onDismiss = {
-                showSuccessDialog = null
-                onBack()
-            }
-        )
+            AppSuccessDialog(
+                visible = showSuccessDialog != null,
+                title = stringResource(Res.string.success),
+                description = showSuccessDialog ?: "",
+                onDismiss = {
+                    showSuccessDialog = null
+                    onBack()
+                }
+            )
         }
     }
 }
@@ -316,7 +325,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactUsScreen(onBack: () -> Unit) {
-    val viewModel: org.example.project.settings.ContactUsViewModel = koinInject()
+    val viewModel: ContactUsViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var fullName by remember { mutableStateOf("") }
@@ -333,6 +342,8 @@ fun ContactUsScreen(onBack: () -> Unit) {
             viewModel.clearError()
         }
     }
+
+    val uriHandler = LocalUriHandler.current
 
     Scaffold(
         containerColor = Color.White,
@@ -376,32 +387,60 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Contact Info
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable {
+                        uiState.email?.trim()?.let { email ->
+                            try {
+                                uriHandler.openUri("mailto:$email")
+                            } catch (e: Exception) {
+                                // Ignore if mail app is not available
+                            }
+                        }
+                    }.padding(vertical = 4.dp)
+                ) {
                     Image(
                         painter = painterResource(Res.drawable.ic_sms),
                         contentDescription = stringResource(Res.string.location),
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = stringResource(Res.string.connectinstaresolvcom),
-                        style = textStyle(size = 14.sp),
-                        color = Color(0xFF334155) // Slate gray
-                    )
+                    uiState.email?.let {
+                        Text(
+                            text = it,
+                            style = textStyle(size = 14.sp),
+                            color = Color(0xFF334155) // Slate gray
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Row(verticalAlignment = Alignment.Top) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable {
+                        uiState.address?.trim()?.let { address ->
+                            try {
+                                // Maps URL that works universally across iOS (redirects to Maps/Safari) and Android
+                                val query = address.replace(" ", "+")
+                                uriHandler.openUri("https://maps.google.com/?q=$query")
+                            } catch (e: Exception) {
+                                // Ignore
+                            }
+                        }
+                    }.padding(vertical = 4.dp)
+                ) {
                     Image(
                         painter = painterResource(Res.drawable.ic_location),
                         contentDescription = stringResource(Res.string.location),
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = stringResource(Res.string.txt_33LevelAlSaqrBusinessTowernsheikhZayedRoadDubai),
-                        style = textStyle(size = 14.sp),
-                        color = Color(0xFF334155)
-                    )
+                    uiState.address?.let {
+                        Text(
+                            text = it,
+                            style = textStyle(size = 14.sp),
+                            color = Color(0xFF334155)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -439,21 +478,29 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                AppTextField(
+                AppMultilineTextField(
                     value = message,
                     onValueChange = { message = it },
                     title = stringResource(Res.string.message1),
-                    placeholder = stringResource(Res.string.message),
-                    singleLine = false,
-                    textFieldModifier = Modifier.fillMaxWidth().height(120.dp)
+                    placeholder = stringResource(Res.string.message)
                 )
                 Spacer(modifier = Modifier.height(32.dp))
-                AppPrimaryButton(
-                    title = stringResource(Res.string.submit),
-                    onClick = { viewModel.sendMessage(name = fullName, email = emailId, message = message) },
-                    isLoading = uiState.isLoading
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    AppPrimaryButton(
+                        title = stringResource(Res.string.submit),
+                        onClick = {
+                            viewModel.sendMessage(
+                                name = fullName,
+                                email = emailId,
+                                message = message
+                            )
+                        },
+                        isLoading = uiState.isLoading
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(32.dp))
             }
@@ -465,7 +512,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
                 type = toastType
             )
 
-            org.example.project.ui.components.AppSuccessDialog(
+            AppSuccessDialog(
                 visible = uiState.isSuccess,
                 title = stringResource(Res.string.success),
                 description = "Your message has been sent successfully.",
@@ -509,7 +556,7 @@ fun AboutUsScreen(onBack: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        org.example.project.utilites.AppWebView(
+        AppWebView(
             url = "https://instaresolv-dev.zoondia.org/web/about-us",
             modifier = Modifier.fillMaxSize().padding(paddingValues)
         )
@@ -529,7 +576,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteAccountScreen(onBack: () -> Unit) {
-    val viewModel: org.example.project.settings.DeleteAccountViewModel = koinInject()
+    val viewModel: DeleteAccountViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var password by remember { mutableStateOf("") }
@@ -621,7 +668,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    if (uiState.step == org.example.project.settings.DeleteAccountStep.TERMS_LOADED) {
+                    if (uiState.step == DeleteAccountStep.TERMS_LOADED) {
                         AppTextField(
                             value = password,
                             onValueChange = { password = it },
@@ -644,7 +691,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                             },
                             isLoading = uiState.isLoading
                         )
-                    } else if (uiState.step == org.example.project.settings.DeleteAccountStep.OTP_SENT) {
+                    } else if (uiState.step == DeleteAccountStep.OTP_SENT) {
                         AppTextField(
                             value = otp,
                             onValueChange = { otp = it },
@@ -670,7 +717,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                 }
             }
 
-            if (uiState.isLoading && uiState.step == org.example.project.settings.DeleteAccountStep.FETCHING_TERMS) {
+            if (uiState.isLoading && uiState.step == DeleteAccountStep.FETCHING_TERMS) {
                 AppLoader()
             }
 

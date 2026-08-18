@@ -57,6 +57,7 @@
     <string name="changePassword">Change Password</string>
     <string name="confirmPassword">Confirm Password</string>
     <string name="logout">Logout</string>
+    <string name="logoutDescription">Are you sure you want to log out? You\'ll need to sign in again to access your account.</string>
     <string name="continueText">Continue</string>
     <string name="profile">Profile</string>
     <string name="resetPassword">Reset Password</string>
@@ -128,7 +129,7 @@
     <string name="video">VIDEO</string>
     <string name="yes">Yes</string>
     <string name="comply">Comply</string>
-    <string name="message1">Message *</string>
+    <string name="message1">Message</string>
     <string name="enterImmediateCorrections">Enter Immediate Corrections</string>
     <string name="appLogo">App Logo</string>
     <string name="noQuestionsFound">No Questions Found!</string>
@@ -152,7 +153,7 @@
     <string name="noPreTaskBriefingsFound">No pre task briefings found</string>
     <string name="downloadLessonMaterial">Download Lesson Material</string>
     <string name="validFrom">Valid From</string>
-    <string name="learnAboutTheApp">Learn about the app</string>
+    <string name="learnAboutTheApp">About InstaResolv</string>
     <string name="requestToDeleteObservation1">Request To Delete Observation</string>
     <string name="publish">Publish</string>
     <string name="actions">Actions</string>
@@ -189,6 +190,8 @@
     <string name="equipmentDescriptionModelNumber">Equipment Description / Model Number..</string>
     <string name="pleaseSelectAProjectFirst">Please select a project first</string>
     <string name="error">Error</string>
+    <string name="select_responsible_person_error">Please select a responsible person.</string>
+    <string name="description_required_error">Description is required.</string>
     <string name="noToolboxTalksFound">No Toolbox Talks Found</string>
     <string name="approve">Approve</string>
     <string name="searchEmployees">Search Employees</string>
@@ -227,8 +230,10 @@
     <string name="inspectedBy">Inspected By</string>
     <string name="generalActions">General Actions</string>
     <string name="zoondiagmailcom">zoondia@gmail.com</string>
+    <string name ="connectInsta">Connect InstaResolv Team</string>
     <string name="emailNotifications">Email Notifications</string>
-    <string name="stepByStepAccountOnTodaysTaskAiTranslated">Step By Step Account on Today\'s Task (AI Translated)</string>
+    <string name="enableAppNotifications">Enable App Notifications</string>
+    <string name="stepByStepAccountOnTodaysTask">Step By Step Account on Today's Task</string>
     <string name="closeThisObservationWithDetailed">Close this observation with detailed</string>
     <string name="removeSignature">Remove Signature</string>
     <string name="lessons">Lessons</string>
@@ -296,7 +301,10 @@
     <string name="attendees">ATTENDEES</string>
     <string name="removeAttendee">Remove Attendee</string>
     <string name="video1">VIDEO</string>
-    <string name="enableAppNotifications">Enable App Notifications</string>
+    <string name="leave_page_title">Leave this page?</string>
+    <string name="leave_page_description">Are you sure you want to leave this page? Unsaved changes will be lost.</string>
+    <string name="yes_leave">Yes, Leave</string>
+    <string name="no_stay">No, Stay</string>
     <string name="addImage">Add Image</string>
     <string name="images">Images</string>
     <string name="noQuestionsFound1">No Questions Found !</string>
@@ -353,7 +361,7 @@
     <string name="new">New</string>
     <string name="attendeesEvidence">ATTENDEES EVIDENCE</string>
     <string name="date1">Date *</string>
-    <string name="weWillMissYou">We will miss you!</string>
+    <string name="weWillMissYou">Permanently Delete Account</string>
     <string name="cancel">Cancel</string>
     <string name="track1">Track</string>
     <string name="uploadProjectImage">Upload Project Image</string>
@@ -363,7 +371,7 @@
     <string name="generatingPdf">Generating PDF</string>
     <string name="incidentTime">Incident Time</string>
     <string name="selectPersonToNotify">Select Person To Notify</string>
-    <string name="downloadAllMembersTrainingDetails">Download all members\' training details</string>
+    <string name="downloadAllMembersTrainingDetails">Download all members training details</string>
     <string name="success">Success</string>
     <string name="taskTitle">Task Title</string>
     <string name="noInspectionsFound">No inspections found</string>
@@ -428,7 +436,7 @@
     <string name="close">Close</string>
     <string name="remarksOptional">Remarks (Optional)</string>
     <string name="enterDescription">Enter Description</string>
-    <string name="aboutUs">ABOUT US</string>
+    <string name="aboutUs">About Us</string>
     <string name="changeDesignation">Change Designation</string>
     <string name="create">Create</string>
     <string name="drawSignature">Draw Signature</string>
@@ -469,4 +477,7 @@
     <string name="deleteSelectedObservationDrafts">Are you sure you want to delete the selected observation drafts?</string>
     <string name="draftsDeletedSuccessfully">Drafts deleted successfully</string>
     <string name="assignedTrainings">Assigned Trainings</string>
+    <string name="appVersion">v1.0 (Development)</string>
+    <string name="copyrightText">© %1$d InstaResolv All Rights Reserved</string>
+    <string name="noTranslationInfoAvailable">No translation info available</string>
 </resources>

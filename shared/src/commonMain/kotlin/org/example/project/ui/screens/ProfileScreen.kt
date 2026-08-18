@@ -126,10 +126,10 @@ fun ProfileScreen(
                 )
 
                 AppExitDialog(
-                    title = "Logout",
-                    description = "Are you sure you want to log out? You'll need to sign in again to access your account.",
-                    primaryButtonText = "Yes",
-                    secondaryButtonText = "Cancel",
+                    title = stringResource(Res.string.logout),
+                    description = stringResource(Res.string.logoutDescription),
+                    primaryButtonText = stringResource(Res.string.yes),
+                    secondaryButtonText = stringResource(Res.string.cancel),
                     visible = isLogoutAlertShown,
                     onConfirm = {
                         isLogoutAlertShown = false

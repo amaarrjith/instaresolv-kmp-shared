@@ -55,11 +55,7 @@ data class LessonLearnedFacilityData(
     val groupImage: String? = null
 )
 
-@Serializable
-data class LessonLearnedImageData(
-    val image: String? = null,
-    val description: String? = null
-)
+typealias LessonLearnedImageData = UploadedImageData
 
 @Serializable
 data class LessonLearnedDetailRequest(

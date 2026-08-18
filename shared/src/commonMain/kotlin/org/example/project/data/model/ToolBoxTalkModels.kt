@@ -37,6 +37,7 @@ data class ToolBoxTalkItem(
     val startTime: String? = null,
     val endTime: String? = null,
     val topic: String? = null,
+    val translatedTopic: String? = null,
     val discussionPoints: List<DiscussionPoint>? = null,
     val attendees: List<Attendee>? = null,
     val createdAt: String? = null,
@@ -47,7 +48,8 @@ data class ToolBoxTalkItem(
 @Serializable
 data class DiscussionPoint(
     val id: Int,
-    val point: String? = null
+    val point: String? = null,
+    val translatedPoint: String? = null
 )
 
 @Serializable
@@ -67,8 +69,4 @@ data class ToolBoxTalkFacilityData(
     val groupImage: String? = null
 )
 
-@Serializable
-data class ToolBoxTalkImageData(
-    val image: String? = null,
-    val description: String? = null
-)
+typealias ToolBoxTalkImageData = UploadedImageData

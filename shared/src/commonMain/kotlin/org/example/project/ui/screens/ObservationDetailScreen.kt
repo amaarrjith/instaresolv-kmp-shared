@@ -63,6 +63,7 @@ import org.example.project.ui.components.AppAudioPlayer
 import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.AppMultilineTextField
+import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
@@ -94,6 +95,7 @@ fun ObservationDetailScreen(
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     var isTranslationDone by remember { mutableStateOf(false) }
+    val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
@@ -233,10 +235,12 @@ fun ObservationDetailScreen(
                         onImageClick = { previewImageUrl = it },
                         isTranslationDone = isTranslationDone,
                         onTranslate = {
-                            if (!state.detail.translatedDescription.isNullOrEmpty()) {
+                            val hasTranslation = !state.detail.translatedDescription.isNullOrBlank() ||
+                                state.detail.imageDescription?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                            if (hasTranslation) {
                                 isTranslationDone = !isTranslationDone
                             } else {
-                                infoMessage = "No translation found"
+                                infoMessage = noTranslationText
                             }
                         },
                         onTranslateAudio = {
@@ -353,13 +357,16 @@ fun ObservationDetailContent(
                 )
             }
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFF8F9098)), // Gray background for translate icon
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
+                    .clickable { onTranslate() },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(if (isTranslationDone) {Res.drawable.ic_translate_done} else {Res.drawable.ic_translate}),
+                    painter = painterResource(if (isTranslationDone) Res.drawable.ic_translate_done else Res.drawable.ic_translate),
                     contentDescription = null,
-                    modifier = Modifier.clickable { onTranslate() }
                 )
             }
         }
@@ -669,44 +676,11 @@ fun ObservationDetailInfo(
         HorizontalDivider(color = Color(0xFFF0F0F5))
         Spacer(Modifier.height(24.dp))
 
-        Text(
-            text = stringResource(Res.string.uploadedImages),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
+        UploadedImagesSection(
+            images = detail.imageDescription,
+            onImageClick = onImageClick,
+            isTranslationDone = isTranslationDone
         )
-        Spacer(Modifier.height(12.dp))
-
-        if (!detail.imageDescription.isNullOrEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                detail.imageDescription.forEach { img ->
-                    Column {
-                        if (!img.image.isNullOrEmpty()) {
-                            WebImageView(
-                                imageUrl = img.image,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onImageClick(img.image) },
-                                contentScale = ContentScale.Crop
-                            )
-                            Spacer(Modifier.height(8.dp))
-                        }
-                        if (!img.description.isNullOrEmpty()) {
-                            Text(
-                                text = img.description,
-                                style = textStyle(size = 14.sp, weight = FontWeight.Normal),
-                                color = AppColors.Black
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            EmptyScreenView(
-                message = stringResource(Res.string.noImagesFound)
-            )
-        }
 
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(color = Color(0xFFF0F0F5))
@@ -799,70 +773,12 @@ fun ObservationDetailInfo(
                 color = AppColors.Black
             )
 
-            // Images
-            val validImages = closeDetails.imageDescription
-                ?.filter {
-                    !it.image.isNullOrBlank() || !it.description.isNullOrBlank()
-                }
-                .orEmpty()
-
-            if (validImages.isNotEmpty()) {
-
-                Spacer(Modifier.height(16.dp))
-
-                Text(
-                    text = stringResource(Res.string.uploadedImages),
-                    style = textStyle(
-                        size = 12.sp,
-                        weight = FontWeight.Medium
-                    ),
-                    color = AppColors.TextGray
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    validImages.forEach { img ->
-
-                        Column {
-
-                            if (!img.image.isNullOrBlank()) {
-                                WebImageView(
-                                    imageUrl = img.image,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(200.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            onImageClick(img.image)
-                                        },
-                                    contentScale = ContentScale.Crop
-                                )
-
-                                Spacer(Modifier.height(8.dp))
-                            }
-
-                            if (!img.description.isNullOrBlank()) {
-                                Text(
-                                    text = img.description,
-                                    style = textStyle(
-                                        size = 14.sp,
-                                        weight = FontWeight.Normal
-                                    ),
-                                    color = AppColors.Black
-                                )
-                            }
-                        }
-                    }
-                }
-
-            } else {
-                EmptyScreenView(
-                    stringResource(Res.string.noImagesFound)
-                )
-            }
+            Spacer(Modifier.height(16.dp))
+            UploadedImagesSection(
+                images = closeDetails.imageDescription,
+                onImageClick = onImageClick,
+                isTranslationDone = isTranslationDone
+            )
 
             // Closed By
             if (closeDetails.closedBy != null) {

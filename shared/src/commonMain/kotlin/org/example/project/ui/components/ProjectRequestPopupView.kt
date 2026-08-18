@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -111,7 +112,18 @@ fun ProjectRequestPopUpView(
 
                         }
                         ProjectListUiState.Loading -> {
-                            AppLoader()
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(50.dp),
+                                    color = AppColors.Primary,
+                                    strokeWidth = 5.dp
+                                )
+                            }
                         }
                         is ProjectListUiState.Success -> {
                             Column(
@@ -157,20 +169,6 @@ fun ProjectRequestPopUpView(
                                             Spacer(modifier = Modifier.width(8.dp))
                                         }
                                     }
-                                }
-
-                                Spacer(modifier = Modifier.height(24.dp))
-
-                                project?.description?.let { desc ->
-                                    Text(
-                                        text = desc,
-                                        style = textStyle(size = 13.sp, weight = FontWeight.Normal),
-                                        color = Color.DarkGray,
-                                        lineHeight = 20.sp,
-                                        maxLines = 4,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Spacer(modifier = Modifier.height(30.dp))
                                 }
                             }
 //                            Spacer(modifier = Modifier.height(32.dp))

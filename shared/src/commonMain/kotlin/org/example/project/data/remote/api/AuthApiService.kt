@@ -3,6 +3,7 @@ package org.example.project.data.remote.api
 import org.example.project.data.model.AuthResponse
 import org.example.project.data.model.CommonModelResponse
 import org.example.project.data.model.CommonResponse
+import org.example.project.data.model.ContactInfo
 import org.example.project.data.model.CreateProjectRequest
 import org.example.project.data.model.CreateProjectResponse
 import org.example.project.data.model.DeleteProjectRequest
@@ -184,6 +185,8 @@ interface AuthApiService {
     suspend fun sendContactMessage(
         request: org.example.project.data.model.ContactMessageRequest
     ): NetworkResult<CommonModelResponse>
+
+    suspend fun getContactInfo(): NetworkResult<ContactInfo>
 
     suspend fun getPendingActions(
         request: PendingActionRequest

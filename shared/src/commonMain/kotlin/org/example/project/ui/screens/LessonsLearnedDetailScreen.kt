@@ -30,11 +30,16 @@ import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_share
 import instaresolv.shared.generated.resources.ic_translate
+import instaresolv.shared.generated.resources.ic_translate_done
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import org.example.project.colors.AppColors
 import org.example.project.data.model.LessonLearnedDetailResponseData
 import org.example.project.data.settings.formatDate
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
+import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
@@ -54,6 +59,8 @@ fun LessonsLearnedDetailScreen(
     val viewModel: LessonsLearnedDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    var infoMessage by remember { mutableStateOf<String?>(null) }
+    val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
 
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -138,7 +145,8 @@ fun LessonsLearnedDetailScreen(
                 is LessonsLearnedDetailUiState.Success -> {
                     LessonsLearnedDetailContent(
                         data = state.data,
-                        onImageClick = { previewImageUrl = it }
+                        onImageClick = { previewImageUrl = it },
+                        onNoTranslation = { infoMessage = noTranslationText }
                     )
                 }
             }
@@ -153,6 +161,16 @@ fun LessonsLearnedDetailScreen(
                     onDismiss = { previewImageUrl = null }
                 )
             }
+
+            ToastHost(
+                visible = infoMessage != null,
+                message = infoMessage.orEmpty(),
+                onDismiss = { infoMessage = null },
+                type = ToastType.Info,
+                modifier = Modifier.align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp)
+                    .padding(horizontal = 22.dp)
+            )
 
             ToastHost(
                 visible = pdfToastMessage != null,
@@ -170,14 +188,15 @@ fun LessonsLearnedDetailScreen(
 @Composable
 fun LessonsLearnedDetailContent(
     data: LessonLearnedDetailResponseData,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onNoTranslation: () -> Unit
 ) {
+    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
             .padding(horizontal = 22.dp, vertical = 16.dp),
     ) {
         // Drag handle
@@ -211,16 +230,31 @@ fun LessonsLearnedDetailContent(
                 )
             }
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFF8F9098)),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
+                    .clickable {
+                        val hasTranslation = !data.translatedDescription.isNullOrBlank() ||
+                            data.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                        if (hasTranslation) {
+                            isTranslationDone = !isTranslationDone
+                        } else {
+                            onNoTranslation()
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_translate),
+                    painter = painterResource(if (isTranslationDone) Res.drawable.ic_translate_done else Res.drawable.ic_translate),
                     contentDescription = null,
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
+        Column(
+            modifier = Modifier.verticalScroll(scrollState)
+        ) {
 
         // Project/Facility section
         Text(
@@ -316,81 +350,37 @@ fun LessonsLearnedDetailContent(
 
         // Description
         Text(
-            text = stringResource(Res.string.description),
+            text = if (isTranslationDone && !data.translatedDescription.isNullOrBlank()) {
+                buildAnnotatedString {
+                    append(stringResource(Res.string.description))
+                    withStyle(SpanStyle(color = AppColors.SkyBlue, fontWeight = FontWeight.Medium)) {
+                        append(" (${stringResource(Res.string.aiTranslated)})")
+                    }
+                }
+            } else {
+                buildAnnotatedString { append(stringResource(Res.string.description)) }
+            },
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = data.description ?: "-",
+            text = (if (isTranslationDone && !data.translatedDescription.isNullOrBlank()) data.translatedDescription else data.description)
+                ?.takeIf { it.isNotBlank() } ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = AppColors.Black
+            color = if (isTranslationDone && !data.translatedDescription.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
         )
-
-        if (!data.translatedDescription.isNullOrEmpty()) {
-            Spacer(Modifier.height(24.dp))
-            Text(
-                text = stringResource(Res.string.descriptionAiTranslated),
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = data.translatedDescription,
-                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-                color = AppColors.Black
-            )
-        }
 
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(color = Color(0xFFF0F0F5))
         Spacer(Modifier.height(24.dp))
 
         // Uploaded Images
-        Text(
-            text = stringResource(Res.string.uploadedImages),
-            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-            color = AppColors.TextGray
+        UploadedImagesSection(
+            images = data.images,
+            onImageClick = onImageClick,
+            isTranslationDone = isTranslationDone
         )
-        Spacer(Modifier.height(12.dp))
-
-        if (data.images?.isNotEmpty() == true) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                data.images.forEach { img ->
-                    Column {
-                        if (!img.image.isNullOrEmpty()) {
-                            WebImageView(
-                                imageUrl = img.image,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onImageClick(img.image) },
-                                contentScale = ContentScale.Crop
-                            )
-                            Spacer(Modifier.height(8.dp))
-                        }
-                        if (!img.description.isNullOrEmpty()) {
-                            Text(
-                                text = img.description,
-                                style = textStyle(size = 14.sp, weight = FontWeight.Normal),
-                                color = AppColors.Black
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(Res.string.noImagesFound),
-                    style = textStyle(size = 14.sp, weight = FontWeight.Normal),
-                    color = AppColors.TextGray
-                )
-            }
-        }
+        } // end scrollable Column
     }
 }
