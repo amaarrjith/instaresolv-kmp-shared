@@ -360,22 +360,23 @@ fun IncidentListItem(
                     )
                 }
                 Spacer(modifier = Modifier.height(5.dp))
-                // User row
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    WebImageView(
-                        imageUrl = incident.facilities?.groupImage ?: "",
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = incident.facilities?.groupName ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
+                incident.facilities?.let { it ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WebImageView(
+                            imageUrl = it.groupImage ?: "",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = it.groupName ?: "",
+                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            color = AppColors.Black
+                        )
+                    }
                 }
             }
         }

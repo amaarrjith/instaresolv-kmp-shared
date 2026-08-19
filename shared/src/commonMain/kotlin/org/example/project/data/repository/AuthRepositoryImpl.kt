@@ -191,4 +191,10 @@ class AuthRepositoryImpl(
     override suspend fun getContactInfo(): NetworkResult<ContactInfo> {
         return apiService.getContactInfo()
     }
+
+    override suspend fun getEmployeeAllList(
+        request: org.example.project.data.model.EmployeeAllListRequest
+    ): NetworkResult<List<org.example.project.data.model.EmployeeData>> {
+        return apiService.getEmployeeAllList(request)
+    }
 }

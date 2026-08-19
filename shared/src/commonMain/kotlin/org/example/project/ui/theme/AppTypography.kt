@@ -25,6 +25,11 @@ import instaresolv.shared.generated.resources.noto_naskh_arabic_regular
 import instaresolv.shared.generated.resources.noto_naskh_arabic_medium
 import instaresolv.shared.generated.resources.noto_naskh_arabic_semibold
 import instaresolv.shared.generated.resources.noto_naskh_arabic_bold
+import instaresolv.shared.generated.resources.plus_jakarta_sans_bold
+import instaresolv.shared.generated.resources.plus_jakarta_sans_italic
+import instaresolv.shared.generated.resources.plus_jakarta_sans_medium
+import instaresolv.shared.generated.resources.plus_jakarta_sans_regular
+import instaresolv.shared.generated.resources.plus_jakarta_sans_semibold
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 
@@ -54,6 +59,15 @@ fun poppinsFontFamily(): FontFamily = FontFamily(
 )
 
 @Composable
+fun plusJakartaSansFontFamily(): FontFamily = FontFamily(
+    Font(Res.font.plus_jakarta_sans_regular, FontWeight.Normal),
+    Font(Res.font.plus_jakarta_sans_italic, FontWeight.Normal, FontStyle.Italic),
+    Font(Res.font.plus_jakarta_sans_medium, FontWeight.Medium),
+    Font(Res.font.plus_jakarta_sans_semibold, FontWeight.SemiBold),
+    Font(Res.font.plus_jakarta_sans_bold, FontWeight.Bold)
+)
+
+@Composable
 fun textStyle(
     size: TextUnit = 14.sp,
     weight: FontWeight = FontWeight.Normal,
@@ -63,7 +77,7 @@ fun textStyle(
     color: Color = AppColors.Black
 ): TextStyle {
     return TextStyle(
-        fontFamily = poppinsFontFamily(),
+        fontFamily = plusJakartaSansFontFamily(),
         fontWeight = weight,
         fontStyle = fontStyle,
         fontSize = size,

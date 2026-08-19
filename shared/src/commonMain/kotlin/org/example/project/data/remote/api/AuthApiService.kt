@@ -249,6 +249,10 @@ interface AuthApiService {
         request: org.example.project.data.model.InspectionListRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse>
 
+    suspend fun getEmployeeAllList(
+        request: org.example.project.data.model.EmployeeAllListRequest
+    ): NetworkResult<List<org.example.project.data.model.EmployeeData>>
+
     suspend fun generateIncidentExcel(
         request: org.example.project.data.model.IncidentRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse>

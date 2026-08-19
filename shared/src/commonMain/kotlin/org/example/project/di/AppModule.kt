@@ -142,6 +142,7 @@ val appModule = module {
     factory { ViolationListViewModel(get(), get()) }
     factory<ViolationRepository> { ViolationRepositoryImpl(get()) }
     factory { ViolationDetailViewModel(get()) }
+    factory { org.example.project.ui.components.AddEmployeeViewModel(get()) }
     factory { FilterBottomSheetViewModel(get()) }
     factory { CreateViolationViewModel(get(), get(), get()) }
     

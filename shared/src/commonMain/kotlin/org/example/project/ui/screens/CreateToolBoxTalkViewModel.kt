@@ -65,10 +65,9 @@ class CreateToolBoxTalkViewModel(
     }
 
     // Bulk Actions
-    fun openBulkUploadSheet(facilitiesId: String?) {
-        if (facilitiesId.isNullOrBlank()) return
+    fun openBulkUploadSheet() {
         _isBulkUploadSheetVisible.value = true
-        fetchBulkEmployees(facilitiesId, isLoadMore = false)
+        fetchBulkEmployees(isLoadMore = false)
     }
 
     fun closeBulkUploadSheet() {
@@ -82,7 +81,7 @@ class CreateToolBoxTalkViewModel(
 
     fun onBulkSearchQueryChanged(facilitiesId: String, query: String) {
         _bulkSearchQuery.value = query
-        fetchBulkEmployees(facilitiesId, isLoadMore = false)
+        fetchBulkEmployees(isLoadMore = false)
     }
 
     fun toggleBulkEmployeeSelection(employeeId: Int) {
@@ -100,7 +99,7 @@ class CreateToolBoxTalkViewModel(
         _selectedBulkEmployees.value = allIds
     }
 
-    fun fetchBulkEmployees(facilitiesId: String, isLoadMore: Boolean = false) {
+    fun fetchBulkEmployees(isLoadMore: Boolean = false) {
         if (_isBulkLoading.value || (!isLoadMore && !_bulkHasMore.value)) return
         if (isLoadMore && !_bulkHasMore.value) return
 
@@ -108,8 +107,7 @@ class CreateToolBoxTalkViewModel(
             val page = if (isLoadMore) bulkPageNumber + 1 else 1
             _isBulkLoading.value = true
 
-            val result = projectRepository.getEmployeeList(
-                groupId = facilitiesId,
+            val result = projectRepository.getEmployeeAllList(
                 pageNumber = page,
                 searchKey = _bulkSearchQuery.value
             )

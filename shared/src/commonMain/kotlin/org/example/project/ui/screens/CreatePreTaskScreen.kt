@@ -137,7 +137,8 @@ fun CreatePreTaskScreen(
                     AppProjectDropdown(
                         title = stringResource(Res.string.facilityProject),
                         selectedProject = uiState.selectedProject,
-                        onProjectSelected = viewModel::onProjectSelected
+                        onProjectSelected = viewModel::onProjectSelected,
+                        isMandatory = true
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -228,7 +229,9 @@ fun CreatePreTaskScreen(
                         AppUserDropdown(
                             title = stringResource(Res.string.sendNotificationTo),
                             selectedUser = null,
-                            onUserSelected = { },
+                            onUserSelected = { user ->
+                                viewModel.onNotifyPersonSelected(user)
+                            },
                             placeholder = stringResource(Res.string.chooseUser),
                             users = uiState.groupUsers
                         )
@@ -392,7 +395,6 @@ fun CreatePreTaskScreen(
                             )
                         },
                         onError = { viewModel.setError(it) },
-                        isProjectSelected = uiState.selectedProject != null,
                         onUploadEmployeesClick = { viewModel.openBulkUploadSheet() }
                     )
 

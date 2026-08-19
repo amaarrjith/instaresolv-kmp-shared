@@ -37,6 +37,7 @@ import org.example.project.ui.screens.PermitDetailScreen
 import org.example.project.ui.screens.TrainingListScreen
 import org.example.project.ui.screens.TrainingDetailScreen
 import org.example.project.ui.screens.TrainingVideoScreen
+import org.example.project.ui.screens.TrainingScormScreen
 import org.example.project.ui.screens.QuizScreen
 import org.example.project.ui.screens.ViolationListScreen
 import org.example.project.ui.screens.CreateViolationScreen
@@ -364,6 +365,10 @@ fun AppNavigation() {
                 onPlayVideoClicked = { id ->
                     navController.navigate("${Screens.TrainingVideoScreen.route}/$id")
                 },
+                onScormVideoClicked = { url ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("scormUrl", url)
+                    navController.navigate(Screens.TrainingScormScreen.route)
+                },
                 onStartQuizClicked = { id ->
                     navController.navigate("${Screens.QuizScreen.route}/$id")
                 }
@@ -380,6 +385,13 @@ fun AppNavigation() {
             val trainingId = backStackEntry.savedStateHandle.get<String>("trainingId")?.toIntOrNull() ?: -1
             QuizScreen(
                 trainingId = trainingId,
+                onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(Screens.TrainingScormScreen.route) {
+            val scormUrl = navController.previousBackStackEntry?.savedStateHandle?.get<String>("scormUrl") ?: ""
+            TrainingScormScreen(
+                scormUrl = scormUrl,
                 onBackClicked = { navController.popBackStack() }
             )
         }

@@ -274,7 +274,7 @@ fun TrainingListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                TrainingChip("Training Video")
+                TrainingChip(if (training.isScorm) {"Scorm Content"} else {"Training Video"})
 
                 if (training.hasQuiz) {
                     TrainingChip("Quiz")

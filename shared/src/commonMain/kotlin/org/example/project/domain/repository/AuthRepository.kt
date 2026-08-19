@@ -103,4 +103,8 @@ interface AuthRepository {
     ): NetworkResult<org.example.project.data.model.CommonModelResponse>
 
     suspend fun getContactInfo(): NetworkResult<ContactInfo>
+
+    suspend fun getEmployeeAllList(
+        request: org.example.project.data.model.EmployeeAllListRequest
+    ): NetworkResult<List<org.example.project.data.model.EmployeeData>>
 }

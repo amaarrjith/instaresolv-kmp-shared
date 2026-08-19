@@ -172,7 +172,10 @@ fun ViolationDetailScreen(
                 message = infoMessage.orEmpty(),
                 onDismiss = { infoMessage = null },
                 type = org.example.project.utilites.ToastType.Info,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp)
+                    .padding(horizontal = 22.dp)
             )
 
             ToastHost(
@@ -180,7 +183,7 @@ fun ViolationDetailScreen(
                 message = pdfToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearPdfToastMessage() },
                 type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).padding(horizontal = 22.dp)
             )
         }
     }

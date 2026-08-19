@@ -87,6 +87,7 @@ import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.data.model.DesignationTypeResponse
+import org.example.project.ui.components.AppExposedDropdownMenu
 
 @Composable
 fun ProjectDetailScreen(
@@ -1462,11 +1463,11 @@ fun TransferAdminBottomSheet(
                         ),
                         singleLine = true
                     )
-                    ExposedDropdownMenu(
+                    AppExposedDropdownMenu(
                         expanded = expanded.value,
-                        onDismissRequest = { expanded.value = false }
-                    ) {
-                        members.forEach { member ->
+                        onDismissRequest = { expanded.value = false },
+                        modifier = Modifier.background(Color.White)
+                    ) { members.forEach { member ->
                             DropdownMenuItem(
                                 text = {
                                     Row(

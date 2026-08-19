@@ -401,9 +401,8 @@ fun CreateToolBoxTalkScreen(
                         )
                     },
                     onError = { showErrorToast = it },
-                    isProjectSelected = selectedProject != null,
                     onUploadEmployeesClick = {
-                        viewModel.openBulkUploadSheet(facilitiesId)
+                        viewModel.openBulkUploadSheet()
                     }
                 )
 
@@ -534,7 +533,7 @@ fun CreateToolBoxTalkScreen(
                         viewModel.closeBulkUploadSheet()
                     },
                     onLoadMore = {
-                        viewModel.fetchBulkEmployees(facilitiesId ?: "", isLoadMore = true)
+                        viewModel.fetchBulkEmployees(isLoadMore = true)
                     },
                     isLoading = isBulkLoading,
                     hasMore = bulkHasMore

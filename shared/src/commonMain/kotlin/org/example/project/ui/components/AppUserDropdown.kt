@@ -112,7 +112,7 @@ fun AppUserDropdown(
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             }
 
-            ExposedDropdownMenu(
+            AppExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.background(Color.White)

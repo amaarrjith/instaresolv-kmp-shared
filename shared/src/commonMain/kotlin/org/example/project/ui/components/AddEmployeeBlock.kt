@@ -23,20 +23,33 @@ import org.example.project.utilites.AppTextField
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.platform.LocalDensity
+import org.koin.compose.koinInject
+
 @Composable
 fun AddEmployeeBlock(
     onAddEmployee: (InjuredEmployee) -> Unit,
     onError: (String) -> Unit,
-    isProjectSelected: Boolean,
     onUploadEmployeesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     
+    val viewModel: AddEmployeeViewModel = koinInject()
+    val uiState by viewModel.uiState.collectAsState()
+
     var employeeCode by remember { mutableStateOf("") }
     var employeeName by remember { mutableStateOf("") }
     var companyName by remember { mutableStateOf("") }
     var profession by remember { mutableStateOf("") }
+
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Tabs
@@ -92,15 +105,83 @@ fun AddEmployeeBlock(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
 
-                    // For now using simple text fields since we don't have dropdown data
-                    AppTextField(
-                        icon = null,
-                        value = employeeCode,
-                        onValueChange = { employeeCode = it; },
-                        title = stringResource(Res.string.employeeCode),
-                        placeholder = stringResource(Res.string.enterEmployeeCode),
-                        isMandatory = true
-                    )
+                    var textFieldSize by remember { mutableStateOf(androidx.compose.ui.geometry.Size.Zero) }
+                    val density = LocalDensity.current
+                    val dropdownWidth = with(density) { textFieldSize.width.toDp() }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onGloballyPositioned { coordinates ->
+                                textFieldSize = coordinates.size.toSize()
+                            }
+                    ) {
+                        AppTextField(
+                            icon = null,
+                            value = employeeCode,
+                            onValueChange = { 
+                                employeeCode = it
+                                viewModel.onSearchKeyChange(it)
+                            },
+                            title = stringResource(Res.string.employeeCode),
+                            placeholder = stringResource(Res.string.enterEmployeeCode),
+                            isMandatory = true
+                        )
+
+                        AppDropdownMenu(
+                            expanded = uiState.showDropdown,
+                            onDismissRequest = { viewModel.hideDropdown() },
+                            properties = PopupProperties(focusable = false),
+                            modifier = Modifier.width(dropdownWidth).heightIn(max = 250.dp)
+                        ) {
+                            if (uiState.errorMessage != null) {
+                                DropdownMenuItem(
+                                    text = { Text(uiState.errorMessage ?: "Parsing error", style = textStyle(size = 14.sp), color = Color.Red) },
+                                    onClick = {}
+                                )
+                            } else if (uiState.isLoading && uiState.employees.isEmpty()) {
+                                DropdownMenuItem(
+                                    text = { Text("Loading...", style = textStyle(size = 14.sp)) },
+                                    onClick = {}
+                                )
+                            } else if (!uiState.isLoading && uiState.employees.isEmpty() && uiState.searchKey.isNotEmpty()) {
+                                DropdownMenuItem(
+                                    text = { Text("No employees found", style = textStyle(size = 14.sp)) },
+                                    onClick = {}
+                                )
+                            } else {
+                                uiState.employees.forEach { employee ->
+                                    DropdownMenuItem(
+                                        text = { 
+                                            Column {
+                                                Text(employee.employeeCode ?: "-", style = textStyle(size = 14.sp, weight = FontWeight.Bold))
+                                                Text(employee.employeeName ?: "-", style = textStyle(size = 12.sp, color = AppColors.TextGray))
+                                            }
+                                        },
+                                        onClick = {
+                                            employeeCode = employee.employeeCode ?: ""
+                                            employeeName = employee.employeeName ?: ""
+                                            companyName = employee.companyName ?: ""
+                                            profession = employee.profession ?: ""
+                                            viewModel.hideDropdown()
+                                        }
+                                    )
+                                }
+                                if (uiState.hasMore && uiState.employees.isNotEmpty()) {
+                                    DropdownMenuItem(
+                                        text = { 
+                                            Text(
+                                                if (uiState.isLoading) "Loading..." else "Load More", 
+                                                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                                                color = AppColors.Primary
+                                            )
+                                        },
+                                        onClick = { viewModel.loadMore() }
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     AppTextField(
                         icon = null,
@@ -168,18 +249,10 @@ fun AddEmployeeBlock(
                     modifier = Modifier.fillMaxWidth().padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (isProjectSelected) {
-                        AppBorderButton(
-                            title = stringResource(Res.string.uploadEmployees),
-                            onClick = onUploadEmployeesClick
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(Res.string.pleaseSelectAProjectFirst),
-                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                            color = AppColors.Primary
-                        )
-                    }
+                    AppBorderButton(
+                        title = stringResource(Res.string.uploadEmployees),
+                        onClick = onUploadEmployeesClick
+                    )
                 }
             }
         }

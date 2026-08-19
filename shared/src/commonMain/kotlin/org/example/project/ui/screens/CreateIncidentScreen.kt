@@ -485,7 +485,6 @@ fun CreateIncidentScreen(
                         onError = { err ->
                             viewModel.setError(err)
                         },
-                        isProjectSelected = uiState.selectedProject != null,
                         onUploadEmployeesClick = { viewModel.openBulkUploadSheet() }
                     )
                 }

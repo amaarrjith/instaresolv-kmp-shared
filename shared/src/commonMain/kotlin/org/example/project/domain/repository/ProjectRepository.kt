@@ -92,4 +92,9 @@ interface ProjectRepository {
         pageNumber: Int,
         searchKey: String
     ): NetworkResult<List<EmployeeData>>
+
+    suspend fun getEmployeeAllList(
+        pageNumber: Int,
+        searchKey: String
+    ): NetworkResult<List<EmployeeData>>
 }

@@ -16,7 +16,8 @@ data class TrainingData(
     val progress: Double? = null,
     val thumbnailImage: String? = null,
     val trainingCode: String? = null,
-    val hasQuiz: Boolean = false
+    val hasQuiz: Boolean = false,
+    val isScorm: Boolean = false
 )
 
 @Serializable
@@ -47,7 +48,8 @@ data class TrainingDetailData(
     val isQuizEnabled: Boolean = false,
     val certificateUrl: String? = null,
     val lessonMaterialUrl: String? = null,
-    val trainingProgress: TrainingProgress? = null
+    val trainingProgress: TrainingProgress? = null,
+    val scormFileUrl: String? = null
 )
 
 @Serializable

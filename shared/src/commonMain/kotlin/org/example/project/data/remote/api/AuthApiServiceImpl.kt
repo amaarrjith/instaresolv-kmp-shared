@@ -362,6 +362,14 @@ class AuthApiServiceImpl(
         }
     }
 
+    override suspend fun getEmployeeAllList(
+        request: org.example.project.data.model.EmployeeAllListRequest
+    ): NetworkResult<List<org.example.project.data.model.EmployeeData>> = safeApiCall {
+        httpClient.post(ApiEndpoints.EMPLOYEES_ALL_LIST) {
+            jsonBody(request)
+        }
+    }
+
     override suspend fun getViolationDetail(
         request: org.example.project.data.model.ViolationDetailRequest
     ): NetworkResult<org.example.project.data.model.ViolationData> = safeApiCall {

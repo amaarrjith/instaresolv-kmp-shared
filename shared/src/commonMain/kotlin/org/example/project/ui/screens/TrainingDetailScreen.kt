@@ -56,6 +56,7 @@ fun TrainingDetailScreen(
     trainingId: Int,
     onBackClicked: () -> Unit,
     onPlayVideoClicked: (Int) -> Unit,
+    onScormVideoClicked: (String) -> Unit,
     onStartQuizClicked: (Int) -> Unit
 ) {
     val viewModel: TrainingDetailViewModel = koinInject(
@@ -126,7 +127,13 @@ fun TrainingDetailScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(Color.Black.copy(alpha = 0.1f))
-                                    .clickable { onPlayVideoClicked(data.id) },
+                                    .clickable {
+                                        if (data.scormFileUrl.isNullOrEmpty()) {
+                                            onPlayVideoClicked(data.id)
+                                        } else {
+                                            onScormVideoClicked(data.scormFileUrl)
+                                        }
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Image(

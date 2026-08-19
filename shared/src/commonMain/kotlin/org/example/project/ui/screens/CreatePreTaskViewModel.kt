@@ -311,14 +311,13 @@ class CreatePreTaskViewModel(
 
     fun fetchBulkEmployees(isLoadMore: Boolean = false) {
         val state = _uiState.value
-        if (state.selectedProject == null || state.isBulkLoading || (!state.bulkHasMore && isLoadMore)) return
+        if (state.isBulkLoading || (!state.bulkHasMore && isLoadMore)) return
 
         viewModelScope.launch {
             val page = if (isLoadMore) state.bulkPageNumber + 1 else 1
             _uiState.update { it.copy(isBulkLoading = true) }
 
-            val result = projectRepository.getEmployeeList(
-                groupId = state.selectedProject.groupId.toString(),
+            val result = projectRepository.getEmployeeAllList(
                 pageNumber = page,
                 searchKey = state.bulkSearchQuery
             )
@@ -381,7 +380,10 @@ class CreatePreTaskViewModel(
         val state = _uiState.value
         viewModelScope.launch {
             _uiState.update { it.copy(isPublishing = true, error = null) }
-
+            if (state.selectedProject == null) {
+                _uiState.update { it.copy(isPublishing = false, error = "Project is required") }
+                return@launch
+            }
             if (state.taskTitle.isBlank()) {
                 _uiState.update { it.copy(isPublishing = false, error = "Task Title is required") }
                 return@launch

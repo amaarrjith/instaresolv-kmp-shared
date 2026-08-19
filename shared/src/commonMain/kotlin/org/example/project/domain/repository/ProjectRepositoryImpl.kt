@@ -212,4 +212,16 @@ class ProjectRepositoryImpl(
             )
         )
     }
+
+    override suspend fun getEmployeeAllList(
+        pageNumber: Int,
+        searchKey: String
+    ): NetworkResult<List<EmployeeData>> {
+        return apiService.getEmployeeAllList(
+            org.example.project.data.model.EmployeeAllListRequest(
+                pageNumber = pageNumber,
+                searchKey = searchKey
+            )
+        )
+    }
 }

@@ -355,23 +355,24 @@ fun ViolationListItem(
                     )
                 }
                 Spacer(modifier = Modifier.height(5.dp))
-                // User row
+                violation.facilities?.let {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     WebImageView(
-                        imageUrl = violation.facilities?.groupImage ?: "",
+                        imageUrl = it.groupImage ?: "",
                         modifier = Modifier
                             .size(22.dp)
                             .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = violation.facilities?.groupName ?: "",
+                        text = it.groupName ?: "",
                         style = textStyle(size = 11.sp, weight = FontWeight.Medium),
                         color = AppColors.Black
                     )
                 }
+                    }
             }
         }
         HorizontalDivider()

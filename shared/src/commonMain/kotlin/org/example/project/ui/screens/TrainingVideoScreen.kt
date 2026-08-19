@@ -54,11 +54,33 @@ fun TrainingVideoScreen(
     ) {
         if (uiState.isLoading) {
             AppLoader()
+            IconButton(
+                onClick = onBackClicked,
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_arrow_left),
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
+            }
         } else if (uiState.error != null) {
-            ErrorRetryView(
-                errorMessage = uiState.error ?: "",
-                onRetryClick = { viewModel.loadTrainingVideoUrl() }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                ErrorRetryView(
+                    errorMessage = uiState.error ?: "",
+                    onRetryClick = { viewModel.loadTrainingVideoUrl() }
+                )
+                IconButton(
+                    onClick = onBackClicked,
+                    modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_arrow_left),
+                        contentDescription = "Back",
+                        tint = Color.Black // Assuming ErrorRetryView has white background
+                    )
+                }
+            }
         } else {
             uiState.videoData?.let { videoData ->
                 VideoPlayerContainer(
