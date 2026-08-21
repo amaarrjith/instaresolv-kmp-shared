@@ -53,6 +53,10 @@ fun TrainingScormScreen(
         // Full-screen SCORM WebView — fills entire window including insets
         ScormWebViewContainer(
             url = scormUrl,
+            onTap = {
+                showControls = !showControls
+                interactionTrigger++
+            },
             modifier = Modifier.fillMaxSize()
         )
 

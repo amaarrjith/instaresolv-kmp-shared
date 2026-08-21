@@ -480,4 +480,6 @@
     <string name="appVersion">v1.0 (ترقی)</string>
     <string name="copyrightText">© %1$d InstaResolv جملہ حقوق محفوظ ہیں</string>
     <string name="noTranslationInfoAvailable">ترجمے کی کوئی معلومات دستیاب نہیں ہیں</string>
+    <string name="user_role_changed">آپ کا رسائی کردار اپ ڈیٹ کر دیا گیا ہے</string>
+    <string name="user_role_changed_description">آپ کے اکاؤنٹ کا کردار تبدیل کر دیا گیا ہے۔ اپ ڈیٹ شدہ رسائی اجازتوں کے ساتھ ایپ استعمال جاری رکھنے کے لیے براہ کرم دوبارہ لاگ ان کریں۔</string>
 </resources>

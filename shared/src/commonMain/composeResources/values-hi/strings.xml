@@ -480,4 +480,6 @@
     <string name="appVersion">v1.0 (विकास)</string>
     <string name="copyrightText">© %1$d InstaResolv सर्वाधिकार सुरक्षित</string>
     <string name="noTranslationInfoAvailable">कोई अनुवाद जानकारी उपलब्ध नहीं है</string>
+    <string name="user_role_changed">आपकी एक्सेस भूमिका अपडेट कर दी गई है</string>
+    <string name="user_role_changed_description">आपकी खाता भूमिका बदल दी गई है। अपडेट की गई एक्सेस अनुमतियों के साथ ऐप का उपयोग जारी रखने के लिए कृपया फिर से लॉग इन करें।</string>
 </resources>

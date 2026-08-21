@@ -1,10 +1,14 @@
 package org.example.project.ui.components
 
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -12,9 +16,20 @@ import androidx.compose.ui.viewinterop.AndroidView
 @Composable
 actual fun ScormWebViewContainer(
     url: String,
+    onTap: () -> Unit,
     modifier: Modifier
 ) {
     val context = LocalContext.current
+    val currentOnTap by rememberUpdatedState(onTap)
+
+    val gestureDetector = remember {
+        GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                currentOnTap()
+                return false
+            }
+        })
+    }
 
     val scormJs = """
         var scormData = {};
@@ -55,6 +70,10 @@ actual fun ScormWebViewContainer(
                     super.onPageStarted(view, pageUrl, favicon)
                     view?.evaluateJavascript(scormJs, null)
                 }
+            }
+            setOnTouchListener { _, event ->
+                gestureDetector.onTouchEvent(event)
+                false
             }
             loadUrl(url)
         }

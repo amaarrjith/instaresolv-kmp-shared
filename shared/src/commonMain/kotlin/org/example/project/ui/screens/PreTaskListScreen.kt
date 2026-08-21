@@ -89,7 +89,7 @@ fun PreTaskListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = stringResource(Res.string.briefing),
+                    text = stringResource(Res.string.briefing).uppercase(),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">InstaResolv</string>
+    <string name="user_role_changed">Your Access Role Has Been Updated</string>
+    <string name="user_role_changed_description">Your account role has been changed. Please log in again to continue using the app with your updated access permissions.</string>
 </resources>

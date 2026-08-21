@@ -49,12 +49,7 @@ class AuthPreferences(
     }
 
     fun logout() {
-        settings.remove(KEY_IS_LOGGED_IN)
-        settings.remove(KEY_ACCESS_TOKEN)
-        settings.remove(KEY_REFRESH_TOKEN)
-        settings.remove(KEY_TOKEN_EXPIRY)
-        settings.remove(LOGGED_USER)
-        settings.remove(LOGGED_USER_INFO)
+        org.example.project.manager.AppManager.logout()
     }
 
     fun saveWelcomePageShownStatus(isWelcomePageShown: Boolean) {

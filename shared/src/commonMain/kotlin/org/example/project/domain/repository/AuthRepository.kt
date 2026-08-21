@@ -1,5 +1,7 @@
 package org.example.project.domain.repository
 
+import org.example.project.data.UserRoleCheckRequest
+import org.example.project.data.UserRoleCheckResponse
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.CommonResponse
@@ -10,6 +12,7 @@ import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPResponse
 import org.example.project.data.model.ProjectAccessRequest
 import org.example.project.data.model.ProjectAccessResponse
+import org.example.project.data.model.QuizSubmitRequest
 import org.example.project.data.model.RegisterResponse
 import org.example.project.data.model.UserCheckoutRequest
 import org.example.project.data.model.UserEditResponse
@@ -107,4 +110,8 @@ interface AuthRepository {
     suspend fun getEmployeeAllList(
         request: org.example.project.data.model.EmployeeAllListRequest
     ): NetworkResult<List<org.example.project.data.model.EmployeeData>>
+
+    suspend fun checkUserRole(
+        request: UserRoleCheckRequest
+    ): NetworkResult<UserRoleCheckResponse>
 }

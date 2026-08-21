@@ -148,7 +148,7 @@ enum class BriefOverview(
     val icon: DrawableResource
 ) {
     PRE_TASK(
-        Res.string.preTaskBriefing,
+        Res.string.briefing,
         Res.drawable.ic_permit_work
     ),
 
@@ -158,7 +158,7 @@ enum class BriefOverview(
     ),
 
     LESSON(
-        Res.string.lessonLearned,
+        Res.string.lessons,
         Res.drawable.ic_lesson
     )
 }

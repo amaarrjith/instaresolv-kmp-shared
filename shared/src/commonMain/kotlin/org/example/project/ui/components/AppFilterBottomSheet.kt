@@ -27,6 +27,7 @@ import org.example.project.typography.textStyle
 import org.example.project.ui.screens.EmptyScreenView
 import org.jetbrains.compose.resources.painterResource
 import org.example.project.ui.IncidentType
+import org.example.project.ui.screens.PermitToWorkListViewModel
 
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
@@ -43,7 +44,9 @@ fun AppFilterBottomSheet(
     onDismiss: () -> Unit
 ) {
     val viewModel: FilterBottomSheetViewModel = koinInject()
+    val permitViewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    val permitUiState by permitViewModel.uiState.collectAsState()
     val filterData = uiState.filterData
 
     val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -80,6 +83,17 @@ fun AppFilterBottomSheet(
     var tempIncidentTypes by remember { mutableStateOf(appliedFilterState.selectedIncidentTypes) }
     var dateOpenMillis by remember { mutableStateOf(appliedFilterState.dateOpenMillis) }
     var dateCloseMillis by remember { mutableStateOf(appliedFilterState.dateCloseMillis) }
+    var tempAuthorizers by remember { mutableStateOf(appliedFilterState.selectedAuthorizers) }
+    var tempRequestors by remember { mutableStateOf(appliedFilterState.selectedRequestors) }
+    var tempHseAssigned by remember { mutableStateOf(appliedFilterState.selectedHseAssigned) }
+    var tempPermitTypes by remember { mutableStateOf(appliedFilterState.selectedPermitTypes) }
+    var tempValidity by remember { mutableStateOf(appliedFilterState.selectedValidity) }
+
+    LaunchedEffect(Unit) {
+        if (isFromPermit) {
+            permitViewModel.fetchPermitTypes()
+        }
+    }
 
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -107,6 +121,11 @@ fun AppFilterBottomSheet(
                             "Incident Type" -> tempIncidentTypes.isNotEmpty()
                             "Observer" -> tempObservers.isNotEmpty()
                             "Responsible" -> tempResponsiblePersons.isNotEmpty()
+                            "Authorizer" -> tempAuthorizers.isNotEmpty()
+                            "Requestor" -> tempRequestors.isNotEmpty()
+                            "HSE Assigned" -> tempHseAssigned.isNotEmpty()
+                            "Permit Type" -> tempPermitTypes.isNotEmpty()
+                            "Validity" -> tempValidity != null
                             else -> false
                         }
                         
@@ -171,6 +190,11 @@ fun AppFilterBottomSheet(
                                 tempIncidentTypes = emptyList()
                                 dateOpenMillis = null
                                 dateCloseMillis = null
+                                tempAuthorizers = emptyList()
+                                tempRequestors = emptyList()
+                                tempHseAssigned = emptyList()
+                                tempPermitTypes = emptyList()
+                                tempValidity = null
                             }
                         )
                     }
@@ -211,40 +235,48 @@ fun AppFilterBottomSheet(
                             }
                         } else if (selectedTab == "Project") {
                             val projects = filterData?.projects ?: emptyList()
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { 
-                                            if (tempNoProjectSelected) {
-                                                tempNoProjectSelected = false
-                                            } else {
-                                                tempNoProjectSelected = true
-                                                tempProjects = emptyList()
+                            if (!isFromPermit) {
+                                item {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                if (tempNoProjectSelected) {
+                                                    tempNoProjectSelected = false
+                                                } else {
+                                                    tempNoProjectSelected = true
+                                                    tempProjects = emptyList()
+                                                }
                                             }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = stringResource(Res.string.notSpecified),
+                                                style = textStyle(
+                                                    size = 12.sp,
+                                                    weight = FontWeight.Medium
+                                                ),
+                                                color = AppColors.Black
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = stringResource(Res.string.showAllItemsThatAreNotSpecifiedToAnyProject),
+                                                style = textStyle(
+                                                    size = 10.sp,
+                                                    weight = FontWeight.Normal
+                                                ),
+                                                color = Color(0xFF8F9098)
+                                            )
                                         }
-                                        .padding(vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = stringResource(Res.string.notSpecified), 
-                                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                                            color = AppColors.Black
-                                        )
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text(
-                                            text = stringResource(Res.string.showAllItemsThatAreNotSpecifiedToAnyProject), 
-                                            style = textStyle(size = 10.sp, weight = FontWeight.Normal),
-                                            color = Color(0xFF8F9098)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Image(
+                                            painter = painterResource(if (tempNoProjectSelected) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Image(
-                                        painter = painterResource(if (tempNoProjectSelected) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off), 
-                                        contentDescription = null, 
-                                        modifier = Modifier.size(22.dp)
-                                    )
                                 }
                             }
                             if (projects.isEmpty()) {
@@ -513,6 +545,245 @@ fun AppFilterBottomSheet(
                                     }
                                 }
                             }
+                        } else if (selectedTab == "Authorizer") {
+                            val authorizers = filterData?.responsiblePersons?.filter { it.designation.contains(1) }
+                                ?: emptyList()
+                            if (authorizers.isEmpty()) {
+                                item { EmptyScreenView("No Authorizer Found") }
+                            } else {
+                                items(authorizers.size) { index ->
+                                    val authorizer = authorizers[index]
+                                    val isChecked = tempAuthorizers.any { it.userId == authorizer.userId }
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { 
+                                                tempAuthorizers = if (isChecked) {
+                                                    tempAuthorizers.filterNot { it.userId == authorizer.userId }
+                                                } else {
+                                                    tempAuthorizers + authorizer
+                                                }
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        WebImageView(
+                                            imageUrl = authorizer.image,
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFF2F2F2))
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = authorizer.name,
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                                                color = AppColors.Black
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = authorizer.email,
+                                                    style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                                                    color = Color(0xFF8F9098)
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        } else if (selectedTab == "Requestor") {
+                            val requestors = filterData?.responsiblePersons?.filter { it.designation.contains(2) } ?: emptyList()
+                            if (requestors.isEmpty()) {
+                                item { EmptyScreenView("No Requestor Found") }
+                            } else {
+                                items(requestors.size) { index ->
+                                    val requestor = requestors[index]
+                                    val isChecked = tempRequestors.any { it.userId == requestor.userId }
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { 
+                                                tempRequestors = if (isChecked) {
+                                                    tempRequestors.filterNot { it.userId == requestor.userId }
+                                                } else {
+                                                    tempRequestors + requestor
+                                                }
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        WebImageView(
+                                            imageUrl = requestor.image,
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFF2F2F2))
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = requestor.name,
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                                                color = AppColors.Black
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = requestor.email,
+                                                    style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                                                    color = Color(0xFF8F9098)
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        } else if (selectedTab == "HSE Assigned") {
+                            val hseAssignedList = filterData?.responsiblePersons?.filter { it.designation.contains(4) } ?: emptyList()
+                            if (hseAssignedList.isEmpty()) {
+                                item { EmptyScreenView("No HSE Assigned Person Found") }
+                            } else {
+                                items(hseAssignedList.size) { index ->
+                                    val hsePerson = hseAssignedList[index]
+                                    val isChecked = tempHseAssigned.any { it.userId == hsePerson.userId }
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { 
+                                                tempHseAssigned = if (isChecked) {
+                                                    tempHseAssigned.filterNot { it.userId == hsePerson.userId }
+                                                } else {
+                                                    tempHseAssigned + hsePerson
+                                                }
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        WebImageView(
+                                            imageUrl = hsePerson.image,
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFF2F2F2))
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = hsePerson.name,
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                                                color = AppColors.Black
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = hsePerson.email,
+                                                    style = textStyle(size = 12.sp, weight = FontWeight.Normal),
+                                                    color = Color(0xFF8F9098)
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        } else if (selectedTab == "Permit Type") {
+                            val permitTypes = permitUiState.permitTypesList
+                            if (permitTypes.isEmpty()) {
+                                item { EmptyScreenView("No Permit Type Found") }
+                            } else {
+                                items(permitTypes.size) { index ->
+                                    val type = permitTypes[index]
+                                    val isChecked = tempPermitTypes.any { it.permitTypeId == type.permitTypeId }
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { 
+                                                tempPermitTypes = if (isChecked) {
+                                                    tempPermitTypes.filterNot { it.permitTypeId == type.permitTypeId }
+                                                } else {
+                                                    tempPermitTypes + type
+                                                }
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        val image = type.image
+                                        if (!image.isNullOrEmpty()) {
+                                            WebImageView(
+                                                imageUrl = image,
+                                                modifier = Modifier
+                                                    .size(48.dp)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(Color(0xFFF2F2F2))
+                                            )
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                        }
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = type.permitTypeTitle ?: "",
+                                                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                                                color = AppColors.Black
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        } else if (selectedTab == "Validity") {
+                            val validityOptions = listOf(
+                                Pair("Valid", 1),
+                                Pair("Expired", 2)
+                            )
+                            item {
+                                validityOptions.forEach { option ->
+                                    val isChecked = tempValidity == option.second
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { 
+                                                tempValidity = if (isChecked) null else option.second
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = option.first,
+                                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                                            color = AppColors.Black
+                                        )
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Image(
+                                            painter = painterResource(if (isChecked) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -540,7 +811,12 @@ fun AppFilterBottomSheet(
                                 selectedReportedBy = tempReportedBy,
                                 selectedIncidentTypes = tempIncidentTypes,
                                 dateOpenMillis = dateOpenMillis,
-                                dateCloseMillis = dateCloseMillis
+                                dateCloseMillis = dateCloseMillis,
+                                selectedAuthorizers = tempAuthorizers,
+                                selectedRequestors = tempRequestors,
+                                selectedHseAssigned = tempHseAssigned,
+                                selectedPermitTypes = tempPermitTypes,
+                                selectedValidity = tempValidity
                             )
                         )
                     },

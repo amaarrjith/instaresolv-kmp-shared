@@ -6,5 +6,6 @@ import androidx.compose.ui.Modifier
 @Composable
 expect fun ScormWebViewContainer(
     url: String,
+    onTap: () -> Unit,
     modifier: Modifier = Modifier
 )

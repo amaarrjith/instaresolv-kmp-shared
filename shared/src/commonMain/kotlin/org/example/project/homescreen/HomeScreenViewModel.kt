@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.example.project.data.UserRoleCheckRequest
 import org.example.project.data.model.ApproveRejectRequest
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.AuthRepository
@@ -192,6 +193,28 @@ class HomeScreenViewModel(
                 }
                 is NetworkResult.Error -> {
                     _groupUsers.value = emptyList()
+                }
+            }
+        }
+    }
+
+    fun userCheckRole(completion: (Boolean)-> Unit) {
+        viewModelScope.launch {
+            if (user == null) {
+                return@launch
+            } else {
+                val request = UserRoleCheckRequest(user.userId ?: -1)
+                when (val result = authRepository.checkUserRole(request)) {
+                    is NetworkResult.Success -> {
+                        if (user.userRole != result.data.role) {
+                            completion(true)
+                        } else {
+                            completion(false)
+                        }
+                    }
+                    is NetworkResult.Error -> {
+                        completion(true)
+                    }
                 }
             }
         }

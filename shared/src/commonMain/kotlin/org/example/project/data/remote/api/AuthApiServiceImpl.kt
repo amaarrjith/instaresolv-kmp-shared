@@ -4,6 +4,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import org.example.project.data.UserRoleCheckRequest
+import org.example.project.data.UserRoleCheckResponse
 import org.example.project.data.model.ApproveRejectRequest
 import org.example.project.data.model.ApproveRejectResponse
 import org.example.project.data.model.CommonModelResponse
@@ -758,6 +760,12 @@ class AuthApiServiceImpl(
 
     override suspend fun requestResponsiblePersonChange(request: RequestResponsiblePersonChangeRequest): NetworkResult<CommonModelResponse> = safeApiCall {
         httpClient.post("observation/responsible-change") {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun checkUserRole(request: UserRoleCheckRequest): NetworkResult<UserRoleCheckResponse> = safeApiCall {
+        httpClient.post("user/check-role") {
             jsonBody(request)
         }
     }

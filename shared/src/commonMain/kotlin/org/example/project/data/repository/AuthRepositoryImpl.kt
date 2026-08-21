@@ -1,5 +1,7 @@
 package org.example.project.data.repository
 
+import org.example.project.data.UserRoleCheckRequest
+import org.example.project.data.UserRoleCheckResponse
 import org.example.project.data.model.ForgetPasswordRequest
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeContentsRequest
@@ -196,5 +198,9 @@ class AuthRepositoryImpl(
         request: org.example.project.data.model.EmployeeAllListRequest
     ): NetworkResult<List<org.example.project.data.model.EmployeeData>> {
         return apiService.getEmployeeAllList(request)
+    }
+
+    override suspend fun checkUserRole(request: UserRoleCheckRequest): NetworkResult<UserRoleCheckResponse> {
+        return apiService.checkUserRole(request)
     }
 }

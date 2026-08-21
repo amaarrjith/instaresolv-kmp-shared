@@ -1,5 +1,7 @@
 package org.example.project.data.remote.api
 
+import org.example.project.data.UserRoleCheckRequest
+import org.example.project.data.UserRoleCheckResponse
 import org.example.project.data.model.AuthResponse
 import org.example.project.data.model.CommonModelResponse
 import org.example.project.data.model.CommonResponse
@@ -424,4 +426,8 @@ interface AuthApiService {
     suspend fun requestResponsiblePersonChange(
         request: RequestResponsiblePersonChangeRequest
     ): NetworkResult<CommonModelResponse>
+
+    suspend fun checkUserRole(
+        request: UserRoleCheckRequest
+    ): NetworkResult<UserRoleCheckResponse>
 }

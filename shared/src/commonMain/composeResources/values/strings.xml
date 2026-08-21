@@ -375,7 +375,7 @@
     <string name="success">Success</string>
     <string name="taskTitle">Task Title</string>
     <string name="noInspectionsFound">No inspections found</string>
-    <string name="briefing">BRIEFING</string>
+    <string name="briefing">Briefing</string>
     <string name="employeeCode">Employee Code</string>
     <string name="enterTaskTitle">Enter Task Title</string>
     <string name="voiceIcon">Voice Icon</string>
@@ -482,4 +482,6 @@
     <string name="noTranslationInfoAvailable">No translation info available</string>
     <string name="preTaskBriefing">Pre Task Briefing</string>
     <string name="lessonLearned">Lesson Learned</string>
+    <string name="user_role_changed">Your Access Role Has Been Updated</string>
+    <string name="user_role_changed_description">Your account role has been changed. Please log in again to continue using the app with your updated access permissions.</string>
 </resources>

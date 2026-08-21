@@ -221,7 +221,14 @@ fun AppNavigation() {
                 onLessonLearnedClicked = { navController.navigate(Screens.LessonsLearnedListScreen.route) },
                 onToolboxTalksClicked = { navController.navigate(Screens.ToolBoxTalkListScreen.route) },
                 onPermitDetailClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") },
-                onNavigateToProject = { groupId, groupCode -> navController.navigate("${Screens.ProjectDetailScreen.route}/${groupId}/${groupCode}") }
+                onNavigateToProject = { groupId, groupCode -> navController.navigate("${Screens.ProjectDetailScreen.route}/${groupId}/${groupCode}") },
+                onLogout = {
+                    navController.navigate(Screens.Login.route) {
+                        popUpTo(0) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
         composable(Screens.PreTaskListScreen.route) {
@@ -406,7 +413,7 @@ fun AppNavigation() {
             ProfileScreen(
                 onLogout = {
                     navController.navigate(Screens.Login.route) {
-                        popUpTo(Screens.TabBar.route) {
+                        popUpTo(0) {
                             inclusive = true
                         }
                     }

@@ -480,4 +480,6 @@
     <string name="appVersion">v1.0 (Desarrollo)</string>
     <string name="copyrightText">© %1$d InstaResolv Todos los derechos reservados</string>
     <string name="noTranslationInfoAvailable">No hay información de traducción disponible</string>
+    <string name="user_role_changed">Tu rol de acceso ha sido actualizado</string>
+    <string name="user_role_changed_description">El rol de tu cuenta ha cambiado. Por favor, inicia sesión nuevamente para continuar usando la aplicación con tus permisos actualizados.</string>
 </resources>

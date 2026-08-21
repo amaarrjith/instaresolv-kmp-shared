@@ -46,6 +46,9 @@ import org.example.project.navigation.Screens
 import org.example.project.notifications.NotificationUiState
 import org.example.project.notifications.NotificationsViewModel
 import org.example.project.typography.textStyle
+import org.example.project.ui.screens.EmptyScreenView
+import org.example.project.ui.screens.ObservationDetailScreen
+import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -133,26 +136,37 @@ fun NotificationListScreen(
                 }
                 is NotificationUiState.Success -> {
                     val notifications = (uiState.value as NotificationUiState.Success).response.notifications
-                    LazyColumn {
-                        items(notifications.size) { index ->
-                            val notification = notifications[index]
-                            NotificationListRow(
-                                notification = notification,
-                                onClick = {
-                                    if (isObservationNotification(notification.type) && notification.contentId > 0) {
-                                        selectedObservationId = notification.contentId
-                                    } else if (isPopupNotification(notification.type)) {
-                                        selectedPopupNotification = notification
-                                    } else {
-                                        onNotificationClick?.invoke(notification)
+                    if (notifications.isEmpty()) {
+                        EmptyScreenView(
+                            message = "You have no notifications yet"
+                        )
+                    } else {
+                        LazyColumn {
+                            items(notifications.size) { index ->
+                                val notification = notifications[index]
+                                NotificationListRow(
+                                    notification = notification,
+                                    onClick = {
+                                        if (isObservationNotification(notification.type) && notification.contentId > 0) {
+                                            selectedObservationId = notification.contentId
+                                        } else if (isPopupNotification(notification.type)) {
+                                            selectedPopupNotification = notification
+                                        } else {
+                                            onNotificationClick?.invoke(notification)
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
                 is NotificationUiState.Error -> {
-
+                    ErrorRetryView(
+                        (uiState.value as NotificationUiState.Error).errorMessage,
+                        onRetryClick = {
+                            viewModel.getNotifications()
+                        }
+                    )
                 }
             }
 
@@ -165,7 +179,7 @@ fun NotificationListScreen(
                     dragHandle = null
                 ) {
                     Box(modifier = Modifier.fillMaxHeight(0.9f)) {
-                        org.example.project.ui.screens.ObservationDetailScreen(
+                        ObservationDetailScreen(
                             observationId = selectedObservationId!!,
                             onBackClicked = { selectedObservationId = null },
                             onRefreshList = {

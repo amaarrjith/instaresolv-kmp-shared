@@ -90,6 +90,7 @@ import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.data.model.PendingActionStatusType
+import org.example.project.ui.components.AppErrorDialog
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.AppStatusDialog
 import org.jetbrains.compose.resources.StringResource
@@ -111,7 +112,8 @@ fun HomeScreenContentView(
     onClickModule: (ActionOverview) -> Unit,
     onPendingActionViewAllClick: () -> Unit = {},
     onPermitClick: (Int) -> Unit = {},
-    onNavigateToProject: (Int, String) -> Unit = { _, _ -> }
+    onNavigateToProject: (Int, String) -> Unit = { _, _ -> },
+    onLogout: () -> Unit = {}
 ) {
     val viewModel: ProfileViewModel = koinInject()
     val vm: HomeScreenViewModel = koinInject()
@@ -123,6 +125,7 @@ fun HomeScreenContentView(
     val actionsLoading by vm.isActionLoading.collectAsState()
     val pdfModuleType by vm.pdfModuleType.collectAsState()
     var actionErrorMessage: String? by remember { mutableStateOf(null) }
+    var isRoleUpdated by remember { mutableStateOf(false) }
 
     
     val downloadingMsg = stringResource(Res.string.downloading_report, pdfModuleType ?: "")
@@ -139,6 +142,14 @@ fun HomeScreenContentView(
             vm.clearPdfUrl()
         }
     }
+
+    LaunchedEffect(Unit) {
+        vm.userCheckRole { isUpdated ->
+            isRoleUpdated = isUpdated
+        }
+    }
+
+
     Box(
         modifier = Modifier
             .background(Color.White)
@@ -197,6 +208,20 @@ fun HomeScreenContentView(
                 }
             }
         }
+
+
+        AppErrorDialog(
+            visible = isRoleUpdated,
+            title = stringResource(Res.string.user_role_changed),
+            description = stringResource(Res.string.user_role_changed_description),
+            buttonText = stringResource(Res.string.logout),
+            onDismiss = {
+                isRoleUpdated = false
+                viewModel.logout()
+                onLogout()
+            }
+        )
+
 
         if (isGeneratingPdf) {
             PdfGenerationLoader()

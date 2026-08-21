@@ -9,11 +9,12 @@ import kotlinx.coroutines.launch
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.network.NetworkResult
-import kotlin.time.Duration.Companion.milliseconds
+import org.example.project.manager.AppManager
 
 class ProfileViewModel(
     private val preferences: AuthPreferences,
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val appManager: AppManager
 ): ViewModel() {
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Ready())
     val uiState = _uiState.asStateFlow()
@@ -21,7 +22,7 @@ class ProfileViewModel(
         private set
 
     fun logout() {
-        preferences.logout()
+        appManager.logout()
     }
 
     fun handleLogout(onLogout: ()-> Unit) {
@@ -29,7 +30,6 @@ class ProfileViewModel(
             isLogoutLoading = true
         )
         viewModelScope.launch {
-            delay(2000.milliseconds)
             logout()
             onLogout()
         }

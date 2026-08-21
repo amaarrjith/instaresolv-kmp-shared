@@ -31,7 +31,8 @@ data class FilterResponsiblePerson(
     @SerialName("userId") val userId: String = "",
     @SerialName("name") val name: String = "",
     @SerialName("email") val email: String = "",
-    @SerialName("image") val image: String = ""
+    @SerialName("image") val image: String = "",
+    @SerialName("designation") val designation: List<Int> = emptyList()
 )
 
 @Serializable
@@ -44,7 +45,12 @@ data class AppFilterState(
     val selectedReportedBy: List<FilterResponsiblePerson> = emptyList(),
     val selectedIncidentTypes: List<Int> = emptyList(),
     val dateOpenMillis: Long? = null,
-    val dateCloseMillis: Long? = null
+    val dateCloseMillis: Long? = null,
+    val selectedAuthorizers: List<FilterResponsiblePerson> = emptyList(),
+    val selectedRequestors: List<FilterResponsiblePerson> = emptyList(),
+    val selectedHseAssigned: List<FilterResponsiblePerson> = emptyList(),
+    val selectedPermitTypes: List<PermitTypeItem> = emptyList(),
+    val selectedValidity: Int? = null
 ) {
     fun isEmpty(): Boolean {
         return selectedStatuses.isEmpty() &&
@@ -55,6 +61,11 @@ data class AppFilterState(
                 selectedReportedBy.isEmpty() &&
                 selectedIncidentTypes.isEmpty() &&
                 dateOpenMillis == null &&
-                dateCloseMillis == null
+                dateCloseMillis == null &&
+                selectedAuthorizers.isEmpty() &&
+                selectedRequestors.isEmpty() &&
+                selectedHseAssigned.isEmpty() &&
+                selectedPermitTypes.isEmpty() &&
+                selectedValidity == null
     }
 }

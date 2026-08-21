@@ -101,7 +101,7 @@ class DeleteAccountViewModel(
             )
             when (val result = repository.verifyDeleteAccount(request)) {
                 is NetworkResult.Success -> {
-                    authPreferences.logout()
+                    org.example.project.manager.AppManager.logout()
                     _uiState.update { 
                         it.copy(isLoading = false, isSuccess = true) 
                     }

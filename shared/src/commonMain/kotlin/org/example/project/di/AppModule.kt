@@ -106,7 +106,7 @@ val appModule = module {
     factory { HomeScreenViewModel(get(), get(), get(), get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get()) }
-    factory { ProfileViewModel(get(), get()) }
+    factory { ProfileViewModel(get(), get(), get()) }
     factory { CreateProjectViewModel(get(), get()) }
     factory { WelcomeScreenViewModel(get()) }
     factory { ForgetPasswordViewModel(get(), get()) }
@@ -176,6 +176,11 @@ val appModule = module {
     single { AuthPreferences(get()) }
     single { AppPreferences(get()) }
     single<Settings> { Settings() }
+    single {
+        val manager = org.example.project.manager.AppManager(get())
+        org.example.project.manager.AppManager.init(manager)
+        manager
+    }
     
     single {
         val driverFactory = get<DatabaseDriverFactory>()

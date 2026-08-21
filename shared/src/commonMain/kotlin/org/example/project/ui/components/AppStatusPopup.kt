@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.ic_alert
 import instaresolv.shared.generated.resources.ic_sucess_logo
 import instaresolv.shared.generated.resources.ic_toast_alert
 import org.example.project.typography.textStyle
@@ -115,7 +116,7 @@ fun AppErrorDialog(
         title = title,
         description = description,
         buttonText = buttonText,
-        icon = Res.drawable.ic_toast_alert, // Placeholder for error icon
+        icon = Res.drawable.ic_alert, // Placeholder for error icon
         onDismiss = onDismiss
     )
 }

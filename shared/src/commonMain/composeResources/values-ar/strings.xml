@@ -480,4 +480,6 @@
     <string name="appVersion">الإصدار 1.0 (قيد التطوير)</string>
     <string name="copyrightText">© %1$d InstaResolv جميع الحقوق محفوظة</string>
     <string name="noTranslationInfoAvailable">لا تتوفر معلومات ترجمة</string>
+    <string name="user_role_changed">تم تحديث دور الوصول الخاص بك</string>
+    <string name="user_role_changed_description">تم تغيير دور حسابك. يرجى تسجيل الدخول مرة أخرى لمتابعة استخدام التطبيق بصلاحياتك المحدثة.</string>
 </resources>

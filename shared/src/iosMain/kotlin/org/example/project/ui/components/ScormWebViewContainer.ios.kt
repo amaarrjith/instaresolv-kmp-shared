@@ -2,24 +2,53 @@ package org.example.project.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.ObjCAction
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLRequest
 import platform.UIKit.UIView
+import platform.UIKit.UITapGestureRecognizer
+import platform.UIKit.UIGestureRecognizerDelegateProtocol
 import platform.WebKit.WKUserContentController
 import platform.WebKit.WKUserScript
 import platform.WebKit.WKUserScriptInjectionTime
 import platform.WebKit.WKWebView
 import platform.WebKit.WKWebViewConfiguration
+import platform.objc.sel_registerName
+import platform.darwin.NSObject
+
+class TapGestureHelper(private val onTap: () -> Unit) : NSObject(), UIGestureRecognizerDelegateProtocol {
+    @OptIn(BetaInteropApi::class)
+    @ObjCAction
+    fun handleTap() {
+        onTap()
+    }
+
+    override fun gestureRecognizer(
+        gestureRecognizer: platform.UIKit.UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWithGestureRecognizer: platform.UIKit.UIGestureRecognizer
+    ): Boolean {
+        return true
+    }
+}
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun ScormWebViewContainer(
     url: String,
+    onTap: () -> Unit,
     modifier: Modifier
 ) {
+    val currentOnTap by rememberUpdatedState(onTap)
+    val tapHelper = remember {
+        TapGestureHelper(onTap = { currentOnTap() })
+    }
+
     val scormJs = """
         var scormData = {};
         function ok(){ return 'true'; }
@@ -45,7 +74,7 @@ actual fun ScormWebViewContainer(
         window.API_1484_11 = api;
     """.trimIndent()
 
-    val webView = remember(url) {
+    val webView = remember(url, tapHelper) {
         val userScript = WKUserScript(
             source = scormJs,
             injectionTime = WKUserScriptInjectionTime.WKUserScriptInjectionTimeAtDocumentStart,
@@ -58,6 +87,11 @@ actual fun ScormWebViewContainer(
         configuration.userContentController = userContentController
 
         val wkWebView = WKWebView(frame = platform.CoreGraphics.CGRectMake(0.0, 0.0, 0.0, 0.0), configuration = configuration)
+        
+        val recognizer = UITapGestureRecognizer(target = tapHelper, action = sel_registerName("handleTap"))
+        recognizer.delegate = tapHelper
+        wkWebView.addGestureRecognizer(recognizer)
+
         val nsUrl = NSURL(string = url)
         val request = NSURLRequest(uRL = nsUrl)
         wkWebView.loadRequest(request)

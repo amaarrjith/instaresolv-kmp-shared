@@ -88,6 +88,10 @@ class PermitToWorkListViewModel(
             }.takeIf { it.isNotEmpty() }
 
             val projectIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val authorizerIds = filter.selectedAuthorizers.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val requestorIds = filter.selectedRequestors.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val hseAssignedIds = filter.selectedHseAssigned.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val permitTypeIds = filter.selectedPermitTypes.map { it.permitTypeId }.takeIf { it.isNotEmpty() }
             val openDateStr = formatMillis(filter.dateOpenMillis).takeIf { it.isNotBlank() }
             val closeDateStr = formatMillis(filter.dateCloseMillis).takeIf { it.isNotBlank() }
 
@@ -97,9 +101,14 @@ class PermitToWorkListViewModel(
                 sortType = 1, // Descending
                 searchKey = _uiState.value.searchKey,
                 projectIds = projectIds,
+                authorizer = authorizerIds,
+                requestor = requestorIds,
+                hseAssigned = hseAssignedIds,
                 status = selectedStatuses,
+                permitTypes = permitTypeIds,
                 openDate = openDateStr,
-                closeDate = closeDateStr
+                closeDate = closeDateStr,
+                validity = filter.selectedValidity
             )
 
             when (val result = repository.getPermitList(request)) {
@@ -184,6 +193,10 @@ class PermitToWorkListViewModel(
             }.takeIf { it.isNotEmpty() }
 
             val projectIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val authorizerIds = filter.selectedAuthorizers.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val requestorIds = filter.selectedRequestors.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val hseAssignedIds = filter.selectedHseAssigned.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val permitTypeIds = filter.selectedPermitTypes.map { it.permitTypeId }.takeIf { it.isNotEmpty() }
             val openDateStr = formatMillis(filter.dateOpenMillis).takeIf { it.isNotBlank() }
             val closeDateStr = formatMillis(filter.dateCloseMillis).takeIf { it.isNotBlank() }
 
@@ -191,9 +204,14 @@ class PermitToWorkListViewModel(
                 searchKey = currentState.searchKey,
                 sortBy = 1,
                 projectIds = projectIds,
+                authorizer = authorizerIds,
+                requestor = requestorIds,
+                hseAssigned = hseAssignedIds,
                 status = selectedStatuses,
+                permitTypes = permitTypeIds,
                 openDate = openDateStr,
-                closeDate = closeDateStr
+                closeDate = closeDateStr,
+                validity = filter.selectedValidity
             )
             
             try {

@@ -74,7 +74,7 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, 
                 } catch (e: Exception) {
                     println("KTOR => Token refresh failed: ${e.message}")
                 }
-                authPreferences.logout()
+                org.example.project.manager.AppManager.logout()
                 null
             }
             sendWithoutRequest { true }
