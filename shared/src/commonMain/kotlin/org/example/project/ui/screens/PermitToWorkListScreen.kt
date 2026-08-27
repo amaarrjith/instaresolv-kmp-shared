@@ -51,7 +51,8 @@ import instaresolv.shared.generated.resources.*
 fun PermitToWorkListScreen(
     onBackClicked: () -> Unit,
     onCreateClicked: (typeId: Int, typeName: String) -> Unit = { _, _ -> },
-    onItemClicked: (Int) -> Unit = {}
+    onItemClicked: (Int) -> Unit = {},
+    onDraftClicked: () -> Unit = {}
 ) {
     val viewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -97,7 +98,7 @@ fun PermitToWorkListScreen(
                     color = AppColors.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                DraftButton(onDraftClicked = {})
+                DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = {
                     if (viewModel.logginedUser?.projectDesignation?.contains(2) == true) {

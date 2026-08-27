@@ -23,10 +23,14 @@ import org.example.project.data.model.toGroupUser
 import org.example.project.utilities.convertTo24HourFormat
 import org.example.project.utilities.formatTimestamp
 import kotlin.collections.emptyList
+import kotlin.time.Clock
+
+import org.example.project.data.repository.PermitDraftRepository
 
 data class CreatePermitUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
+    val draftId: Long? = null,
     val certificateValidity: List<PermitContentItem> = emptyList(),
     val generalConditions: List<PermitContentItem> = emptyList(),
     val certificateValidityAnswers: Map<Int, String> = emptyMap(),
@@ -51,7 +55,8 @@ data class CreatePermitUiState(
 
 class CreatePermitViewModel(
     private val permitRepository: PermitRepository,
-    private val authPreferences: AuthPreferences
+    private val authPreferences: AuthPreferences,
+    private val permitDraftRepository: PermitDraftRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CreatePermitUiState())
@@ -296,11 +301,135 @@ class CreatePermitViewModel(
             when (val result = permitRepository.submitPermitValidity(request)) {
                 is NetworkResult.Success -> {
                     _uiState.update { it.copy(isSubmitting = false, submitSuccess = true, successMessage = result.data.statusMessage) }
+                    currentState.draftId?.let { id ->
+                        permitDraftRepository.deleteDraft(id)
+                    }
                 }
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(isSubmitting = false, submitError = result.message) }
                 }
             }
         }
+    }
+
+    fun saveLocalDraft(onSuccess: () -> Unit) {
+        val state = _uiState.value
+        val hasValue = state.selectedProject != null ||
+                       state.selectedUser != null ||
+                       state.permitDateMillis != null ||
+                       state.startTime.isNotBlank() ||
+                       state.endTime.isNotBlank() ||
+                       state.certificateValidityAnswers.any { it.value.isNotBlank() } ||
+                       state.generalConditionAnswers.any { it.value.isNotBlank() } ||
+                       state.generalConditionRemarks.any { it.value.isNotBlank() } ||
+                       !state.signatureUrl.isNullOrBlank()
+
+        if (!hasValue) {
+            _uiState.update { it.copy(submitError = "At least one field must have a value to save as draft") }
+            return
+        }
+
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            val request = org.example.project.data.model.CreatePermitDraftRequest(
+                draftId = state.draftId,
+                userId = user?.userId ?: 0,
+                permitTypeId = state.permitTypeId,
+                selectedProject = state.selectedProject,
+                selectedUser = state.selectedUser,
+                permitDateMillis = state.permitDateMillis,
+                startTime = state.startTime,
+                endTime = state.endTime,
+                certificateValidityAnswers = state.certificateValidityAnswers,
+                generalConditionAnswers = state.generalConditionAnswers,
+                generalConditionRemarks = state.generalConditionRemarks,
+                signatureUrl = state.signatureUrl,
+                signatureDateMillis = state.signatureDateMillis,
+                signatureTime = state.signatureTime,
+                reportedBy = user?.name ?: "",
+                contractorName = "InstaResolv Private Limited",
+                createdAt = run {
+                    val localDateTime = Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+                    val year = localDateTime.year
+                    val month = localDateTime.monthNumber.toString().padStart(2, '0')
+                    val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+                    val hour = localDateTime.hour.toString().padStart(2, '0')
+                    val minute = localDateTime.minute.toString().padStart(2, '0')
+                    val second = localDateTime.second.toString().padStart(2, '0')
+                    "$year-$month-$day $hour:$minute:$second"
+                }
+            )
+            permitDraftRepository.saveDraft(request)
+            onSuccess()
+        }
+    }
+
+    fun restoreDraftData(draft: org.example.project.shared.db.PermitDraft) {
+        val project = draft.projectJson?.let {
+            try {
+                kotlinx.serialization.json.Json.decodeFromString<org.example.project.data.model.Project>(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        val user = draft.userJson?.let {
+            try {
+                kotlinx.serialization.json.Json.decodeFromString<org.example.project.data.model.GroupUser>(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        val certificateValidityAnswers = draft.certificateValidityAnswersJson?.let {
+            try {
+                kotlinx.serialization.json.Json.decodeFromString<Map<Int, String>>(it)
+            } catch (e: Exception) {
+                emptyMap()
+            }
+        } ?: emptyMap()
+        val generalConditionAnswers = draft.generalConditionAnswersJson?.let {
+            try {
+                kotlinx.serialization.json.Json.decodeFromString<Map<Int, String>>(it)
+            } catch (e: Exception) {
+                emptyMap()
+            }
+        } ?: emptyMap()
+        val generalConditionRemarks = draft.generalConditionRemarksJson?.let {
+            try {
+                kotlinx.serialization.json.Json.decodeFromString<Map<Int, String>>(it)
+            } catch (e: Exception) {
+                emptyMap()
+            }
+        } ?: emptyMap()
+
+        _uiState.update { state ->
+            state.copy(
+                draftId = draft.id,
+                selectedProject = project,
+                selectedUser = user,
+                permitDateMillis = draft.permitDateMillis,
+                startTime = draft.startTime ?: "",
+                endTime = draft.endTime ?: "",
+                certificateValidityAnswers = certificateValidityAnswers,
+                generalConditionAnswers = generalConditionAnswers,
+                generalConditionRemarks = generalConditionRemarks,
+                signatureUrl = draft.signatureUrl,
+                signatureDateMillis = draft.signatureDateMillis,
+                signatureTime = draft.signatureTime ?: ""
+            )
+        }
+
+        if (project != null) {
+            fetchAuthorizedUsers(project.groupId, project.groupCode ?: "")
+        }
+    }
+
+    fun deleteDraft(draftId: Long) {
+        viewModelScope.launch {
+            permitDraftRepository.deleteDraft(draftId)
+        }
+    }
+
+    fun getDraftById(draftId: Long): org.example.project.shared.db.PermitDraft? {
+        return permitDraftRepository.getDraftById(draftId)
     }
 }

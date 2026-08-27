@@ -30,11 +30,15 @@ import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.ui.components.AppExitPopup
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateLessonsLearnedScreen(
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L
 ) {
     val viewModel: CreateLessonLearnedViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -50,6 +54,39 @@ fun CreateLessonsLearnedScreen(
 
     var showErrorToast by remember { mutableStateOf<String?>(null) }
     val showExitPopup = remember { mutableStateOf(false) }
+    val showSuccessDraftDialog = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFromDraft, draftId) {
+        if (isFromDraft && draftId != -1L) {
+            viewModel.draftId = draftId
+            val draft = viewModel.getDraftById(draftId)
+            if (draft != null) {
+                title = draft.title.orEmpty()
+                description = draft.description.orEmpty()
+                
+                val project = draft.projectJson?.let {
+                    try {
+                        Json.decodeFromString<org.example.project.data.model.Project>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                selectedProject = project
+
+                val localImages = draft.imagesJson?.let {
+                    try {
+                        Json.decodeFromString<List<ObservationImage>>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (!localImages.isNullOrEmpty()) {
+                    images.clear()
+                    images.addAll(localImages)
+                }
+            }
+        }
+    }
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -115,6 +152,29 @@ fun CreateLessonsLearnedScreen(
                     org.example.project.utilites.AppBorderButton(
                         title = stringResource(Res.string.saveAsDraft),
                         onClick = {
+                            val imagesJson = try {
+                                Json.encodeToString(images.toList())
+                            } catch (e: Exception) {
+                                "[]"
+                            }
+                            val projectJson = selectedProject?.let {
+                                try {
+                                    Json.encodeToString(it)
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+                            viewModel.saveLocalDraft(
+                                id = if (isFromDraft) draftId else 0L,
+                                facilitiesId = selectedProject?.groupId,
+                                projectJson = projectJson,
+                                title = title,
+                                description = description,
+                                imagesJson = imagesJson,
+                                onSuccess = {
+                                    showSuccessDraftDialog.value = true
+                                }
+                            )
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -264,6 +324,19 @@ fun CreateLessonsLearnedScreen(
                 buttonText = "OK",
                 onDismiss = {
                     showSuccessDialog.value = false
+                    onBackClicked()
+                }
+            )
+        }
+
+        if (showSuccessDraftDialog.value) {
+            org.example.project.ui.components.AppStatusDialog(
+                visible = showSuccessDraftDialog.value,
+                title = stringResource(Res.string.success),
+                description = "Lesson Learned Draft Saved Successfully.",
+                buttonText = "OK",
+                onDismiss = {
+                    showSuccessDraftDialog.value = false
                     onBackClicked()
                 }
             )

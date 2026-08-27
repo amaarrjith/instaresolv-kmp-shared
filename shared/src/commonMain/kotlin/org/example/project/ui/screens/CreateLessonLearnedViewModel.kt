@@ -11,7 +11,11 @@ import org.example.project.data.model.CreateLessonLearnedResponseData
 import org.example.project.data.model.LessonLearnedImageRequest
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.LessonLearnedRepository
+import org.example.project.data.repository.LessonLearnedDraftRepository
 import org.example.project.network.NetworkResult
+import kotlin.time.Clock
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.TimeZone
 
 sealed class CreateLessonLearnedUiState {
     object Idle : CreateLessonLearnedUiState()
@@ -23,11 +27,15 @@ sealed class CreateLessonLearnedUiState {
 class CreateLessonLearnedViewModel(
     private val repository: LessonLearnedRepository,
     private val authPreferences: AuthPreferences,
+    private val lessonLearnedDraftRepository: LessonLearnedDraftRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CreateLessonLearnedUiState>(CreateLessonLearnedUiState.Idle)
     val uiState: StateFlow<CreateLessonLearnedUiState> = _uiState.asStateFlow()
     val user = authPreferences.getLoggedInUser()
+
+    var draftId: Long = 0L
+
     fun resetState() {
         _uiState.value = CreateLessonLearnedUiState.Idle
     }
@@ -52,6 +60,9 @@ class CreateLessonLearnedViewModel(
             
             when (val result = repository.createLessonLearned(request)) {
                 is NetworkResult.Success -> {
+                    if (draftId != 0L) {
+                        lessonLearnedDraftRepository.deleteDraft(draftId)
+                    }
                     _uiState.value = CreateLessonLearnedUiState.Success(result.data)
                 }
                 is NetworkResult.Error -> {
@@ -59,5 +70,49 @@ class CreateLessonLearnedViewModel(
                 }
             }
         }
+    }
+
+    fun saveLocalDraft(
+        id: Long,
+        facilitiesId: Int?,
+        projectJson: String?,
+        title: String,
+        description: String,
+        imagesJson: String,
+        onSuccess: () -> Unit
+    ) {
+        if (facilitiesId == null && title.isBlank() && description.isBlank() && (imagesJson.isBlank() || imagesJson == "[]")) {
+            _uiState.value = CreateLessonLearnedUiState.Error("At least one field must have a value to save as draft")
+            return
+        }
+
+        viewModelScope.launch {
+            val request = org.example.project.data.model.CreateLessonLearnedDraftRequest(
+                id = id,
+                facilitiesId = facilitiesId,
+                projectJson = projectJson,
+                title = title,
+                description = description,
+                reportedBy = user?.name ?: "",
+                imagesJson = imagesJson,
+                createdAt = run {
+                    val localDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val year = localDateTime.year
+                    val month = localDateTime.monthNumber.toString().padStart(2, '0')
+                    val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+                    val hour = localDateTime.hour.toString().padStart(2, '0')
+                    val minute = localDateTime.minute.toString().padStart(2, '0')
+                    val second = localDateTime.second.toString().padStart(2, '0')
+                    "$year-$month-$day $hour:$minute:$second"
+                },
+                userId = user?.userId ?: -1
+            )
+            lessonLearnedDraftRepository.saveDraft(request)
+            onSuccess()
+        }
+    }
+
+    suspend fun getDraftById(id: Long): org.example.project.shared.db.LessonLearnedDraft? {
+        return lessonLearnedDraftRepository.getDraftById(id)
     }
 }

@@ -1,0 +1,20 @@
+CREATE TABLE PermitDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    permitTypeId INTEGER NOT NULL,
+    permitTypeJson TEXT,
+    projectJson TEXT,
+    userJson TEXT,
+    permitDateMillis INTEGER,
+    startTime TEXT,
+    endTime TEXT,
+    certificateValidityAnswersJson TEXT,
+    generalConditionAnswersJson TEXT,
+    generalConditionRemarksJson TEXT,
+    signatureUrl TEXT,
+    signatureDateMillis INTEGER,
+    signatureTime TEXT,
+    reportedBy TEXT NOT NULL,
+    contractorName TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);

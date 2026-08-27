@@ -73,3 +73,16 @@ data class LessonLearnedDetailResponseData(
     val facilities: LessonLearnedFacilityData? = null,
     val images: List<LessonLearnedImageData>? = null
 )
+
+@Serializable
+data class CreateLessonLearnedDraftRequest(
+    val id: Long = 0,
+    val facilitiesId: Int?,
+    val projectJson: String?,
+    val title: String?,
+    val description: String?,
+    val reportedBy: String?,
+    val imagesJson: String?,
+    val createdAt: String?,
+    val userId: Int
+)

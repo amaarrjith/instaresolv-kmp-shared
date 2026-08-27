@@ -1,0 +1,11 @@
+CREATE TABLE LessonLearnedDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    title TEXT,
+    description TEXT,
+    reportedBy TEXT,
+    imagesJson TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);

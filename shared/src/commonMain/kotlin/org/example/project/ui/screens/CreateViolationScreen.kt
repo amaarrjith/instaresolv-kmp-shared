@@ -299,7 +299,7 @@ fun CreateViolationScreen(
 
         if (showDraftSuccessDialog.value) {
             org.example.project.ui.components.AppStatusDialog(
-                visible = showSuccessDialog.value,
+                visible = showDraftSuccessDialog.value,
                 title = stringResource(Res.string.success),
                 description = "Violation draft saved successfully",
                 buttonText = "OK",

@@ -83,6 +83,7 @@ import org.example.project.ui.screens.CreateToolBoxTalkViewModel
 import org.example.project.ui.screens.ToolBoxTalkDetailViewModel
 import org.example.project.domain.repository.ToolBoxTalkRepository
 import org.example.project.domain.repository.ToolBoxTalkRepositoryImpl
+import org.example.project.data.repository.PermitDraftRepository
 import org.example.project.ui.components.FilterBottomSheetViewModel
 import org.example.project.db.DatabaseDriverFactory
 import org.example.project.db.listOfStringsAdapter
@@ -91,6 +92,7 @@ import org.example.project.shared.db.ObservationDraft
 import org.example.project.data.repository.ObservationDraftRepository
 import org.example.project.shared.db.ViolationDraft
 import org.example.project.data.repository.ViolationDraftRepository
+import org.example.project.data.repository.LessonLearnedDraftRepository
 
 val appModule = module {
     factory { createHttpClient(get(), get()) }
@@ -154,14 +156,16 @@ val appModule = module {
     factory { CreatePreTaskViewModel(get(), get(), get()) }
     
     factory<LessonLearnedRepository> { LessonLearnedRepositoryImpl(get()) }
-    factory { LessonsLearnedListViewModel(get()) }
+    factory { LessonsLearnedListViewModel(get(), get(), get()) }
     factory { LessonsLearnedDetailViewModel(get()) }
     factory {
         CreateLessonLearnedViewModel(
             get(),
-            authPreferences = get()
+            authPreferences = get(),
+            lessonLearnedDraftRepository = get()
         )
     }
+    factory { LessonLearnedDraftRepository(get()) }
 
     factory<TrainingRepository> { TrainingRepositoryImpl(get()) }
     factory { TrainingListViewModel(get()) }
@@ -170,8 +174,9 @@ val appModule = module {
     factory { (trainingId: Int) -> QuizViewModel(get(), trainingId) }
     
     factory<PermitRepository> { PermitRepositoryImpl(get()) }
-    factory { PermitToWorkListViewModel(get(), get()) }
-    factory { CreatePermitViewModel(get(), get()) }
+    factory { PermitDraftRepository(get()) }
+    factory { PermitToWorkListViewModel(get(), get(), get()) }
+    factory { CreatePermitViewModel(get(), get(), get()) }
     factory { PermitDetailViewModel(get(), get(), get()) }
     
     single { GlobalSettingsViewModel(get()) }

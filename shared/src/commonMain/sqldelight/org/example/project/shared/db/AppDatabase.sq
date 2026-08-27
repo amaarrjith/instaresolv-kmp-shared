@@ -98,3 +98,93 @@ SELECT * FROM ViolationDraft WHERE userId = ? ORDER BY id DESC;
 
 deleteViolationDraft:
 DELETE FROM ViolationDraft WHERE id = ?;
+
+CREATE TABLE PermitDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    permitTypeId INTEGER NOT NULL,
+    permitTypeJson TEXT,
+    projectJson TEXT,
+    userJson TEXT,
+    permitDateMillis INTEGER,
+    startTime TEXT,
+    endTime TEXT,
+    certificateValidityAnswersJson TEXT,
+    generalConditionAnswersJson TEXT,
+    generalConditionRemarksJson TEXT,
+    signatureUrl TEXT,
+    signatureDateMillis INTEGER,
+    signatureTime TEXT,
+    reportedBy TEXT NOT NULL,
+    contractorName TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
+
+insertPermitDraft:
+INSERT INTO PermitDraft(permitTypeId, permitTypeJson, projectJson, userJson, permitDateMillis, startTime, endTime, certificateValidityAnswersJson, generalConditionAnswersJson, generalConditionRemarksJson, signatureUrl, signatureDateMillis, signatureTime, reportedBy, contractorName, createdAt, userId)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updatePermitDraft:
+UPDATE PermitDraft
+SET
+    permitTypeId = ?,
+    permitTypeJson = ?,
+    projectJson = ?,
+    userJson = ?,
+    permitDateMillis = ?,
+    startTime = ?,
+    endTime = ?,
+    certificateValidityAnswersJson = ?,
+    generalConditionAnswersJson = ?,
+    generalConditionRemarksJson = ?,
+    signatureUrl = ?,
+    signatureDateMillis = ?,
+    signatureTime = ?,
+    reportedBy = ?,
+    contractorName = ?,
+    createdAt = ?,
+    userId = ?
+WHERE id = ?;
+
+getAllPermitDrafts:
+SELECT * FROM PermitDraft;
+
+getPermitDraftsByUserId:
+SELECT * FROM PermitDraft WHERE userId = ? ORDER BY id DESC;
+
+deletePermitDraft:
+DELETE FROM PermitDraft WHERE id = ?;
+
+CREATE TABLE LessonLearnedDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    title TEXT,
+    description TEXT,
+    reportedBy TEXT,
+    imagesJson TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
+
+insertLessonLearnedDraft:
+INSERT OR REPLACE INTO LessonLearnedDraft (
+    id,
+    facilitiesId,
+    projectJson,
+    title,
+    description,
+    reportedBy,
+    imagesJson,
+    createdAt,
+    userId
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getLessonLearnedDraftsByUserId:
+SELECT * FROM LessonLearnedDraft WHERE userId = ? ORDER BY id DESC;
+
+getLessonLearnedDraftById:
+SELECT * FROM LessonLearnedDraft WHERE id = ?;
+
+deleteLessonLearnedDraft:
+DELETE FROM LessonLearnedDraft WHERE id = ?;

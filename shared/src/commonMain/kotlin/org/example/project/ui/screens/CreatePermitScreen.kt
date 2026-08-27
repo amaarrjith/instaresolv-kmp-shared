@@ -62,13 +62,15 @@ import org.example.project.ui.components.AppExitPopup
 fun CreatePermitScreen(
     onBackClicked: () -> Unit = {},
     permitTypeId: Int = -1,
-    permitTypeName: String = ""
+    permitTypeName: String = "",
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L
 ) {
     val viewModel: CreatePermitViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var localError by remember { mutableStateOf<String?>(null) }
     val showExitPopup = remember { mutableStateOf(false) }
-
+    var draftSuccess by remember { mutableStateOf(false) }
     val isToday = remember(uiState.permitDateMillis) {
         uiState.permitDateMillis?.let { millis ->
             val selectedDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -92,8 +94,14 @@ fun CreatePermitScreen(
         return 0
     }
 
-    LaunchedEffect(permitTypeId) {
-        if (permitTypeId != -1) {
+    LaunchedEffect(permitTypeId, isFromDraft, draftId) {
+        if (isFromDraft && draftId != -1L) {
+            val draft = viewModel.getDraftById(draftId)
+            if (draft != null) {
+                viewModel.restoreDraftData(draft)
+                viewModel.fetchPermitContents(draft.permitTypeId.toInt())
+            }
+        } else if (permitTypeId != -1) {
             viewModel.fetchPermitContents(permitTypeId)
         }
     }
@@ -137,7 +145,9 @@ fun CreatePermitScreen(
                     org.example.project.utilites.AppBorderButton(
                         title = stringResource(Res.string.saveAsDraft),
                         onClick = {
-
+                            viewModel.saveLocalDraft {
+                                draftSuccess = true
+                            }
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -422,6 +432,19 @@ fun CreatePermitScreen(
                     buttonText = "OK",
                     onDismiss = {
                         uiState.submitSuccess = false
+                        onBackClicked()
+                    }
+                )
+            }
+
+            if (draftSuccess) {
+                org.example.project.ui.components.AppStatusDialog(
+                    visible = draftSuccess,
+                    title = stringResource(Res.string.success),
+                    description = "Permit Saved as Draft Successfully",
+                    buttonText = "OK",
+                    onDismiss = {
+                        draftSuccess = false
                         onBackClicked()
                     }
                 )

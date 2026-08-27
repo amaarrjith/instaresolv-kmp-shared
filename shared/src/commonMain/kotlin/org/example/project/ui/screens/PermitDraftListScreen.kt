@@ -3,6 +3,7 @@ package org.example.project.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,8 +18,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
@@ -37,41 +36,45 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.*
 import kotlinx.serialization.json.Json
 import org.example.project.colors.AppColors
 import org.example.project.data.model.Project
-import org.example.project.data.model.LocalViolationImage
+import org.example.project.data.model.PermitTypeItem
 import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
-import org.example.project.shared.db.ViolationDraft
+import org.example.project.shared.db.PermitDraft
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppExitDialog
+import org.example.project.utilities.formatTimestamp
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.ui.components.WebImageView
+import org.example.project.data.settings.formatDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
-fun ViolationDraftListScreen(
+fun PermitDraftListScreen(
     onBackClicked: () -> Unit,
     onDraftClicked: (Long) -> Unit
 ) {
-    val viewModel: ViolationListViewModel = koinInject()
+    val viewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val draftToastMessage by viewModel.draftToastMessage.collectAsState()
-    val successMessage = "Violation drafts deleted successfully."
+    val successMessage = "Permit drafts deleted successfully."
 
     LaunchedEffect(Unit) {
         viewModel.loadDrafts()
@@ -89,7 +92,7 @@ fun ViolationDraftListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "VIOLATION DRAFTS",
+                    text = "PERMIT DRAFTS",
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -164,25 +167,25 @@ fun ViolationDraftListScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(top = 25.dp),
                 ) {
                     items(uiState.drafts.size) { index ->
                         val draft = uiState.drafts[index]
-                        val project = draft.facilityJson?.let {
+                        val project = draft.projectJson?.let {
                             try {
                                 Json.decodeFromString<Project>(it)
                             } catch(e: Exception) { null }
                         }
-
-                        val images = draft.imagesJson.mapNotNull { 
+                        val permitType = draft.permitTypeJson?.let {
                             try {
-                                Json.decodeFromString<LocalViolationImage>(it).imageUrl
+                                Json.decodeFromString<PermitTypeItem>(it)
                             } catch(e: Exception) { null }
                         }
 
-                        ViolationDraftListItem(
+                        PermitDraftListItem(
                             draft = draft,
                             project = project,
-                            imageUrl = images.firstOrNull(),
+                            permitType = permitType,
                             isSelectionMode = isDeleteOptionEnabled,
                             isSelected = selectedItemsId.contains(draft.id.toInt()),
                             onSelectionChange = { checked ->
@@ -212,7 +215,7 @@ fun ViolationDraftListScreen(
             AppExitDialog(
                 visible = showDeleteDialog,
                 title = stringResource(Res.string.delete),
-                description = "Are you sure you want to delete the selected violation drafts?",
+                description = "Are you sure you want to delete the selected permit drafts?",
                 primaryButtonText = stringResource(Res.string.yes),
                 secondaryButtonText = stringResource(Res.string.no),
                 onConfirm = {
@@ -240,10 +243,10 @@ fun ViolationDraftListScreen(
 }
 
 @Composable
-fun ViolationDraftListItem(
-    draft: ViolationDraft,
+fun PermitDraftListItem(
+    draft: PermitDraft,
     project: Project?,
-    imageUrl: String?,
+    permitType: PermitTypeItem?,
     isSelectionMode: Boolean,
     isSelected: Boolean,
     onSelectionChange: (Boolean) -> Unit,
@@ -260,7 +263,7 @@ fun ViolationDraftListItem(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 WebImageView(
-                    imageUrl = imageUrl ?: "",
+                    imageUrl = project?.groupImage ?: "",
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -291,12 +294,24 @@ fun ViolationDraftListItem(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                Text(
-                    text = "Violation by ${draft.employeeName.takeIf { it.isNotBlank() } ?: "Unknown"}",
-                    style = textStyle(size = 15.sp, weight = FontWeight.Bold),
-                    color = AppColors.Black,
-                    maxLines = 3
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.Gray)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "DRAFT",
+                            style = textStyle(size = 9.sp, weight = FontWeight.Bold),
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
                 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -314,14 +329,16 @@ fun ViolationDraftListItem(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
+                        val formattedDate = if (draft.permitDateMillis != null) {
+                            try {
+                                formatTimestamp(draft.permitDateMillis, "dd MMM yyyy")
+                            } catch (e: Exception) {
+                                "Date not set"
+                            }
+                        } else "Date not set"
+
                         Text(
-                            text = if (draft.violationDate.isNotBlank()) {
-                                formatDate(
-                                    draft.violationDate,
-                                    inputPattern = "dd-MM-yyyy",
-                                    outputPattern = "dd MMM yyyy"
-                                )
-                            } else "Date not set",
+                            text = formattedDate,
                             style = textStyle(size = 11.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -331,7 +348,7 @@ fun ViolationDraftListItem(
 
                     val isValidDateTime = draft.createdAt != null && (draft.createdAt.contains("T") || draft.createdAt.contains(" "))
                     val timeAgoText = if (isValidDateTime) {
-                        timeAgo(draft.createdAt, isUtc = true)
+                        timeAgo(draft.createdAt!!, isUtc = true)
                     } else {
                         ""
                     }
@@ -341,6 +358,13 @@ fun ViolationDraftListItem(
                         color = Color.DarkGray
                     )
                 }
+
+                Text(
+                    text = permitType?.permitTypeTitle ?: "Permit",
+                    style = textStyle(size = 15.sp, weight = FontWeight.Bold),
+                    color = AppColors.Black,
+                    maxLines = 2
+                )
                 
                 if (project != null) {
                     Spacer(modifier = Modifier.height(5.dp))
@@ -363,7 +387,7 @@ fun ViolationDraftListItem(
                             Text(
                                 text = project.groupName ?: "",
                                 maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                overflow = TextOverflow.Ellipsis,
                                 style = textStyle(
                                     size = 11.sp,
                                     weight = FontWeight.Medium

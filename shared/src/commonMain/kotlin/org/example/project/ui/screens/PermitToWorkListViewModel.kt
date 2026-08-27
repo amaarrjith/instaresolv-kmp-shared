@@ -16,12 +16,14 @@ import org.example.project.domain.repository.PermitRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
 import kotlinx.datetime.toLocalDateTime
+import org.example.project.data.repository.PermitDraftRepository
 import org.example.project.data.settings.AuthPreferences
 
 data class PermitToWorkListState(
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val permits: List<PermitItem> = emptyList(),
+    val drafts: List<org.example.project.shared.db.PermitDraft> = emptyList(),
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
@@ -38,12 +40,14 @@ data class PermitToWorkListState(
 
 class PermitToWorkListViewModel(
     private val repository: PermitRepository,
-    private val authPreferences: AuthPreferences
+    private val authPreferences: AuthPreferences,
+    private val permitDraftRepository: PermitDraftRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PermitToWorkListState())
     val uiState: StateFlow<PermitToWorkListState> = _uiState.asStateFlow()
     val logginedUser = authPreferences.getLoggedInUser()
+    val draftToastMessage = MutableStateFlow<String?>(null)
     private var currentPage = 1
     private var searchJob: Job? = null
 
@@ -240,5 +244,29 @@ class PermitToWorkListViewModel(
     
     fun clearExportError() {
         _uiState.update { it.copy(exportError = null) }
+    }
+
+    fun clearDraftToast() {
+        draftToastMessage.value = null
+    }
+
+    fun loadDrafts() {
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            if (user?.userId != null) {
+                val list = permitDraftRepository.getAllDrafts(user.userId!!)
+                _uiState.update { it.copy(drafts = list) }
+            }
+        }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            ids.forEach { id ->
+                permitDraftRepository.deleteDraft(id)
+            }
+            draftToastMessage.value = successMessage
+            loadDrafts()
+        }
     }
 }

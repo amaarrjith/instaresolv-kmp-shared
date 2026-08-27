@@ -15,6 +15,9 @@ import org.example.project.data.model.GroupUser
 import org.example.project.data.model.GroupUserRequest
 import org.example.project.data.model.LocalViolationImage
 import org.example.project.data.model.CreateViolationDraftRequest
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlin.time.Clock
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.data.repository.ViolationDraftRepository
 import org.example.project.domain.repository.ProjectRepository
@@ -215,7 +218,16 @@ class CreateViolationViewModel(
             description = state.description,
             images = state.images,
             reportedBy = user?.name ?: "",
-            createdAt = state.violationDate.takeIf { it.isNotBlank() } ?: "Draft"
+            createdAt = run {
+                val localDateTime = Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+                val year = localDateTime.year
+                val month = localDateTime.monthNumber.toString().padStart(2, '0')
+                val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+                val hour = localDateTime.hour.toString().padStart(2, '0')
+                val minute = localDateTime.minute.toString().padStart(2, '0')
+                val second = localDateTime.second.toString().padStart(2, '0')
+                "$year-$month-$day $hour:$minute:$second"
+            }
         )
         viewModelScope.launch {
             violationDraftRepository.saveDraft(request)

@@ -59,3 +59,25 @@ data class PermitValidityImage(
 data class PermitValiditySubmitResponse(
     val statusMessage: String
 )
+
+@Serializable
+data class CreatePermitDraftRequest(
+    val draftId: Long? = null,
+    val userId: Int,
+    val permitTypeId: Int,
+    val permitType: PermitTypeItem? = null,
+    val selectedProject: Project? = null,
+    val selectedUser: GroupUser? = null,
+    val permitDateMillis: Long? = null,
+    val startTime: String = "",
+    val endTime: String = "",
+    val certificateValidityAnswers: Map<Int, String> = emptyMap(),
+    val generalConditionAnswers: Map<Int, String> = emptyMap(),
+    val generalConditionRemarks: Map<Int, String> = emptyMap(),
+    val signatureUrl: String? = null,
+    val signatureDateMillis: Long? = null,
+    val signatureTime: String = "",
+    val reportedBy: String = "",
+    val contractorName: String = "",
+    val createdAt: String? = null
+)

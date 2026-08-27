@@ -15,6 +15,8 @@ import org.example.project.data.model.LessonLearnedListRequest
 import org.example.project.domain.repository.LessonLearnedRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.AppFilterState
+import org.example.project.data.settings.AuthPreferences
+import org.example.project.data.repository.LessonLearnedDraftRepository
 
 data class LessonsLearnedListState(
     val isLoading: Boolean = false,
@@ -23,11 +25,14 @@ data class LessonsLearnedListState(
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
-    val appliedFilterState: AppFilterState = AppFilterState()
+    val appliedFilterState: AppFilterState = AppFilterState(),
+    val drafts: List<org.example.project.shared.db.LessonLearnedDraft> = emptyList()
 )
 
 class LessonsLearnedListViewModel(
-    private val repository: LessonLearnedRepository
+    private val repository: LessonLearnedRepository,
+    private val authPreferences: AuthPreferences,
+    private val lessonLearnedDraftRepository: LessonLearnedDraftRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LessonsLearnedListState())
@@ -38,6 +43,8 @@ class LessonsLearnedListViewModel(
 
     private val _exportToastMessage = MutableStateFlow<String?>(null)
     val exportToastMessage: StateFlow<String?> = _exportToastMessage.asStateFlow()
+
+    val draftToastMessage = MutableStateFlow<String?>(null)
 
     private val _exportUrl = MutableStateFlow<String?>(null)
     val exportUrl: StateFlow<String?> = _exportUrl.asStateFlow()
@@ -161,5 +168,29 @@ class LessonsLearnedListViewModel(
         val tz = kotlinx.datetime.TimeZone.currentSystemDefault()
         val dt = instant.toLocalDateTime(tz)
         return "${dt.dayOfMonth.toString().padStart(2, '0')}-${dt.monthNumber.toString().padStart(2, '0')}-${dt.year}"
+    }
+
+    fun clearDraftToast() {
+        draftToastMessage.value = null
+    }
+
+    fun loadDrafts() {
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            if (user?.userId != null) {
+                val list = lessonLearnedDraftRepository.getAllDrafts(user.userId!!)
+                _uiState.update { it.copy(drafts = list) }
+            }
+        }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            ids.forEach { id ->
+                lessonLearnedDraftRepository.deleteDraft(id)
+            }
+            draftToastMessage.value = successMessage
+            loadDrafts()
+        }
     }
 }

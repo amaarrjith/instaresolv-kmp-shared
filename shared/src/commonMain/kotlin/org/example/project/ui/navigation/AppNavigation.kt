@@ -25,6 +25,7 @@ import org.example.project.ui.screens.AuditInspectionListScreen
 import org.example.project.ui.screens.IncidentListScreen
 import org.example.project.ui.screens.LessonsLearnedListScreen
 import org.example.project.ui.screens.CreateLessonsLearnedScreen
+import org.example.project.ui.screens.LessonsLearnedDraftListScreen
 import org.example.project.ui.screens.ToolBoxTalkListScreen
 import org.example.project.ui.screens.CreateToolBoxTalkScreen
 import org.example.project.ui.screens.ToolBoxTalkDetailScreen
@@ -35,6 +36,7 @@ import org.example.project.ui.screens.CreateObservationScreen
 import org.example.project.ui.screens.CreateIncidentScreen
 import org.example.project.ui.screens.PermitToWorkListScreen
 import org.example.project.ui.screens.CreatePermitScreen
+import org.example.project.ui.screens.PermitDraftListScreen
 import org.example.project.ui.screens.PermitDetailScreen
 import org.example.project.ui.screens.TrainingListScreen
 import org.example.project.ui.screens.TrainingDetailScreen
@@ -299,6 +301,9 @@ fun AppNavigation() {
                 },
                 onItemClicked = { permitId ->
                     navController.navigate("${Screens.PermitDetailScreen.route}/$permitId")
+                },
+                onDraftClicked = {
+                    navController.navigate(Screens.PermitDraftListScreen.route)
                 }
             )
         }
@@ -309,12 +314,24 @@ fun AppNavigation() {
                 onBackClicked = { navController.popBackStack() }
             )
         }
+        composable(Screens.PermitDraftListScreen.route) {
+            PermitDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { draftId ->
+                    navController.navigate("create_permit_screen/-1/Draft?isFromDraft=true&draftId=$draftId")
+                }
+            )
+        }
         composable(Screens.CreatePermitScreenWithArgs.route) { backStackEntry ->
             val permitTypeId = backStackEntry.savedStateHandle.get<String>("permitTypeId")?.toIntOrNull() ?: -1
             val permitTypeName = backStackEntry.savedStateHandle.get<String>("permitTypeName") ?: ""
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
             CreatePermitScreen(
                 permitTypeId = permitTypeId,
                 permitTypeName = permitTypeName,
+                isFromDraft = isFromDraft,
+                draftId = draftId,
                 onBackClicked = { navController.popBackStack() }
             )
         }
@@ -524,13 +541,45 @@ fun AppNavigation() {
         composable(Screens.LessonsLearnedListScreen.route) {
             LessonsLearnedListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onCreateClicked = { navController.navigate(Screens.CreateLessonsLearnedScreen.route) }
+                onCreateClicked = { navController.navigate(Screens.CreateLessonsLearnedScreen.route) },
+                onDraftClicked = { navController.navigate(Screens.LessonsLearnedDraftListScreen.route) }
             )
         }
 
         composable(Screens.CreateLessonsLearnedScreen.route) {
             CreateLessonsLearnedScreen(
                 onBackClicked = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screens.CreateLessonsLearnedScreenWithArgs.route,
+            arguments = listOf(
+                navArgument("isFromDraft") {
+                    type = NavType.StringType
+                    defaultValue = "false"
+                },
+                navArgument("draftId") {
+                    type = NavType.StringType
+                    defaultValue = "-1"
+                }
+            )
+        ) { backStackEntry ->
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
+            CreateLessonsLearnedScreen(
+                onBackClicked = { navController.popBackStack() },
+                isFromDraft = isFromDraft,
+                draftId = draftId
+            )
+        }
+
+        composable(Screens.LessonsLearnedDraftListScreen.route) {
+            LessonsLearnedDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { id ->
+                    navController.navigate("create_lessons_learned_screen?isFromDraft=true&draftId=$id")
+                }
             )
         }
         composable(Screens.ToolBoxTalkListScreen.route) {

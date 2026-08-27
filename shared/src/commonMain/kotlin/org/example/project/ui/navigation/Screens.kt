@@ -30,7 +30,8 @@ sealed class Screens(val route: String) {
     object PermitDetailScreen : Screens("permit_detail_screen")
     object PermitDetailScreenWithArgs : Screens("permit_detail_screen/{permitId}")
     object CreatePermitScreen : Screens("create_permit_screen")
-    object CreatePermitScreenWithArgs : Screens("create_permit_screen/{permitTypeId}/{permitTypeName}")
+    object CreatePermitScreenWithArgs : Screens("create_permit_screen/{permitTypeId}/{permitTypeName}?isFromDraft={isFromDraft}&draftId={draftId}")
+    object PermitDraftListScreen : Screens("permit_draft_list_screen")
     object IncidentListScreen : Screens("incident_list_screen")
     object ViolationListScreen : Screens("violation_list_screen")
     object CreateViolationScreen : Screens("create_violation_screen")
@@ -63,6 +64,8 @@ sealed class Screens(val route: String) {
     // Lessons Learned
     object LessonsLearnedListScreen : Screens("lessons_learned_list_screen")
     object CreateLessonsLearnedScreen : Screens("create_lessons_learned_screen")
+    object CreateLessonsLearnedScreenWithArgs : Screens("create_lessons_learned_screen?isFromDraft={isFromDraft}&draftId={draftId}")
+    object LessonsLearnedDraftListScreen : Screens("lessons_learned_draft_list_screen")
     
     // Toolbox Talks
     object ToolBoxTalkListScreen : Screens("toolbox_talk_list_screen")
