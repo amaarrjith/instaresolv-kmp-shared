@@ -18,17 +18,21 @@ import org.example.project.network.NetworkResult
 import org.example.project.data.model.AppFilterState
 
 data class ToolBoxTalkListState(
+    val isPullDown: Boolean = false,
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val items: List<ToolBoxTalkItem> = emptyList(),
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
-    val appliedFilterState: AppFilterState = AppFilterState()
+    val appliedFilterState: AppFilterState = AppFilterState(),
+    val drafts: List<org.example.project.shared.db.ToolBoxTalkDraft> = emptyList()
 )
 
 class ToolBoxTalkListViewModel(
-    private val repository: ToolBoxTalkRepository
+    private val repository: ToolBoxTalkRepository,
+    private val authPreferences: org.example.project.data.settings.AuthPreferences,
+    private val toolBoxTalkDraftRepository: org.example.project.data.repository.ToolBoxTalkDraftRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ToolBoxTalkListState())
@@ -39,6 +43,8 @@ class ToolBoxTalkListViewModel(
 
     private val _exportToastMessage = MutableStateFlow<String?>(null)
     val exportToastMessage: StateFlow<String?> = _exportToastMessage.asStateFlow()
+
+    val draftToastMessage = MutableStateFlow<String?>(null)
 
     private val _exportUrl = MutableStateFlow<String?>(null)
     val exportUrl: StateFlow<String?> = _exportUrl.asStateFlow()
@@ -76,21 +82,23 @@ class ToolBoxTalkListViewModel(
         fetchToolBoxTalks(isRefresh = true)
     }
 
-    fun fetchToolBoxTalks(isRefresh: Boolean = false) {
-        if (isRefresh) {
+    fun fetchToolBoxTalks(isRefresh: Boolean = false, isPullDown: Boolean = false) {
+        if (isRefresh || isPullDown) {
             currentPage = 1
         }
         
         if (_uiState.value.isLoading || _uiState.value.isPaginating) return
         if (!isRefresh && _uiState.value.endReached) return
 
-        viewModelScope.launch {
-            if (isRefresh) {
-                _uiState.update { it.copy(isLoading = true, error = null, endReached = false) }
-            } else {
-                _uiState.update { it.copy(isPaginating = true, error = null) }
-            }
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, error = null, endReached = false, isPullDown = false) }
+        } else if (isPullDown) {
+            _uiState.update { it.copy(isLoading = false, error = null, endReached = false, isPullDown = true) }
+        } else {
+            _uiState.update { it.copy(isPaginating = true, error = null) }
+        }
 
+        viewModelScope.launch {
             val request = ToolBoxTalkListRequest(
                 searchKey = _uiState.value.searchKey.takeIf { it.isNotBlank() },
                 pageNumber = currentPage,
@@ -107,9 +115,10 @@ class ToolBoxTalkListViewModel(
                     val newItems = result.data
                     _uiState.update { state ->
                         state.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            items = if (isRefresh) newItems else state.items + newItems,
+                            items = if (isRefresh || isPullDown) newItems else state.items + newItems,
                             endReached = newItems.isEmpty() || newItems.size < 20
                         )
                     }
@@ -118,6 +127,7 @@ class ToolBoxTalkListViewModel(
                 is NetworkResult.Error -> {
                     _uiState.update {
                         it.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             error = result.message
@@ -160,5 +170,29 @@ class ToolBoxTalkListViewModel(
         val tz = kotlinx.datetime.TimeZone.currentSystemDefault()
         val dt = instant.toLocalDateTime(tz)
         return "${dt.dayOfMonth.toString().padStart(2, '0')}-${dt.monthNumber.toString().padStart(2, '0')}-${dt.year}"
+    }
+
+    fun clearDraftToast() {
+        draftToastMessage.value = null
+    }
+
+    fun loadDrafts() {
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            if (user?.userId != null) {
+                val list = toolBoxTalkDraftRepository.getAllDrafts(user.userId!!)
+                _uiState.update { it.copy(drafts = list) }
+            }
+        }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            ids.forEach { id ->
+                toolBoxTalkDraftRepository.deleteDraft(id)
+            }
+            draftToastMessage.value = successMessage
+            loadDrafts()
+        }
     }
 }

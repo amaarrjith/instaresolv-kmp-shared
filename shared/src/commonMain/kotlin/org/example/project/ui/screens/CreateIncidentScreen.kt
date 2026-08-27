@@ -51,17 +51,67 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.ui.components.AppExitPopup
 import kotlin.time.Clock
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateIncidentScreen(
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L
 ) {
     val viewModel: CreateIncidentViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
+    val showDraftSuccessDialog = remember { mutableStateOf(false) }
     val showExitPopup = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFromDraft, draftId) {
+        if (isFromDraft && draftId != -1L) {
+            viewModel.draftId = draftId
+            val draft = viewModel.getDraftById(draftId)
+            if (draft != null) {
+                val project = draft.projectJson?.let {
+                    try {
+                        Json.decodeFromString<org.example.project.data.model.Project>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                val incidentTypes = draft.incidentTypesJson?.let {
+                    try {
+                        Json.decodeFromString<List<Int>>(it)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                } ?: emptyList()
+                val injuredEmployees = draft.injuredEmployeesJson?.let {
+                    try {
+                        Json.decodeFromString<List<InjuredEmployee>>(it)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                } ?: emptyList()
+                val images = draft.imagesJson?.let {
+                    try {
+                        Json.decodeFromString<List<IncidentImage>>(it)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                } ?: emptyList()
+
+                viewModel.restoreDraftState(
+                    draft = draft,
+                    project = project,
+                    incidentTypes = incidentTypes,
+                    injuredEmployees = injuredEmployees,
+                    images = images
+                )
+            }
+        }
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -112,9 +162,45 @@ fun CreateIncidentScreen(
                     AppBorderButton(
                         title = stringResource(Res.string.saveAsDraft),
                         onClick = {
-                            viewModel.saveIncident(
-                                isDraft = true,
-                                onSuccess = { showSuccessDialog.value = true }
+                            val imagesJson = try {
+                                Json.encodeToString(uiState.incidentImages)
+                            } catch (e: Exception) {
+                                "[]"
+                            }
+                            val projectJson = uiState.selectedProject?.let {
+                                try {
+                                    Json.encodeToString(it)
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+                            val incidentTypesJson = try {
+                                Json.encodeToString(uiState.incidentTypes)
+                            } catch (e: Exception) {
+                                "[]"
+                            }
+                            val injuredEmployeesJson = try {
+                                Json.encodeToString(uiState.injuredEmployees)
+                            } catch (e: Exception) {
+                                "[]"
+                            }
+                            viewModel.saveLocalDraft(
+                                id = if (isFromDraft) draftId else 0L,
+                                facilitiesId = uiState.selectedProject?.groupId,
+                                projectJson = projectJson,
+                                reportedBy = uiState.reportedByName,
+                                incidentDateMillis = uiState.incidentDateMillis,
+                                incidentTime = uiState.incidentTime,
+                                incidentLocation = uiState.location,
+                                incidentTypesJson = incidentTypesJson,
+                                hasInjuredPerson = uiState.hasInjuredPerson,
+                                injuredEmployeesJson = injuredEmployeesJson,
+                                description = uiState.description,
+                                corrections = uiState.immediateCorrections,
+                                imagesJson = imagesJson,
+                                onSuccess = {
+                                    showDraftSuccessDialog.value = true
+                                }
                             )
                         },
                         modifier = Modifier.weight(1f)
@@ -566,6 +652,19 @@ fun CreateIncidentScreen(
                 buttonText = "OK",
                 onDismiss = {
                     showSuccessDialog.value = false
+                    onBackClicked()
+                }
+            )
+        }
+
+        if (showDraftSuccessDialog.value) {
+            org.example.project.ui.components.AppStatusDialog(
+                visible = showDraftSuccessDialog.value,
+                title = stringResource(Res.string.success),
+                description = "Incident Draft Saved Successfully.",
+                buttonText = "OK",
+                onDismiss = {
+                    showDraftSuccessDialog.value = false
                     onBackClicked()
                 }
             )

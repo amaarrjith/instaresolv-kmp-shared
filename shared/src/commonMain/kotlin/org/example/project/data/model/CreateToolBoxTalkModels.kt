@@ -50,3 +50,20 @@ data class CreateToolBoxTalkResponseData(
     val toolBoxTalkId: Int,
     val statusMessage: String? = null
 )
+
+@Serializable
+data class CreateToolBoxTalkDraftRequest(
+    val id: Long = 0,
+    val facilitiesId: Int?,
+    val projectJson: String?,
+    val dateMillis: Long?,
+    val startTime: String?,
+    val endTime: String?,
+    val topic: String?,
+    val discussionPointsJson: String?,
+    val attendeesJson: String?,
+    val imagesJson: String?,
+    val reportedBy: String?,
+    val createdAt: String?,
+    val userId: Int
+)

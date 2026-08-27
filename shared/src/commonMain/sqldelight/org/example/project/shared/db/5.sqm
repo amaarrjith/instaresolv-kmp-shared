@@ -1,0 +1,33 @@
+CREATE TABLE IncidentDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    reportedBy TEXT,
+    incidentDateMillis INTEGER,
+    incidentTime TEXT,
+    incidentLocation TEXT,
+    incidentTypesJson TEXT,
+    hasInjuredPerson INTEGER,
+    injuredEmployeesJson TEXT,
+    description TEXT,
+    corrections TEXT,
+    imagesJson TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
+
+CREATE TABLE ToolBoxTalkDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    dateMillis INTEGER,
+    startTime TEXT,
+    endTime TEXT,
+    topic TEXT,
+    discussionPointsJson TEXT,
+    attendeesJson TEXT,
+    imagesJson TEXT,
+    reportedBy TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);

@@ -19,6 +19,7 @@ import org.example.project.data.settings.AuthPreferences
 import org.example.project.data.repository.LessonLearnedDraftRepository
 
 data class LessonsLearnedListState(
+    val isPullDown: Boolean = false,
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val lessons: List<LessonLearnedData> = emptyList(),
@@ -82,21 +83,23 @@ class LessonsLearnedListViewModel(
         fetchLessonsLearned(isRefresh = true)
     }
 
-    fun fetchLessonsLearned(isRefresh: Boolean = false) {
-        if (isRefresh) {
+    fun fetchLessonsLearned(isRefresh: Boolean = false, isPullDown: Boolean = false) {
+        if (isRefresh || isPullDown) {
             currentPage = 1
         }
         
         if (_uiState.value.isLoading || _uiState.value.isPaginating) return
         if (!isRefresh && _uiState.value.endReached) return
 
-        viewModelScope.launch {
-            if (isRefresh) {
-                _uiState.update { it.copy(isLoading = true, error = null) }
-            } else {
-                _uiState.update { it.copy(isPaginating = true, error = null) }
-            }
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, error = null, isPullDown = false) }
+        } else if (isPullDown) {
+            _uiState.update { it.copy(isLoading = false, error = null, isPullDown = true) }
+        } else {
+            _uiState.update { it.copy(isPaginating = true, error = null) }
+        }
 
+        viewModelScope.launch {
             val request = LessonLearnedListRequest(
                 searchKey = _uiState.value.searchKey.takeIf { it.isNotBlank() },
                 pageNumber = currentPage,
@@ -113,9 +116,10 @@ class LessonsLearnedListViewModel(
                     val newItems = result.data
                     _uiState.update { state ->
                         state.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            lessons = if (isRefresh) newItems else state.lessons + newItems,
+                            lessons = if (isRefresh || isPullDown) newItems else state.lessons + newItems,
                             endReached = newItems.isEmpty() || newItems.size < 20
                         )
                     }
@@ -124,6 +128,7 @@ class LessonsLearnedListViewModel(
                 is NetworkResult.Error -> {
                     _uiState.update {
                         it.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             error = result.message

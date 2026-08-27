@@ -20,6 +20,7 @@ import org.example.project.data.repository.PermitDraftRepository
 import org.example.project.data.settings.AuthPreferences
 
 data class PermitToWorkListState(
+    val isPullDown: Boolean = false,
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val permits: List<PermitItem> = emptyList(),
@@ -69,16 +70,18 @@ class PermitToWorkListViewModel(
         fetchPermits(isRefresh = true)
     }
 
-    fun fetchPermits(isRefresh: Boolean = false) {
-        if (isRefresh) {
+    fun fetchPermits(isRefresh: Boolean = false, isPullDown: Boolean = false) {
+        if (isRefresh || isPullDown) {
             currentPage = 1
         }
 
         if (_uiState.value.isLoading || _uiState.value.isPaginating) return
         if (!isRefresh && _uiState.value.endReached) return
 
-        if (currentPage == 1) {
-            _uiState.update { it.copy(isLoading = true, error = null, endReached = false) }
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, error = null, endReached = false, isPullDown = false) }
+        } else if (isPullDown) {
+            _uiState.update { it.copy(isLoading = false, error = null, endReached = false, isPullDown = true) }
         } else {
             _uiState.update { it.copy(isPaginating = true, error = null) }
         }
@@ -120,9 +123,10 @@ class PermitToWorkListViewModel(
                     val items = result.data?.results ?: emptyList()
                     _uiState.update {
                         it.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            permits = if (currentPage == 1) items else it.permits + items,
+                            permits = if (isRefresh || isPullDown) items else it.permits + items,
                             endReached = items.isEmpty()
                         )
                     }
@@ -133,6 +137,7 @@ class PermitToWorkListViewModel(
                 is NetworkResult.Error -> {
                     _uiState.update {
                         it.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             error = result.message ?: "Failed to fetch permits"

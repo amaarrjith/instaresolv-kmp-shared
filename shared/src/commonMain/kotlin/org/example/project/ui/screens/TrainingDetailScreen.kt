@@ -268,7 +268,8 @@ fun TrainingDetailScreen(
                                         } catch (e: Exception) {
                                             errorMessage = e.message ?: "Failed to download certificate"
                                         }
-                                    }
+                                    },
+                                    isScormFile = !data.scormFileUrl.isNullOrEmpty()
                                 )
                             }
                         }
@@ -468,7 +469,8 @@ fun TrainingProgressSection(
     videoStatus: Int,
     quizStatus: Int,
     certificateUrl: String?,
-    onDownloadCertificate: (String) -> Unit
+    onDownloadCertificate: (String) -> Unit,
+    isScormFile: Boolean
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
@@ -523,43 +525,98 @@ fun TrainingProgressSection(
                 }
             }
 
-            // Quiz Progress Column
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = stringResource(Res.string.quiz),
-                    style = textStyle(size = 13.sp, weight = FontWeight.Bold, color = AppColors.Black)
-                )
-                when (quizStatus) {
-                    1 -> {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Canvas(modifier = Modifier.size(14.dp)) {
-                                drawCircle(color = Color(0xFF00A82B))
-                                val path = Path().apply {
-                                    moveTo(size.width * 0.25f, size.height * 0.5f)
-                                    lineTo(size.width * 0.45f, size.height * 0.7f)
-                                    lineTo(size.width * 0.75f, size.height * 0.3f)
+            if (!isScormFile) {
+                // Quiz Progress Column
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.quiz),
+                        style = textStyle(
+                            size = 13.sp,
+                            weight = FontWeight.Bold,
+                            color = AppColors.Black
+                        )
+                    )
+                    when (quizStatus) {
+                        1 -> {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Canvas(modifier = Modifier.size(14.dp)) {
+                                    drawCircle(color = Color(0xFF00A82B))
+                                    val path = Path().apply {
+                                        moveTo(size.width * 0.25f, size.height * 0.5f)
+                                        lineTo(size.width * 0.45f, size.height * 0.7f)
+                                        lineTo(size.width * 0.75f, size.height * 0.3f)
+                                    }
+                                    drawPath(
+                                        path,
+                                        color = Color.White,
+                                        style = Stroke(
+                                            width = 1.5.dp.toPx(),
+                                            cap = StrokeCap.Round,
+                                            join = StrokeJoin.Round
+                                        )
+                                    )
                                 }
-                                drawPath(path, color = Color.White, style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+                                Text(
+                                    "Passed",
+                                    style = textStyle(
+                                        size = 12.sp,
+                                        weight = FontWeight.Medium,
+                                        color = Color(0xFF00A82B)
+                                    )
+                                )
                             }
-                            Text("Passed", style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color(0xFF00A82B)))
                         }
-                    }
-                    2 -> {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Canvas(modifier = Modifier.size(14.dp)) {
-                                drawCircle(color = Color(0xFFD42027))
-                                drawLine(color = Color.White, start = Offset(size.width * 0.3f, size.height * 0.3f), end = Offset(size.width * 0.7f, size.height * 0.7f), strokeWidth = 1.5.dp.toPx(), cap = StrokeCap.Round)
-                                drawLine(color = Color.White, start = Offset(size.width * 0.7f, size.height * 0.3f), end = Offset(size.width * 0.3f, size.height * 0.7f), strokeWidth = 1.5.dp.toPx(), cap = StrokeCap.Round)
+
+                        2 -> {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Canvas(modifier = Modifier.size(14.dp)) {
+                                    drawCircle(color = Color(0xFFD42027))
+                                    drawLine(
+                                        color = Color.White,
+                                        start = Offset(size.width * 0.3f, size.height * 0.3f),
+                                        end = Offset(size.width * 0.7f, size.height * 0.7f),
+                                        strokeWidth = 1.5.dp.toPx(),
+                                        cap = StrokeCap.Round
+                                    )
+                                    drawLine(
+                                        color = Color.White,
+                                        start = Offset(size.width * 0.7f, size.height * 0.3f),
+                                        end = Offset(size.width * 0.3f, size.height * 0.7f),
+                                        strokeWidth = 1.5.dp.toPx(),
+                                        cap = StrokeCap.Round
+                                    )
+                                }
+                                Text(
+                                    "Failed",
+                                    style = textStyle(
+                                        size = 12.sp,
+                                        weight = FontWeight.Medium,
+                                        color = Color(0xFFD42027)
+                                    )
+                                )
                             }
-                            Text("Failed", style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color(0xFFD42027)))
                         }
-                    }
-                    else -> {
-                        Text("NA", style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color.Gray))
+
+                        else -> {
+                            Text(
+                                "NA",
+                                style = textStyle(
+                                    size = 12.sp,
+                                    weight = FontWeight.Medium,
+                                    color = Color.Gray
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -571,7 +628,7 @@ fun TrainingProgressSection(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = stringResource(Res.string.certificate),
+                    text = stringResource(Res.string.certificate).uppercase(),
                     style = textStyle(size = 13.sp, weight = FontWeight.Bold, color = AppColors.Black)
                 )
                 if (!certificateUrl.isNullOrBlank()) {

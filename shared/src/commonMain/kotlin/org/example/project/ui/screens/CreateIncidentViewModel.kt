@@ -59,10 +59,13 @@ data class CreateIncidentUiState(
 class CreateIncidentViewModel(
     private val projectRepository: ProjectRepository,
     private val authPreferences: AuthPreferences,
-    private val incidentRepository: IncidentRepository
+    private val incidentRepository: IncidentRepository,
+    private val incidentDraftRepository: org.example.project.data.repository.IncidentDraftRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateIncidentUiState())
     val uiState: StateFlow<CreateIncidentUiState> = _uiState.asStateFlow()
+
+    var draftId: Long = 0L
 
     init {
         val userName = authPreferences.getLoggedInUser()?.name ?: "Unknown User"
@@ -223,6 +226,37 @@ class CreateIncidentViewModel(
         }
     }
 
+    fun restoreDraftState(
+        draft: org.example.project.shared.db.IncidentDraft,
+        project: Project?,
+        incidentTypes: List<Int>,
+        injuredEmployees: List<InjuredEmployee>,
+        images: List<IncidentImage>
+    ) {
+        _uiState.update {
+            it.copy(
+                selectedProject = project,
+                reportedByName = draft.reportedBy ?: it.reportedByName,
+                incidentDateMillis = draft.incidentDateMillis,
+                incidentTime = draft.incidentTime.orEmpty(),
+                location = draft.incidentLocation.orEmpty(),
+                incidentTypes = incidentTypes,
+                hasInjuredPerson = when (draft.hasInjuredPerson) {
+                    1L -> true
+                    0L -> false
+                    else -> null
+                },
+                injuredEmployees = injuredEmployees,
+                description = draft.description.orEmpty(),
+                immediateCorrections = draft.corrections.orEmpty(),
+                incidentImages = if (images.isEmpty()) listOf(IncidentImage()) else images
+            )
+        }
+        if (project != null) {
+            fetchGroupUsers(project.groupId ?: 0, project.groupCode ?: "")
+        }
+    }
+
     fun saveIncident(
         isDraft: Boolean,
         onSuccess: () -> Unit
@@ -329,6 +363,9 @@ class CreateIncidentViewModel(
             
             when (result) {
                 is NetworkResult.Success -> {
+                    if (draftId != 0L) {
+                        incidentDraftRepository.deleteDraft(draftId)
+                    }
                     _uiState.update { it.copy(isLoading = false) }
                     onSuccess()
                 }
@@ -439,5 +476,66 @@ class CreateIncidentViewModel(
                 bulkEmployees = emptyList()
             )
         }
+    }
+
+    fun saveLocalDraft(
+        id: Long,
+        facilitiesId: Int?,
+        projectJson: String?,
+        reportedBy: String,
+        incidentDateMillis: Long?,
+        incidentTime: String,
+        incidentLocation: String,
+        incidentTypesJson: String,
+        hasInjuredPerson: Boolean?,
+        injuredEmployeesJson: String,
+        description: String,
+        corrections: String,
+        imagesJson: String,
+        onSuccess: () -> Unit
+    ) {
+        if (facilitiesId == null && incidentDateMillis == null && incidentTime.isBlank() && incidentLocation.isBlank() && 
+            (incidentTypesJson.isBlank() || incidentTypesJson == "[]") && hasInjuredPerson == null && 
+            (injuredEmployeesJson.isBlank() || injuredEmployeesJson == "[]") && 
+            description.isBlank() && corrections.isBlank() && (imagesJson.isBlank() || imagesJson == "[]")) {
+            _uiState.update { it.copy(error = "At least one value is needed to save as draft") }
+            return
+        }
+
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            val request = org.example.project.data.model.CreateIncidentDraftRequest(
+                id = id,
+                facilitiesId = facilitiesId,
+                projectJson = projectJson,
+                reportedBy = reportedBy,
+                incidentDateMillis = incidentDateMillis,
+                incidentTime = incidentTime,
+                incidentLocation = incidentLocation,
+                incidentTypesJson = incidentTypesJson,
+                hasInjuredPerson = hasInjuredPerson,
+                injuredEmployeesJson = injuredEmployeesJson,
+                description = description,
+                corrections = corrections,
+                imagesJson = imagesJson,
+                createdAt = run {
+                    val localDateTime = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val year = localDateTime.year
+                    val month = localDateTime.monthNumber.toString().padStart(2, '0')
+                    val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+                    val hour = localDateTime.hour.toString().padStart(2, '0')
+                    val minute = localDateTime.minute.toString().padStart(2, '0')
+                    val second = localDateTime.second.toString().padStart(2, '0')
+                    "$year-$month-$day $hour:$minute:$second"
+                },
+                userId = user?.userId ?: -1
+            )
+            incidentDraftRepository.saveDraft(request)
+            onSuccess()
+        }
+    }
+
+    suspend fun getDraftById(id: Long): org.example.project.shared.db.IncidentDraft? {
+        return incidentDraftRepository.getDraftById(id)
     }
 }

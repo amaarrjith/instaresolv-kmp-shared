@@ -46,16 +46,21 @@ import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.ui.components.AppExitPopup
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateToolBoxTalkScreen(
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L
 ) {
     val viewModel: CreateToolBoxTalkViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
+    val showDraftSuccessDialog = remember { mutableStateOf(false) }
 
     var selectedProject by remember { mutableStateOf<org.example.project.data.model.Project?>(null) }
     var facilitiesId by remember { mutableStateOf<String?>(null) }
@@ -77,6 +82,66 @@ fun CreateToolBoxTalkScreen(
 
     var showErrorToast by remember { mutableStateOf<String?>(null) }
     val showExitPopup = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFromDraft, draftId) {
+        if (isFromDraft && draftId != -1L) {
+            viewModel.draftId = draftId
+            val draft = viewModel.getDraftById(draftId)
+            if (draft != null) {
+                topic = draft.topic.orEmpty()
+                selectedDateMillis = draft.dateMillis
+                startTime = draft.startTime.orEmpty()
+                endTime = draft.endTime.orEmpty()
+                facilitiesId = draft.facilitiesId?.toString()
+
+                val project = draft.projectJson?.let {
+                    try {
+                        Json.decodeFromString<org.example.project.data.model.Project>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                selectedProject = project
+
+                val localPoints = draft.discussionPointsJson?.let {
+                    try {
+                        Json.decodeFromString<List<String>>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (!localPoints.isNullOrEmpty()) {
+                    discussionPoints.clear()
+                    discussionPoints.addAll(localPoints)
+                }
+
+                val localAttendees = draft.attendeesJson?.let {
+                    try {
+                        Json.decodeFromString<List<ToolBoxAttendeeRequest>>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (!localAttendees.isNullOrEmpty()) {
+                    attendees.clear()
+                    attendees.addAll(localAttendees)
+                }
+
+                val localImages = draft.imagesJson?.let {
+                    try {
+                        Json.decodeFromString<List<org.example.project.ui.screens.ObservationImage>>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (!localImages.isNullOrEmpty()) {
+                    images.clear()
+                    images.addAll(localImages)
+                }
+            }
+        }
+    }
+
     LaunchedEffect(uiState) {
         when (uiState) {
             is CreateToolBoxTalkUiState.Success -> {
@@ -141,25 +206,42 @@ fun CreateToolBoxTalkScreen(
                     AppBorderButton(
                         title = stringResource(Res.string.saveAsDraft),
                         onClick = {
-                            if (topic.isBlank()) {
-                                showErrorToast = "Topic is required"
-                                return@AppBorderButton
+                            val imagesJson = try {
+                                Json.encodeToString(images.toList())
+                            } catch (e: Exception) {
+                                "[]"
                             }
-                            val imageRequests = images.filter { it.imageUrl?.isNotBlank() == true }.map {
-                                ToolBoxTalkImageRequest(
-                                    image = it.imageUrl ?: "",
-                                    description = it.description
-                                )
+                            val projectJson = selectedProject?.let {
+                                try {
+                                    Json.encodeToString(it)
+                                } catch (e: Exception) {
+                                    null
+                                }
                             }
-                            viewModel.createToolBoxTalk(
-                                selectedDateMillis = selectedDateMillis,
-                                startTimeStr = startTime,
-                                endTimeStr = endTime,
+                            val discussionPointsJson = try {
+                                Json.encodeToString(discussionPoints.toList())
+                            } catch (e: Exception) {
+                                "[]"
+                            }
+                            val attendeesJson = try {
+                                Json.encodeToString(attendees.toList())
+                            } catch (e: Exception) {
+                                "[]"
+                            }
+                            viewModel.saveLocalDraft(
+                                id = if (isFromDraft) draftId else 0L,
+                                facilitiesId = selectedProject?.groupId,
+                                projectJson = projectJson,
+                                dateMillis = selectedDateMillis,
+                                startTime = startTime,
+                                endTime = endTime,
                                 topic = topic,
-                                discussionPoints = discussionPoints.toList(),
-                                attendees = attendees.toList(),
-                                facilitiesId = facilitiesId,
-                                images = imageRequests.takeIf { it.isNotEmpty() }
+                                discussionPointsJson = discussionPointsJson,
+                                attendeesJson = attendeesJson,
+                                imagesJson = imagesJson,
+                                onSuccess = {
+                                    showDraftSuccessDialog.value = true
+                                }
                             )
                         },
                         modifier = Modifier.weight(1f)
@@ -486,6 +568,19 @@ fun CreateToolBoxTalkScreen(
                 }
             )
         }
+        if (showDraftSuccessDialog.value) {
+            AppStatusDialog(
+                visible = showDraftSuccessDialog.value,
+                title = stringResource(Res.string.success),
+                description = "Toolbox Talk Draft Saved successfully.",
+                buttonText = "OK",
+                onDismiss = {
+                    showDraftSuccessDialog.value = false
+                    onBackClicked()
+                }
+            )
+        }
+
 
         AppExitPopup(
             visible = showExitPopup.value,

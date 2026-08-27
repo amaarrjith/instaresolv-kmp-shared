@@ -17,6 +17,7 @@ import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
 
 data class AuditInspectionListState(
+    val isPullDown: Boolean = false,
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val inspections: List<InspectionData> = emptyList(),
@@ -142,16 +143,18 @@ class AuditInspectionListViewModel(
         fetchInspections(isRefresh = true)
     }
 
-    fun fetchInspections(isRefresh: Boolean = false) {
-        if (isRefresh) {
+    fun fetchInspections(isRefresh: Boolean = false, isPullDown: Boolean = false) {
+        if (isRefresh || isPullDown) {
             currentPage = 1
         }
         
         if (_uiState.value.isLoading || _uiState.value.isPaginating) return
         if (!isRefresh && _uiState.value.endReached) return
 
-        if (currentPage == 1) {
-            _uiState.update { it.copy(isLoading = true, error = null, endReached = false) }
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, error = null, endReached = false, isPullDown = false) }
+        } else if (isPullDown) {
+            _uiState.update { it.copy(isLoading = false, error = null, endReached = false, isPullDown = true) }
         } else {
             _uiState.update { it.copy(isPaginating = true, error = null) }
         }
@@ -180,6 +183,7 @@ class AuditInspectionListViewModel(
                     _uiState.update { currentState ->
                         if (currentPage == 1) {
                             currentState.copy(
+                                isPullDown = false,
                                 isLoading = false,
                                 isPaginating = false,
                                 inspections = items,
@@ -190,6 +194,7 @@ class AuditInspectionListViewModel(
                             val uniqueNewItems = items.filter { it.id !in existingIds }
                             
                             currentState.copy(
+                                isPullDown = false,
                                 isLoading = false,
                                 isPaginating = false,
                                 inspections = currentState.inspections + uniqueNewItems,
@@ -204,6 +209,7 @@ class AuditInspectionListViewModel(
                 is NetworkResult.Error -> {
                     _uiState.update { 
                         it.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             error = result.message ?: "Failed to fetch inspections"

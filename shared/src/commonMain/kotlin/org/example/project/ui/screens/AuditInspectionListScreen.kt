@@ -27,7 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -214,7 +214,7 @@ fun AuditInspectionListScreen(
                     }
                 }
 
-                if (uiState.isLoading && uiState.inspections.isEmpty()) {
+                if (uiState.isLoading) {
                     AppLoader()
                 } else if (uiState.error != null && uiState.inspections.isEmpty()) {
                     ErrorRetryView(
@@ -222,9 +222,9 @@ fun AuditInspectionListScreen(
                         onRetryClick = { viewModel.fetchInspections(isRefresh = true) }
                     )
                 } else {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.fetchInspections(isRefresh = true) },
+                    AppPullToRefreshBox(
+                        isRefreshing = uiState.isPullDown,
+                        onRefresh = { viewModel.fetchInspections(isPullDown = true) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         if (uiState.inspections.isEmpty()) {

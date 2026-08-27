@@ -13,5 +13,6 @@ expect fun CustomVideoPlayer(
     onError: (String) -> Unit,
     seekToSeconds: Long?,
     onSeekCompleted: () -> Unit,
+    cookies: Map<String, String> = emptyMap(),
     modifier: Modifier = Modifier
 )

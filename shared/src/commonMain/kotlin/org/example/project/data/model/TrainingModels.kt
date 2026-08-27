@@ -1,5 +1,6 @@
 package org.example.project.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -61,7 +62,18 @@ data class TrainingVideoUrlRequest(
 data class TrainingVideoUrlData(
     val videoUrl: String,
     val status: Int,
-    val lastPlayBackTime: Int? = null
+    val lastPlayBackTime: Int? = null,
+    val cookies: CloudFrontCookies? = null
+)
+
+@Serializable
+data class CloudFrontCookies(
+    @SerialName("CloudFront-Policy")
+    val cloudFrontPolicy: String? = null,
+    @SerialName("CloudFront-Signature")
+    val cloudFrontSignature: String? = null,
+    @SerialName("CloudFront-Key-Pair-Id")
+    val cloudFrontKeyPairId: String? = null
 )
 
 @Serializable

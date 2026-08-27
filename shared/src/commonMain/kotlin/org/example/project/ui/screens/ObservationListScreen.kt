@@ -41,7 +41,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -234,7 +234,7 @@ fun ObservationListScreen(
                     }
                 }
 
-                if (uiState.isLoading && uiState.observations.isEmpty()) {
+                if (uiState.isLoading) {
                     AppLoader()
                 } else if (uiState.error != null && uiState.observations.isEmpty()) {
                     ErrorRetryView(
@@ -242,9 +242,9 @@ fun ObservationListScreen(
                         onRetryClick = { viewModel.fetchObservations(isRefresh = true) }
                     )
                 } else {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.fetchObservations(isRefresh = true) },
+                    AppPullToRefreshBox(
+                        isRefreshing = uiState.isPullDown,
+                        onRefresh = { viewModel.fetchObservations(isPullDown = true) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         if (uiState.observations.isEmpty()) {

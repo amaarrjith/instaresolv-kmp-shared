@@ -27,7 +27,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -210,7 +210,7 @@ fun ViolationListScreen(
                     }
                 }
 
-                if (uiState.isLoading && uiState.violations.isEmpty()) {
+                if (uiState.isLoading) {
                     AppLoader()
                 } else if (uiState.error != null && uiState.violations.isEmpty()) {
                     ErrorRetryView(
@@ -218,9 +218,9 @@ fun ViolationListScreen(
                         onRetryClick = { viewModel.loadViolations(isRefresh = true) }
                     )
                 } else {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.loadViolations(isRefresh = true) },
+                    AppPullToRefreshBox(
+                        isRefreshing = uiState.isPullDown,
+                        onRefresh = { viewModel.loadViolations(isPullDown = true) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         if (uiState.violations.isEmpty()) {

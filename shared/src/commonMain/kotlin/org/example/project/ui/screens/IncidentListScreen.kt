@@ -29,7 +29,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -72,7 +72,8 @@ import instaresolv.shared.generated.resources.*
 @Composable
 fun IncidentListScreen(
     onBackClicked: () -> Unit,
-    onCreateClicked: () -> Unit
+    onCreateClicked: () -> Unit,
+    onDraftClicked: () -> Unit = {}
 ) {
     val viewModel: IncidentListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -124,7 +125,7 @@ fun IncidentListScreen(
                     color = AppColors.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                DraftButton(onDraftClicked = {})
+                DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = {onCreateClicked()})
             }
@@ -213,7 +214,7 @@ fun IncidentListScreen(
                     }
                 }
 
-                if (uiState.isLoading && uiState.incidents.isEmpty()) {
+                if (uiState.isLoading) {
                     AppLoader()
                 } else if (uiState.error != null && uiState.incidents.isEmpty()) {
                     ErrorRetryView(
@@ -221,9 +222,9 @@ fun IncidentListScreen(
                         onRetryClick = { viewModel.loadIncidents(isRefresh = true) }
                     )
                 } else {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.loadIncidents(isRefresh = true) },
+                    AppPullToRefreshBox(
+                        isRefreshing = uiState.isPullDown,
+                        onRefresh = { viewModel.loadIncidents(isPullDown = true) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         if (uiState.incidents.isEmpty()) {

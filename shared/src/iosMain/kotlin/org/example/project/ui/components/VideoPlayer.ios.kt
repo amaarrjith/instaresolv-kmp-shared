@@ -11,6 +11,11 @@ import platform.AVFoundation.*
 import platform.AVKit.AVPlayerViewController
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
+import platform.Foundation.NSHTTPCookie
+import platform.Foundation.NSHTTPCookieDomain
+import platform.Foundation.NSHTTPCookieName
+import platform.Foundation.NSHTTPCookiePath
+import platform.Foundation.NSHTTPCookieValue
 import platform.Foundation.NSURL
 import platform.UIKit.UIView
 import kotlinx.coroutines.delay
@@ -26,13 +31,39 @@ actual fun CustomVideoPlayer(
     onError: (String) -> Unit,
     seekToSeconds: Long?,
     onSeekCompleted: () -> Unit,
+    cookies: Map<String, String>,
     modifier: Modifier
 ) {
     val nsUrl = remember(url) { NSURL.URLWithString(url) }
     if (nsUrl == null) return
 
-    val player = remember(url) {
-        AVPlayer(uRL = nsUrl).apply {
+    val player = remember(url, cookies) {
+        val domain = nsUrl.host ?: ""
+
+        // Build NSHTTPCookie list from the cookies map
+        val httpCookies = cookies.mapNotNull { (name, value) ->
+            NSHTTPCookie.cookieWithProperties(
+                mapOf<Any?, Any?>(
+                    NSHTTPCookieName to name,
+                    NSHTTPCookieValue to value,
+                    NSHTTPCookieDomain to domain,
+                    NSHTTPCookiePath to "/"
+                )
+            )
+        }
+
+        // Create AVURLAsset with cookies attached so all HLS segment requests include them
+        val asset = if (httpCookies.isNotEmpty()) {
+            AVURLAsset.URLAssetWithURL(
+                nsUrl,
+                options = mapOf<Any?, Any?>(AVURLAssetHTTPCookiesKey to httpCookies)
+            )
+        } else {
+            AVURLAsset.URLAssetWithURL(nsUrl, options = null)
+        }
+
+        val playerItem = AVPlayerItem(asset = asset)
+        AVPlayer(playerItem = playerItem).apply {
             if (lastPlaybackTimeSeconds > 0) {
                 val cmTime = CMTimeMakeWithSeconds(lastPlaybackTimeSeconds.toDouble(), 1)
                 seekToTime(cmTime)

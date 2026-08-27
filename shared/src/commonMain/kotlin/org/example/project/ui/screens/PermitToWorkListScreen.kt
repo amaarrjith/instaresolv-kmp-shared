@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -263,7 +263,7 @@ fun PermitToWorkListScreen(
                     }
                 }
 
-                if (uiState.isLoading && uiState.permits.isEmpty()) {
+                if (uiState.isLoading) {
                     AppLoader()
                 } else if (uiState.error != null && uiState.permits.isEmpty()) {
                     ErrorRetryView(
@@ -271,9 +271,9 @@ fun PermitToWorkListScreen(
                         onRetryClick = { viewModel.fetchPermits(isRefresh = true) }
                     )
                 } else {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.fetchPermits(isRefresh = true) },
+                    AppPullToRefreshBox(
+                        isRefreshing = uiState.isPullDown,
+                        onRefresh = { viewModel.fetchPermits(isPullDown = true) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         if (uiState.permits.isEmpty()) {

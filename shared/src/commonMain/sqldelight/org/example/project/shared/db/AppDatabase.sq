@@ -188,3 +188,91 @@ SELECT * FROM LessonLearnedDraft WHERE id = ?;
 
 deleteLessonLearnedDraft:
 DELETE FROM LessonLearnedDraft WHERE id = ?;
+
+CREATE TABLE IncidentDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    reportedBy TEXT,
+    incidentDateMillis INTEGER,
+    incidentTime TEXT,
+    incidentLocation TEXT,
+    incidentTypesJson TEXT,
+    hasInjuredPerson INTEGER,
+    injuredEmployeesJson TEXT,
+    description TEXT,
+    corrections TEXT,
+    imagesJson TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
+
+insertIncidentDraft:
+INSERT OR REPLACE INTO IncidentDraft (
+    id,
+    facilitiesId,
+    projectJson,
+    reportedBy,
+    incidentDateMillis,
+    incidentTime,
+    incidentLocation,
+    incidentTypesJson,
+    hasInjuredPerson,
+    injuredEmployeesJson,
+    description,
+    corrections,
+    imagesJson,
+    createdAt,
+    userId
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getIncidentDraftsByUserId:
+SELECT * FROM IncidentDraft WHERE userId = ? ORDER BY id DESC;
+
+getIncidentDraftById:
+SELECT * FROM IncidentDraft WHERE id = ?;
+
+deleteIncidentDraft:
+DELETE FROM IncidentDraft WHERE id = ?;
+
+CREATE TABLE ToolBoxTalkDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    dateMillis INTEGER,
+    startTime TEXT,
+    endTime TEXT,
+    topic TEXT,
+    discussionPointsJson TEXT,
+    attendeesJson TEXT,
+    imagesJson TEXT,
+    reportedBy TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
+
+insertToolBoxTalkDraft:
+INSERT OR REPLACE INTO ToolBoxTalkDraft (
+    id,
+    facilitiesId,
+    projectJson,
+    dateMillis,
+    startTime,
+    endTime,
+    topic,
+    discussionPointsJson,
+    attendeesJson,
+    imagesJson,
+    reportedBy,
+    createdAt,
+    userId
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getToolBoxTalkDraftsByUserId:
+SELECT * FROM ToolBoxTalkDraft WHERE userId = ? ORDER BY id DESC;
+
+getToolBoxTalkDraftById:
+SELECT * FROM ToolBoxTalkDraft WHERE id = ?;
+
+deleteToolBoxTalkDraft:
+DELETE FROM ToolBoxTalkDraft WHERE id = ?;

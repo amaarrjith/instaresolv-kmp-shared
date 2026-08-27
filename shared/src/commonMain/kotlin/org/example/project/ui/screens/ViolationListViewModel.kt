@@ -21,6 +21,7 @@ import org.example.project.data.settings.AuthPreferences
 import org.example.project.shared.db.ViolationDraft
 
 data class ViolationListState(
+    val isPullDown: Boolean = false,
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val violations: List<ViolationData> = emptyList(),
@@ -87,14 +88,19 @@ class ViolationListViewModel(
         loadViolations(isRefresh = true)
     }
 
-    fun loadViolations(isRefresh: Boolean = false, searchKey: String? = null) {
+    fun loadViolations(isRefresh: Boolean = false, isPullDown: Boolean = false, searchKey: String? = null) {
         if (searchKey != null) {
             _uiState.update { it.copy(searchKey = searchKey) }
         }
 
-        if (isRefresh) {
+        if (isRefresh || isPullDown) {
             currentPage = 1
-            _uiState.update { it.copy(isLoading = true, error = null, isLastPage = false) }
+        }
+
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, error = null, isLastPage = false, isPullDown = false) }
+        } else if (isPullDown) {
+            _uiState.update { it.copy(isLoading = false, error = null, isLastPage = false, isPullDown = true) }
         } else {
             if (_uiState.value.isLastPage || _uiState.value.isPaginating) return
             _uiState.update { it.copy(isPaginating = true, error = null) }
@@ -126,9 +132,10 @@ class ViolationListViewModel(
                     
                     _uiState.update { state ->
                         state.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            violations = if (isRefresh) newViolations else state.violations + newViolations,
+                            violations = if (isRefresh || isPullDown) newViolations else state.violations + newViolations,
                             isLastPage = isLastPageReached
                         )
                     }
@@ -139,6 +146,7 @@ class ViolationListViewModel(
                 is NetworkResult.Error -> {
                     _uiState.update { state ->
                         state.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             error = result.message ?: "Failed to load violations"

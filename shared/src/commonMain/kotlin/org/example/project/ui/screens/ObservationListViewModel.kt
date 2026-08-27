@@ -17,6 +17,7 @@ import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
 
 data class ObservationListState(
+    val isPullDown: Boolean = false,
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val observations: List<ObservationItem> = emptyList(),
@@ -103,16 +104,18 @@ class ObservationListViewModel(
         }
     }
 
-    fun fetchObservations(isRefresh: Boolean = false) {
-        if (isRefresh) {
+    fun fetchObservations(isRefresh: Boolean = false, isPullDown: Boolean = false) {
+        if (isRefresh || isPullDown) {
             currentPage = 1
         }
         
         if (_uiState.value.isLoading || _uiState.value.isPaginating) return
         if (!isRefresh && _uiState.value.endReached) return
 
-        if (currentPage == 1) {
-            _uiState.update { it.copy(isLoading = true, error = null, endReached = false) }
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, error = null, endReached = false, isPullDown = false) }
+        } else if (isPullDown) {
+            _uiState.update { it.copy(isLoading = false, error = null, endReached = false, isPullDown = true) }
         } else {
             _uiState.update { it.copy(isPaginating = true, error = null) }
         }
@@ -147,6 +150,7 @@ class ObservationListViewModel(
                     val items = result.data.observations
                     _uiState.update { 
                         it.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             observations = if (currentPage == 1) items else it.observations + items,
@@ -160,6 +164,7 @@ class ObservationListViewModel(
                 is NetworkResult.Error -> {
                     _uiState.update { 
                         it.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             error = result.message ?: "Failed to fetch observations"

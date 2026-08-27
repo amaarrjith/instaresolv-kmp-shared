@@ -12,6 +12,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.media3.common.Player
 import androidx.media3.common.PlaybackException
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import kotlinx.coroutines.delay
 
 @Composable
@@ -24,12 +26,24 @@ actual fun CustomVideoPlayer(
     onError: (String) -> Unit,
     seekToSeconds: Long?,
     onSeekCompleted: () -> Unit,
+    cookies: Map<String, String>,
     modifier: Modifier
 ) {
     val context = LocalContext.current
 
     val exoPlayer = remember(url) {
-        ExoPlayer.Builder(context).build().apply {
+        // Build cookie header string from the cookies map
+        val cookieHeader = cookies.entries.joinToString("; ") { "${it.key}=${it.value}" }
+
+        val builder = ExoPlayer.Builder(context)
+
+        if (cookieHeader.isNotEmpty()) {
+            val dataSourceFactory = DefaultHttpDataSource.Factory()
+                .setDefaultRequestProperties(mapOf("Cookie" to cookieHeader))
+            builder.setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+        }
+
+        builder.build().apply {
             val mediaItem = MediaItem.fromUri(url)
             setMediaItem(mediaItem)
             prepare()

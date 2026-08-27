@@ -23,10 +23,12 @@ import org.example.project.ui.SplashScreen
 import org.example.project.ui.WelcomeScreen
 import org.example.project.ui.screens.AuditInspectionListScreen
 import org.example.project.ui.screens.IncidentListScreen
+import org.example.project.ui.screens.IncidentDraftListScreen
 import org.example.project.ui.screens.LessonsLearnedListScreen
 import org.example.project.ui.screens.CreateLessonsLearnedScreen
 import org.example.project.ui.screens.LessonsLearnedDraftListScreen
 import org.example.project.ui.screens.ToolBoxTalkListScreen
+import org.example.project.ui.screens.ToolBoxTalkDraftListScreen
 import org.example.project.ui.screens.CreateToolBoxTalkScreen
 import org.example.project.ui.screens.ToolBoxTalkDetailScreen
 import org.example.project.ui.components.NotificationListScreen
@@ -364,9 +366,30 @@ fun AppNavigation() {
             )
         }
         composable(Screens.CreateIncidentScreen.route) {
-            CreateIncidentScreen {
-                navController.popBackStack()
-            }
+            CreateIncidentScreen(
+                onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screens.CreateIncidentScreenWithArgs.route,
+            arguments = listOf(
+                navArgument("isFromDraft") {
+                    type = NavType.StringType
+                    defaultValue = "false"
+                },
+                navArgument("draftId") {
+                    type = NavType.StringType
+                    defaultValue = "-1"
+                }
+            )
+        ) { backStackEntry ->
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
+            CreateIncidentScreen(
+                onBackClicked = { navController.popBackStack() },
+                isFromDraft = isFromDraft,
+                draftId = draftId
+            )
         }
         composable(
             route = Screens.ObservationDetailsScreenWithArgs.route
@@ -381,7 +404,16 @@ fun AppNavigation() {
         composable(Screens.IncidentListScreen.route) {
             IncidentListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onCreateClicked = { navController.navigate(Screens.CreateIncidentScreen.route) }
+                onCreateClicked = { navController.navigate(Screens.CreateIncidentScreen.route) },
+                onDraftClicked = { navController.navigate(Screens.IncidentDraftListScreen.route) }
+            )
+        }
+        composable(Screens.IncidentDraftListScreen.route) {
+            IncidentDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { draftId ->
+                    navController.navigate("create_incident_screen?isFromDraft=true&draftId=$draftId")
+                }
             )
         }
         composable(Screens.ViolationListScreen.route) {
@@ -585,12 +617,42 @@ fun AppNavigation() {
         composable(Screens.ToolBoxTalkListScreen.route) {
             ToolBoxTalkListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onCreateClicked = { navController.navigate(Screens.CreateToolBoxTalkScreen.route) }
+                onCreateClicked = { navController.navigate(Screens.CreateToolBoxTalkScreen.route) },
+                onDraftClicked = { navController.navigate(Screens.ToolBoxTalkDraftListScreen.route) }
             )
         }
         composable(Screens.CreateToolBoxTalkScreen.route) {
             CreateToolBoxTalkScreen(
                 onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screens.CreateToolBoxTalkScreenWithArgs.route,
+            arguments = listOf(
+                navArgument("isFromDraft") {
+                    type = NavType.StringType
+                    defaultValue = "false"
+                },
+                navArgument("draftId") {
+                    type = NavType.StringType
+                    defaultValue = "-1"
+                }
+            )
+        ) { backStackEntry ->
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
+            CreateToolBoxTalkScreen(
+                onBackClicked = { navController.popBackStack() },
+                isFromDraft = isFromDraft,
+                draftId = draftId
+            )
+        }
+        composable(Screens.ToolBoxTalkDraftListScreen.route) {
+            ToolBoxTalkDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { draftId ->
+                    navController.navigate("create_toolbox_talk_screen?isFromDraft=true&draftId=$draftId")
+                }
             )
         }
         composable(Screens.ToolBoxTalkDetailScreenWithArgs.route) { backStackEntry ->

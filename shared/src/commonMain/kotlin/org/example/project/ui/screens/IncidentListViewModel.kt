@@ -17,6 +17,7 @@ import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.AppFilterState
 
 data class IncidentListState(
+    val isPullDown: Boolean = false,
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
     val incidents: List<IncidentData> = emptyList(),
@@ -24,12 +25,14 @@ data class IncidentListState(
     val error: String? = null,
     val isLastPage: Boolean = false,
     val appliedFilterState: AppFilterState = AppFilterState(),
-    var errorExcel: String? = null
-) {
-}
+    var errorExcel: String? = null,
+    val drafts: List<org.example.project.shared.db.IncidentDraft> = emptyList()
+)
 
 class IncidentListViewModel(
-    private val repository: IncidentRepository
+    private val repository: IncidentRepository,
+    private val authPreferences: org.example.project.data.settings.AuthPreferences,
+    private val incidentDraftRepository: org.example.project.data.repository.IncidentDraftRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(IncidentListState())
@@ -40,6 +43,8 @@ class IncidentListViewModel(
 
     private val _exportToastMessage = MutableStateFlow<String?>(null)
     val exportToastMessage: StateFlow<String?> = _exportToastMessage.asStateFlow()
+
+    val draftToastMessage = MutableStateFlow<String?>(null)
 
     private val _exportUrl = MutableStateFlow<String?>(null)
     val exportUrl: StateFlow<String?> = _exportUrl.asStateFlow()
@@ -73,14 +78,19 @@ class IncidentListViewModel(
         loadIncidents(isRefresh = true)
     }
 
-    fun loadIncidents(isRefresh: Boolean = false, searchKey: String? = null) {
+    fun loadIncidents(isRefresh: Boolean = false, isPullDown: Boolean = false, searchKey: String? = null) {
         if (searchKey != null) {
             _uiState.update { it.copy(searchKey = searchKey) }
         }
 
-        if (isRefresh) {
+        if (isRefresh || isPullDown) {
             currentPage = 1
-            _uiState.update { it.copy(isLoading = true, error = null, isLastPage = false) }
+        }
+
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, error = null, isLastPage = false, isPullDown = false) }
+        } else if (isPullDown) {
+            _uiState.update { it.copy(isLoading = false, error = null, isLastPage = false, isPullDown = true) }
         } else {
             if (_uiState.value.isLastPage || _uiState.value.isPaginating) return
             _uiState.update { it.copy(isPaginating = true, error = null) }
@@ -116,9 +126,10 @@ class IncidentListViewModel(
                     
                     _uiState.update { state ->
                         state.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            incidents = if (isRefresh) newIncidents else state.incidents + newIncidents,
+                            incidents = if (isRefresh || isPullDown) newIncidents else state.incidents + newIncidents,
                             isLastPage = isLastPageReached
                         )
                     }
@@ -129,6 +140,7 @@ class IncidentListViewModel(
                 is NetworkResult.Error -> {
                     _uiState.update { state ->
                         state.copy(
+                            isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
                             error = result.message ?: "Failed to load incidents"
@@ -183,5 +195,29 @@ class IncidentListViewModel(
         val month = localDate.monthNumber.toString().padStart(2, '0')
         val year = localDate.year
         return "$day-$month-$year"
+    }
+
+    fun clearDraftToast() {
+        draftToastMessage.value = null
+    }
+
+    fun loadDrafts() {
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            if (user?.userId != null) {
+                val list = incidentDraftRepository.getAllDrafts(user.userId!!)
+                _uiState.update { it.copy(drafts = list) }
+            }
+        }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            ids.forEach { id ->
+                incidentDraftRepository.deleteDraft(id)
+            }
+            draftToastMessage.value = successMessage
+            loadDrafts()
+        }
     }
 }

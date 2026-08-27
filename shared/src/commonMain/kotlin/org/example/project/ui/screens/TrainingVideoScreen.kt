@@ -83,12 +83,20 @@ fun TrainingVideoScreen(
             }
         } else {
             uiState.videoData?.let { videoData ->
+                val cookiesMap = buildMap {
+                    videoData.cookies?.let { c ->
+                        c.cloudFrontPolicy?.let { put("CloudFront-Policy", it) }
+                        c.cloudFrontSignature?.let { put("CloudFront-Signature", it) }
+                        c.cloudFrontKeyPairId?.let { put("CloudFront-Key-Pair-Id", it) }
+                    }
+                }
                 VideoPlayerContainer(
                     videoUrl = videoData.videoUrl,
                     initialPlaybackTimeSeconds = videoData.lastPlayBackTime ?: 0,
                     trainingTitle = uiState.trainingTitle,
                     onBackClicked = onBackClicked,
-                    onUpdateProgress = { viewModel.updateVideoProgress(it) }
+                    onUpdateProgress = { viewModel.updateVideoProgress(it) },
+                    cookies = cookiesMap
                 )
             }
         }
@@ -101,7 +109,8 @@ fun VideoPlayerContainer(
     initialPlaybackTimeSeconds: Int,
     trainingTitle: String,
     onBackClicked: () -> Unit,
-    onUpdateProgress: (Long) -> Unit
+    onUpdateProgress: (Long) -> Unit,
+    cookies: Map<String, String> = emptyMap()
 ) {
     var isPlaying by remember { mutableStateOf(true) }
     var currentProgressSeconds by remember { mutableStateOf(0L) }
@@ -156,6 +165,7 @@ fun VideoPlayerContainer(
             onSeekCompleted = {
                 seekToSeconds = null
             },
+            cookies = cookies,
             modifier = Modifier.fillMaxSize()
         )
 

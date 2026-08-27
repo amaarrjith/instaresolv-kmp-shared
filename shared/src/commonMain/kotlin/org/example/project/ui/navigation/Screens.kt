@@ -15,6 +15,8 @@ sealed class Screens(val route: String) {
     object ObservationDraftListScreen : Screens("observation_draft_list_screen")
     object CreateObservationScreen : Screens("create_observation_screen")
     object CreateIncidentScreen : Screens("create_incident_screen")
+    object CreateIncidentScreenWithArgs : Screens("create_incident_screen?isFromDraft={isFromDraft}&draftId={draftId}")
+    object IncidentDraftListScreen : Screens("incident_draft_list_screen")
     object ObservationDetailsScreen : Screens("observation_details_screen")
     object ObservationDetailsScreenWithArgs : Screens("observation_details_screen/{observationId}")
 
@@ -70,6 +72,8 @@ sealed class Screens(val route: String) {
     // Toolbox Talks
     object ToolBoxTalkListScreen : Screens("toolbox_talk_list_screen")
     object CreateToolBoxTalkScreen : Screens("create_toolbox_talk_screen")
+    object CreateToolBoxTalkScreenWithArgs : Screens("create_toolbox_talk_screen?isFromDraft={isFromDraft}&draftId={draftId}")
+    object ToolBoxTalkDraftListScreen : Screens("toolbox_talk_draft_list_screen")
     object ToolBoxTalkDetailScreen : Screens("toolbox_talk_detail_screen")
     object ToolBoxTalkDetailScreenWithArgs : Screens("toolbox_talk_detail_screen/{toolboxTalkId}")
 }

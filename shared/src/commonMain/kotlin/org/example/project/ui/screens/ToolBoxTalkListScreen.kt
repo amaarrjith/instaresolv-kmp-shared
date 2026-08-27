@@ -14,7 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,7 +51,8 @@ import instaresolv.shared.generated.resources.*
 @Composable
 fun ToolBoxTalkListScreen(
     onBackClicked: () -> Unit,
-    onCreateClicked: () -> Unit
+    onCreateClicked: () -> Unit,
+    onDraftClicked: () -> Unit = {}
 ) {
     val viewModel: ToolBoxTalkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -104,7 +105,7 @@ fun ToolBoxTalkListScreen(
                     color = AppColors.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                DraftButton(onDraftClicked = {})
+                DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = { onCreateClicked() })
             }
@@ -171,7 +172,7 @@ fun ToolBoxTalkListScreen(
                     )
                 }
 
-                if (uiState.isLoading && uiState.items.isEmpty()) {
+                if (uiState.isLoading) {
                     AppLoader()
                 } else if (uiState.error != null && uiState.items.isEmpty()) {
                     ErrorRetryView(
@@ -179,9 +180,9 @@ fun ToolBoxTalkListScreen(
                         onRetryClick = { viewModel.fetchToolBoxTalks(isRefresh = true) }
                     )
                 } else {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.fetchToolBoxTalks(isRefresh = true) },
+                    AppPullToRefreshBox(
+                        isRefreshing = uiState.isPullDown,
+                        onRefresh = { viewModel.fetchToolBoxTalks(isPullDown = true) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         if (uiState.items.isEmpty()) {

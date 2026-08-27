@@ -31,8 +31,11 @@ sealed class CreateToolBoxTalkUiState {
 class CreateToolBoxTalkViewModel(
     private val repository: ToolBoxTalkRepository,
     private val projectRepository: ProjectRepository,
-    private val authPreferences: AuthPreferences
+    private val authPreferences: AuthPreferences,
+    private val toolBoxTalkDraftRepository: org.example.project.data.repository.ToolBoxTalkDraftRepository
 ) : ViewModel() {
+
+    var draftId: Long = 0L
 
     private val _uiState = MutableStateFlow<CreateToolBoxTalkUiState>(CreateToolBoxTalkUiState.Idle)
     val uiState: StateFlow<CreateToolBoxTalkUiState> = _uiState.asStateFlow()
@@ -200,6 +203,9 @@ class CreateToolBoxTalkViewModel(
 
             when (val result = repository.createToolBoxTalk(request)) {
                 is NetworkResult.Success -> {
+                    if (draftId != 0L) {
+                        toolBoxTalkDraftRepository.deleteDraft(draftId)
+                    }
                     _uiState.value = CreateToolBoxTalkUiState.Success
                 }
                 is NetworkResult.Error -> {
@@ -246,5 +252,60 @@ class CreateToolBoxTalkViewModel(
         } catch (e: Exception) {
             "00:00:00"
         }
+    }
+
+    fun saveLocalDraft(
+        id: Long,
+        facilitiesId: Int?,
+        projectJson: String?,
+        dateMillis: Long?,
+        startTime: String,
+        endTime: String,
+        topic: String,
+        discussionPointsJson: String,
+        attendeesJson: String,
+        imagesJson: String,
+        onSuccess: () -> Unit
+    ) {
+        if (facilitiesId == null && dateMillis == null && startTime.isBlank() && endTime.isBlank() && 
+            topic.isBlank() && (discussionPointsJson.isBlank() || discussionPointsJson == "[]" || discussionPointsJson == "[\"\",\"\",\"\",\"\"]") && 
+            (attendeesJson.isBlank() || attendeesJson == "[]") && (imagesJson.isBlank() || imagesJson == "[]")) {
+            _uiState.value = CreateToolBoxTalkUiState.Error("At least one value is needed to save as draft")
+            return
+        }
+
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            val request = org.example.project.data.model.CreateToolBoxTalkDraftRequest(
+                id = id,
+                facilitiesId = facilitiesId,
+                projectJson = projectJson,
+                dateMillis = dateMillis,
+                startTime = startTime,
+                endTime = endTime,
+                topic = topic,
+                discussionPointsJson = discussionPointsJson,
+                attendeesJson = attendeesJson,
+                imagesJson = imagesJson,
+                reportedBy = user?.name ?: "",
+                createdAt = run {
+                    val localDateTime = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val year = localDateTime.year
+                    val month = localDateTime.monthNumber.toString().padStart(2, '0')
+                    val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+                    val hour = localDateTime.hour.toString().padStart(2, '0')
+                    val minute = localDateTime.minute.toString().padStart(2, '0')
+                    val second = localDateTime.second.toString().padStart(2, '0')
+                    "$year-$month-$day $hour:$minute:$second"
+                },
+                userId = user?.userId ?: -1
+            )
+            toolBoxTalkDraftRepository.saveDraft(request)
+            onSuccess()
+        }
+    }
+
+    suspend fun getDraftById(id: Long): org.example.project.shared.db.ToolBoxTalkDraft? {
+        return toolBoxTalkDraftRepository.getDraftById(id)
     }
 }
