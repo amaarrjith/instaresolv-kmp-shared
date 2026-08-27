@@ -25,13 +25,12 @@ class ProfileViewModel(
         appManager.logout()
     }
 
-    fun handleLogout(onLogout: ()-> Unit) {
+    fun handleLogout() {
         _uiState.value = ProfileUiState.Ready(
             isLogoutLoading = true
         )
         viewModelScope.launch {
             logout()
-            onLogout()
         }
     }
 

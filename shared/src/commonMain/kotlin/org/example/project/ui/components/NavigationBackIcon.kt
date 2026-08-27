@@ -1,8 +1,10 @@
 package org.example.project.utilites
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,7 +31,10 @@ fun NavigationBackIcon(
         contentDescription = null,
         modifier = modifier
             .clickable { onClick() }
-            .padding(20.dp)
+            .padding(start = 20.dp)
+            .padding(end = 10.dp)
+            .padding(vertical = 20.dp)
             .rtlScale()
+            .size(20.dp)
     )
 }

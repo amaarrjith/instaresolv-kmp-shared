@@ -31,6 +31,7 @@ interface AuthRepository {
     ): NetworkResult<ForgetPasswordResponse>
 
     suspend fun register(
+        profileImage: String,
         fullName: String,
         email: String,
         password: String,

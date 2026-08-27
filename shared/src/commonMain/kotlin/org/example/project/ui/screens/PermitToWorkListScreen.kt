@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -447,6 +448,7 @@ private fun PermitListItem(
 
                 // Facility/Group info
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     WebImageView(
@@ -456,15 +458,22 @@ private fun PermitListItem(
                             .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = permit.facilities?.groupName ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
+                    Box(
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Text(
+                            text = permit.facilities?.groupName ?: "",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            color = AppColors.Black
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = permit.facilities?.groupCode ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                        maxLines = 1,
+                        style = textStyle(size = 9.sp, weight = FontWeight.Medium),
                         color = AppColors.Black
                     )
                 }

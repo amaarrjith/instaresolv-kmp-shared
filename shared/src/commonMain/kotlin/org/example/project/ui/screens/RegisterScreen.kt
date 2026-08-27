@@ -346,7 +346,9 @@ fun RegisterScreenContent(
             placeholder = stringResource(Res.string.company)
         )
         Spacer(modifier = Modifier.height(20.dp))
-        Row() {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             val drawable = if (isTermsAccepted.value) {
                 Res.drawable.ic_checkbox_on
             } else {
@@ -355,9 +357,11 @@ fun RegisterScreenContent(
             Image(
                 painter = painterResource(drawable),
                 contentDescription = null,
-                modifier = Modifier.clickable {
+                modifier = Modifier
+                    .clickable {
                     isTermsAccepted.value = !isTermsAccepted.value
-                }
+                    }
+                    .size(24.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
             TermsAndPrivacyText(
@@ -380,6 +384,7 @@ fun RegisterScreenContent(
                 isLoading = uiState.value.isLoading,
                 onClick = {
                     viewModel.register(
+                        profileImageUrl.value,
                         fullName.value,
                         email.value,
                         password.value,

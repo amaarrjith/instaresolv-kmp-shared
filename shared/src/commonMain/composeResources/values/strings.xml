@@ -57,7 +57,7 @@
     <string name="changePassword">Change Password</string>
     <string name="confirmPassword">Confirm Password</string>
     <string name="logout">Logout</string>
-    <string name="logoutDescription">Are you sure you want to log out? You\'ll need to sign in again to access your account.</string>
+    <string name="logoutDescription">Are you sure you want to log out? You'll need to sign in again to access your account.</string>
     <string name="continueText">Continue</string>
     <string name="profile">Profile</string>
     <string name="resetPassword">Reset Password</string>

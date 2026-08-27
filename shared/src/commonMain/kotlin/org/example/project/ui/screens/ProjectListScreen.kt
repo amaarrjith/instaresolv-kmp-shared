@@ -299,7 +299,8 @@ fun RequestButton(
         ) {
             Image(
                 painter = painterResource(Res.drawable.ic_lock),
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
             )
             Text(
                 text = stringResource(Res.string.request),
@@ -333,7 +334,8 @@ fun CreateButton(
         ) {
             Image(
                 painter = painterResource(Res.drawable.ic_add),
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
             )
             Text(
                 text = stringResource(Res.string.create),

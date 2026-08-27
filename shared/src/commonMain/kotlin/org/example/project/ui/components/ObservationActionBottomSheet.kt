@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -246,7 +247,9 @@ private fun ObservationActionItem(
         Image(
             modifier = Modifier.padding(
                 start = 40.dp
-            ).rtlScale(),
+            )
+                .rtlScale()
+                .size(12.dp),
             painter = painterResource(Res.drawable.ic_right_icon),
             contentDescription = null
         )

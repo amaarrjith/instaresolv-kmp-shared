@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -369,6 +370,7 @@ fun LessonLearnedItem(
                     )
                 }
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     WebImageView(
@@ -379,18 +381,24 @@ fun LessonLearnedItem(
                             .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = lesson.facilities?.groupName ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
+                    Box(
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Text(
+                            text = lesson.facilities?.groupName ?: "",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            color = AppColors.Black
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = lesson.facilities?.groupCode ?: "",
+                        maxLines = 1,
                         style = textStyle(size = 11.sp, weight = FontWeight.Medium),
                         color = AppColors.Black
                     )
-
                 }
             }
         }

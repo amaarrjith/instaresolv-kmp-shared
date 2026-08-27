@@ -18,6 +18,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +82,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .background(Color.White)
+            .navigationBarsPadding()
             .statusBarsPadding()
             .fillMaxSize()
             .padding(horizontal = 28.dp)
@@ -138,7 +141,10 @@ fun LoginScreenContent(
         ) {
             Image(
                 painter = painterResource(Res.drawable.ic_app_login_logo),
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(bottom = 24.dp)
+                    .sizeIn(maxWidth = 220.dp, maxHeight = 140.dp),
             )
         }
         Spacer(modifier = Modifier.height(100.dp))

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -125,8 +126,8 @@ fun AppTabBar(
                     .padding(top = 10.dp)
             ) {
             NavigationBar(
-                modifier = Modifier
-                    .height(125.dp),
+//                modifier = Modifier
+//                    .height(125.dp),
                 containerColor = Color.White,
             ) {
                 navItems.forEachIndexed { index, item ->
@@ -147,7 +148,8 @@ fun AppTabBar(
                                         item.unselectedIcon
                                     }
                                 ),
-                                contentDescription = item.title
+                                contentDescription = item.title,
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         label = {

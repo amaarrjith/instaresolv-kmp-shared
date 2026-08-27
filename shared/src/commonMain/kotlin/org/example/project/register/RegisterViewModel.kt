@@ -18,6 +18,7 @@ class RegisterViewModel(
     val uiState = _uiState.asStateFlow()
 
     fun register(
+        profileImageUrl: String,
         fullName: String,
         emailId: String,
         password: String,
@@ -78,6 +79,7 @@ class RegisterViewModel(
                return@launch
            }
            val result = repository.register(
+               profileImage = profileImageUrl,
                fullName = fullName,
                email = emailId,
                password = password,

@@ -56,6 +56,7 @@ class AuthRepositoryImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun register(
+        profileImage: String,
         fullName: String,
         email: String,
         password: String,
@@ -73,7 +74,7 @@ class AuthRepositoryImpl(
                 confirmPassword = confirmPassword,
                 designation = designation,
                 company = company,
-                profileImage = ""
+                profileImage = profileImage
             )
         )
     }

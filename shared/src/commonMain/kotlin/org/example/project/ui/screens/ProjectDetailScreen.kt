@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -364,6 +365,7 @@ fun  ProjectDetailScreenContent(
                     modifier = Modifier.clickable {
                         isSearchBarVisible.value = !isSearchBarVisible.value
                     }
+                        .size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(20.dp))
                 if (isAppAdmin || project.isAdmin) {
@@ -680,7 +682,8 @@ fun AddMemberIcon(onClick: () -> Unit = {}) {
     ) {
         Image(
             painter = painterResource(Res.drawable.ic_add_plus),
-            contentDescription = null
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
@@ -741,8 +744,13 @@ fun ProjectMembersItemRow(
     val canExpand = isAppAdmin || isProjectAdmin
 
     Column(
-        modifier = Modifier.fillMaxWidth()
-            .clickable(enabled = canExpand) {
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                enabled = canExpand,
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
                 isExpanded.value = !isExpanded.value
             }
     ) {
@@ -927,11 +935,13 @@ fun ProjectDetailScreenTopBar(
                 if (isAppAdmin) {
                     Row(
                         modifier = Modifier
-                            .padding(end = 26.dp)
+                            .padding(end = 26.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
                             painter = painterResource(Res.drawable.ic_edit),
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(

@@ -64,6 +64,7 @@ import org.koin.compose.koinInject
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.text.style.TextOverflow
 import instaresolv.shared.generated.resources.ic_right_icon
 import org.example.project.utilites.rtlScale
 import kotlin.time.Clock
@@ -455,6 +456,7 @@ fun InspectionListItem(
 
                 // User row
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     WebImageView(
@@ -464,15 +466,22 @@ fun InspectionListItem(
                             .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = inspection.facilities?.groupName ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
+                    Box(
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Text(
+                            text = inspection.facilities?.groupName ?: "",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            color = AppColors.Black
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = inspection.facilities?.groupCode ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                        maxLines = 1,
+                        style = textStyle(size = 9.sp, weight = FontWeight.Medium),
                         color = AppColors.Black
                     )
                 }

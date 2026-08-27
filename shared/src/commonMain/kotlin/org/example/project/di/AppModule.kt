@@ -89,6 +89,8 @@ import org.example.project.db.listOfStringsAdapter
 import org.example.project.shared.db.AppDatabase
 import org.example.project.shared.db.ObservationDraft
 import org.example.project.data.repository.ObservationDraftRepository
+import org.example.project.shared.db.ViolationDraft
+import org.example.project.data.repository.ViolationDraftRepository
 
 val appModule = module {
     factory { createHttpClient(get(), get()) }
@@ -139,12 +141,12 @@ val appModule = module {
     factory<IncidentRepository> { IncidentRepositoryImpl(get()) }
     factory { IncidentDetailViewModel(get()) }
     
-    factory { ViolationListViewModel(get(), get()) }
+    factory { ViolationListViewModel(get(), get(), get(), get()) }
     factory<ViolationRepository> { ViolationRepositoryImpl(get()) }
     factory { ViolationDetailViewModel(get()) }
     factory { org.example.project.ui.components.AddEmployeeViewModel(get()) }
     factory { FilterBottomSheetViewModel(get()) }
-    factory { CreateViolationViewModel(get(), get(), get()) }
+    factory { CreateViolationViewModel(get(), get(), get(), get()) }
     
     factory<PreTaskRepository> { PreTaskRepositoryImpl(get()) }
     factory { PreTaskListViewModel(get()) }
@@ -189,8 +191,12 @@ val appModule = module {
             ObservationDraftAdapter = ObservationDraft.Adapter(
                 imageDescriptionsJsonAdapter = listOfStringsAdapter,
                 notificationToJsonAdapter = listOfStringsAdapter
+            ),
+            ViolationDraftAdapter = ViolationDraft.Adapter(
+                imagesJsonAdapter = listOfStringsAdapter
             )
         )
     }
     factory { ObservationDraftRepository(get()) }
+    factory { ViolationDraftRepository(get()) }
 }

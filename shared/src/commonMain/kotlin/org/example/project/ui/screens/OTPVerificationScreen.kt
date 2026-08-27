@@ -2,6 +2,7 @@ package org.example.project.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -52,6 +54,7 @@ import org.example.project.utilites.ToastType
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.jetbrains.compose.resources.stringResource
+import kotlinx.coroutines.delay
 import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +73,20 @@ fun OTPVerificationScreen(
     val uiState = viewModel.uiState.collectAsState()
     var otp by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+
+    var secondsLeft by remember { mutableStateOf(300) }
+    val formattedTime = remember(secondsLeft) {
+        val minutes = secondsLeft / 60
+        val seconds = secondsLeft % 60
+        "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+    }
+
+    LaunchedEffect(secondsLeft) {
+        if (secondsLeft > 0) {
+            delay(1000L)
+            secondsLeft -= 1
+        }
+    }
     LaunchedEffect(uiState.value.isOTPVerified) {
         if (uiState.value.isOTPVerified) {
             onOTPVerified()
@@ -128,20 +145,46 @@ fun OTPVerificationScreen(
                             weight = FontWeight.Normal
                         )
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = email,
+                        textAlign = TextAlign.Center,
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.SemiBold
+                        ),
+                        color = AppColors.Primary
+                    )
                     Spacer(modifier = Modifier.height(64.dp))
                     OtpInput(
                         otp = otp,
                         onOtpChange = { otp = it }
                     )
                     Spacer(modifier = Modifier.height(32.dp))
-                    Text(
-                        text = stringResource(Res.string.resendCode),
-                        textAlign = TextAlign.Center,
-                        style = textStyle(
-                            size = 14.sp,
-                            weight = FontWeight.Normal
+                    if (secondsLeft > 0) {
+                        Text(
+                            text = "Resend OTP in $formattedTime",
+                            textAlign = TextAlign.Center,
+                            style = textStyle(
+                                size = 14.sp,
+                                weight = FontWeight.Normal
+                            ),
+                            color = Color(0xFF8F9098)
                         )
-                    )
+                    } else {
+                        Text(
+                            text = stringResource(Res.string.resendCode),
+                            textAlign = TextAlign.Center,
+                            style = textStyle(
+                                size = 14.sp,
+                                weight = FontWeight.SemiBold
+                            ),
+                            color = AppColors.Primary,
+                            modifier = Modifier.clickable {
+                                secondsLeft = 300
+                            }
+                        )
+                    }
                     Spacer(modifier = Modifier.height(74.dp))
                     AppPrimaryButton(
                         title = stringResource(Res.string.continueText),
@@ -215,5 +258,19 @@ fun OtpInput(
                 }
             }
         }
+    )
+}
+
+
+@Composable
+@Preview
+fun OTPScreenPreview() {
+    OTPVerificationScreen(
+        onOTPVerified = {  },
+        backButtonPressed = {
+
+        },
+        tempUserId = -1,
+        email = "sample@yopmail.com"
     )
 }

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -86,7 +87,6 @@ fun WelcomeScreen(
         modifier = Modifier
             .background(bgColor)
             .statusBarsPadding()
-            .navigationBarsPadding()
             .fillMaxSize()
 
     ) {
@@ -114,7 +114,9 @@ fun WelcomeScreen(
         }
 
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -167,10 +169,11 @@ fun WelcomeScreen(
                     painter = painterResource(Res.drawable.ic_app_login_logo),
                     contentDescription = null,
                     modifier = Modifier
-                        .fillMaxHeight(0.8f)
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 24.dp)
+                        .sizeIn(maxWidth = 220.dp, maxHeight = 140.dp),
                     contentScale = ContentScale.Fit
                 )
+
             }
 
             Spacer(modifier = Modifier.height(20.dp))

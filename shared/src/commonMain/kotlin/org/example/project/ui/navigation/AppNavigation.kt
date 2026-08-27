@@ -1,16 +1,18 @@
-package org.example.project.navigation
+package org.example.project.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.navigation.navigation
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.project.data.model.ProjectDetail
+import org.example.project.data.model.ProjectMember
+import org.example.project.manager.AppManager
+import org.example.project.navigation.Screens
+import org.koin.compose.koinInject
 import org.example.project.ui.ActionOverview
 import org.example.project.ui.AppTabBar
 import org.example.project.ui.ForgetPasswordScreen
@@ -47,14 +49,34 @@ import org.example.project.ui.screens.ProjectDetailScreen
 import org.example.project.ui.screens.ChangePasswordScreen
 import org.example.project.ui.screens.ContactUsScreen
 import org.example.project.ui.screens.AboutUsScreen
+import org.example.project.ui.screens.AssignedTrainingsView
+import org.example.project.ui.screens.CreateInspectionScreen
+import org.example.project.ui.screens.CreatePreTaskScreen
 import org.example.project.ui.screens.TermsOfUseScreen
 import org.example.project.ui.screens.PrivacyPolicyScreen
 import org.example.project.ui.screens.DeleteAccountScreen
+import org.example.project.ui.screens.InspectionDetailScreen
+import org.example.project.ui.screens.ObservationDetailScreen
+import org.example.project.ui.screens.ObservationDraftListScreen
+import org.example.project.ui.screens.ViolationDraftListScreen
 import org.example.project.ui.screens.PendingActionListScreen
+import org.example.project.ui.screens.PreTaskListScreen
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val appManager: AppManager = koinInject()
+
+    LaunchedEffect(Unit) {
+        appManager.logoutEvent.collect {
+            navController.navigate(Screens.Login.route) {
+                popUpTo(0) {
+                    inclusive = true
+                }
+            }
+        }
+    }
+
     NavHost(navController = navController, startDestination = Screens.Splash.route) {
         composable(Screens.Splash.route) {
             SplashScreen(
@@ -232,13 +254,13 @@ fun AppNavigation() {
             )
         }
         composable(Screens.PreTaskListScreen.route) {
-            org.example.project.ui.screens.PreTaskListScreen(
+            PreTaskListScreen(
                 onBackClicked = { navController.popBackStack() },
                 onCreateClicked = { navController.navigate(Screens.CreatePreTaskScreen.route) }
             )
         }
         composable(Screens.CreatePreTaskScreen.route) {
-            org.example.project.ui.screens.CreatePreTaskScreen(
+            CreatePreTaskScreen(
                 onBackClicked = { navController.popBackStack() }
             )
         }
@@ -256,7 +278,7 @@ fun AppNavigation() {
         composable(Screens.CreateInspectionScreenWithArgs.route) { backStackEntry ->
             val inspectionTypeId = backStackEntry.savedStateHandle.get<String>("inspectionTypeId")?.toIntOrNull() ?: -1
             val inspectionTypeName = backStackEntry.savedStateHandle.get<String>("inspectionTypeName") ?: ""
-            org.example.project.ui.screens.CreateInspectionScreen(
+            CreateInspectionScreen(
                 inspectionTypeId = inspectionTypeId,
                 inspectionTypeName = inspectionTypeName,
                 onBackClicked = { navController.popBackStack() }
@@ -264,7 +286,7 @@ fun AppNavigation() {
         }
         composable(Screens.InspectionDetailScreenWithArgs.route) { backStackEntry ->
             val inspectionId = backStackEntry.savedStateHandle.get<String>("inspectionId")?.toIntOrNull() ?: -1
-            org.example.project.ui.screens.InspectionDetailScreen(
+            InspectionDetailScreen(
                 inspectionId = inspectionId,
                 onBackClicked = { navController.popBackStack() }
             )
@@ -304,7 +326,7 @@ fun AppNavigation() {
             )
         }
         composable(Screens.ObservationDraftListScreen.route) {
-            org.example.project.ui.screens.ObservationDraftListScreen(
+            ObservationDraftListScreen(
                 onBackClicked = { navController.popBackStack() },
                 onDraftClicked = { draftId ->
                     navController.navigate("${Screens.CreateObservationScreen.route}?isFromDraft=true&draftId=$draftId")
@@ -333,7 +355,7 @@ fun AppNavigation() {
             route = Screens.ObservationDetailsScreenWithArgs.route
         ) { backStackEntry ->
             val observationId = backStackEntry.savedStateHandle.get<String>("observationId")?.toIntOrNull() ?: -1
-            org.example.project.ui.screens.ObservationDetailScreen(
+            ObservationDetailScreen(
                 observationId = observationId,
                 onBackClicked = { navController.popBackStack() },
                 onRefreshList = {}
@@ -348,11 +370,26 @@ fun AppNavigation() {
         composable(Screens.ViolationListScreen.route) {
             ViolationListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onCreateClicked = { navController.navigate(Screens.CreateViolationScreen.route) }
+                onCreateClicked = { navController.navigate(Screens.CreateViolationScreen.route) },
+                onDraftClicked = { navController.navigate(Screens.ViolationDraftListScreen.route) }
             )
         }
-        composable(Screens.CreateViolationScreen.route) {
+        composable(Screens.ViolationDraftListScreen.route) {
+            ViolationDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { draftId ->
+                    navController.navigate("${Screens.CreateViolationScreen.route}?isFromDraft=true&draftId=$draftId")
+                }
+            )
+        }
+        composable(
+            route = "${Screens.CreateViolationScreen.route}?isFromDraft={isFromDraft}&draftId={draftId}"
+        ) { backStackEntry ->
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
             CreateViolationScreen(
+                isFromDraft = isFromDraft,
+                draftId = draftId,
                 onBackClicked = { navController.popBackStack() }
             )
         }
@@ -411,13 +448,6 @@ fun AppNavigation() {
         }
         composable(Screens.ProfileScreen.route) {
             ProfileScreen(
-                onLogout = {
-                    navController.navigate(Screens.Login.route) {
-                        popUpTo(0) {
-                            inclusive = true
-                        }
-                    }
-                },
                 onBack = {
                     navController.popBackStack()
                 }
@@ -465,10 +495,10 @@ fun AppNavigation() {
         composable(Screens.AssignedTrainingsScreen.route) {
             val memberJson = navController.previousBackStackEntry?.savedStateHandle?.get<String>("member")
             val member = memberJson?.let {
-                Json.decodeFromString<org.example.project.data.model.ProjectMember>(it)
+                Json.decodeFromString<ProjectMember>(it)
             }
             if (member != null) {
-                org.example.project.ui.screens.AssignedTrainingsView(
+                AssignedTrainingsView(
                     member = member,
                     onBackClick = {
                         navController.popBackStack()

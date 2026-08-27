@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -91,7 +92,8 @@ fun SplashScreenContent(
     ) {
         Image(
             painter = painterResource(Res.drawable.ic_app_logo),
-            contentDescription = null
+            contentDescription = null,
+            modifier = Modifier.size(96.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))

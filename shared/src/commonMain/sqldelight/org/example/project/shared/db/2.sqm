@@ -1,0 +1,18 @@
+import kotlin.String;
+import kotlin.collections.List;
+
+CREATE TABLE ViolationDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    facilitiesId TEXT,
+    facilityJson TEXT,
+    employeeName TEXT NOT NULL,
+    employeeId TEXT NOT NULL,
+    violationDate TEXT NOT NULL,
+    violationDateMillis INTEGER,
+    location TEXT,
+    description TEXT,
+    imagesJson TEXT AS List<String> NOT NULL,
+    reportedBy TEXT NOT NULL,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);

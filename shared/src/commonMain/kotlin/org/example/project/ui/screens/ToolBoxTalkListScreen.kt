@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -339,6 +340,7 @@ fun ToolBoxTalkListItem(
 
                 }
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     WebImageView(
@@ -348,15 +350,22 @@ fun ToolBoxTalkListItem(
                             .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = item.facilities?.groupName ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
+                    Box(
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Text(
+                            text = item.facilities?.groupName ?: "",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            color = AppColors.Black
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = item.facilities?.groupCode ?: "",
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                        maxLines = 1,
+                        style = textStyle(size = 10.sp, weight = FontWeight.Medium),
                         color = AppColors.Black
                     )
                 }

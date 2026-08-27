@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -145,6 +146,7 @@ fun ToastView(
 
             Text(
                 text = message,
+                modifier = Modifier.weight(1f),
                 style = textStyle(
                     size = 12.sp,
                     FontWeight.Medium
@@ -152,14 +154,13 @@ fun ToastView(
                 color = Color(0xFF71727A)
             )
 
-            Spacer(modifier = Modifier.weight(1f))
-
             Image(
                 painter = painterResource(Res.drawable.ic_toast_close),
                 contentDescription = null,
                 modifier = Modifier.clickable {
                     onDismiss()
                 }
+                    .size(15.dp)
             )
         }
     }

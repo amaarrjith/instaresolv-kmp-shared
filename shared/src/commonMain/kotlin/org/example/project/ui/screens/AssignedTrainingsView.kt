@@ -154,9 +154,11 @@ fun AssignedTrainingsView(
                     Image(
                         painter = painterResource(Res.drawable.ic_search),
                         contentDescription = null,
-                        modifier = Modifier.clickable {
-                            isSearchVisible = !isSearchVisible
-                        }
+                        modifier = Modifier
+                            .clickable {
+                                isSearchVisible = !isSearchVisible
+                            }
+                            .size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Image(
@@ -165,6 +167,8 @@ fun AssignedTrainingsView(
                         modifier = Modifier.clickable {
                             viewModel.setAddTrainingModalVisible(true)
                         }
+                            .width(78.dp)
+                            .height(20.dp)
                     )
                 }
 

@@ -49,7 +49,9 @@ fun CommonExcelButton(
                     painter = painterResource(Res.drawable.ic_download),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(Color.White),
-                    modifier = Modifier.padding(bottom = 5.dp)
+                    modifier = Modifier
+                        .padding(bottom = 5.dp)
+                        .size(24.dp)
                 )
             }
         }

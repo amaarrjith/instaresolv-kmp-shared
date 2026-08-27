@@ -251,7 +251,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                 Image(
                     painter = painterResource(Res.drawable.ic_forget_password),
                     contentDescription = stringResource(Res.string.changePassword1),
-                    modifier = Modifier.size(150.dp)
+                    modifier = Modifier.size(88.dp)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))

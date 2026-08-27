@@ -65,3 +65,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
+
+configurations.configureEach {
+    resolutionStrategy {
+        force("androidx.camera:camera-core:1.4.0")
+        force("androidx.camera:camera-camera2:1.4.0")
+        force("androidx.camera:camera-lifecycle:1.4.0")
+        force("androidx.camera:camera-view:1.4.0")
+    }
+}

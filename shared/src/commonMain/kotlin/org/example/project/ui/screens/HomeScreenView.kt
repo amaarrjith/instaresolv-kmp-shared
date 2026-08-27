@@ -304,7 +304,8 @@ fun HeaderView(
         Box(modifier = Modifier.clickable { onNotificationClick() }) {
             Image(
                 painter = painterResource(Res.drawable.ic_bell),
-                contentDescription = stringResource(Res.string.notifications)
+                contentDescription = stringResource(Res.string.notifications),
+                modifier = Modifier.size(28.dp)
             )
 
             if ((notificationCount ?: 0) > 0) {
@@ -410,7 +411,8 @@ fun PendingActionsCardView(
 
             Image(
                 painter = painterResource(Res.drawable.ic_clock),
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier.size(52.dp)
             )
         }
     }
@@ -934,9 +936,11 @@ private fun PermitActionItem(
         Image(
             modifier = Modifier.padding(
                 start = 40.dp
-            ).rtlScale(),
+            )
+                .rtlScale()
+                .size(12.dp),
             painter = painterResource(Res.drawable.ic_right_icon),
-            contentDescription = null
+            contentDescription = null,
         )
     }
 }
@@ -1036,7 +1040,8 @@ fun ActionOverviewCard(
             ) {
                 Image(
                     painter = painterResource(action.icon),
-                    contentDescription = stringResource(action.title)
+                    contentDescription = stringResource(action.title),
+                    modifier = Modifier.size(30.dp)
                 )
 
                 Text(

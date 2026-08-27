@@ -137,9 +137,12 @@ fun PendingActionListScreen(
                     Image(
                         painter = painterResource(Res.drawable.ic_filter),
                         contentDescription = null,
-                        modifier = Modifier.padding(end = 20.dp).clickable {
-                            showFilterSheet = true
-                        }
+                        modifier = Modifier
+                            .padding(end = 20.dp)
+                            .clickable {
+                                showFilterSheet = true
+                            }
+                            .size(24.dp)
                     )
                 }
             }

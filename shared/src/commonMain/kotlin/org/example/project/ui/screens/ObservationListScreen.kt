@@ -62,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -315,17 +316,13 @@ fun DraftButton(
     ) {
         Row(
             modifier = Modifier
+                .height(30.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(AppColors.SkyBlue.copy(alpha = 0.1f))
-                .padding(horizontal = 14.dp)
-                .padding(vertical = 7.dp),
+                .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Image(
-                painter = painterResource(Res.drawable.ic_edit),
-                contentDescription = null
-            )
             Text(
                 text = stringResource(Res.string.drafts),
                 style = textStyle(
@@ -349,16 +346,17 @@ fun NewButton(
     ) {
         Row(
             modifier = Modifier
+                .height(30.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(AppColors.Primary.copy(alpha = 0.1f))
-                .padding(horizontal = 14.dp)
-                .padding(vertical = 7.dp),
+                .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Image(
                 painter = painterResource(Res.drawable.ic_add),
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
             )
             Text(
                 text = stringResource(Res.string.new),
@@ -446,22 +444,22 @@ fun ObservationListItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val status = ObservationStatus.fromId(observation.status ?: -1)
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(status.backgroundColor)
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = stringResource(status.title).uppercase(),
-                            style = textStyle(size = 9.sp, weight = FontWeight.Bold),
-                            color = Color.White
-                        )
+                    if (observation.status != -1) {
+                        val status = ObservationStatus.fromId(observation.status ?: -1)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(status.backgroundColor)
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(status.title).uppercase(),
+                                style = textStyle(size = 9.sp, weight = FontWeight.Bold),
+                                color = Color.White
+                            )
+                        }
                     }
-
                     Spacer(modifier = Modifier.weight(1f))
-
                     Text(
                         text = timeAgo(
                             observation.date ?: "",
@@ -500,6 +498,7 @@ fun ObservationListItem(
                 )
                 if (observation.group != null) {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         WebImageView(
@@ -510,18 +509,24 @@ fun ObservationListItem(
                                 .clip(CircleShape)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = observation.group?.groupName ?: "",
-                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                            color = AppColors.Black
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f, fill = false)
+                        ) {
+                            Text(
+                                text = observation.group?.groupName ?: "",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                                color = AppColors.Black
+                            )
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = observation.group?.groupCode ?: "",
-                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            maxLines = 1,
+                            style = textStyle(size = 9.sp, weight = FontWeight.Medium),
                             color = AppColors.Black
                         )
-
                     }
                 }
             }

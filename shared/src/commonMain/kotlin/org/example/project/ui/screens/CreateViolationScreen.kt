@@ -39,13 +39,29 @@ import org.example.project.ui.components.AppExitPopup
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateViolationScreen(
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L,
     onBackClicked: () -> Unit
 ) {
     val viewModel: CreateViolationViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(isFromDraft, draftId) {
+        if (isFromDraft && draftId != -1L) {
+            val draft = viewModel.getDraftById(draftId)
+            if (draft != null) {
+                viewModel.restoreDraftData(draft)
+            }
+        } else {
+            viewModel.resetState()
+        }
+    }
+
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
+    val showDraftSuccessDialog = remember { mutableStateOf(false) }
     val showExitPopup = remember { mutableStateOf(false) }
+    val isDraftState = remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -96,9 +112,9 @@ fun CreateViolationScreen(
                     AppBorderButton(
                         title = stringResource(Res.string.saveAsDraft),
                         onClick = {
-                            viewModel.saveViolation(
-                                isDraft = true,
-                                onSuccess = { showSuccessDialog.value = true }
+                            isDraftState.value = true
+                            viewModel.saveLocalDraft(
+                                onSuccess = { showDraftSuccessDialog.value = true }
                             )
                         },
                         modifier = Modifier.weight(1f)
@@ -106,6 +122,7 @@ fun CreateViolationScreen(
                     AppPrimaryButton(
                         title = stringResource(Res.string.publish),
                         onClick = {
+                            isDraftState.value = false
                             viewModel.saveViolation(
                                 isDraft = false,
                                 onSuccess = { showSuccessDialog.value = true }
@@ -275,6 +292,19 @@ fun CreateViolationScreen(
                 buttonText = "OK",
                 onDismiss = {
                     showSuccessDialog.value = false
+                    onBackClicked()
+                }
+            )
+        }
+
+        if (showDraftSuccessDialog.value) {
+            org.example.project.ui.components.AppStatusDialog(
+                visible = showSuccessDialog.value,
+                title = stringResource(Res.string.success),
+                description = "Violation draft saved successfully",
+                buttonText = "OK",
+                onDismiss = {
+                    showDraftSuccessDialog.value = false
                     onBackClicked()
                 }
             )

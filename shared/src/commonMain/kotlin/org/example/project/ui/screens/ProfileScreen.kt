@@ -69,7 +69,6 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun ProfileScreen(
-    onLogout: () -> Unit,
     onBack: () -> Unit
 ) {
     val viewModel: ProfileViewModel = koinInject()
@@ -133,9 +132,7 @@ fun ProfileScreen(
                     visible = isLogoutAlertShown,
                     onConfirm = {
                         isLogoutAlertShown = false
-                        viewModel.handleLogout {
-                            onLogout()
-                        }
+                        viewModel.handleLogout()
                     },
                     onDismiss = {
                         isLogoutAlertShown = false
@@ -216,20 +213,17 @@ fun ProfileScreenContent(
             color = AppColors.Black,
             textAlign = TextAlign.Center
         )
-        Text(
-            text = "EMP - ${viewModel.user?.userId.toString()}",
-            style = textStyle(
-                size = 12.sp,
-                weight = FontWeight.Bold
-            ),
-            color = AppColors.TextGray
-        )
     }
     Spacer(Modifier.height(46.dp))
     ProfileScreenItem(stringResource(Res.string.fullName), viewModel.user?.name ?: "")
     ProfileScreenItem(stringResource(Res.string.emailId), viewModel.user?.email ?: "")
-    ProfileScreenItem(stringResource(Res.string.designation), viewModel.user?.designation ?: "")
-    ProfileScreenItem(stringResource(Res.string.company), viewModel.user?.company ?: "")
+    ProfileScreenItem(
+        stringResource(Res.string.designation),
+        viewModel.user?.designation
+            ?.takeIf { it.isNotBlank() }
+            ?: "-"
+    )
+    ProfileScreenItem(stringResource(Res.string.company), viewModel.user?.company?.takeIf { it.isNotBlank() } ?: "-")
     Spacer(modifier = Modifier.height(60.dp))
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -409,11 +403,13 @@ fun ProfileScreenTopBar(
         if (uiState.value !is ProfileUiState.isEditing) {
             Row(
                 modifier = Modifier
-                    .padding(end = 26.dp)
+                    .padding(end = 26.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
                     painter = painterResource(Res.drawable.ic_edit),
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier.size(15.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -468,7 +464,6 @@ fun ProfileScreenItem(
 @Preview
 fun ProfileScreenPreview() {
     ProfileScreen(
-        onLogout = {},
         onBack = {}
     )
 }

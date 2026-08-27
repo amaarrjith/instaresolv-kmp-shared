@@ -7,29 +7,28 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.example.project.data.model.CreateViolationRequest
 import org.example.project.data.model.ImageDescriptionRequest
 import org.example.project.data.model.Project
 import org.example.project.data.model.GroupUser
 import org.example.project.data.model.GroupUserRequest
+import org.example.project.data.model.LocalViolationImage
+import org.example.project.data.model.CreateViolationDraftRequest
 import org.example.project.data.settings.AuthPreferences
+import org.example.project.data.repository.ViolationDraftRepository
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.domain.repository.ViolationRepository
 import org.example.project.network.NetworkResult
 import org.example.project.ui.components.imagepicker.ImagePickerUiState
 import kotlin.random.Random
 
-data class ViolationImage(
-    val id: Int,
-    val imageUrl: String? = null,
-    val description: String = ""
-)
-
 data class CreateViolationUiState(
     val isLoading: Boolean = false,
     val success: Boolean = false,
     val error: String? = null,
     
+    val draftId: Long? = null,
     val selectedProject: Project? = null,
     val groupUsers: List<GroupUser> = emptyList(),
     val reportedBy: GroupUser? = null,
@@ -40,13 +39,14 @@ data class CreateViolationUiState(
     val location: String = "",
     val description: String = "",
     
-    val images: List<ViolationImage> = emptyList()
+    val images: List<LocalViolationImage> = emptyList()
 )
 
 class CreateViolationViewModel(
     private val preferences: AuthPreferences,
     private val repository: ViolationRepository,
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
+    private val violationDraftRepository: ViolationDraftRepository
 ) : ViewModel() {
 
     val user = preferences.getLoggedInUser()
@@ -97,7 +97,7 @@ class CreateViolationViewModel(
 
     fun addImageBlock() {
         val newList = _uiState.value.images.toMutableList()
-        newList.add(ViolationImage(id = Random.nextInt()))
+        newList.add(LocalViolationImage(id = Random.nextInt()))
         _uiState.update { it.copy(images = newList) }
     }
 
@@ -162,6 +162,9 @@ class CreateViolationViewModel(
                     val data = result.data
                     if (data.violationId != null) {
                         _uiState.update { it.copy(isLoading = false, success = true) }
+                        if (state.draftId != null) {
+                            deleteDraft(state.draftId)
+                        }
                         onSuccess()
                     } else {
                         _uiState.update {
@@ -182,6 +185,83 @@ class CreateViolationViewModel(
                 }
             }
         }
+    }
+
+    fun saveLocalDraft(onSuccess: () -> Unit) {
+        val state = _uiState.value
+        val hasValue = state.selectedProject != null ||
+                       state.employeeName.isNotBlank() ||
+                       state.employeeId.isNotBlank() ||
+                       state.violationDate.isNotBlank() ||
+                       state.location.isNotBlank() ||
+                       state.description.isNotBlank() ||
+                       state.images.any { !it.imageUrl.isNullOrBlank() }
+        
+        if (!hasValue) {
+            _uiState.update { it.copy(error = "At least one field must have a value to save as draft") }
+            return
+        }
+
+        val request = CreateViolationDraftRequest(
+            draftId = state.draftId,
+            userId = user?.userId ?: 0,
+            facilitiesId = state.selectedProject?.groupId?.toString(),
+            facility = state.selectedProject,
+            employeeName = state.employeeName,
+            employeeId = state.employeeId,
+            violationDate = state.violationDate,
+            violationDateMillis = state.violationDateMillis,
+            location = state.location,
+            description = state.description,
+            images = state.images,
+            reportedBy = user?.name ?: "",
+            createdAt = state.violationDate.takeIf { it.isNotBlank() } ?: "Draft"
+        )
+        viewModelScope.launch {
+            violationDraftRepository.saveDraft(request)
+            onSuccess()
+        }
+    }
+
+    fun getDraftById(draftId: Long): org.example.project.shared.db.ViolationDraft? {
+        return violationDraftRepository.getDraftById(draftId)
+    }
+
+    fun deleteDraft(draftId: Long) {
+        viewModelScope.launch {
+            violationDraftRepository.deleteDraft(draftId)
+        }
+    }
+
+    fun restoreDraftData(draft: org.example.project.shared.db.ViolationDraft) {
+        val project = draft.facilityJson?.let {
+            try {
+                Json.decodeFromString<Project>(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        val listImages = draft.imagesJson.mapNotNull {
+            try {
+                Json.decodeFromString<LocalViolationImage>(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        _uiState.update { state ->
+            state.copy(
+                draftId = draft.id,
+                selectedProject = project,
+                employeeName = draft.employeeName,
+                employeeId = draft.employeeId,
+                violationDate = draft.violationDate,
+                violationDateMillis = draft.violationDateMillis,
+                location = draft.location ?: "",
+                description = draft.description ?: "",
+                images = listImages
+            )
+        }
+        project?.let { fetchGroupUsers(it.groupId, it.groupCode ?: "") }
     }
 
     fun clearError() {

@@ -52,3 +52,49 @@ SELECT * FROM ObservationDraft WHERE userId = ? ORDER BY id DESC;
 
 deleteDraft:
 DELETE FROM ObservationDraft WHERE id = ?;
+
+CREATE TABLE ViolationDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    facilitiesId TEXT,
+    facilityJson TEXT,
+    employeeName TEXT NOT NULL,
+    employeeId TEXT NOT NULL,
+    violationDate TEXT NOT NULL,
+    violationDateMillis INTEGER,
+    location TEXT,
+    description TEXT,
+    imagesJson TEXT AS List<String> NOT NULL,
+    reportedBy TEXT NOT NULL,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
+
+insertViolationDraft:
+INSERT INTO ViolationDraft(facilitiesId, facilityJson, employeeName, employeeId, violationDate, violationDateMillis, location, description, imagesJson, reportedBy, createdAt, userId)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateViolationDraft:
+UPDATE ViolationDraft
+SET
+    facilitiesId = ?,
+    facilityJson = ?,
+    employeeName = ?,
+    employeeId = ?,
+    violationDate = ?,
+    violationDateMillis = ?,
+    location = ?,
+    description = ?,
+    imagesJson = ?,
+    reportedBy = ?,
+    createdAt = ?,
+    userId = ?
+WHERE id = ?;
+
+getAllViolationDrafts:
+SELECT * FROM ViolationDraft;
+
+getViolationDraftsByUserId:
+SELECT * FROM ViolationDraft WHERE userId = ? ORDER BY id DESC;
+
+deleteViolationDraft:
+DELETE FROM ViolationDraft WHERE id = ?;

@@ -53,13 +53,16 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, 
             }
             refreshTokens {
                 val refreshToken = authPreferences.getRefreshToken() ?: return@refreshTokens null
+                var shouldLogout = false
                 try {
                     val response = client.post(BASE_URL + ApiEndpoints.REFRESH_TOKEN) {
                         contentType(ContentType.Application.Json)
                         setBody(TokenRefreshRequest(refreshToken))
                         markAsRefreshTokenRequest()
                     }
-                    if (response.status.isSuccess()) {
+                    if (response.status.value == 401) {
+                        shouldLogout = true
+                    } else if (response.status.isSuccess()) {
                         val body = response.body<CommonResponse<AuthResponse>>()
                         if (!body.hasError && body.response != null) {
                             val newAccess = body.response.access
@@ -69,12 +72,18 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, 
                                 authPreferences.saveTokens(newAccess, newRefresh, newExpiry)
                                 return@refreshTokens BearerTokens(newAccess, newRefresh)
                             }
+                        } else {
+                            if (body.errorCode == 2020 || body.errorCode == 401) {
+                                shouldLogout = true
+                            }
                         }
                     }
                 } catch (e: Exception) {
                     println("KTOR => Token refresh failed: ${e.message}")
                 }
-                org.example.project.manager.AppManager.logout()
+                if (shouldLogout) {
+                    org.example.project.manager.AppManager.logout()
+                }
                 null
             }
             sendWithoutRequest { true }

@@ -16,6 +16,9 @@ import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.AppFilterState
 import org.example.project.data.remote.api.AuthApiService
+import org.example.project.data.repository.ViolationDraftRepository
+import org.example.project.data.settings.AuthPreferences
+import org.example.project.shared.db.ViolationDraft
 
 data class ViolationListState(
     val isLoading: Boolean = false,
@@ -25,12 +28,15 @@ data class ViolationListState(
     val error: String? = null,
     val isLastPage: Boolean = false,
     val appliedFilterState: AppFilterState = AppFilterState(),
-    var errorExcel: String? = null
+    var errorExcel: String? = null,
+    val drafts: List<ViolationDraft> = emptyList()
 )
 
 class ViolationListViewModel(
     private val repository: ViolationRepository,
-    private val apiService: AuthApiService
+    private val apiService: AuthApiService,
+    private val draftRepository: ViolationDraftRepository,
+    private val authPreferences: AuthPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ViolationListState())
@@ -55,6 +61,13 @@ class ViolationListViewModel(
 
     fun setExportToastMessage(message: String) {
         _exportToastMessage.value = message
+    }
+
+    private val _draftToastMessage = MutableStateFlow<String?>(null)
+    val draftToastMessage: StateFlow<String?> = _draftToastMessage.asStateFlow()
+
+    fun clearDraftToast() {
+        _draftToastMessage.value = null
     }
 
     private var currentPage = 1
@@ -179,5 +192,22 @@ class ViolationListViewModel(
         val month = localDate.monthNumber.toString().padStart(2, '0')
         val year = localDate.year
         return "$day-$month-$year"
+    }
+
+    fun loadDrafts() {
+        val userId = authPreferences.getLoggedInUser()?.userId ?: -1
+        _uiState.update { it.copy(drafts = draftRepository.getAllDrafts(userId)) }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            try {
+                ids.forEach { draftRepository.deleteDraft(it) }
+                loadDrafts()
+                _draftToastMessage.value = successMessage
+            } catch (e: Exception) {
+                // handle error
+            }
+        }
     }
 }

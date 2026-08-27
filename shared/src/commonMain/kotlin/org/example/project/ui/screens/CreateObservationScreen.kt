@@ -54,6 +54,7 @@ fun CreateObservationScreen(
     val description = remember { mutableStateOf("") }
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
+    val showDraftSuccessDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(isFromDraft, draftId) {
         if (isFromDraft && draftId != -1L) {
@@ -125,7 +126,7 @@ fun CreateObservationScreen(
                                 location = location.value,
                                 description = description.value,
                                 isDraft = true,
-                                onSuccess = { showSuccessDialog.value = true }
+                                onSuccess = { showDraftSuccessDialog.value = true }
                             )
                         },
                         modifier = Modifier.weight(1f)
@@ -299,6 +300,19 @@ fun CreateObservationScreen(
                 buttonText = "OK",
                 onDismiss = {
                     showSuccessDialog.value = false
+                    onBackClicked()
+                }
+            )
+        }
+
+        if (showDraftSuccessDialog.value) {
+            org.example.project.ui.components.AppStatusDialog(
+                visible = showSuccessDialog.value,
+                title = stringResource(Res.string.success),
+                description = "Observation Draft Saved successfully.",
+                buttonText = "OK",
+                onDismiss = {
+                    showDraftSuccessDialog.value = false
                     onBackClicked()
                 }
             )

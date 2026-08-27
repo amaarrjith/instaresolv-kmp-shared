@@ -9,9 +9,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
-import org.example.project.navigation.AppNavigation
+import org.example.project.ui.navigation.AppNavigation
 import org.example.project.utilites.setAppLocale
-import org.example.project.ui.screens.AppLanguage
 import org.example.project.ui.viewmodel.GlobalSettingsViewModel
 import org.koin.compose.koinInject
 import androidx.compose.foundation.layout.Box

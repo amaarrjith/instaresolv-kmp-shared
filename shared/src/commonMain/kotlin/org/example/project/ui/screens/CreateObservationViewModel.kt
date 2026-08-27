@@ -144,9 +144,26 @@ class CreateObservationViewModel(
         onSuccess: () -> Unit
     ) {
         val state = _uiState.value
-        if (title.isBlank()) {
-            _uiState.value = state.copy(error = "Title is required")
-            return
+        if (isDraft) {
+            val hasValue = title.isNotBlank() ||
+                           location.isNotBlank() ||
+                           description.isNotBlank() ||
+                           state.selectedProject != null ||
+                           state.observationImages.any { !it.imageUrl.isNullOrBlank() } ||
+                           !state.audioUrl.isNullOrBlank() ||
+                           state.selectedResponsiblePerson != null ||
+                           state.selectedNotifyPerson != null ||
+                           state.manualResponsibleName.isNotBlank() ||
+                           state.manualResponsibleEmail.isNotBlank()
+            if (!hasValue) {
+                _uiState.value = state.copy(error = "At least one field must have a value to save as draft")
+                return
+            }
+        } else {
+            if (title.isBlank()) {
+                _uiState.value = state.copy(error = "Title is required")
+                return
+            }
         }
 
         viewModelScope.launch {

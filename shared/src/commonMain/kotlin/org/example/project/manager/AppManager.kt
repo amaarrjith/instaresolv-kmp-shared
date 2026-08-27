@@ -11,10 +11,15 @@ class AppManager(
     val logoutEvent = _logoutEvent.asSharedFlow()
 
     /**
-     * Clears everything stored in User Defaults / SharedPreferences via Settings.
+     * Clears user session credentials and details from Settings.
      */
     fun logout() {
-        settings.clear()
+        settings.remove("is_logged_in")
+        settings.remove("access_token")
+        settings.remove("refresh_token")
+        settings.remove("token_expiry")
+        settings.remove("logged_in_user")
+        settings.remove("logged_in_user_info")
         _logoutEvent.tryEmit(Unit)
     }
 
