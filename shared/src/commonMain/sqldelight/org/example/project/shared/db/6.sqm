@@ -1,0 +1,14 @@
+CREATE TABLE PreTaskContent (
+    id INTEGER PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    updatedTime TEXT NOT NULL,
+    sortOrder INTEGER NOT NULL
+);
+
+CREATE TABLE PreTaskQuestion (
+    id INTEGER PRIMARY KEY NOT NULL,
+    contentId INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    imageUrl TEXT NOT NULL,
+    updatedTime TEXT NOT NULL
+);

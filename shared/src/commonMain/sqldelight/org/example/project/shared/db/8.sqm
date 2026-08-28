@@ -1,0 +1,13 @@
+CREATE TABLE AuditItem (
+    auditItemId INTEGER PRIMARY KEY NOT NULL,
+    auditItemTitle TEXT,
+    image TEXT,
+    formUpdatedTime TEXT
+);
+
+CREATE TABLE InspectionContentCache (
+    type INTEGER PRIMARY KEY NOT NULL,
+    version TEXT,
+    questionsJson TEXT NOT NULL,
+    updatedTime TEXT
+);

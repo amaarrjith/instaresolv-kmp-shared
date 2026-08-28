@@ -32,6 +32,7 @@ import org.example.project.data.settings.formatDate
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.*
 import org.example.project.utilites.*
@@ -39,19 +40,36 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePreTaskScreen(
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L
 ) {
     val viewModel: CreatePreTaskViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val showExitPopup = remember { mutableStateOf(false) }
+    val showDraftSuccessDialog = remember { mutableStateOf(false) }
+    val showOutDatedDraftPopUp = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFromDraft, draftId) {
+        viewModel.initialize(isFromDraft, draftId)
+    }
+
     LaunchedEffect(uiState.publishSuccess) {
         if (uiState.publishSuccess) {
             onBackClicked()
+        }
+    }
+
+    LaunchedEffect(uiState.isDraftOutdated) {
+        if (uiState.isDraftOutdated) {
+            showOutDatedDraftPopUp.value = true
         }
     }
 
@@ -95,24 +113,62 @@ fun CreatePreTaskScreen(
                     .shadow(elevation = 8.dp)
                     .background(Color.White)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
                         .padding(horizontal = 22.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    AppBorderButton(
-                        title = stringResource(Res.string.saveAsDraft),
-                        onClick = { viewModel.publishPreTask(isDraft = true) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    AppPrimaryButton(
-                        title = stringResource(Res.string.publish),
-                        onClick = { viewModel.publishPreTask(isDraft = false) },
-                        modifier = Modifier.weight(1f),
-                        isLoading = uiState.isPublishing
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        AppBorderButton(
+                            title = stringResource(Res.string.saveAsDraft),
+                            onClick = {
+                                val projectJson = uiState.selectedProject?.let { Json.encodeToString(it) }
+                                val contentsJson = Json.encodeToString(uiState.contents)
+                                val questionsJson = Json.encodeToString(uiState.questions)
+                                val questionAnswersJson = Json.encodeToString(uiState.questionAnswers)
+                                val customQuestionsJson = Json.encodeToString(uiState.customQuestions)
+                                val attendeesJson = Json.encodeToString(uiState.attendees)
+                                val evidencesJson = Json.encodeToString(uiState.evidences)
+                                val selectedNotifyPersonJson = uiState.selectedNotifyPerson?.let { Json.encodeToString(it) }
+
+                                viewModel.saveLocalDraft(
+                                    id = if (isFromDraft) draftId else 0L,
+                                    facilitiesId = uiState.selectedProject?.groupId,
+                                    projectJson = projectJson,
+                                    dateMillis = uiState.dateMillis,
+                                    startTime = uiState.startTime,
+                                    endTime = uiState.endTime,
+                                    msraReference = uiState.msraReference,
+                                    permitReference = uiState.permitReference,
+                                    taskTitle = uiState.taskTitle,
+                                    stepByStepAccount = uiState.stepByStepAccount,
+                                    contentsJson = contentsJson,
+                                    questionsJson = questionsJson,
+                                    questionAnswersJson = questionAnswersJson,
+                                    customQuestionsJson = customQuestionsJson,
+                                    attendeesJson = attendeesJson,
+                                    evidencesJson = evidencesJson,
+                                    selectedNotifyPersonJson = selectedNotifyPersonJson,
+                                    onSuccess = {
+                                        showDraftSuccessDialog.value = true
+                                    }
+                                )
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                        AppPrimaryButton(
+                            title = stringResource(Res.string.publish),
+                            onClick = { viewModel.publishPreTask(isDraft = false) },
+                            modifier = Modifier.weight(1f),
+                            isLoading = uiState.isPublishing,
+                            enabled = !uiState.isDraftOutdated
+                        )
+                    }
                 }
             }
         }
@@ -482,6 +538,31 @@ fun CreatePreTaskScreen(
             onDismiss = {
                 viewModel.clearSuccess()
                 onBackClicked()
+            }
+        )
+    }
+
+    if (showDraftSuccessDialog.value) {
+        AppStatusDialog(
+            visible = true,
+            title = stringResource(Res.string.success),
+            description = "PreTask Briefing draft saved successfully.",
+            buttonText = "OK",
+            onDismiss = {
+                showDraftSuccessDialog.value = false
+                onBackClicked()
+            }
+        )
+    }
+
+    if (uiState.isDraftOutdated) {
+        AppErrorDialog(
+            visible = showOutDatedDraftPopUp.value,
+            title = "Alert",
+            description = "Questions have been updated. Please recreate the draft to publish.",
+            buttonText = "OK",
+            onDismiss = {
+                showOutDatedDraftPopUp.value = false
             }
         )
     }

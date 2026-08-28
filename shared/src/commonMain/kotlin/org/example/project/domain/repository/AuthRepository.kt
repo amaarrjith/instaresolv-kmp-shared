@@ -2,6 +2,7 @@ package org.example.project.domain.repository
 
 import org.example.project.data.UserRoleCheckRequest
 import org.example.project.data.UserRoleCheckResponse
+import org.example.project.data.model.AppUpdateResponse
 import org.example.project.data.model.ForgetPasswordResponse
 import org.example.project.data.model.HomeResponse
 import org.example.project.data.model.CommonResponse
@@ -115,4 +116,6 @@ interface AuthRepository {
     suspend fun checkUserRole(
         request: UserRoleCheckRequest
     ): NetworkResult<UserRoleCheckResponse>
+
+    suspend fun checkAppUpdate(): NetworkResult<AppUpdateResponse>
 }

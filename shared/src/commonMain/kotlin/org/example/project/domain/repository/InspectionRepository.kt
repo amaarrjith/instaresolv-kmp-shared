@@ -1,12 +1,14 @@
 package org.example.project.domain.repository
 
+import org.example.project.data.model.InspectionContentsRequest
+import org.example.project.data.model.InspectionContentsResponse
 import org.example.project.data.model.InspectionData
 import org.example.project.data.model.InspectionListRequest
 import org.example.project.network.NetworkResult
 
 interface InspectionRepository {
     suspend fun getInspectionList(request: InspectionListRequest): NetworkResult<List<InspectionData>>
-    suspend fun getAuditItems(): NetworkResult<org.example.project.data.model.AuditItemsResponse>
+    suspend fun getAuditItems(updatedTime: String? = null): NetworkResult<org.example.project.data.model.AuditItemsResponse>
 
     suspend fun getStaticEquipmentsList(
         request: org.example.project.data.model.StaticEquipmentListRequest
@@ -23,4 +25,8 @@ interface InspectionRepository {
     suspend fun generateInspectionExcel(
         request: org.example.project.data.model.InspectionListRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun getInspectionContentsList(
+        request: InspectionContentsRequest
+    ): NetworkResult<InspectionContentsResponse>
 }

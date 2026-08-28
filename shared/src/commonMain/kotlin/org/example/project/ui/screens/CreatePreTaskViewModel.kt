@@ -18,9 +18,16 @@ import org.example.project.data.model.Project
 import org.example.project.data.model.EmployeeData
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.PreTaskRepository
+import org.example.project.data.repository.PreTaskDraftRepository
+import org.example.project.data.model.CreatePreTaskDraftRequest
+import org.example.project.shared.db.AppDatabase
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class AttendeeItem(
     val employeeCode: String = "",
     val employeeName: String = "",
@@ -28,11 +35,13 @@ data class AttendeeItem(
     val profession: String = ""
 )
 
+@Serializable
 data class EvidenceImage(
     val imagePath: String = "",
     val description: String = ""
 )
 
+@Serializable
 data class CustomQuestion(
     val id: Int,
     val title: String = "",
@@ -79,14 +88,19 @@ data class CreatePreTaskUiState(
     val bulkSearchQuery: String = "",
     val bulkPageNumber: Int = 1,
     val isBulkLoading: Boolean = false,
-    val bulkHasMore: Boolean = true
+    val bulkHasMore: Boolean = true,
+    val isDraftOutdated: Boolean = false
 )
 
 class CreatePreTaskViewModel(
     private val projectRepository: ProjectRepository,
     private val preTaskRepository: PreTaskRepository,
-    private val authPreferences: AuthPreferences
+    private val authPreferences: AuthPreferences,
+    private val preTaskDraftRepository: PreTaskDraftRepository,
+    private val database: AppDatabase
 ) : ViewModel() {
+
+    var draftId: Long = 0L
 
     private val _uiState = MutableStateFlow(CreatePreTaskUiState())
     val uiState: StateFlow<CreatePreTaskUiState> = _uiState.asStateFlow()
@@ -108,7 +122,18 @@ class CreatePreTaskViewModel(
                 ) 
             }
         }
-        fetchTopics()
+    }
+
+    private var isInitialized = false
+
+    fun initialize(isFromDraft: Boolean, draftId: Long) {
+        if (isInitialized) return
+        isInitialized = true
+        if (isFromDraft && draftId != -1L) {
+            loadDraft(draftId)
+        } else {
+            fetchTopics()
+        }
     }
 
     private fun fetchTopics() {
@@ -487,6 +512,9 @@ class CreatePreTaskViewModel(
             
             when (val result = preTaskRepository.createPreTask(request)) {
                 is NetworkResult.Success -> {
+                    if (draftId != 0L) {
+                        preTaskDraftRepository.deleteDraft(draftId)
+                    }
                     _uiState.update { it.copy(isPublishing = false, publishSuccess = true) }
                 }
                 is NetworkResult.Error -> {
@@ -514,5 +542,124 @@ class CreatePreTaskViewModel(
             // Fallback
         }
         return timeStr
+    }
+
+    fun saveLocalDraft(
+        id: Long,
+        facilitiesId: Int?,
+        projectJson: String?,
+        dateMillis: Long?,
+        startTime: String,
+        endTime: String,
+        msraReference: String,
+        permitReference: String,
+        taskTitle: String,
+        stepByStepAccount: String,
+        contentsJson: String,
+        questionsJson: String,
+        questionAnswersJson: String,
+        customQuestionsJson: String,
+        attendeesJson: String,
+        evidencesJson: String,
+        selectedNotifyPersonJson: String?,
+        onSuccess: () -> Unit
+    ) {
+        if (facilitiesId == null && dateMillis == null && startTime.isBlank() && endTime.isBlank() &&
+            taskTitle.isBlank() && msraReference.isBlank() && permitReference.isBlank() &&
+            stepByStepAccount.isBlank()) {
+            _uiState.update { it.copy(error = "At least one value is needed to save as draft") }
+            return
+        }
+
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            val request = CreatePreTaskDraftRequest(
+                id = id,
+                facilitiesId = facilitiesId,
+                projectJson = projectJson,
+                dateMillis = dateMillis,
+                startTime = startTime,
+                endTime = endTime,
+                msraReference = msraReference,
+                permitReference = permitReference,
+                taskTitle = taskTitle,
+                stepByStepAccount = stepByStepAccount,
+                contentsJson = contentsJson,
+                questionsJson = questionsJson,
+                questionAnswersJson = questionAnswersJson,
+                customQuestionsJson = customQuestionsJson,
+                attendeesJson = attendeesJson,
+                evidencesJson = evidencesJson,
+                selectedNotifyPersonJson = selectedNotifyPersonJson,
+                reportedBy = user?.name ?: "",
+                createdAt = run {
+                    val localDateTime = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val year = localDateTime.year
+                    val month = localDateTime.monthNumber.toString().padStart(2, '0')
+                    val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+                    val hour = localDateTime.hour.toString().padStart(2, '0')
+                    val minute = localDateTime.minute.toString().padStart(2, '0')
+                    val second = localDateTime.second.toString().padStart(2, '0')
+                    "$year-$month-$day $hour:$minute:$second"
+                },
+                userId = user?.userId ?: -1
+            )
+            preTaskDraftRepository.saveDraft(request)
+            onSuccess()
+        }
+    }
+
+    fun loadDraft(id: Long) {
+        viewModelScope.launch {
+            draftId = id
+            val draft = preTaskDraftRepository.getDraftById(id) ?: return@launch
+            
+            val draftContents = draft.contentsJson?.let { Json.decodeFromString<List<PreTaskContentData>>(it) } ?: emptyList()
+            val dbContents = database.appDatabaseQueries.getAllPreTaskContents().executeAsList()
+            val draftContentIds = draftContents.map { it.id.toLong() }.toSet()
+            val dbContentIds = dbContents.map { it.id }.toSet()
+            val dbContentsById = dbContents.associateBy { it.id }
+            val isContentOutdated = draftContents.isNotEmpty() && (
+                draftContentIds != dbContentIds || draftContents.any { draftC ->
+                    val dbC = dbContentsById[draftC.id.toLong()]
+                    dbC == null || dbC.updatedTime != draftC.updatedTime
+                }
+            )
+
+            val draftQuestions = draft.questionsJson?.let { Json.decodeFromString<List<PreTaskQuestionData>>(it) } ?: emptyList()
+            val dbQuestions = database.appDatabaseQueries.getAllPreTaskQuestions().executeAsList()
+            val draftQuestionIds = draftQuestions.map { it.id.toLong() }.toSet()
+            val dbQuestionIds = dbQuestions.map { it.id }.toSet()
+            val dbQuestionsById = dbQuestions.associateBy { it.id }
+            val isQuestionOutdated = draftQuestions.isNotEmpty() && (
+                draftQuestionIds != dbQuestionIds || draftQuestions.any { draftQ ->
+                    val dbQ = dbQuestionsById[draftQ.id.toLong()]
+                    dbQ == null || dbQ.updatedTime != draftQ.updatedTime
+                }
+            )
+
+            val isOutdated = isContentOutdated || isQuestionOutdated
+            
+            _uiState.update { state ->
+                state.copy(
+                    selectedProject = draft.projectJson?.let { Json.decodeFromString<Project>(it) },
+                    taskTitle = draft.taskTitle ?: "",
+                    dateMillis = draft.dateMillis,
+                    startTime = draft.startTime ?: "",
+                    endTime = draft.endTime ?: "",
+                    msraReference = draft.msraReference ?: "",
+                    permitReference = draft.permitReference ?: "",
+                    stepByStepAccount = draft.stepByStepAccount ?: "",
+                    contents = draft.contentsJson?.let { Json.decodeFromString<List<PreTaskContentData>>(it) } ?: emptyList(),
+                    questions = draftQuestions,
+                    questionAnswers = draft.questionAnswersJson?.let { Json.decodeFromString<Map<Int, String>>(it) } ?: emptyMap(),
+                    customQuestions = draft.customQuestionsJson?.let { Json.decodeFromString<List<CustomQuestion>>(it) } ?: listOf(CustomQuestion(1)),
+                    attendees = draft.attendeesJson?.let { Json.decodeFromString<List<AttendeeItem>>(it) } ?: listOf(AttendeeItem()),
+                    evidences = draft.evidencesJson?.let { Json.decodeFromString<List<EvidenceImage>>(it) } ?: listOf(EvidenceImage()),
+                    selectedNotifyPerson = draft.selectedNotifyPersonJson?.let { Json.decodeFromString<GroupUser>(it) },
+                    isDraftOutdated = isOutdated
+                )
+            }
+        }
     }
 }

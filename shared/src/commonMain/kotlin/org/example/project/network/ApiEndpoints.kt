@@ -20,6 +20,7 @@ object ApiEndpoints {
     const val ADD_INSPECTION = "inspection/add"
     const val INSPECTION_DETAILS = "inspection/details"
     const val AUDIT_ITEMS = "inspection/audit-items"
+    const val INSPECTION_CONTENTS = "inspection/contents-list"
     const val STATIC_EQUIPMENTS_LIST = "equipments/list"
     const val USER_EDIT = "user/profile/edit"
     const val CREATE_PROJECT = "v3/group/create"

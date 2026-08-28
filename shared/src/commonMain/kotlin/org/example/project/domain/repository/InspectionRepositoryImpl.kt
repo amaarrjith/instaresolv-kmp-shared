@@ -1,5 +1,7 @@
 package org.example.project.domain.repository
 
+import org.example.project.data.model.InspectionContentsRequest
+import org.example.project.data.model.InspectionContentsResponse
 import org.example.project.data.model.InspectionData
 import org.example.project.data.model.InspectionListRequest
 import org.example.project.data.remote.api.AuthApiService
@@ -12,8 +14,8 @@ class InspectionRepositoryImpl(
         return apiService.getInspectionList(request)
     }
 
-    override suspend fun getAuditItems(): NetworkResult<org.example.project.data.model.AuditItemsResponse> {
-        return apiService.getAuditItems()
+    override suspend fun getAuditItems(updatedTime: String?): NetworkResult<org.example.project.data.model.AuditItemsResponse> {
+        return apiService.getAuditItems(updatedTime)
     }
 
     override suspend fun getStaticEquipmentsList(
@@ -38,5 +40,9 @@ class InspectionRepositoryImpl(
         request: org.example.project.data.model.InspectionListRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse> {
         return apiService.generateInspectionExcel(request)
+    }
+
+    override suspend fun getInspectionContentsList(request: InspectionContentsRequest): NetworkResult<InspectionContentsResponse> {
+        return apiService.getInspectionContentsList(request)
     }
 }

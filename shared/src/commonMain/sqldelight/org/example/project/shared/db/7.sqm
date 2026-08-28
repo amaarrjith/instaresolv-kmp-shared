@@ -1,0 +1,22 @@
+CREATE TABLE PreTaskDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    dateMillis INTEGER,
+    startTime TEXT,
+    endTime TEXT,
+    msraReference TEXT,
+    permitReference TEXT,
+    taskTitle TEXT,
+    stepByStepAccount TEXT,
+    contentsJson TEXT,
+    questionsJson TEXT,
+    questionAnswersJson TEXT,
+    customQuestionsJson TEXT,
+    attendeesJson TEXT,
+    evidencesJson TEXT,
+    selectedNotifyPersonJson TEXT,
+    reportedBy TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);

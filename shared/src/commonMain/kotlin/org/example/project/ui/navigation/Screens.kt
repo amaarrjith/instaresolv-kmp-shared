@@ -23,6 +23,8 @@ sealed class Screens(val route: String) {
     // Action Overview Modules
     object PreTaskListScreen : Screens("pre_task_list_screen")
     object CreatePreTaskScreen : Screens("create_pre_task_screen")
+    object CreatePreTaskScreenWithArgs : Screens("create_pre_task_screen?isFromDraft={isFromDraft}&draftId={draftId}")
+    object PreTaskDraftListScreen : Screens("pre_task_draft_list_screen")
     object AuditInspectionListScreen : Screens("audit_inspection_list_screen")
     object CreateInspectionScreen : Screens("create_inspection_screen")
     object CreateInspectionScreenWithArgs : Screens("create_inspection_screen/{inspectionTypeId}/{inspectionTypeName}")

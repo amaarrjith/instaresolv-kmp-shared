@@ -95,6 +95,7 @@ import org.example.project.data.repository.ViolationDraftRepository
 import org.example.project.data.repository.LessonLearnedDraftRepository
 import org.example.project.data.repository.IncidentDraftRepository
 import org.example.project.data.repository.ToolBoxTalkDraftRepository
+import org.example.project.data.repository.PreTaskDraftRepository
 
 val appModule = module {
     factory { createHttpClient(get(), get()) }
@@ -109,7 +110,7 @@ val appModule = module {
     factory { ProjectViewModel(get(),get()) }
     factory { NotificationsViewModel(get()) }
     factory { AppTabBarViewModel(get(), get()) }
-    factory { HomeScreenViewModel(get(), get(), get(), get(), get()) }
+    factory { HomeScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get()) }
     factory { ProfileViewModel(get(), get(), get()) }
@@ -153,9 +154,9 @@ val appModule = module {
     factory { CreateViolationViewModel(get(), get(), get(), get()) }
     
     factory<PreTaskRepository> { PreTaskRepositoryImpl(get()) }
-    factory { PreTaskListViewModel(get()) }
+    factory { PreTaskListViewModel(get(), get(), get()) }
     factory { PreTaskDetailViewModel(get()) }
-    factory { CreatePreTaskViewModel(get(), get(), get()) }
+    factory { CreatePreTaskViewModel(get(), get(), get(), get(), get()) }
     
     factory<LessonLearnedRepository> { LessonLearnedRepositoryImpl(get()) }
     factory { LessonsLearnedListViewModel(get(), get(), get()) }
@@ -208,4 +209,5 @@ val appModule = module {
     factory { ViolationDraftRepository(get()) }
     factory { IncidentDraftRepository(get()) }
     factory { ToolBoxTalkDraftRepository(get()) }
+    factory { PreTaskDraftRepository(get()) }
 }

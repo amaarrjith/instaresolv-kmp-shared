@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.AuthRepository
+import org.example.project.getPlatform
 import org.example.project.network.NetworkResult
+import org.example.project.utilites.getAppInfo
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -46,11 +48,21 @@ class SplashViewModel(
             val result = repository.userCheckOut(targetUuid)
             when(result){
                 is NetworkResult.Success -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            loadingCompleted = true
-                        )
+                    checkAppUpdates { isUpdateNeeded ->
+                        if (isUpdateNeeded) {
+                            _uiState.update {
+                                it.copy(
+                                    isUpdateAvailable = true
+                                )
+                            }
+                        } else {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    loadingCompleted = true
+                                )
+                            }
+                        }
                     }
                 }
                 is NetworkResult.Error -> {
@@ -73,5 +85,48 @@ class SplashViewModel(
             )
         }
         userCheckout()
+    }
+
+    fun checkAppUpdates(updateNeeded: (Boolean) -> Unit) {
+        val platformName = getPlatform().name
+        val isIos = platformName.contains("iOS", ignoreCase = true)
+        val currentAppVersion = getAppInfo().appVersion
+        viewModelScope.launch {
+            val result = repository.checkAppUpdate()
+            when(result) {
+                is NetworkResult.Success -> {
+                    if (isIos) {
+                        val isForceUpdate = result.data.iOS.isForceUpdate
+                        val isUpdateNeeded = isUpdateNeeded(currentAppVersion, result.data.iOS.latestVersion)
+                        updateNeeded(isForceUpdate && isUpdateNeeded)
+                    } else {
+                        val isForceUpdate = result.data.android.isForceUpdate
+                        val isUpdateNeeded = isUpdateNeeded(currentAppVersion, result.data.android.latestVersion)
+                        updateNeeded(isForceUpdate && isUpdateNeeded)
+                    }
+                }
+                is NetworkResult.Error -> {
+                    println("Error checking app updates: ${result.message}")
+                    updateNeeded(false)
+                }
+            }
+        }
+    }
+
+    private fun isUpdateNeeded(current: String, latest: String): Boolean {
+        val currentParts = current.split(".").map { part ->
+            part.takeWhile { it.isDigit() }.toIntOrNull() ?: 0
+        }
+        val latestParts = latest.split(".").map { part ->
+            part.takeWhile { it.isDigit() }.toIntOrNull() ?: 0
+        }
+        val maxLength = maxOf(currentParts.size, latestParts.size)
+        for (i in 0 until maxLength) {
+            val currentPart = currentParts.getOrElse(i) { 0 }
+            val latestPart = latestParts.getOrElse(i) { 0 }
+            if (latestPart > currentPart) return true
+            if (currentPart > latestPart) return false
+        }
+        return false
     }
 }

@@ -6,6 +6,7 @@ import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import org.example.project.data.UserRoleCheckRequest
 import org.example.project.data.UserRoleCheckResponse
+import org.example.project.data.model.AppUpdateResponse
 import org.example.project.data.model.ApproveRejectRequest
 import org.example.project.data.model.ApproveRejectResponse
 import org.example.project.data.model.CommonModelResponse
@@ -456,9 +457,13 @@ class AuthApiServiceImpl(
         }
     }
 
-    override suspend fun getAuditItems(): NetworkResult<org.example.project.data.model.AuditItemsResponse> = safeApiCall {
+    override suspend fun getAuditItems(updatedTime: String?): NetworkResult<org.example.project.data.model.AuditItemsResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.AUDIT_ITEMS) {
-            jsonBody(emptyMap<String, String>()) // Assuming no body params as per spec
+            val body = mutableMapOf<String, String>()
+            if (updatedTime != null) {
+                body["updatedTime"] = updatedTime
+            }
+            jsonBody(body)
         }
     }
 
@@ -467,6 +472,16 @@ class AuthApiServiceImpl(
     ): NetworkResult<org.example.project.data.model.StaticEquipmentListResponse> {
         return safeApiCall {
             httpClient.post(ApiEndpoints.STATIC_EQUIPMENTS_LIST) {
+                jsonBody(request)
+            }
+        }
+    }
+
+    override suspend fun getInspectionContentsList(
+        request: org.example.project.data.model.InspectionContentsRequest
+    ): NetworkResult<org.example.project.data.model.InspectionContentsResponse> {
+        return safeApiCall {
+            httpClient.post(ApiEndpoints.INSPECTION_CONTENTS) {
                 jsonBody(request)
             }
         }
@@ -767,6 +782,12 @@ class AuthApiServiceImpl(
     override suspend fun checkUserRole(request: UserRoleCheckRequest): NetworkResult<UserRoleCheckResponse> = safeApiCall {
         httpClient.post("user/check-role") {
             jsonBody(request)
+        }
+    }
+
+    override suspend fun checkAppUpdate(): NetworkResult<AppUpdateResponse> = safeApiCall {
+        httpClient.post("generic/app-update") {
+
         }
     }
 

@@ -484,4 +484,10 @@
     <string name="lessonLearned">Lesson Learned</string>
     <string name="user_role_changed">Your Access Role Has Been Updated</string>
     <string name="user_role_changed_description">Your account role has been changed. Please log in again to continue using the app with your updated access permissions.</string>
+    <string name="update">Update</string>
+    <string name="available">Available</string>
+    <string name="update_now">Update Now</string>
+    <string name="update_later">Update Later</string>
+    <string name="new_version_available">A new version of InstaResolv is available.</string>
+    <string name="update_now_description">Please update to the latest version to continue using the application.</string>
 </resources>

@@ -15,6 +15,9 @@ import org.example.project.data.model.PreTaskListRequest
 import org.example.project.domain.repository.PreTaskRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
+import org.example.project.data.settings.AuthPreferences
+import org.example.project.data.repository.PreTaskDraftRepository
+import org.example.project.shared.db.PreTaskDraft
 
 data class PreTaskListState(
     val isPullDown: Boolean = false,
@@ -24,15 +27,20 @@ data class PreTaskListState(
     val searchKey: String = "",
     val error: String? = null,
     val endReached: Boolean = false,
-    val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState()
+    val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
+    val drafts: List<PreTaskDraft> = emptyList()
 )
 
 class PreTaskListViewModel(
-    private val repository: PreTaskRepository
+    private val repository: PreTaskRepository,
+    private val authPreferences: AuthPreferences,
+    private val preTaskDraftRepository: PreTaskDraftRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PreTaskListState())
     val uiState: StateFlow<PreTaskListState> = _uiState.asStateFlow()
+
+    val draftToastMessage = MutableStateFlow<String?>(null)
 
     private var currentPage = 1
     private var searchJob: Job? = null
@@ -138,5 +146,29 @@ class PreTaskListViewModel(
         val month = localDate.monthNumber.toString().padStart(2, '0')
         val year = localDate.year
         return "$day-$month-$year"
+    }
+
+    fun clearDraftToast() {
+        draftToastMessage.value = null
+    }
+
+    fun loadDrafts() {
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            if (user?.userId != null) {
+                val list = preTaskDraftRepository.getAllDrafts(user.userId!!)
+                _uiState.update { it.copy(drafts = list) }
+            }
+        }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            ids.forEach { id ->
+                preTaskDraftRepository.deleteDraft(id)
+            }
+            draftToastMessage.value = successMessage
+            loadDrafts()
+        }
     }
 }

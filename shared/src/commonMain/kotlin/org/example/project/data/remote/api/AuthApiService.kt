@@ -46,6 +46,7 @@ import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.EmployeeListRequest
 import org.example.project.data.model.AddIncidentRequest
 import org.example.project.data.model.AddIncidentResponse
+import org.example.project.data.model.AppUpdateResponse
 import org.example.project.data.model.ApproveRejectRequest
 import org.example.project.data.model.ApproveRejectResponse
 import org.example.project.data.model.DeleteObservationRequest
@@ -271,11 +272,15 @@ interface AuthApiService {
         request: org.example.project.data.model.CreateViolationRequest
     ): NetworkResult<org.example.project.data.model.CreateViolationResponse>
 
-    suspend fun getAuditItems(): NetworkResult<org.example.project.data.model.AuditItemsResponse>
+    suspend fun getAuditItems(updatedTime: String? = null): NetworkResult<org.example.project.data.model.AuditItemsResponse>
 
     suspend fun getStaticEquipmentsList(
         request: org.example.project.data.model.StaticEquipmentListRequest
     ): NetworkResult<org.example.project.data.model.StaticEquipmentListResponse>
+
+    suspend fun getInspectionContentsList(
+        request: org.example.project.data.model.InspectionContentsRequest
+    ): NetworkResult<org.example.project.data.model.InspectionContentsResponse>
 
     suspend fun addInspection(
         request: org.example.project.data.model.AddInspectionRequest
@@ -430,4 +435,7 @@ interface AuthApiService {
     suspend fun checkUserRole(
         request: UserRoleCheckRequest
     ): NetworkResult<UserRoleCheckResponse>
+
+    suspend fun checkAppUpdate(): NetworkResult<AppUpdateResponse>
+
 }

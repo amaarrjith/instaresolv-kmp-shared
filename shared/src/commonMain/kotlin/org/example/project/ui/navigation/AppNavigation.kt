@@ -65,6 +65,7 @@ import org.example.project.ui.screens.ObservationDraftListScreen
 import org.example.project.ui.screens.ViolationDraftListScreen
 import org.example.project.ui.screens.PendingActionListScreen
 import org.example.project.ui.screens.PreTaskListScreen
+import org.example.project.ui.screens.PreTaskDraftListScreen
 
 @Composable
 fun AppNavigation() {
@@ -260,12 +261,42 @@ fun AppNavigation() {
         composable(Screens.PreTaskListScreen.route) {
             PreTaskListScreen(
                 onBackClicked = { navController.popBackStack() },
-                onCreateClicked = { navController.navigate(Screens.CreatePreTaskScreen.route) }
+                onCreateClicked = { navController.navigate(Screens.CreatePreTaskScreen.route) },
+                onDraftClicked = { navController.navigate(Screens.PreTaskDraftListScreen.route) }
             )
         }
         composable(Screens.CreatePreTaskScreen.route) {
             CreatePreTaskScreen(
                 onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screens.CreatePreTaskScreenWithArgs.route,
+            arguments = listOf(
+                navArgument("isFromDraft") {
+                    type = NavType.StringType
+                    defaultValue = "false"
+                },
+                navArgument("draftId") {
+                    type = NavType.StringType
+                    defaultValue = "-1"
+                }
+            )
+        ) { backStackEntry ->
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
+            CreatePreTaskScreen(
+                onBackClicked = { navController.popBackStack() },
+                isFromDraft = isFromDraft,
+                draftId = draftId
+            )
+        }
+        composable(Screens.PreTaskDraftListScreen.route) {
+            PreTaskDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { draftId ->
+                    navController.navigate("create_pre_task_screen?isFromDraft=true&draftId=$draftId")
+                }
             )
         }
         composable(Screens.AuditInspectionListScreen.route) {

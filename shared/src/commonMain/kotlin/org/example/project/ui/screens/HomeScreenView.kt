@@ -171,7 +171,7 @@ fun HomeScreenContentView(
                     onProfileClick = onProfileClick,
                     userName = vm.user?.name,
                     profileImage = vm.user?.profileImage,
-                    notificationCount = vm.userInfo?.notificationUnReadCount,
+                    notificationCount = 0,
                     onNotificationClick = onNotificationClick
                 )
                 Column(

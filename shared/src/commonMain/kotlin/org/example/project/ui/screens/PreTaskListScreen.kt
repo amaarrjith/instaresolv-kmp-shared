@@ -71,7 +71,8 @@ import instaresolv.shared.generated.resources.*
 @Composable
 fun PreTaskListScreen(
     onBackClicked: () -> Unit,
-    onCreateClicked: () -> Unit = {}
+    onCreateClicked: () -> Unit = {},
+    onDraftClicked: () -> Unit = {}
 ) {
     val viewModel: PreTaskListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -99,7 +100,7 @@ fun PreTaskListScreen(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.weight(1f))
-                DraftButton(onDraftClicked = {})
+                DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = {onCreateClicked()})
             }

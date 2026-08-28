@@ -276,3 +276,152 @@ SELECT * FROM ToolBoxTalkDraft WHERE id = ?;
 
 deleteToolBoxTalkDraft:
 DELETE FROM ToolBoxTalkDraft WHERE id = ?;
+
+CREATE TABLE PreTaskContent (
+    id INTEGER PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    updatedTime TEXT NOT NULL,
+    sortOrder INTEGER NOT NULL
+);
+
+CREATE TABLE PreTaskQuestion (
+    id INTEGER PRIMARY KEY NOT NULL,
+    contentId INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    imageUrl TEXT NOT NULL,
+    updatedTime TEXT NOT NULL
+);
+
+insertPreTaskContent:
+INSERT OR REPLACE INTO PreTaskContent(id, title, updatedTime, sortOrder)
+VALUES (?, ?, ?, ?);
+
+getAllPreTaskContents:
+SELECT * FROM PreTaskContent ORDER BY sortOrder ASC;
+
+deletePreTaskContent:
+DELETE FROM PreTaskContent WHERE id = ?;
+
+clearAllPreTaskContents:
+DELETE FROM PreTaskContent;
+
+getLatestContentUpdatedTime:
+SELECT updatedTime FROM PreTaskContent ORDER BY updatedTime DESC LIMIT 1;
+
+insertPreTaskQuestion:
+INSERT OR REPLACE INTO PreTaskQuestion(id, contentId, title, imageUrl, updatedTime)
+VALUES (?, ?, ?, ?, ?);
+
+getAllPreTaskQuestions:
+SELECT * FROM PreTaskQuestion;
+
+deletePreTaskQuestion:
+DELETE FROM PreTaskQuestion WHERE id = ?;
+
+clearAllPreTaskQuestions:
+DELETE FROM PreTaskQuestion;
+
+getLatestQuestionUpdatedTime:
+SELECT updatedTime FROM PreTaskQuestion ORDER BY updatedTime DESC LIMIT 1;
+
+CREATE TABLE PreTaskDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    dateMillis INTEGER,
+    startTime TEXT,
+    endTime TEXT,
+    msraReference TEXT,
+    permitReference TEXT,
+    taskTitle TEXT,
+    stepByStepAccount TEXT,
+    contentsJson TEXT,
+    questionsJson TEXT,
+    questionAnswersJson TEXT,
+    customQuestionsJson TEXT,
+    attendeesJson TEXT,
+    evidencesJson TEXT,
+    selectedNotifyPersonJson TEXT,
+    reportedBy TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
+
+insertPreTaskDraft:
+INSERT OR REPLACE INTO PreTaskDraft(
+    id,
+    facilitiesId,
+    projectJson,
+    dateMillis,
+    startTime,
+    endTime,
+    msraReference,
+    permitReference,
+    taskTitle,
+    stepByStepAccount,
+    contentsJson,
+    questionsJson,
+    questionAnswersJson,
+    customQuestionsJson,
+    attendeesJson,
+    evidencesJson,
+    selectedNotifyPersonJson,
+    reportedBy,
+    createdAt,
+    userId
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getPreTaskDraftsByUserId:
+SELECT * FROM PreTaskDraft WHERE userId = ? ORDER BY id DESC;
+
+getPreTaskDraftById:
+SELECT * FROM PreTaskDraft WHERE id = ?;
+
+deletePreTaskDraft:
+DELETE FROM PreTaskDraft WHERE id = ?;
+
+CREATE TABLE AuditItem (
+    auditItemId INTEGER PRIMARY KEY NOT NULL,
+    auditItemTitle TEXT,
+    image TEXT,
+    formUpdatedTime TEXT
+);
+
+insertAuditItem:
+INSERT OR REPLACE INTO AuditItem(auditItemId, auditItemTitle, image, formUpdatedTime)
+VALUES (?, ?, ?, ?);
+
+getAllAuditItems:
+SELECT * FROM AuditItem;
+
+clearAllAuditItems:
+DELETE FROM AuditItem;
+
+getLatestAuditItemUpdatedTime:
+SELECT formUpdatedTime FROM AuditItem ORDER BY formUpdatedTime DESC LIMIT 1;
+
+CREATE TABLE InspectionContentCache (
+    type INTEGER PRIMARY KEY NOT NULL,
+    version TEXT,
+    questionsJson TEXT NOT NULL,
+    updatedTime TEXT
+);
+
+insertInspectionContentCache:
+INSERT OR REPLACE INTO InspectionContentCache(type, version, questionsJson, updatedTime)
+VALUES (?, ?, ?, ?);
+
+getInspectionContentCacheByType:
+SELECT * FROM InspectionContentCache WHERE type = ?;
+
+getAllInspectionContentCaches:
+SELECT * FROM InspectionContentCache;
+
+clearAllInspectionContentCaches:
+DELETE FROM InspectionContentCache;
+
+getLatestInspectionContentUpdatedTime:
+SELECT updatedTime FROM InspectionContentCache ORDER BY updatedTime DESC LIMIT 1;
+
+
+
