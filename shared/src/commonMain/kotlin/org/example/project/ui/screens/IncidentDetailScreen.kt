@@ -144,6 +144,7 @@ fun IncidentDetailScreen(
                 is IncidentDetailUiState.Error -> {
                     ErrorRetryView(
                         errorMessage = state.message,
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = {
                             viewModel.loadIncidentDetail(incidentId)
                         }

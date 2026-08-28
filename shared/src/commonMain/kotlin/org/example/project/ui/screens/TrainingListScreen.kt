@@ -14,6 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import org.example.project.utilites.ToastHost
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +46,13 @@ fun TrainingListScreen(
 ) {
     val viewModel: TrainingListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+
+    var errorToastMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            errorToastMessage = uiState.error
+        }
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -80,6 +91,7 @@ fun TrainingListScreen(
             } else if (uiState.error != null && uiState.trainings.isEmpty()) {
                 ErrorRetryView(
                     errorMessage = uiState.error ?: "",
+                    modifier = Modifier.fillMaxSize(),
                     onRetryClick = { viewModel.loadTrainings(isRefresh = true) }
                 )
             } else {
@@ -130,6 +142,14 @@ fun TrainingListScreen(
                     }
                 }
             }
+
+            ToastHost(
+                visible = errorToastMessage != null,
+                message = errorToastMessage.orEmpty(),
+                onDismiss = { errorToastMessage = null },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
         }
     }
 }

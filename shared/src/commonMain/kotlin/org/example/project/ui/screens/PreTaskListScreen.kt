@@ -79,6 +79,13 @@ fun PreTaskListScreen(
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedPreTaskId by remember { mutableStateOf<Int?>(null) }
 
+    var errorToastMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            errorToastMessage = uiState.error
+        }
+    }
+
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -172,6 +179,7 @@ fun PreTaskListScreen(
                 } else if (uiState.error != null && uiState.preTasks.isEmpty()) {
                     ErrorRetryView(
                         errorMessage = uiState.error ?: "",
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.fetchPreTasks(isRefresh = true) }
                     )
                 } else {
@@ -217,6 +225,14 @@ fun PreTaskListScreen(
                     }
                 }
             }
+
+            ToastHost(
+                visible = errorToastMessage != null,
+                message = errorToastMessage.orEmpty(),
+                onDismiss = { errorToastMessage = null },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
         }
     }
     

@@ -261,7 +261,7 @@
     <string name="selectTime">Select Time</string>
     <string name="profession">Profession</string>
     <string name="dateClose">Date Close</string>
-    <string name="youCantPublishOrSaveAsADraftnwithoutAddingAtLeastOneQuestion">You can\'t publish or save as a draft\nwithout adding at least one question.</string>
+    <string name="youCantPublishOrSaveAsADraftnwithoutAddingAtLeastOneQuestion">You can't publish or save as a draft without adding at least one question.</string>
     <string name="pleaseEnterTheCodeToJoinTheProject">Please enter the code to join the project</string>
     <string name="addEmail">Add email</string>
     <string name="permitReference">Permit Reference</string>

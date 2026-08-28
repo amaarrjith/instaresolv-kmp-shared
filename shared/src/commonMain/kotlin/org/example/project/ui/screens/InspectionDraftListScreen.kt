@@ -44,13 +44,9 @@ import instaresolv.shared.generated.resources.*
 import kotlinx.serialization.json.Json
 import org.example.project.colors.AppColors
 import org.example.project.data.model.Project
-import org.example.project.data.model.PermitTypeItem
-import org.example.project.data.settings.formatDate
-import org.example.project.data.settings.timeAgo
-import org.example.project.shared.db.PermitDraft
+import org.example.project.shared.db.InspectionDraft
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppExitDialog
-import org.example.project.utilities.formatTimestamp
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.NavigationBackIcon
@@ -58,23 +54,24 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.ui.components.WebImageView
 import org.example.project.data.settings.formatDate
+import org.example.project.data.settings.timeAgo
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
-fun PermitDraftListScreen(
+fun InspectionDraftListScreen(
     onBackClicked: () -> Unit,
-    onDraftClicked: (Long) -> Unit
+    onDraftClicked: (Long, Int, String) -> Unit
 ) {
-    val viewModel: PermitToWorkListViewModel = koinInject()
+    val viewModel: AuditInspectionListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val draftToastMessage by viewModel.draftToastMessage.collectAsState()
-    val successMessage = "Permit drafts deleted successfully."
+    val successMessage = "Inspection drafts deleted successfully."
 
     LaunchedEffect(Unit) {
         viewModel.loadDrafts()
@@ -92,7 +89,7 @@ fun PermitDraftListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "PERMIT DRAFTS",
+                    text = "INSPECTION DRAFTS",
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -175,16 +172,17 @@ fun PermitDraftListScreen(
                                 Json.decodeFromString<Project>(it)
                             } catch(e: Exception) { null }
                         }
-                        val permitType = draft.permitTypeJson?.let {
+                        val localImages = draft.imagesJson?.let {
                             try {
-                                Json.decodeFromString<PermitTypeItem>(it)
+                                Json.decodeFromString<List<IncidentImage>>(it)
                             } catch(e: Exception) { null }
                         }
+                        val firstImageUrl = localImages?.firstOrNull { it.imageUrl?.isNotBlank() == true }?.imageUrl
 
-                        PermitDraftListItem(
+                        InspectionDraftListItem(
                             draft = draft,
                             project = project,
-                            permitType = permitType,
+                            imageUrl = firstImageUrl,
                             isSelectionMode = isDeleteOptionEnabled,
                             isSelected = selectedItemsId.contains(draft.id.toInt()),
                             onSelectionChange = { checked ->
@@ -203,7 +201,7 @@ fun PermitDraftListScreen(
                                         selectedItemsId - draft.id.toInt()
                                     }
                                 } else {
-                                    onDraftClicked(draft.id)
+                                    onDraftClicked(draft.id, draft.inspectionTypeId.toInt(), draft.inspectionTypeName ?: "")
                                 }
                             }
                         )
@@ -214,7 +212,7 @@ fun PermitDraftListScreen(
             AppExitDialog(
                 visible = showDeleteDialog,
                 title = stringResource(Res.string.delete),
-                description = "Are you sure you want to delete the selected permit drafts?",
+                description = "Are you sure you want to delete the selected inspection drafts?",
                 primaryButtonText = stringResource(Res.string.yes),
                 secondaryButtonText = stringResource(Res.string.no),
                 onConfirm = {
@@ -242,10 +240,10 @@ fun PermitDraftListScreen(
 }
 
 @Composable
-fun PermitDraftListItem(
-    draft: PermitDraft,
+fun InspectionDraftListItem(
+    draft: InspectionDraft,
     project: Project?,
-    permitType: PermitTypeItem?,
+    imageUrl: String?,
     isSelectionMode: Boolean,
     isSelected: Boolean,
     onSelectionChange: (Boolean) -> Unit,
@@ -262,7 +260,7 @@ fun PermitDraftListItem(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 WebImageView(
-                    imageUrl = project?.groupImage ?: "",
+                    imageUrl = imageUrl ?: project?.groupImage ?: "",
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -328,13 +326,17 @@ fun PermitDraftListItem(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        val formattedDate = if (draft.permitDateMillis != null) {
+                        val formattedDate = draft.createdAt?.takeIf { it.isNotBlank() }?.let {
                             try {
-                                formatTimestamp(draft.permitDateMillis, "dd MMM yyyy")
+                                formatDate(
+                                    it,
+                                    inputPattern = "yyyy-MM-dd HH:mm:ss",
+                                    outputPattern = "dd MMM yyyy"
+                                )
                             } catch (e: Exception) {
-                                "Date not set"
+                                it
                             }
-                        } else "Date not set"
+                        } ?: "Date not set"
 
                         Text(
                             text = formattedDate,
@@ -347,7 +349,7 @@ fun PermitDraftListItem(
 
                     val isValidDateTime = draft.createdAt != null && (draft.createdAt.contains("T") || draft.createdAt.contains(" "))
                     val timeAgoText = if (isValidDateTime) {
-                        timeAgo(draft.createdAt!!, isUtc = true)
+                        timeAgo(draft.createdAt!!)
                     } else {
                         ""
                     }
@@ -359,7 +361,7 @@ fun PermitDraftListItem(
                 }
 
                 Text(
-                    text = permitType?.permitTypeTitle ?: "Permit",
+                    text = draft.inspectionTypeName.takeIf { !it.isNullOrBlank() } ?: "Inspection Draft",
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2

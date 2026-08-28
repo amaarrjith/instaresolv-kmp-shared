@@ -21,21 +21,25 @@ import org.example.project.typography.textStyle
 @Composable
 fun AppBorderButton(
     title: String,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp),
         shape = RoundedCornerShape(24.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = AppColors.Primary
+            color = if (enabled) AppColors.Primary else AppColors.Primary.copy(alpha = 0.4f)
         ),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White
+            containerColor = Color.White,
+            disabledContainerColor = Color.White.copy(alpha = 0.5f),
+            disabledContentColor = AppColors.Primary.copy(alpha = 0.4f)
         )
     ) {
         Text(

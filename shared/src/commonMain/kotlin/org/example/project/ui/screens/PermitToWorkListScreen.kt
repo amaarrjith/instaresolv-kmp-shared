@@ -59,6 +59,13 @@ fun PermitToWorkListScreen(
     var showFilterModal by remember { mutableStateOf(false) }
     var showAddModal by remember { mutableStateOf(false) }
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    var errorToastMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            errorToastMessage = uiState.error
+        }
+    }
+
     LaunchedEffect(uiState.exportDownloadUrl) {
         uiState.exportDownloadUrl?.let { url ->
             try {
@@ -218,6 +225,7 @@ fun PermitToWorkListScreen(
                             } else if (uiState.typesError != null) {
                                 ErrorRetryView(
                                     errorMessage = uiState.typesError ?: "",
+                                    modifier = Modifier.wrapContentHeight(),
                                     onRetryClick = { viewModel.fetchPermitTypes() }
                                 )
                             } else {
@@ -268,6 +276,7 @@ fun PermitToWorkListScreen(
                 } else if (uiState.error != null && uiState.permits.isEmpty()) {
                     ErrorRetryView(
                         errorMessage = uiState.error ?: "",
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.fetchPermits(isRefresh = true) }
                     )
                 } else {
@@ -318,9 +327,9 @@ fun PermitToWorkListScreen(
             }
 
             ToastHost(
-                visible = uiState.error != null,
-                message = uiState.error  ?: "",
-                onDismiss = { viewModel.clearError() },
+                visible = errorToastMessage != null,
+                message = errorToastMessage.orEmpty(),
+                onDismiss = { errorToastMessage = null },
                 type = org.example.project.utilites.ToastType.Error,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )
@@ -328,7 +337,7 @@ fun PermitToWorkListScreen(
             ToastHost(
                 visible = uiState.errorMessage != null,
                 message = uiState.errorMessage  ?: "",
-                onDismiss = { viewModel.clearError() },
+                onDismiss = { viewModel.clearErrorMessage() },
                 type = org.example.project.utilites.ToastType.Error,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )

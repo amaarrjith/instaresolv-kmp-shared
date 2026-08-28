@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,24 +39,37 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.ui.components.AppExitPopup
+import org.example.project.ui.components.AppErrorDialog
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateInspectionScreen(
     inspectionTypeId: Int,
     inspectionTypeName: String,
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    isFromDraft: Boolean = false,
+    draftId: Long = -1L
 ) {
     val viewModel: CreateInspectionViewModel = koinInject()
-    
-    LaunchedEffect(inspectionTypeId, inspectionTypeName) {
-        viewModel.init(inspectionTypeId, inspectionTypeName)
-    }
-    
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
+    val showDraftSuccessDialog = remember { mutableStateOf(false) }
+    val showOutDatedDraftPopUp = remember { mutableStateOf(false) }
     val showExitPopup = remember { mutableStateOf(false) }
+
+    LaunchedEffect(inspectionTypeId, inspectionTypeName, isFromDraft, draftId) {
+        viewModel.initialize(inspectionTypeId, inspectionTypeName, isFromDraft, draftId)
+    }
+
+    LaunchedEffect(uiState.isDraftOutdated) {
+        if (uiState.isDraftOutdated) {
+            showOutDatedDraftPopUp.value = true
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -97,28 +111,62 @@ fun CreateInspectionScreen(
                     .shadow(elevation = 8.dp)
                     .background(Color.White)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
                         .padding(horizontal = 22.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    AppBorderButton(
-                        title = stringResource(Res.string.saveAsDraft),
-                        onClick = {
-                            viewModel.saveInspection(isDraft = true, onSuccess = { showSuccessDialog.value = true })
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                    AppPrimaryButton(
-                        title = stringResource(Res.string.save),
-                        onClick = {
-                            viewModel.saveInspection(isDraft = false, onSuccess = { showSuccessDialog.value = true })
-                        },
-                        modifier = Modifier.weight(1f),
-                        fillMaxWidth = false
-                    )
+                    if (uiState.isDraftOutdated) {
+                        Text(
+                            text = "Draft is outdated as questions have been updated",
+                            color = Color.Red,
+                            style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        AppBorderButton(
+                            title = stringResource(Res.string.saveAsDraft),
+                            onClick = {
+                                val projectJson = uiState.selectedProject?.let { Json.encodeToString(it) }
+                                val questionsJson = Json.encodeToString(uiState.questions)
+                                val answersJson = Json.encodeToString(uiState.answers)
+                                val imagesJson = Json.encodeToString(uiState.inspectionImages)
+
+                                viewModel.saveLocalDraft(
+                                    id = if (isFromDraft) draftId else 0L,
+                                    facilitiesId = uiState.selectedProject?.groupId,
+                                    projectJson = projectJson,
+                                    location = uiState.location,
+                                    inspectionDateMillis = uiState.inspectionDateMillis,
+                                    description = uiState.description,
+                                    notes = uiState.notes,
+                                    questionsJson = questionsJson,
+                                    answersJson = answersJson,
+                                    imagesJson = imagesJson,
+                                    onSuccess = {
+                                        showDraftSuccessDialog.value = true
+                                    }
+                                )
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = uiState.questions.isNotEmpty()
+                        )
+                        AppPrimaryButton(
+                            title = stringResource(Res.string.save),
+                            onClick = {
+                                viewModel.saveInspection(isDraft = false, onSuccess = { showSuccessDialog.value = true })
+                            },
+                            modifier = Modifier.weight(1f),
+                            fillMaxWidth = false,
+                            enabled = uiState.questions.isNotEmpty() && !uiState.isDraftOutdated
+                        )
+                    }
                 }
             }
         }
@@ -344,13 +392,23 @@ fun CreateInspectionScreen(
                     }
                 } else {
                     // Warning Box
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFFFFF3EE), RoundedCornerShape(4.dp))
-                            .padding(16.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFFFFF3EE))
                     ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // Red left strip
+                        Box(
+                            modifier = Modifier
+                                .width(4.dp)
+                                .fillMaxHeight()
+                                .background(AppColors.Primary)
+                        )
+                        Column(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
                             Text(
                                 text = stringResource(Res.string.noQuestionsFound1),
                                 style = textStyle(size = 14.sp, weight = FontWeight.Bold),
@@ -458,6 +516,31 @@ fun CreateInspectionScreen(
                 onDismiss = {
                     showSuccessDialog.value = false
                     onBackClicked()
+                }
+            )
+        }
+
+        if (showDraftSuccessDialog.value) {
+            AppStatusDialog(
+                visible = true,
+                title = stringResource(Res.string.success),
+                description = "Inspection draft saved successfully.",
+                buttonText = "OK",
+                onDismiss = {
+                    showDraftSuccessDialog.value = false
+                    onBackClicked()
+                }
+            )
+        }
+
+        if (uiState.isDraftOutdated) {
+            AppErrorDialog(
+                visible = showOutDatedDraftPopUp.value,
+                title = "Alert",
+                description = "Inspection template has been updated. Please recreate the draft to publish.",
+                buttonText = "OK",
+                onDismiss = {
+                    showOutDatedDraftPopUp.value = false
                 }
             )
         }

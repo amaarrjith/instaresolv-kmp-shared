@@ -46,7 +46,9 @@ fun AppPrimaryButton(
                 .heightIn(min = 50.dp),
             shape = RoundedCornerShape(25.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = color
+                containerColor = color,
+                disabledContainerColor = color.copy(alpha = 0.4f),
+                disabledContentColor = Color.White.copy(alpha = 0.6f)
             )
         ) {
             Text(

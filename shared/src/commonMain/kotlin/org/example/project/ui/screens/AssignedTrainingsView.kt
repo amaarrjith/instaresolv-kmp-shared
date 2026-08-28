@@ -194,6 +194,7 @@ fun AssignedTrainingsView(
                     } else if (uiState.error != null && uiState.trainings.isEmpty()) {
                         ErrorRetryView(
                             errorMessage = uiState.error ?: "",
+                            modifier = Modifier.fillMaxSize(),
                             onRetryClick = { viewModel.loadTrainings(isRefresh = true) }
                         )
                     } else {

@@ -99,6 +99,13 @@ fun ObservationListScreen(
     val exportUrl by viewModel.exportUrl.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
 
+    var errorToastMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            errorToastMessage = uiState.error
+        }
+    }
+
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
@@ -239,6 +246,7 @@ fun ObservationListScreen(
                 } else if (uiState.error != null && uiState.observations.isEmpty()) {
                     ErrorRetryView(
                         errorMessage = uiState.error ?: "",
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.fetchObservations(isRefresh = true) }
                     )
                 } else {
@@ -292,6 +300,14 @@ fun ObservationListScreen(
                 message = uiState.errorExcel  ?: "",
                 onDismiss = { uiState.errorExcel = null },
                 type = org.example.project.utilites.ToastType.Success,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
+                visible = errorToastMessage != null,
+                message = errorToastMessage.orEmpty(),
+                onDismiss = { errorToastMessage = null },
+                type = org.example.project.utilites.ToastType.Error,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )
             ToastHost(

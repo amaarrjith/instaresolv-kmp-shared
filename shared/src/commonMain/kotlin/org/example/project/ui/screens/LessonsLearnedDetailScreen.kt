@@ -139,6 +139,7 @@ fun LessonsLearnedDetailScreen(
                 is LessonsLearnedDetailUiState.Error -> {
                     ErrorRetryView(
                         errorMessage = state.message,
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.loadLessonLearnedDetail(id) }
                     )
                 }

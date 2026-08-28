@@ -6,9 +6,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
+import org.example.project.data.model.CreateInspectionDraftRequest
 import org.example.project.data.model.Project
+import org.example.project.data.model.StaticEquipmentContent
+import org.example.project.data.repository.InspectionDraftRepository
 import org.example.project.data.settings.AuthPreferences
+import org.example.project.shared.db.AppDatabase
 
 data class CreateInspectionState(
     val isLoading: Boolean = false,
@@ -24,20 +30,37 @@ data class CreateInspectionState(
     val equipmentSourceSecondary: String = "",
     val notes: String = "",
     val inspectionImages: List<IncidentImage> = listOf(IncidentImage()),
-    val questions: List<org.example.project.data.model.StaticEquipmentContent> = emptyList(),
+    val questions: List<StaticEquipmentContent> = emptyList(),
     val answers: Map<Int, String> = emptyMap(),
-    val isFetchingQuestions: Boolean = false
+    val isFetchingQuestions: Boolean = false,
+    val isDraftOutdated: Boolean = false,
+    val isDraftSaveSuccess: Boolean = false
 )
 
 class CreateInspectionViewModel(
     private val authPreferences: AuthPreferences,
-    private val inspectionRepository: org.example.project.domain.repository.InspectionRepository
+    private val inspectionRepository: org.example.project.domain.repository.InspectionRepository,
+    private val inspectionDraftRepository: InspectionDraftRepository,
+    private val database: AppDatabase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateInspectionState())
     val uiState: StateFlow<CreateInspectionState> = _uiState.asStateFlow()
     val user = authPreferences.getLoggedInUser()
 
-    fun init(inspectionTypeId: Int, inspectionTypeName: String) {
+    var draftId: Long = 0L
+    private var isInitialized = false
+
+    fun initialize(inspectionTypeId: Int, inspectionTypeName: String, isFromDraft: Boolean, draftId: Long) {
+        if (isInitialized) return
+        isInitialized = true
+        if (isFromDraft && draftId != -1L) {
+            loadDraft(draftId)
+        } else {
+            initNew(inspectionTypeId, inspectionTypeName)
+        }
+    }
+
+    private fun initNew(inspectionTypeId: Int, inspectionTypeName: String) {
         _uiState.value = _uiState.value.copy(
             inspectionTypeId = inspectionTypeId,
             inspectionTypeName = inspectionTypeName
@@ -65,6 +88,126 @@ class CreateInspectionViewModel(
                     )
                 }
             }
+        }
+    }
+
+    fun loadDraft(id: Long) {
+        viewModelScope.launch {
+            draftId = id
+            val draft = inspectionDraftRepository.getDraftById(id) ?: return@launch
+
+            val draftQuestions = draft.questionsJson?.let {
+                try { Json.decodeFromString<List<StaticEquipmentContent>>(it) } catch (_: Exception) { emptyList() }
+            } ?: emptyList()
+
+            val draftAnswers = draft.answersJson?.let {
+                try { Json.decodeFromString<Map<Int, String>>(it) } catch (_: Exception) { emptyMap() }
+            } ?: emptyMap()
+
+            val draftImages = draft.imagesJson?.let {
+                try { Json.decodeFromString<List<IncidentImage>>(it) } catch (_: Exception) { listOf(IncidentImage()) }
+            } ?: listOf(IncidentImage())
+
+            // Outdated check 1: Audit item type updated time
+            val typeId = draft.inspectionTypeId
+            val dbAuditItems = database.appDatabaseQueries.getAllAuditItems().executeAsList()
+            val dbAuditItem = dbAuditItems.find { it.auditItemId == typeId }
+            val isTypeOutdated = if (dbAuditItem != null) {
+                dbAuditItem.formUpdatedTime != draft.inspectionTypeUpdatedTime
+            } else {
+                // AuditItem missing from DB — could have been removed
+                draft.inspectionTypeUpdatedTime != null
+            }
+
+            // Outdated check 2: Inspection content version
+            val dbContentCache = database.appDatabaseQueries.getInspectionContentCacheByType(typeId).executeAsOneOrNull()
+            val isVersionOutdated = if (dbContentCache != null) {
+                dbContentCache.version != draft.inspectionContentVersion
+            } else {
+                draft.inspectionContentVersion != null
+            }
+
+            val isOutdated = isTypeOutdated || isVersionOutdated
+
+            _uiState.value = _uiState.value.copy(
+                selectedProject = draft.projectJson?.let {
+                    try { Json.decodeFromString<Project>(it) } catch (_: Exception) { null }
+                },
+                inspectionTypeId = draft.inspectionTypeId.toInt(),
+                inspectionTypeName = draft.inspectionTypeName ?: "",
+                location = draft.location ?: "",
+                inspectionDateMillis = draft.inspectionDateMillis,
+                description = draft.description ?: "",
+                notes = draft.notes ?: "",
+                questions = draftQuestions,
+                answers = draftAnswers,
+                inspectionImages = draftImages,
+                isDraftOutdated = isOutdated
+            )
+        }
+    }
+
+    fun saveLocalDraft(
+        id: Long,
+        facilitiesId: Int?,
+        projectJson: String?,
+        location: String,
+        inspectionDateMillis: Long?,
+        description: String,
+        notes: String,
+        questionsJson: String,
+        answersJson: String,
+        imagesJson: String,
+        onSuccess: () -> Unit
+    ) {
+        val state = _uiState.value
+        if (facilitiesId == null && inspectionDateMillis == null && location.isBlank() && description.isBlank() && notes.isBlank()) {
+            _uiState.value = state.copy(error = "At least one value is needed to save as draft")
+            return
+        }
+
+        viewModelScope.launch {
+            val currentUser = authPreferences.getLoggedInUser()
+            val typeId = state.inspectionTypeId
+
+            // Snapshot current audit item updated time from DB
+            val dbAuditItems = database.appDatabaseQueries.getAllAuditItems().executeAsList()
+            val dbAuditItem = dbAuditItems.find { it.auditItemId == typeId.toLong() }
+            val auditItemUpdatedTime = dbAuditItem?.formUpdatedTime
+
+            // Snapshot current content version from DB
+            val dbContentCache = database.appDatabaseQueries.getInspectionContentCacheByType(typeId.toLong()).executeAsOneOrNull()
+            val contentVersion = dbContentCache?.version
+
+            val request = CreateInspectionDraftRequest(
+                id = id,
+                facilitiesId = facilitiesId,
+                projectJson = projectJson,
+                inspectionTypeId = typeId,
+                inspectionTypeName = state.inspectionTypeName,
+                inspectionTypeUpdatedTime = auditItemUpdatedTime,
+                inspectionContentVersion = contentVersion,
+                location = location,
+                inspectionDateMillis = inspectionDateMillis,
+                description = description,
+                notes = notes,
+                questionsJson = questionsJson,
+                answersJson = answersJson,
+                imagesJson = imagesJson,
+                createdAt = run {
+                    val localDateTime = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val year = localDateTime.year
+                    val month = localDateTime.monthNumber.toString().padStart(2, '0')
+                    val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+                    val hour = localDateTime.hour.toString().padStart(2, '0')
+                    val minute = localDateTime.minute.toString().padStart(2, '0')
+                    val second = localDateTime.second.toString().padStart(2, '0')
+                    "$year-$month-$day $hour:$minute:$second"
+                },
+                userId = currentUser?.userId ?: -1
+            )
+            inspectionDraftRepository.saveDraft(request)
+            onSuccess()
         }
     }
 
@@ -196,6 +339,10 @@ class CreateInspectionViewModel(
             when (result) {
                 is org.example.project.network.NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(isLoading = false)
+                    // Delete draft after successful publish if editing a draft
+                    if (draftId != 0L) {
+                        inspectionDraftRepository.deleteDraft(draftId)
+                    }
                     onSuccess()
                 }
                 is org.example.project.network.NetworkResult.Error -> {

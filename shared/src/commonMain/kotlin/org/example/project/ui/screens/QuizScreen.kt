@@ -80,6 +80,7 @@ fun QuizScreen(
             } else if (uiState.error != null && uiState.quizResult == null) {
                 ErrorRetryView(
                     errorMessage = uiState.error ?: "",
+                    modifier = Modifier.fillMaxSize(),
                     onRetryClick = { viewModel.loadQuizQuestions() }
                 )
             } else if (uiState.quizResult != null) {

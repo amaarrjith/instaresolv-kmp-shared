@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -76,7 +77,8 @@ import instaresolv.shared.generated.resources.*
 fun AuditInspectionListScreen(
     onBackClicked: () -> Unit,
     onCreateClicked: (Int, String) -> Unit = { _, _ -> },
-    onItemClicked: (Int) -> Unit = {}
+    onItemClicked: (Int) -> Unit = {},
+    onDraftClicked: () -> Unit = {}
 ) {
     val viewModel: AuditInspectionListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -86,6 +88,13 @@ fun AuditInspectionListScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val exportUrl by viewModel.exportUrl.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+
+    var errorToastMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            errorToastMessage = uiState.error
+        }
+    }
 
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
@@ -130,9 +139,9 @@ fun AuditInspectionListScreen(
                     color = AppColors.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                DraftButton(onDraftClicked = {})
+                DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
-                NewButton(onNewClicked = { viewModel.clearError(); showAddModal = true })
+                NewButton(onNewClicked = { showAddModal = true })
             }
         }
     ) { paddingValues ->
@@ -219,6 +228,7 @@ fun AuditInspectionListScreen(
                 } else if (uiState.error != null && uiState.inspections.isEmpty()) {
                     ErrorRetryView(
                         errorMessage = uiState.error ?: "",
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.fetchInspections(isRefresh = true) }
                     )
                 } else {
@@ -299,7 +309,7 @@ fun AuditInspectionListScreen(
                                     CircularProgressIndicator(color = AppColors.Primary)
                                 }
                             } else if (uiState.auditItemsError != null) {
-                                ErrorRetryView(errorMessage = uiState.auditItemsError ?: "", onRetryClick = {})
+                                ErrorRetryView(errorMessage = uiState.auditItemsError ?: "", modifier = Modifier.wrapContentHeight(), onRetryClick = {})
                             } else {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxWidth(),
@@ -349,6 +359,14 @@ fun AuditInspectionListScreen(
                 visible = uiState.errorExcel != null,
                 message = uiState.errorExcel ?: "",
                 onDismiss = { viewModel.clearErrorExcel() },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
+                visible = errorToastMessage != null,
+                message = errorToastMessage.orEmpty(),
+                onDismiss = { errorToastMessage = null },
                 type = org.example.project.utilites.ToastType.Error,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )

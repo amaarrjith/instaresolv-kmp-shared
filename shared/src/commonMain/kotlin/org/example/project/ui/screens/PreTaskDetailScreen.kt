@@ -111,6 +111,7 @@ fun PreTaskDetailScreen(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     ErrorRetryView(
                         errorMessage = state.message,
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.loadPreTaskDetail(preTaskId) }
                     )
                 }

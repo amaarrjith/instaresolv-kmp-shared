@@ -38,8 +38,10 @@ import org.example.project.splash.SplashViewModel
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
 import org.example.project.getPlatform
 import instaresolv.shared.generated.resources.*
+import org.example.project.typography.textStyle
 
 
 @Composable
@@ -117,8 +119,11 @@ fun SplashScreenContent(
                 uiState.errorMessage != null -> {
                     Text(
                         text = uiState.errorMessage,
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.Normal
+                        ),
                         color = Color.White,
-                        fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 32.dp)
                     )

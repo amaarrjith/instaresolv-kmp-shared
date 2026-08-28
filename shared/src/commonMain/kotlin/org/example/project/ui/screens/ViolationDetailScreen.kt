@@ -139,6 +139,7 @@ fun ViolationDetailScreen(
                 uiState.error != null -> {
                     ErrorRetryView(
                         errorMessage = uiState.error ?: "",
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = {
                             viewModel.loadViolationDetail(violationId)
                         }

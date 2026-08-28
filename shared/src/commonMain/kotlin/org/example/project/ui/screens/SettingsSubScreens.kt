@@ -535,7 +535,7 @@ fun AboutUsScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
-                        text = stringResource(Res.string.aboutUs),
+                        text = stringResource(Res.string.aboutUs).uppercase(),
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold

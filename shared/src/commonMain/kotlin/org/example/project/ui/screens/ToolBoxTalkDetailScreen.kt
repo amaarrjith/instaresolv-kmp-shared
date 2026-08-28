@@ -127,6 +127,7 @@ fun ToolBoxTalkDetailScreen(
                 ) {
                     ErrorRetryView(
                         errorMessage = state.message,
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.loadToolBoxTalkDetail(id) }
                     )
                 }

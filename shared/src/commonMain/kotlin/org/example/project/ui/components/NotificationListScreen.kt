@@ -163,6 +163,7 @@ fun NotificationListScreen(
                 is NotificationUiState.Error -> {
                     ErrorRetryView(
                         (uiState.value as NotificationUiState.Error).errorMessage,
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = {
                             viewModel.getNotifications()
                         }

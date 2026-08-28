@@ -218,6 +218,7 @@ fun ObservationDetailScreen(
                 is ObservationDetailUiState.Error -> {
                     ErrorRetryView(
                         errorMessage = state.message,
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = {
                             viewModel.loadObservationDetail(observationId)
                         }

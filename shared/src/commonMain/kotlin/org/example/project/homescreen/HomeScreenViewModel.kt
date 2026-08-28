@@ -3,8 +3,10 @@ package org.example.project.homescreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.example.project.data.UserRoleCheckRequest
 import org.example.project.data.model.ApproveRejectRequest
@@ -21,13 +23,10 @@ import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 import org.example.project.shared.db.AppDatabase
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.model.InspectionContentsRequest
-import org.example.project.data.model.InspectionContentsResponse
-import org.example.project.data.model.AuditItemsResponse
+import org.example.project.network.NetworkMonitor
 
 class HomeScreenViewModel(
     private val authRepository: AuthRepository,
@@ -37,16 +36,24 @@ class HomeScreenViewModel(
     private val projectRepository: ProjectRepository,
     private val preTaskRepository: PreTaskRepository,
     private val inspectionRepository: InspectionRepository,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    private val networkMonitor: NetworkMonitor
 ): ViewModel()  {
     val user = preferences.getLoggedInUser()
     val userInfo = preferences.getLoggedInUserInfo()
+    val isNetworkConnected = networkMonitor.isNetworkConnected
+        .stateIn(viewModelScope, SharingStarted.Eagerly, networkMonitor.currentlyConnected())
 
     init {
-        fetchDesignationTypes()
-        getPreTaskContentsList()
-        getAuditsInspectionForms()
-        getInspectionContentsList()
+        viewModelScope.launch {
+            isNetworkConnected.first { it }       // wait for first connected event, then proceed once
+                .let {
+                    fetchDesignationTypes()
+                    getPreTaskContentsList()
+                    getAuditsInspectionForms()
+                    getInspectionContentsList()
+                }
+        }
     }
 
     private fun fetchDesignationTypes() {
@@ -221,22 +228,27 @@ class HomeScreenViewModel(
 
     fun userCheckRole(completion: (Boolean)-> Unit) {
         viewModelScope.launch {
-            if (user == null) {
-                return@launch
-            } else {
-                val request = UserRoleCheckRequest(user.userId ?: -1)
-                when (val result = authRepository.checkUserRole(request)) {
-                    is NetworkResult.Success -> {
-                        if (user.userRole != result.data.role) {
+            if (isNetworkConnected.value) {
+                if (user == null) {
+                    return@launch
+                } else {
+                    val request = UserRoleCheckRequest(user.userId ?: -1)
+                    when (val result = authRepository.checkUserRole(request)) {
+                        is NetworkResult.Success -> {
+                            if (user.userRole != result.data.role) {
+                                completion(true)
+                            } else {
+                                completion(false)
+                            }
+                        }
+
+                        is NetworkResult.Error -> {
                             completion(true)
-                        } else {
-                            completion(false)
                         }
                     }
-                    is NetworkResult.Error -> {
-                        completion(true)
-                    }
                 }
+            } else {
+                return@launch
             }
         }
     }
@@ -409,7 +421,7 @@ class HomeScreenViewModel(
     }
 
     fun getInspectionContentsList() {
-        val updatedTime = getLatestInspectionContentUpdatedTime() ?: ""
+        val updatedTime =  ""
         viewModelScope.launch {
             val request = InspectionContentsRequest(updatedTime = updatedTime)
             when (val result = inspectionRepository.getInspectionContentsList(request)) {

@@ -247,9 +247,9 @@ fun AppTabBar(
                             }
                         )
                         2 -> BriefsScreen(
-//                            pullDownRefresh = { viewModel.getHomeContents(true) },
-//                            silentRefresh = { viewModel.getHomeContents(false) },
-//                            isRefreshing = isRefreshing
+                            onPreTaskClicked = onPreTaskClicked,
+                            onLessonLearnedClicked = onLessonLearnedClicked,
+                            onToolboxTalksClicked = onToolboxTalksClicked
                         )
                         3 -> SettingsScreen(
                             onChangePasswordClick = onChangePasswordClick,

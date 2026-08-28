@@ -1,0 +1,18 @@
+CREATE TABLE InspectionDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    inspectionTypeId INTEGER NOT NULL,
+    inspectionTypeName TEXT,
+    inspectionTypeUpdatedTime TEXT,
+    inspectionContentVersion TEXT,
+    location TEXT,
+    inspectionDateMillis INTEGER,
+    description TEXT,
+    notes TEXT,
+    questionsJson TEXT,
+    answersJson TEXT,
+    imagesJson TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);

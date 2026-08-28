@@ -3,7 +3,10 @@ package org.example.project.splash
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.settings.AuthPreferences
@@ -11,19 +14,34 @@ import org.example.project.domain.repository.AuthRepository
 import org.example.project.getPlatform
 import org.example.project.network.NetworkResult
 import org.example.project.utilites.getAppInfo
+import org.example.project.network.NetworkMonitor
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class SplashViewModel(
     private val authPreferences: AuthPreferences,
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val networkMonitor: NetworkMonitor
 ): ViewModel() {
 
+    val isNetworkConnected = networkMonitor.isNetworkConnected
+        .stateIn(viewModelScope, SharingStarted.Eagerly, networkMonitor.currentlyConnected())
     private val _uiState = MutableStateFlow(SplashUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        userCheckout()
+        viewModelScope.launch {
+            if(isNetworkConnected.first()) {
+                userCheckout()
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        loadingCompleted = true
+                    )
+                }
+            }
+        }
     }
 
     fun isLoggedIn(): Boolean {

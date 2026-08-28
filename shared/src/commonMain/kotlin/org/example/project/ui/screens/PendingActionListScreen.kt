@@ -186,6 +186,7 @@ fun PendingActionListScreen(
                         } else if (uiState.error != null) {
                             ErrorRetryView(
                                 errorMessage = uiState.error ?: "",
+                                modifier = Modifier.fillMaxSize(),
                                 onRetryClick = { viewModel.fetchPendingActions() }
                             )
                         } else if (uiState.pendingActions.isEmpty()) {
@@ -220,6 +221,7 @@ fun PendingActionListScreen(
                         } else if (uiState.permitError != null) {
                             ErrorRetryView(
                                 errorMessage = uiState.permitError ?: "",
+                                modifier = Modifier.fillMaxSize(),
                                 onRetryClick = { viewModel.fetchPermitPendingActions() }
                             )
                         } else if (uiState.permitPendingActions.isEmpty()) {

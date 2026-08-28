@@ -15,6 +15,9 @@ import org.example.project.data.model.InspectionListRequest
 import org.example.project.domain.repository.InspectionRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
+import org.example.project.data.repository.InspectionDraftRepository
+import org.example.project.data.settings.AuthPreferences
+import org.example.project.shared.db.InspectionDraft
 
 data class AuditInspectionListState(
     val isPullDown: Boolean = false,
@@ -28,11 +31,14 @@ data class AuditInspectionListState(
     var errorExcel: String? = null,
     val auditItems: List<org.example.project.data.model.AuditItemContent> = emptyList(),
     val isAuditItemsLoading: Boolean = false,
-    val auditItemsError: String? = null
+    val auditItemsError: String? = null,
+    val drafts: List<InspectionDraft> = emptyList()
 )
 
 class AuditInspectionListViewModel(
-    private val repository: InspectionRepository
+    private val repository: InspectionRepository,
+    private val inspectionDraftRepository: InspectionDraftRepository,
+    private val authPreferences: AuthPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuditInspectionListState())
@@ -232,5 +238,31 @@ class AuditInspectionListViewModel(
         val month = localDate.monthNumber.toString().padStart(2, '0')
         val year = localDate.year
         return "$day-$month-$year"
+    }
+
+    val draftToastMessage = MutableStateFlow<String?>(null)
+
+    fun clearDraftToast() {
+        draftToastMessage.value = null
+    }
+
+    fun loadDrafts() {
+        viewModelScope.launch {
+            val user = authPreferences.getLoggedInUser()
+            if (user?.userId != null) {
+                val list = inspectionDraftRepository.getAllDrafts(user.userId!!)
+                _uiState.update { it.copy(drafts = list) }
+            }
+        }
+    }
+
+    fun deleteDrafts(ids: List<Long>, successMessage: String) {
+        viewModelScope.launch {
+            ids.forEach { id ->
+                inspectionDraftRepository.deleteDraft(id)
+            }
+            draftToastMessage.value = successMessage
+            loadDrafts()
+        }
     }
 }

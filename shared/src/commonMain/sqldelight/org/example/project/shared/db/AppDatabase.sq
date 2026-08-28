@@ -423,5 +423,50 @@ DELETE FROM InspectionContentCache;
 getLatestInspectionContentUpdatedTime:
 SELECT updatedTime FROM InspectionContentCache ORDER BY updatedTime DESC LIMIT 1;
 
+CREATE TABLE InspectionDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    facilitiesId INTEGER,
+    projectJson TEXT,
+    inspectionTypeId INTEGER NOT NULL,
+    inspectionTypeName TEXT,
+    inspectionTypeUpdatedTime TEXT,
+    inspectionContentVersion TEXT,
+    location TEXT,
+    inspectionDateMillis INTEGER,
+    description TEXT,
+    notes TEXT,
+    questionsJson TEXT,
+    answersJson TEXT,
+    imagesJson TEXT,
+    createdAt TEXT,
+    userId INTEGER NOT NULL
+);
 
+insertInspectionDraft:
+INSERT OR REPLACE INTO InspectionDraft(
+    id,
+    facilitiesId,
+    projectJson,
+    inspectionTypeId,
+    inspectionTypeName,
+    inspectionTypeUpdatedTime,
+    inspectionContentVersion,
+    location,
+    inspectionDateMillis,
+    description,
+    notes,
+    questionsJson,
+    answersJson,
+    imagesJson,
+    createdAt,
+    userId
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+getInspectionDraftsByUserId:
+SELECT * FROM InspectionDraft WHERE userId = ? ORDER BY id DESC;
+
+getInspectionDraftById:
+SELECT * FROM InspectionDraft WHERE id = ?;
+
+deleteInspectionDraft:
+DELETE FROM InspectionDraft WHERE id = ?;

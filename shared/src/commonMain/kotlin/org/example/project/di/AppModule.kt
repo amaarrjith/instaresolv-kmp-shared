@@ -31,6 +31,7 @@ import org.example.project.project.ProjectDetailViewModel
 import org.example.project.project.ProjectViewModel
 import org.example.project.register.RegisterViewModel
 import org.example.project.splash.SplashViewModel
+import org.example.project.network.NetworkMonitor
 import org.example.project.tabbar.AppTabBarViewModel
 import org.koin.dsl.module
 import org.example.project.welcomescreen.WelcomeScreenViewModel
@@ -96,6 +97,7 @@ import org.example.project.data.repository.LessonLearnedDraftRepository
 import org.example.project.data.repository.IncidentDraftRepository
 import org.example.project.data.repository.ToolBoxTalkDraftRepository
 import org.example.project.data.repository.PreTaskDraftRepository
+import org.example.project.data.repository.InspectionDraftRepository
 
 val appModule = module {
     factory { createHttpClient(get(), get()) }
@@ -110,9 +112,9 @@ val appModule = module {
     factory { ProjectViewModel(get(),get()) }
     factory { NotificationsViewModel(get()) }
     factory { AppTabBarViewModel(get(), get()) }
-    factory { HomeScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { HomeScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
-    factory { SplashViewModel(get(), get()) }
+    factory { SplashViewModel(get(), get(), get()) }
     factory { ProfileViewModel(get(), get(), get()) }
     factory { CreateProjectViewModel(get(), get()) }
     factory { WelcomeScreenViewModel(get()) }
@@ -139,8 +141,8 @@ val appModule = module {
     factory { ObservationListViewModel(get(), get(), get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
     factory<InspectionRepository> { InspectionRepositoryImpl(get()) }
-    factory { AuditInspectionListViewModel(get()) }
-    factory { CreateInspectionViewModel(get(), get()) }
+    factory { AuditInspectionListViewModel(get(), get(), get()) }
+    factory { CreateInspectionViewModel(get(), get(), get(), get()) }
     factory { InspectionDetailViewModel(get()) }
     factory { IncidentListViewModel(get(), get(), get()) }
     factory<IncidentRepository> { IncidentRepositoryImpl(get()) }
@@ -210,4 +212,5 @@ val appModule = module {
     factory { IncidentDraftRepository(get()) }
     factory { ToolBoxTalkDraftRepository(get()) }
     factory { PreTaskDraftRepository(get()) }
+    factory { InspectionDraftRepository(get()) }
 }

@@ -150,6 +150,9 @@ class PermitToWorkListViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun clearErrorMessage() {
         _uiState.update { it.copy(errorMessage = null) }
     }
 

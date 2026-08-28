@@ -98,6 +98,7 @@ import org.example.project.ui.components.ObservationActionBottomSheet
 import org.example.project.ui.components.RequestDeleteObservationView
 import org.example.project.ui.components.RequestResponsiblePersonChangeView
 import org.example.project.ui.screens.ObservationDetailScreen
+import org.example.project.utilites.AppPullToRefreshBox
 import org.example.project.utilites.ToastType
 
 @Composable
@@ -156,14 +157,13 @@ fun HomeScreenContentView(
             .fillMaxSize()
             .padding()
     ) {
-        PullToRefreshBox(
+        AppPullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { pullDownRefresh() }
         ) {
             Column(
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(22.dp))
                 HeaderView(
@@ -177,6 +177,7 @@ fun HomeScreenContentView(
                 Column(
                     modifier = Modifier
                         .padding(vertical = 10.dp)
+                        .verticalScroll(rememberScrollState())
 
                 ) {
                     Spacer(modifier = Modifier.height(22.dp))

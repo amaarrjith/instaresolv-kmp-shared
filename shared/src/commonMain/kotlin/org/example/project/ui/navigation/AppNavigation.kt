@@ -55,6 +55,7 @@ import org.example.project.ui.screens.ContactUsScreen
 import org.example.project.ui.screens.AboutUsScreen
 import org.example.project.ui.screens.AssignedTrainingsView
 import org.example.project.ui.screens.CreateInspectionScreen
+import org.example.project.ui.screens.InspectionDraftListScreen
 import org.example.project.ui.screens.CreatePreTaskScreen
 import org.example.project.ui.screens.TermsOfUseScreen
 import org.example.project.ui.screens.PrivacyPolicyScreen
@@ -307,15 +308,50 @@ fun AppNavigation() {
                 },
                 onItemClicked = { inspectionId ->
                     navController.navigate("${Screens.InspectionDetailScreen.route}/$inspectionId")
+                },
+                onDraftClicked = {
+                    navController.navigate(Screens.InspectionDraftListScreen.route)
                 }
             )
         }
-        composable(Screens.CreateInspectionScreenWithArgs.route) { backStackEntry ->
+        composable(Screens.InspectionDraftListScreen.route) {
+            InspectionDraftListScreen(
+                onBackClicked = { navController.popBackStack() },
+                onDraftClicked = { draftId, typeId, typeName ->
+                    navController.navigate("create_inspection_screen/$typeId/$typeName?isFromDraft=true&draftId=$draftId")
+                }
+            )
+        }
+        composable(
+            route = Screens.CreateInspectionScreenWithArgs.route,
+            arguments = listOf(
+                navArgument("inspectionTypeId") {
+                    type = NavType.StringType
+                    defaultValue = "-1"
+                },
+                navArgument("inspectionTypeName") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("isFromDraft") {
+                    type = NavType.StringType
+                    defaultValue = "false"
+                },
+                navArgument("draftId") {
+                    type = NavType.StringType
+                    defaultValue = "-1"
+                }
+            )
+        ) { backStackEntry ->
             val inspectionTypeId = backStackEntry.savedStateHandle.get<String>("inspectionTypeId")?.toIntOrNull() ?: -1
             val inspectionTypeName = backStackEntry.savedStateHandle.get<String>("inspectionTypeName") ?: ""
+            val isFromDraft = backStackEntry.savedStateHandle.get<String>("isFromDraft")?.toBooleanStrictOrNull() ?: false
+            val draftId = backStackEntry.savedStateHandle.get<String>("draftId")?.toLongOrNull() ?: -1L
             CreateInspectionScreen(
                 inspectionTypeId = inspectionTypeId,
                 inspectionTypeName = inspectionTypeName,
+                isFromDraft = isFromDraft,
+                draftId = draftId,
                 onBackClicked = { navController.popBackStack() }
             )
         }

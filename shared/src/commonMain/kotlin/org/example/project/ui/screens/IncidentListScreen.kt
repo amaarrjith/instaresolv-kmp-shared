@@ -82,6 +82,13 @@ fun IncidentListScreen(
     val exportUrl by viewModel.exportUrl.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
 
+    var errorToastMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            errorToastMessage = uiState.error
+        }
+    }
+
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
@@ -219,6 +226,7 @@ fun IncidentListScreen(
                 } else if (uiState.error != null && uiState.incidents.isEmpty()) {
                     ErrorRetryView(
                         errorMessage = uiState.error ?: "",
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.loadIncidents(isRefresh = true) }
                     )
                 } else {
@@ -269,6 +277,14 @@ fun IncidentListScreen(
                 visible = uiState.errorExcel != null,
                 message = uiState.errorExcel ?: "",
                 onDismiss = { uiState.errorExcel = null },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+            )
+
+            ToastHost(
+                visible = errorToastMessage != null,
+                message = errorToastMessage.orEmpty(),
+                onDismiss = { errorToastMessage = null },
                 type = org.example.project.utilites.ToastType.Error,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )

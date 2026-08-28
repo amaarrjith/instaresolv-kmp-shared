@@ -68,6 +68,7 @@ fun TrainingVideoScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 ErrorRetryView(
                     errorMessage = uiState.error ?: "",
+                    modifier = Modifier.fillMaxSize(),
                     onRetryClick = { viewModel.loadTrainingVideoUrl() }
                 )
                 IconButton(

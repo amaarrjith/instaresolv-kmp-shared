@@ -99,6 +99,7 @@ fun TrainingDetailScreen(
             } else if (uiState.error != null) {
                 ErrorRetryView(
                     errorMessage = uiState.error ?: "",
+                    modifier = Modifier.fillMaxSize(),
                     onRetryClick = { viewModel.loadTrainingDetail() }
                 )
             } else {

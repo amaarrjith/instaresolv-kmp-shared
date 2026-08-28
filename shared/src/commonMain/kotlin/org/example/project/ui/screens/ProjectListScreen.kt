@@ -128,6 +128,7 @@ fun ProjectListScreen(
                     is ProjectListUiState.Error -> {
                         ErrorRetryView(
                             errorMessage = (uiState.value as ProjectListUiState.Error).errorMessage,
+                            modifier = Modifier.fillMaxSize(),
                             onRetryClick = { viewModel.getProjects(searchKey = searchQuery) }
                         )
                     }

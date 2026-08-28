@@ -195,6 +195,7 @@ fun PermitDetailScreen(
                 ) {
                     ErrorRetryView(
                         errorMessage = state.message,
+                        modifier = Modifier.fillMaxSize(),
                         onRetryClick = { viewModel.loadPermitDetail(id) }
                     )
                 }

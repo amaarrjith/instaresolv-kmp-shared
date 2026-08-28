@@ -2,40 +2,36 @@ package org.example.project.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.ic_empty
 import instaresolv.shared.generated.resources.ic_empty_icon
-import instaresolv.shared.generated.resources.ic_error_icon
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
-import instaresolv.shared.generated.resources.*
 
 @Composable
 fun EmptyScreenView(
     message: String,
+    modifier: Modifier = Modifier.fillMaxSize()
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
             .background(Color.White)
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -43,8 +39,10 @@ fun EmptyScreenView(
     ) {
 
         Image(
-            painter = painterResource(Res.drawable.ic_empty_icon),
-            contentDescription = stringResource(Res.string.error)
+            painter = painterResource(Res.drawable.ic_empty),
+            contentDescription = "Empty",
+            modifier = Modifier.wrapContentSize(),
+            contentScale = ContentScale.Fit
         )
 
         Spacer(modifier = Modifier.padding(top = 14.dp))
