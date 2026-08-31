@@ -27,6 +27,9 @@ class MainActivity : ComponentActivity() {
             )
         )
         
+        val intent = intent
+        handleNotificationIntent(intent)
+        
         val permissionsToRequest = mutableListOf(
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO
@@ -44,6 +47,32 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             App()
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: android.content.Intent?) {
+        intent?.let {
+            val typeStr = it.getStringExtra("type")
+            val contentIdStr = it.getStringExtra("contentId")
+            val groupCode = it.getStringExtra("groupCode")
+            
+            if (!typeStr.isNullOrEmpty() && !contentIdStr.isNullOrEmpty()) {
+                val type = typeStr.toIntOrNull() ?: 0
+                val contentId = contentIdStr.toIntOrNull() ?: 0
+                
+                try {
+                    val appManager = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.manager.AppManager>()
+                    appManager.handleNotificationTap(type, contentId, groupCode)
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Failed to resolve AppManager or emit notification tap: ${e.message}")
+                }
+            }
         }
     }
 }

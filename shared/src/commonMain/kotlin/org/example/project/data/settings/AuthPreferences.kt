@@ -18,6 +18,7 @@ class AuthPreferences(
         private const val LOGGED_USER = "logged_in_user"
         private const val LOGGED_USER_INFO = "logged_in_user_info"
         private const val DESIGNATION_TYPES = "designation_types"
+        private const val FCM_TOKEN = "fcm_token"
     }
 
     fun saveLoginStatus(isLoggedIn: Boolean) {
@@ -92,5 +93,13 @@ class AuthPreferences(
                 emptyList()
             }
         } ?: emptyList()
+    }
+
+    fun saveFCMToken(token: String) {
+        settings.putString(FCM_TOKEN, token)
+    }
+
+    fun getFCMToken(): String? {
+        return settings.getStringOrNull(FCM_TOKEN)
     }
 }

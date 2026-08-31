@@ -25,6 +25,8 @@ import org.example.project.data.model.TokenRefreshRequest
 import org.example.project.data.settings.AppPreferences
 import org.example.project.data.settings.AuthPreferences
 import io.ktor.client.request.header
+import org.example.project.getPlatform
+
 internal const val BASE_URL = "https://instaresolv-dev.zoondia.org/api/"
 
 internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, appPreferences: AppPreferences) {
@@ -102,6 +104,8 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, 
     defaultRequest {
         url(BASE_URL)
         header("Language", appPreferences.getLanguage())
+        header("X-Device-Type", if (getPlatform().name.contains("iOS", ignoreCase = true)) 2 else 1)
+        header("X-Device-Token", authPreferences.getFCMToken())
     }
 }
 

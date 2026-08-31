@@ -4,11 +4,31 @@ import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
+import org.example.project.data.model.NotificationListModel
+
 class AppManager(
     private val settings: Settings
 ) {
     private val _logoutEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val logoutEvent = _logoutEvent.asSharedFlow()
+
+    private val _notificationTapEvent = MutableSharedFlow<NotificationListModel>(extraBufferCapacity = 1)
+    val notificationTapEvent = _notificationTapEvent.asSharedFlow()
+
+    fun handleNotificationTap(type: Int, contentId: Int, groupCode: String?) {
+        val model = NotificationListModel(
+            id = 0,
+            type = type,
+            contentId = contentId,
+            title = null,
+            time = null,
+            date = null,
+            description = null,
+            groupCode = groupCode,
+            isRead = true
+        )
+        _notificationTapEvent.tryEmit(model)
+    }
 
     /**
      * Clears user session credentials and details from Settings.

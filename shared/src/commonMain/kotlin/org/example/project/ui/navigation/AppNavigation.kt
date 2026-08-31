@@ -83,6 +83,18 @@ fun AppNavigation() {
         }
     }
 
+    LaunchedEffect(Unit) {
+        appManager.notificationTapEvent.collect { notification ->
+            val authPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AuthPreferences>()
+            if (authPreferences.isLoggedIn()) {
+                AppNotificationClickListener(
+                    notification = notification,
+                    navController = navController
+                )
+            }
+        }
+    }
+
     NavHost(navController = navController, startDestination = Screens.Splash.route) {
         composable(Screens.Splash.route) {
             SplashScreen(
