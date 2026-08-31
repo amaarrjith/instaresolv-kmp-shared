@@ -4,6 +4,7 @@ import org.example.project.di.initKoin
 import org.example.project.data.settings.AuthPreferences
 import org.koin.mp.KoinPlatform
 import org.example.project.manager.AppManager
+import org.example.project.data.model.NotificationListModel
 
 object KoinInitializer {
     fun initialize() {
@@ -23,5 +24,10 @@ object KoinInitializer {
     fun handleNotificationTap(type: Int, contentId: Int, groupCode: String?) {
         val appManager = KoinPlatform.getKoin().get<AppManager>()
         appManager.handleNotificationTap(type, contentId, groupCode)
+    }
+
+    fun handleNotificationTap(notification: NotificationListModel) {
+        val appManager = KoinPlatform.getKoin().get<AppManager>()
+        appManager.handleNotificationTap(notification)
     }
 }

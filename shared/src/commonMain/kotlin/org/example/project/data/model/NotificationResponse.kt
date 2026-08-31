@@ -20,5 +20,6 @@ data class NotificationListModel(
     val date: String?,
     val description:String?,
     val groupCode: String?,
-    var isRead: Boolean
+    var isRead: Boolean,
+    val pushType: Int? = null
 )

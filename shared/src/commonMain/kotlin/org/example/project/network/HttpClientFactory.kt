@@ -103,10 +103,18 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, 
 
     defaultRequest {
         url(BASE_URL)
-        header("Language", appPreferences.getLanguage())
         header("X-Device-Type", if (getPlatform().name.contains("iOS", ignoreCase = true)) 2 else 1)
-        header("X-Device-Token", authPreferences.getFCMToken())
     }
+
+    install(io.ktor.client.plugins.api.createClientPlugin("DynamicHeaders") {
+        onRequest { request, _ ->
+            val token = authPreferences.getFCMToken()
+            if (!token.isNullOrEmpty()) {
+                request.headers["X-Device-Token"] = token
+            }
+            request.headers["Language"] = appPreferences.getLanguage()
+        }
+    })
 }
 
 expect fun createHttpClient(authPreferences: AuthPreferences, appPreferences: AppPreferences): HttpClient

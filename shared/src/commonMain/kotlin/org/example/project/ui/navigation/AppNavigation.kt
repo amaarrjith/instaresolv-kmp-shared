@@ -84,7 +84,22 @@ fun AppNavigation() {
     }
 
     LaunchedEffect(Unit) {
+        // Check and consume any pending notification tap from cold startup
+        appManager.pendingNotificationTap?.let { notification ->
+            appManager.pendingNotificationTap = null // Consume
+            val authPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AuthPreferences>()
+            if (authPreferences.isLoggedIn()) {
+                AppNotificationClickListener(
+                    notification = notification,
+                    navController = navController
+                )
+            }
+        }
+
         appManager.notificationTapEvent.collect { notification ->
+            appManager.pendingNotificationTap = null // Ensure reset
+            println(notification)
+            println("-----------------")
             val authPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AuthPreferences>()
             if (authPreferences.isLoggedIn()) {
                 AppNotificationClickListener(

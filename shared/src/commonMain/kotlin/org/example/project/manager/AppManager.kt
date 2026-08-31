@@ -3,7 +3,6 @@ package org.example.project.manager
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-
 import org.example.project.data.model.NotificationListModel
 
 class AppManager(
@@ -14,6 +13,8 @@ class AppManager(
 
     private val _notificationTapEvent = MutableSharedFlow<NotificationListModel>(extraBufferCapacity = 1)
     val notificationTapEvent = _notificationTapEvent.asSharedFlow()
+
+    var pendingNotificationTap: NotificationListModel? = null
 
     fun handleNotificationTap(type: Int, contentId: Int, groupCode: String?) {
         val model = NotificationListModel(
@@ -27,6 +28,12 @@ class AppManager(
             groupCode = groupCode,
             isRead = true
         )
+        pendingNotificationTap = model
+        _notificationTapEvent.tryEmit(model)
+    }
+
+    fun handleNotificationTap(model: NotificationListModel) {
+        pendingNotificationTap = model
         _notificationTapEvent.tryEmit(model)
     }
 

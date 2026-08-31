@@ -30,6 +30,20 @@ class MainActivity : ComponentActivity() {
         val intent = intent
         handleNotificationIntent(intent)
         
+        // Fetch current FCM token on launch
+        try {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    android.util.Log.d("FCM", "Current Token: $token")
+                    val authPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AuthPreferences>()
+                    authPreferences.saveFCMToken(token)
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("FCM", "Failed to retrieve Firebase token on launch: ${e.message}")
+        }
+        
         val permissionsToRequest = mutableListOf(
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO

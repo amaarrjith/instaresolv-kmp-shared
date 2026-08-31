@@ -9,6 +9,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        KoinInitializer.shared.initialize()
         
         NotificationCenter.default.addObserver(
             forName: NSNotification.Name("OrientationLockChanged"),
@@ -82,33 +83,21 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let userInfo = response.notification.request.content.userInfo
         print("Tapped Notification UserInfo: \(userInfo)")
         
-        var type: Int32 = 0
-        var contentId: Int32 = 0
-        let groupCode = userInfo["groupCode"] as? String
-        
-        if let t = userInfo["type"] as? String {
-            type = Int32(t) ?? 0
-        } else if let t = userInfo["type"] as? Int32 {
-            type = t
-        } else if let t = userInfo["type"] as? Int {
-            type = Int32(t)
+        if let model = parseNotification(userInfo) {
+            KoinInitializer.shared.handleNotificationTap(notification: model)
         }
-        
-        if let c = userInfo["contentId"] as? String {
-            contentId = Int32(c) ?? 0
-        } else if let c = userInfo["contentId"] as? Int32 {
-            contentId = c
-        } else if let c = userInfo["contentId"] as? Int {
-            contentId = Int32(c)
-        }
-        
-        KoinInitializer.shared.handleNotificationTap(
-            type: type,
-            contentId: contentId,
-            groupCode: groupCode
-        )
         
         completionHandler()
+    }
+    
+    func parseNotification(_ userInfo: [AnyHashable: Any]) -> NotificationListModel? {
+        do {
+            let data = try JSONSerialization.data(withJSONObject: userInfo, options: [])
+            return try JSONDecoder().decode(NotificationListModel.self, from: data)
+        } catch {
+            print("Decode error:", error)
+            return nil
+        }
     }
     
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
@@ -120,13 +109,39 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 struct iOSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
-    init() {
-        KoinInitializer.shared.initialize()
-    }
-    
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
+    }
+}
+
+extension NotificationListModel: Decodable {
+    public convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decodeIfPresent(Int32.self, forKey: .id) ?? 0
+        var typeVal: Int32 = 0
+        if let tStr = try? container.decodeIfPresent(String.self, forKey: .type), let t = Int32(tStr) {
+            typeVal = t
+        } else {
+            typeVal = try container.decodeIfPresent(Int32.self, forKey: .type) ?? 0
+        }
+        var contentIdVal: Int32 = 0
+        if let cStr = try? container.decodeIfPresent(String.self, forKey: .contentId), let c = Int32(cStr) {
+            contentIdVal = c
+        } else {
+            contentIdVal = try container.decodeIfPresent(Int32.self, forKey: .contentId) ?? 0
+        }
+        let title = try container.decodeIfPresent(String.self, forKey: .title)
+        let time = try container.decodeIfPresent(String.self, forKey: .time)
+        let date = try container.decodeIfPresent(String.self, forKey: .date)
+        let description = try container.decodeIfPresent(String.self, forKey: .description)
+        let groupCode = try container.decodeIfPresent(String.self, forKey: .groupCode)
+        let isRead = try container.decodeIfPresent(Bool.self, forKey: .isRead) ?? true
+        self.init(id: id, type: typeVal, contentId: contentIdVal, title: title, time: time, date: date, description: description, groupCode: groupCode, isRead: isRead)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, type, contentId, title, time, date, description, groupCode, isRead
     }
 }

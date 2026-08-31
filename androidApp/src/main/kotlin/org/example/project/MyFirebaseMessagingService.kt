@@ -34,7 +34,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
     }
 
     private fun showNotification(title: String, messageBody: String, data: Map<String, String>) {
-        val channelId = "default_channel"
+        val channelId = "high_importance_channel"
         
         val intent = android.content.Intent(this, MainActivity::class.java).apply {
             flags = android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -56,6 +56,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
             .setContentText(messageBody)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .setPriority(android.app.Notification.PRIORITY_HIGH)
+            .setDefaults(android.app.Notification.DEFAULT_ALL)
 
         val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
 
@@ -64,12 +66,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = android.app.NotificationChannel(
                 channelId,
-                "Default Channel",
-                android.app.NotificationManager.IMPORTANCE_DEFAULT
-            )
+                "App Notifications",
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Channel for alerts and heads-up app notifications"
+                enableLights(true)
+                enableVibration(true)
+            }
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(0, notificationBuilder.build())
+        val notificationId = (System.currentTimeMillis() % 100000).toInt()
+        notificationManager.notify(notificationId, notificationBuilder.build())
     }
 }

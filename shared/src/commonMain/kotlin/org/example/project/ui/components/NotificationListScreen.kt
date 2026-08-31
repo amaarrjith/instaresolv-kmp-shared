@@ -371,88 +371,92 @@ fun AppNotificationClickListener(
     onNavigate: ((String) -> Unit)? = null,
     onShowPopUp: ((NotificationListModel) -> Unit)? = null
 ) {
-    val notificationType = AppNotificationType.fromValue(notification.type)
-    val route = when(notificationType) {
-        AppNotificationType.OBSERVATION_CREATED,
-        AppNotificationType.OBSERVATION_CREATED_NF,
-        AppNotificationType.OBSERVATION_CREATED_TO_RESPONSIBLE_PERSON,
-        AppNotificationType.OBSERVATION_CREATED_TO_RESPONSIBLE_PERSON_NF,
-        AppNotificationType.OBSERVATION_CLOSED_TO_RESPONSIBLE_PERSON,
-        AppNotificationType.OBSERVATION_CLOSED_TO_RESPONSIBLE_PERSON_NF,
-        AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_APPROVED,
-        AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_APPROVED_NF,
-        AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_REJECTED,
-        AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_REJECTED_NF,
-        AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_APPROVED,
-        AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_APPROVED_NF,
-        AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_REJECTED,
-        AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_REJECTED_NF,
-        AppNotificationType.DELETE_OBSERVATION_REQUEST_APPROVED,
-        AppNotificationType.DELETE_OBSERVATION_REQUEST_APPROVED_NF,
-        AppNotificationType.DELETE_OBSERVATION_REQUEST_REJECTED,
-        AppNotificationType.DELETE_OBSERVATION_REQUEST_REJECTED_NF -> {
-            if (notification.contentId > 0) {
-                "${Screens.ObservationDetailsScreen.route}/${notification.contentId}"
-            } else {
+    if (notification.pushType == 1) {
+        val notificationType = AppNotificationType.fromValue(notification.type)
+        val route = when (notificationType) {
+            AppNotificationType.OBSERVATION_CREATED,
+            AppNotificationType.OBSERVATION_CREATED_NF,
+            AppNotificationType.OBSERVATION_CREATED_TO_RESPONSIBLE_PERSON,
+            AppNotificationType.OBSERVATION_CREATED_TO_RESPONSIBLE_PERSON_NF,
+            AppNotificationType.OBSERVATION_CLOSED_TO_RESPONSIBLE_PERSON,
+            AppNotificationType.OBSERVATION_CLOSED_TO_RESPONSIBLE_PERSON_NF,
+            AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_APPROVED,
+            AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_APPROVED_NF,
+            AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_REJECTED,
+            AppNotificationType.REVIEW_OBSERVATION_CLOSE_OUT_REJECTED_NF,
+            AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_APPROVED,
+            AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_APPROVED_NF,
+            AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_REJECTED,
+            AppNotificationType.REASSIGN_RESPONSIBLE_PERSON_REJECTED_NF,
+            AppNotificationType.DELETE_OBSERVATION_REQUEST_APPROVED,
+            AppNotificationType.DELETE_OBSERVATION_REQUEST_APPROVED_NF,
+            AppNotificationType.DELETE_OBSERVATION_REQUEST_REJECTED,
+            AppNotificationType.DELETE_OBSERVATION_REQUEST_REJECTED_NF -> {
+                if (notification.contentId > 0) {
+                    "${Screens.ObservationDetailsScreen.route}/${notification.contentId}"
+                } else {
+                    Screens.ObservationListScreen.route
+                }
+            }
+
+            AppNotificationType.OBSERVATION_DELETED,
+            AppNotificationType.OBSERVATION_DELETED_NF -> {
                 Screens.ObservationListScreen.route
             }
+
+            AppNotificationType.JOIN_GROUP_REQUEST_ACCEPTED,
+            AppNotificationType.JOIN_GROUP_REQUEST_ACCEPTED_NF,
+            AppNotificationType.ADDED_TO_GROUP,
+            AppNotificationType.ADDED_TO_GROUP_NF,
+            AppNotificationType.GROUP_MEMBER_ROLE_CHANGED,
+            AppNotificationType.GROUP_MEMBER_ROLE_CHANGED_NF -> {
+                val parts = notification.groupCode?.split("-")
+                val groupId = parts?.getOrNull(1) ?: "-1"
+                val groupCode = notification.groupCode ?: "-1"
+                "${Screens.ProjectDetailScreen.route}/$groupId/$groupCode"
+            }
+
+            AppNotificationType.REMOVE_FROM_GROUP,
+            AppNotificationType.REMOVE_FROM_GROUP_NF,
+            AppNotificationType.JOIN_GROUP_REQUEST_REJECTED,
+            AppNotificationType.JOIN_GROUP_REQUEST_REJECTED_NF -> {
+                onShowPopUp?.invoke(notification)
+                null
+            }
+
+            AppNotificationType.PRE_TASK_BRIEFING -> {
+                Screens.PreTaskListScreen.route
+            }
+
+            AppNotificationType.PERMIT -> {
+                if (notification.contentId > 0) {
+                    "${Screens.PermitDetailScreen.route}/${notification.contentId}"
+                } else {
+                    Screens.PermitToWorkListScreen.route
+                }
+            }
+
+            AppNotificationType.TRAINING -> {
+                if (notification.contentId > 0) {
+                    "${Screens.TrainingDetailScreen.route}/${notification.contentId}"
+                } else {
+                    Screens.TrainingListScreen.route
+                }
+            }
+
+            AppNotificationType.GENERAL,
+            AppNotificationType.GENERAL_NF,
+            null -> null
         }
 
-        AppNotificationType.OBSERVATION_DELETED,
-        AppNotificationType.OBSERVATION_DELETED_NF -> {
-            Screens.ObservationListScreen.route
-        }
-
-        AppNotificationType.JOIN_GROUP_REQUEST_ACCEPTED,
-        AppNotificationType.JOIN_GROUP_REQUEST_ACCEPTED_NF,
-        AppNotificationType.ADDED_TO_GROUP,
-        AppNotificationType.ADDED_TO_GROUP_NF,
-        AppNotificationType.GROUP_MEMBER_ROLE_CHANGED,
-        AppNotificationType.GROUP_MEMBER_ROLE_CHANGED_NF -> {
-            val parts = notification.groupCode?.split("-")
-            val groupId = parts?.getOrNull(1) ?: "-1"
-            val groupCode = notification.groupCode ?: "-1"
-            "${Screens.ProjectDetailScreen.route}/$groupId/$groupCode"
-        }
-
-        AppNotificationType.REMOVE_FROM_GROUP,
-        AppNotificationType.REMOVE_FROM_GROUP_NF,
-        AppNotificationType.JOIN_GROUP_REQUEST_REJECTED,
-        AppNotificationType.JOIN_GROUP_REQUEST_REJECTED_NF -> {
-            onShowPopUp?.invoke(notification)
-            null
-        }
-
-        AppNotificationType.PRE_TASK_BRIEFING -> {
-            Screens.PreTaskListScreen.route
-        }
-
-        AppNotificationType.PERMIT -> {
-            if (notification.contentId > 0) {
-                "${Screens.PermitDetailScreen.route}/${notification.contentId}"
+        route?.let { destinationRoute ->
+            if (onNavigate != null) {
+                onNavigate(destinationRoute)
             } else {
-                Screens.PermitToWorkListScreen.route
+                navController?.navigate(destinationRoute)
             }
         }
-
-        AppNotificationType.TRAINING -> {
-            if (notification.contentId > 0) {
-                "${Screens.TrainingDetailScreen.route}/${notification.contentId}"
-            } else {
-                Screens.TrainingListScreen.route
-            }
-        }
-
-        AppNotificationType.GENERAL,
-        AppNotificationType.GENERAL_NF,
-        null -> null
-    }
-
-    route?.let { destinationRoute ->
-        if (onNavigate != null) {
-            onNavigate(destinationRoute)
-        } else {
-            navController?.navigate(destinationRoute)
-        }
+    } else {
+        navController?.navigate(Screens.PendingActionListScreen.route)
     }
 }
