@@ -93,7 +93,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func parseNotification(_ userInfo: [AnyHashable: Any]) -> NotificationListModel? {
         do {
             let data = try JSONSerialization.data(withJSONObject: userInfo, options: [])
-            return try JSONDecoder().decode(NotificationListModel.self, from: data)
+            let codableNotif = try JSONDecoder().decode(CodableNotification.self, from: data)
+            return codableNotif.toKotlinModel()
         } catch {
             print("Decode error:", error)
             return nil
@@ -116,32 +117,55 @@ struct iOSApp: App {
     }
 }
 
-extension NotificationListModel: Decodable {
-    public convenience init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let id = try container.decodeIfPresent(Int32.self, forKey: .id) ?? 0
-        var typeVal: Int32 = 0
-        if let tStr = try? container.decodeIfPresent(String.self, forKey: .type), let t = Int32(tStr) {
-            typeVal = t
-        } else {
-            typeVal = try container.decodeIfPresent(Int32.self, forKey: .type) ?? 0
+struct CodableNotification: Decodable {
+    let id: Int32?
+    let type: StringOrInt?
+    let contentId: StringOrInt?
+    let title: String?
+    let time: String?
+    let date: String?
+    let description: String?
+    let groupCode: String?
+    let isRead: Bool?
+    let pushType: StringOrInt?
+    
+    enum StringOrInt: Decodable {
+        case string(String)
+        case int(Int32)
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let stringValue = try? container.decode(String.self) {
+                self = .string(stringValue)
+            } else if let intValue = try? container.decode(Int32.self) {
+                self = .int(intValue)
+            } else {
+                throw DecodingError.typeMismatch(StringOrInt.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected String or Int32"))
+            }
         }
-        var contentIdVal: Int32 = 0
-        if let cStr = try? container.decodeIfPresent(String.self, forKey: .contentId), let c = Int32(cStr) {
-            contentIdVal = c
-        } else {
-            contentIdVal = try container.decodeIfPresent(Int32.self, forKey: .contentId) ?? 0
+        
+        var int32Value: Int32 {
+            switch self {
+            case .string(let str):
+                return Int32(str) ?? 0
+            case .int(let val):
+                return val
+            }
         }
-        let title = try container.decodeIfPresent(String.self, forKey: .title)
-        let time = try container.decodeIfPresent(String.self, forKey: .time)
-        let date = try container.decodeIfPresent(String.self, forKey: .date)
-        let description = try container.decodeIfPresent(String.self, forKey: .description)
-        let groupCode = try container.decodeIfPresent(String.self, forKey: .groupCode)
-        let isRead = try container.decodeIfPresent(Bool.self, forKey: .isRead) ?? true
-        self.init(id: id, type: typeVal, contentId: contentIdVal, title: title, time: time, date: date, description: description, groupCode: groupCode, isRead: isRead)
     }
     
-    enum CodingKeys: String, CodingKey {
-        case id, type, contentId, title, time, date, description, groupCode, isRead
+    func toKotlinModel() -> NotificationListModel {
+        return NotificationListModel(
+            id: id ?? 0,
+            type: type?.int32Value ?? 0,
+            contentId: contentId?.int32Value ?? 0,
+            title: title,
+            time: time,
+            date: date,
+            description: description,
+            groupCode: groupCode,
+            isRead: isRead ?? true,
+            pushType: 1
+        )
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,9 +55,13 @@ import org.example.project.ui.screens.SettingsScreen
 import org.koin.compose.koinInject
 
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import org.example.project.data.model.Project
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.CompanyType
+import org.example.project.data.model.UserRole
+import org.example.project.ui.screens.SubContractorRestrictionScreen
 
 @Composable
 fun AppTabBar(
@@ -77,6 +82,7 @@ fun AppTabBar(
     onToolboxTalksClicked: () -> Unit = {},
     onPermitDetailClick: (Int) -> Unit = {},
     onNavigateToProject: (Int, String) -> Unit = { _, _ ->},
+    onNavigateToProfile: (Int) -> Unit,
     onLogout: () -> Unit = {}
 ) {
 
@@ -84,6 +90,11 @@ fun AppTabBar(
     val viewModel: AppTabBarViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    var isSubContractor by remember {mutableStateOf(false)}
+
+    LaunchedEffect(Unit) {
+        isSubContractor = CompanyType.fromInt(viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
+    }
 
     val navItems = listOf(
         TabBarItems(
@@ -203,20 +214,31 @@ fun AppTabBar(
                             onNavigateToProject = { groupId, groupCode ->
                                 onNavigateToProject(groupId, groupCode)
                             },
+                            onNavigateToProfile = { userId ->
+                                onNavigateToProfile(userId)
+                            },
                             onLogout = onLogout
                         )
-                        1 -> ProjectListScreen(
-                            onCreateProjectClicked,
-                            onProjectClicked = { project ->
-                                onProjectClicked(project)
-                            }
-                        )
-                        2 -> BriefsScreen(
-                            actionsOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
-                            onPreTaskClicked = onPreTaskClicked,
-                            onLessonLearnedClicked = onLessonLearnedClicked,
-                            onToolboxTalksClicked = onToolboxTalksClicked
-                        )
+                        1 -> if(isSubContractor) {
+                            SubContractorRestrictionScreen()
+                        } else {
+                            ProjectListScreen(
+                                onCreateProjectClicked,
+                                onProjectClicked = { project ->
+                                    onProjectClicked(project)
+                                }
+                            )
+                        }
+                        2 -> if(isSubContractor) {
+                            SubContractorRestrictionScreen()
+                        } else {
+                            BriefsScreen(
+                                actionsOverview = (viewModel.uiState.value as AppTabBarUiState.Success).actionsOverview,
+                                onPreTaskClicked = onPreTaskClicked,
+                                onLessonLearnedClicked = onLessonLearnedClicked,
+                                onToolboxTalksClicked = onToolboxTalksClicked
+                            )
+                        }
                         3 -> SettingsScreen(
                             onChangePasswordClick = onChangePasswordClick,
                             onContactUsClick = onContactUsClick,
@@ -238,6 +260,9 @@ fun AppTabBar(
                             onClickModule = { module -> onModuleClicked(module) },
                             onPendingActionViewAllClick = onPendingActionViewAllClick,
                             onPermitClick = onPermitDetailClick,
+                            onNavigateToProfile = { userId ->
+                                onNavigateToProfile(userId)
+                            },
                             onLogout = onLogout
                         )
                         1 -> ProjectListScreen(

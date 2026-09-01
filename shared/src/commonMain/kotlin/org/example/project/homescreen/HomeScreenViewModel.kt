@@ -27,6 +27,7 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.model.InspectionContentsRequest
 import org.example.project.network.NetworkMonitor
+import org.example.project.project.ProjectListUiState
 
 class HomeScreenViewModel(
     private val authRepository: AuthRepository,
@@ -41,8 +42,12 @@ class HomeScreenViewModel(
 ): ViewModel()  {
     val user = preferences.getLoggedInUser()
     val userInfo = preferences.getLoggedInUserInfo()
+
     val isNetworkConnected = networkMonitor.isNetworkConnected
         .stateIn(viewModelScope, SharingStarted.Eagerly, networkMonitor.currentlyConnected())
+
+    private val _isProjectListEmpty = MutableStateFlow(false)
+    val isProjectListEmpty: StateFlow<Boolean> = _isProjectListEmpty
 
     init {
         viewModelScope.launch {
@@ -52,6 +57,7 @@ class HomeScreenViewModel(
                     getPreTaskContentsList()
                     getAuditsInspectionForms()
                     getInspectionContentsList()
+                    checkProjectList()
                 }
         }
     }
@@ -454,6 +460,29 @@ class HomeScreenViewModel(
                 }
                 is NetworkResult.Error -> {
                     println("Failed to fetch inspection contents: ${result.message}")
+                }
+            }
+        }
+    }
+
+    fun checkProjectList(
+        searchKey: String = "",
+        isProjectList: Boolean = true,
+        isInvite: Boolean = false,
+        isRefresh: Boolean = false
+    ) {
+        viewModelScope.launch {
+            val response = projectRepository.getProjects(
+                searchKey = searchKey,
+                isProjectList = isProjectList,
+                isInvite = isInvite
+            )
+            when(response) {
+                is NetworkResult.Success -> {
+                    _isProjectListEmpty.value = response.data.groups.isEmpty()
+                }
+                is NetworkResult.Error -> {
+                    _isProjectListEmpty.value = true // If request fails, treat as empty or fallback
                 }
             }
         }

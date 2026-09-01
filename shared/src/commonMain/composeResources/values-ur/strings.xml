@@ -482,4 +482,8 @@
     <string name="noTranslationInfoAvailable">ترجمے کی کوئی معلومات دستیاب نہیں ہیں</string>
     <string name="user_role_changed">آپ کا رسائی کردار اپ ڈیٹ کر دیا گیا ہے</string>
     <string name="user_role_changed_description">آپ کے اکاؤنٹ کا کردار تبدیل کر دیا گیا ہے۔ اپ ڈیٹ شدہ رسائی اجازتوں کے ساتھ ایپ استعمال جاری رکھنے کے لیے براہ کرم دوبارہ لاگ ان کریں۔</string>
+    <string name="access_restricted">Access Restricted</string>
+    <string name="access_restricted_description">This section is currently unavailable for subcontractor accounts. Please contact your administrator for more information.</string>
+    <string name="permit_restriction_description">To access the Permit module, you must be a member of at least one project</string>
+    <string name="no_project_assigned">No Project Assigned</string>
 </resources>

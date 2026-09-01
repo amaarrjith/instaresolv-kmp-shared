@@ -115,7 +115,7 @@ val appModule = module {
     factory { HomeScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     factory { LoginViewModel(get(), get(), get()) }
     factory { SplashViewModel(get(), get(), get()) }
-    factory { ProfileViewModel(get(), get(), get()) }
+    factory { ProfileViewModel(get(), get(), get(), get()) }
     factory { CreateProjectViewModel(get(), get()) }
     factory { WelcomeScreenViewModel(get()) }
     factory { ForgetPasswordViewModel(get(), get()) }
@@ -136,7 +136,7 @@ val appModule = module {
     factory { CreateToolBoxTalkViewModel(get(), get(), get(), get()) }
     factory { ToolBoxTalkDetailViewModel(get()) }
     factory { org.example.project.ui.screens.AssignedTrainingsViewModel(get(), get()) }
-    factory { PendingActionListViewModel(get(), get(), get(), get()) }
+    factory { PendingActionListViewModel(get(), get(), get(), get(), get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
     factory { ObservationListViewModel(get(), get(), get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }

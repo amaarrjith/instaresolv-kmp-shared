@@ -205,6 +205,25 @@ fun ProjectListScreen(
             ViewProjectDialog(
                 showDialog = showViewProjectModal,
                 onDismiss = { showViewProjectModal = false },
+                onJoin = { project ->
+                    val groupCode = project.groupCode
+                    val parts = project.groupCode?.split("-", limit = 2)
+                    val part1 = parts?.getOrNull(0).orEmpty()
+                    val part2 = parts?.getOrNull(1).orEmpty()
+                    viewModel.requestProjectAccess(
+                        part1 = part1,
+                        part2 = part2,
+                        onSuccess = {
+                            showViewProjectModal = false
+                            toastMessage = "Project Request Successful"
+                            toastType = ToastType.Success
+                        },
+                        onError = { message ->
+                            toastMessage = message
+                            toastType = ToastType.Error
+                        }
+                    )
+                },
                 project = viewedProject
             )
         }
@@ -541,6 +560,7 @@ fun RequestProjectBottomSheet(
 fun ViewProjectDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
+    onJoin: (Project) -> Unit,
     project: Project?
 ) {
     if (!showDialog || project == null) return
@@ -608,8 +628,16 @@ fun ViewProjectDialog(
                     )
                     Spacer(modifier = Modifier.height(30.dp))
                 }
-                
+
                 org.example.project.utilites.AppPrimaryButton(
+                    title = stringResource(Res.string.requestToJoinProject),
+                    onClick = { onJoin(project) },
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+                
+                org.example.project.utilites.AppBorderButton(
                     title = stringResource(Res.string.close),
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth().height(48.dp)

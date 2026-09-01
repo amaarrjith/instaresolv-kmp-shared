@@ -53,6 +53,7 @@ import org.example.project.network.safeApiCall
 
 import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.EmployeeListRequest
+import org.example.project.data.model.ProjectUserViewRequest
 
 class AuthApiServiceImpl(
     private val httpClient: HttpClient
@@ -788,6 +789,12 @@ class AuthApiServiceImpl(
     override suspend fun checkAppUpdate(): NetworkResult<AppUpdateResponse> = safeApiCall {
         httpClient.post("generic/app-update") {
 
+        }
+    }
+
+    override suspend fun viewGroupMember(request: ProjectUserViewRequest): NetworkResult<UserResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.VIEW_GROUP_MEMBER) {
+            jsonBody(request)
         }
     }
 

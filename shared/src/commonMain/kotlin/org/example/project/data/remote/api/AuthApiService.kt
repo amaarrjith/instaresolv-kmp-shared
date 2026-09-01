@@ -55,6 +55,7 @@ import org.example.project.data.model.RequestResponsiblePersonChangeRequest
 import org.example.project.data.model.IncidentRequest
 import org.example.project.data.model.PreTaskDetailRequest
 import org.example.project.data.model.PreTaskDetailResponseData
+import org.example.project.data.model.ProjectUserViewRequest
 
 interface AuthApiService {
 
@@ -437,5 +438,7 @@ interface AuthApiService {
     ): NetworkResult<UserRoleCheckResponse>
 
     suspend fun checkAppUpdate(): NetworkResult<AppUpdateResponse>
+
+    suspend fun viewGroupMember(request: ProjectUserViewRequest): NetworkResult<UserResponse>
 
 }

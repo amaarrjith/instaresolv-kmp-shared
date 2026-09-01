@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.model.PendingActionItem
 import org.example.project.data.model.PermitPendingActionItem
+import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.PendingActionRepository
 import org.example.project.domain.repository.PermitRepository
 import org.example.project.domain.repository.ObservationRepository
@@ -29,7 +30,8 @@ class PendingActionListViewModel(
     private val repository: PendingActionRepository,
     private val permitRepository: PermitRepository,
     private val observationRepository: ObservationRepository,
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
+    private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PendingActionListState())
@@ -46,6 +48,7 @@ class PendingActionListViewModel(
 
     private val _pdfErrorToastMessage = MutableStateFlow<String?>(null)
     val pdfErrorToastMessage: StateFlow<String?> = _pdfErrorToastMessage
+    val user = authPreferences.getLoggedInUser()
 
     fun generatePermitPDF(permitId: Int) {
         viewModelScope.launch {

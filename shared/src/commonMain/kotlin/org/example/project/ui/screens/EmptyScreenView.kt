@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,25 +38,22 @@ fun EmptyScreenView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
         Image(
             painter = painterResource(Res.drawable.ic_empty),
             contentDescription = "Empty",
             modifier = Modifier.wrapContentSize(),
             contentScale = ContentScale.Fit
         )
-
         Spacer(modifier = Modifier.padding(top = 14.dp))
-
         Text(
             text = message,
             style = textStyle(
-                size = 16.sp,
-                weight = FontWeight.Medium
+                size = 14.sp,
+                weight = FontWeight.Normal,
+                fontStyle = FontStyle.Italic
             ),
             color = AppColors.TextGray
         )
-
         Spacer(modifier = Modifier.padding(top = 14.dp))
     }
 }

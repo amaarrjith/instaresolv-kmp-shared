@@ -1,6 +1,8 @@
 package org.example.project.navigation
 
 sealed class Screens(val route: String) {
+    override fun toString(): String = route
+
     object Splash : Screens("splash")
     object Login: Screens("login")
     object WelcomeScreen: Screens("welcome_screen")
@@ -10,6 +12,7 @@ sealed class Screens(val route: String) {
     object ForgetPasswordScreen: Screens("forget_password_screen")
     object NotificationListScreen: Screens("notification_list_screen")
     object TabBar: Screens("tab_bar")
+    object SubContractorRestrictionScreen : Screens("sub_contractor_restriction_screen")
     // Observation
     object ObservationListScreen : Screens("observation_list_screen")
     object ObservationDraftListScreen : Screens("observation_draft_list_screen")
@@ -54,6 +57,7 @@ sealed class Screens(val route: String) {
     object TrainingScormScreenWithArgs : Screens("training_scorm_screen/{scormUrl}")
     object PendingActionListScreen : Screens("pending_action_list_screen")
     object ProfileScreen : Screens("profile_screen")
+    object ProfileScreenWithArguments : Screens("profile_screen/{userId}")
     object CreateProjectScreen : Screens("create_project_screen")
     object EditProjectScreen : Screens("edit_project_screen")
     object ProjectDetailScreen : Screens("project_detail_screen")

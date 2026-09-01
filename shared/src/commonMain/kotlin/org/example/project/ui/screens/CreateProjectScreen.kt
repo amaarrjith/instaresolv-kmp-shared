@@ -67,6 +67,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.graphics.SolidColor
@@ -77,7 +78,9 @@ import androidx.compose.runtime.LaunchedEffect
 import org.example.project.data.model.ProjectDetail
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import kotlinx.coroutines.delay
 import org.example.project.ui.components.AppExitPopup
+import org.example.project.ui.components.AppMultilineTextField
 
 @Composable
 fun CreateProjectScreen(
@@ -148,7 +151,7 @@ fun CreateProjectScreen(
                         type = ToastType.Success
                     )
                     LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(1500)
+                        delay(1500)
                         viewModel.clearState()
                         onBack()
                     }
@@ -237,13 +240,11 @@ fun CreateProjectScreen(
                         placeholder = stringResource(Res.string.projectTitle)
                     )
                     Spacer(modifier = Modifier.height(20.dp))
-                    AppTextField(
+                    AppMultilineTextField(
                         value = projectDescription.value,
                         onValueChange = { projectDescription.value = it },
                         title = stringResource(Res.string.projectDescription),
                         placeholder = stringResource(Res.string.projectDescription),
-                        singleLine = false,
-                        textFieldModifier = Modifier.fillMaxWidth().height(120.dp)
                     )
                 }
             }
@@ -314,7 +315,8 @@ fun CreateProjectScreenBottomBar(
             .background(Color.White)
             .fillMaxWidth()
             .padding(horizontal = 22.dp)
-            .padding(vertical = 20.dp),
+            .padding(vertical = 20.dp)
+            .navigationBarsPadding(),
         horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         AppBorderButton(

@@ -12,3 +12,15 @@ enum class UserRole(val value: Int) {
         }
     }
 }
+
+enum class CompanyType(val value: Int) {
+    NORMAL_USER(1),
+    SUB_CONTRACTOR(2);
+
+    companion object {
+        fun fromInt(value: Int?): CompanyType {
+            return CompanyType.entries.firstOrNull { it.value == value }
+                ?: NORMAL_USER
+        }
+    }
+}

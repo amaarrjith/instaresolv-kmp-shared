@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.style.TextAlign
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_calendar
@@ -61,6 +62,7 @@ import kotlin.time.Clock
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.CompanyType
 import org.example.project.ui.components.ObservationActionBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,6 +100,7 @@ fun PendingActionListScreen(
     val pdfErrorToastMessage by viewModel.pdfErrorToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val isActionLoading by viewModel.isActionLoading.collectAsState()
+    var isSubContractor by remember { mutableStateOf(false) }
 
     androidx.compose.runtime.LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
@@ -109,6 +112,13 @@ fun PendingActionListScreen(
                 viewModel.setPdfErrorToastMessage("Failed to download Permit Report")
             }
             viewModel.clearPdfUrl()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        isSubContractor = CompanyType.fromInt(viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
+        if (isSubContractor) {
+            selectedTab = 1
         }
     }
     
@@ -160,11 +170,13 @@ fun PendingActionListScreen(
                         .padding(top = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    TabItem(
-                        title = stringResource(Res.string.generalActions),
-                        isSelected = selectedTab == 0,
-                        onClick = { selectedTab = 0 }
-                    )
+                    if (!isSubContractor) {
+                        TabItem(
+                            title = stringResource(Res.string.generalActions),
+                            isSelected = selectedTab == 0,
+                            onClick = { selectedTab = 0 }
+                        )
+                    }
                     TabItem(
                         title = stringResource(Res.string.permitActions),
                         isSelected = selectedTab == 1,

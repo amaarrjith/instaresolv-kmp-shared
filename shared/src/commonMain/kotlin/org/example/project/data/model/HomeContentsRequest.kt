@@ -45,6 +45,7 @@ data class PendingObservation(
     val groupCode: String? = null,
     val groupId: Int? = null,
     val pendingActionId: Int? = null,
+    val userId: Int? = null,
     val justification: String? = null
 )
 

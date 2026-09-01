@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,15 +16,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -37,14 +32,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.layout.ContentScale
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,18 +52,12 @@ import org.example.project.data.settings.formatDate
 import org.jetbrains.compose.resources.DrawableResource
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_bell
-import instaresolv.shared.generated.resources.ic_user
 import instaresolv.shared.generated.resources.ic_clock
-import instaresolv.shared.generated.resources.ic_pipe
 import instaresolv.shared.generated.resources.ic_calendar
-import instaresolv.shared.generated.resources.assigned_to_me
-import instaresolv.shared.generated.resources.view_all
-import instaresolv.shared.generated.resources.action_overview
 import instaresolv.shared.generated.resources.ic_audit_inspection
 import instaresolv.shared.generated.resources.ic_permit_to_work
 import instaresolv.shared.generated.resources.ic_observations
 import instaresolv.shared.generated.resources.ic_incidents
-import instaresolv.shared.generated.resources.ic_location
 import instaresolv.shared.generated.resources.ic_right_icon
 import org.example.project.utilites.rtlScale
 import instaresolv.shared.generated.resources.ic_violations
@@ -82,13 +72,13 @@ import org.example.project.profile.ProfileViewModel
 import org.example.project.typography.textStyle
 import org.example.project.ui.components.PdfGenerationLoader
 import org.example.project.ui.components.WebImageView
-import org.example.project.ui.screens.PermitStatusBadge
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.rememberFileDownloader
 import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.CompanyType
 import org.example.project.data.model.PendingActionStatusType
 import org.example.project.ui.components.AppErrorDialog
 import org.example.project.ui.components.AppLoader
@@ -114,6 +104,7 @@ fun HomeScreenContentView(
     onPendingActionViewAllClick: () -> Unit = {},
     onPermitClick: (Int) -> Unit = {},
     onNavigateToProject: (Int, String) -> Unit = { _, _ -> },
+    onNavigateToProfile: (Int) -> Unit,
     onLogout: () -> Unit = {}
 ) {
     val viewModel: ProfileViewModel = koinInject()
@@ -127,7 +118,7 @@ fun HomeScreenContentView(
     val pdfModuleType by vm.pdfModuleType.collectAsState()
     var actionErrorMessage: String? by remember { mutableStateOf(null) }
     var isRoleUpdated by remember { mutableStateOf(false) }
-
+    var isSubContractor by remember { mutableStateOf(false) }
     
     val downloadingMsg = stringResource(Res.string.downloading_report, pdfModuleType ?: "")
     val failedMsg = stringResource(Res.string.failed_to_download_report, pdfModuleType ?: "")
@@ -148,6 +139,7 @@ fun HomeScreenContentView(
         vm.userCheckRole { isUpdated ->
             isRoleUpdated = isUpdated
         }
+        isSubContractor = CompanyType.fromInt(viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
     }
 
 
@@ -172,7 +164,8 @@ fun HomeScreenContentView(
                     userName = vm.user?.name,
                     profileImage = vm.user?.profileImage,
                     notificationCount = 0,
-                    onNotificationClick = onNotificationClick
+                    onNotificationClick = onNotificationClick,
+                    isSubContractor = isSubContractor
                 )
                 Column(
                     modifier = Modifier
@@ -186,24 +179,34 @@ fun HomeScreenContentView(
                         onPendingActionViewAllClick
                     )
                     Spacer(modifier = Modifier.height(26.dp))
-                    AssignedToMeCard(
-                        assignedToMe = assignedToMe,
-                        onViewAllClick = onPendingActionViewAllClick,
-                        viewModel = vm,
-                        onRefreshList = silentRefresh,
-                        onPermitClick = onPermitClick,
-                        onNavigateToProject = { groupId, groupCode ->
-                            onNavigateToProject(groupId, groupCode)
-                        },
-                        onActionError = { err ->
-                            actionErrorMessage = err
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(22.dp))
+                    if (assignedToMe?.permit != null || !isSubContractor) {
+                        AssignedToMeCard(
+                            assignedToMe = assignedToMe,
+                            onViewAllClick = onPendingActionViewAllClick,
+                            viewModel = vm,
+                            onRefreshList = silentRefresh,
+                            onPermitClick = onPermitClick,
+                            onNavigateToProject = { groupId, groupCode ->
+                                onNavigateToProject(groupId, groupCode)
+                            },
+                            onActionError = { err ->
+                                actionErrorMessage = err
+                            },
+                            showUserProfile = { userId ->
+                                onNavigateToProfile(userId)
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(22.dp))
+                    }
                     ActionOverviewSection(
                         actionOverview = actionOverview,
                         onClickListener = { action ->
                             onClickModule(action)
+                        },
+                        isSubContractor = isSubContractor,
+                        showToast = { str ->
+                            actionErrorMessage = str
                         }
                     )
                 }
@@ -267,6 +270,7 @@ fun HeaderView(
     userName: String?,
     profileImage: String?,
     notificationCount: Int?,
+    isSubContractor: Boolean,
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
@@ -301,6 +305,17 @@ fun HeaderView(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+            if(isSubContractor) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "(Sub-Contractor)",
+                    style = textStyle(
+                        size = 12.sp,
+                        weight = FontWeight.Normal
+                    ),
+                    color = AppColors.TextGray
+                )
+            }
         }
         Box(modifier = Modifier.clickable { onNotificationClick() }) {
             Image(
@@ -328,14 +343,28 @@ fun HeaderView(
                 }
             }
         }
-        Spacer(modifier = Modifier.width(8.dp))
-        WebImageView(
-            imageUrl = profileImage,
-            modifier = Modifier
-                .size(49.dp)
-                .clip(RoundedCornerShape(25))
-                .clickable { onProfileClick() }
-        )
+        Spacer(modifier = Modifier.width(13.dp))
+        if (profileImage.isNullOrEmpty()) {
+            Image(
+                painter = painterResource(Res.drawable.ic_avatar),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(45.dp)
+                    .clip(CircleShape)
+                    .size(80.dp)
+                    .clickable { onProfileClick() },
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            WebImageView(
+                imageUrl = profileImage,
+                modifier = Modifier
+                    .size(45.dp)
+                    .clip(CircleShape)
+                    .size(80.dp)
+                    .clickable { onProfileClick() }
+            )
+        }
     }
 }
 
@@ -428,7 +457,8 @@ fun AssignedToMeCard(
     onRefreshList: () -> Unit = {},
     onPermitClick: (Int) -> Unit = {},
     onNavigateToProject: (Int, String) -> Unit = { _, _ -> },
-    onActionError: (String) -> Unit
+    onActionError: (String) -> Unit,
+    showUserProfile: (Int) -> Unit,
 ) {
     var showObservationDrawer by remember { mutableStateOf(false) }
     var showPermitDrawer by remember { mutableStateOf(false) }
@@ -712,6 +742,9 @@ fun AssignedToMeCard(
                     "View Justification" -> {
                         justification = assignedToMe.observation?.justification
                     }
+                    "View Profile" -> {
+                        showUserProfile(assignedToMe.observation?.userId ?: -1)
+                    }
                 }
             }
         )
@@ -949,7 +982,9 @@ private fun PermitActionItem(
 @Composable
 fun ActionOverviewSection(
     actionOverview: ActionsOverview?,
-    onClickListener: (ActionOverview) -> Unit
+    onClickListener: (ActionOverview) -> Unit,
+    isSubContractor: Boolean,
+    showToast: (String) -> Unit
 ) {
     val items = listOf(
         ActionOverviewItem(ActionOverview.AUDIT_INSPECTIONS, actionOverview?.auditAndInspectionsCount),
@@ -986,10 +1021,14 @@ fun ActionOverviewSection(
                             modifier = Modifier.weight(1f)
                         ) {
                             ActionOverviewCard(
+                                disabled = item.type != ActionOverview.PERMIT_TO_WORK && isSubContractor,
                                 action = item.type,
                                 count = item.count ?: 0,
                                 onClick = { action ->
                                     onClickListener(action)
+                                },
+                                showToast = { str ->
+                                    showToast(str)
                                 }
                             )
                         }
@@ -1006,14 +1045,21 @@ fun ActionOverviewSection(
 
 @Composable
 fun ActionOverviewCard(
+    disabled: Boolean = false,
     action: ActionOverview,
     count: Int,
-    onClick: (ActionOverview) -> Unit
+    onClick: (ActionOverview) -> Unit,
+    showToast: (String) -> Unit
 ) {
     Box(
         modifier = Modifier
-            .clickable {
-                onClick(action)
+            .alpha(if (disabled) 0.5f else 1f)
+            .clickable() {
+                if (disabled) {
+                    showToast("Access restricted to subcontractors.")
+                } else {
+                    onClick(action)
+                }
             }
             .fillMaxWidth()
             .height(125.dp)

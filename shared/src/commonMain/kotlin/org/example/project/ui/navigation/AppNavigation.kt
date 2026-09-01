@@ -2,6 +2,8 @@ package org.example.project.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -83,19 +85,25 @@ fun AppNavigation() {
         }
     }
 
-    LaunchedEffect(Unit) {
-        // Check and consume any pending notification tap from cold startup
-        appManager.pendingNotificationTap?.let { notification ->
-            appManager.pendingNotificationTap = null // Consume
-            val authPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AuthPreferences>()
-            if (authPreferences.isLoggedIn()) {
-                AppNotificationClickListener(
-                    notification = notification,
-                    navController = navController
-                )
+    LaunchedEffect(navController) {
+        navController.currentBackStackEntryFlow.collect { backStackEntry ->
+            val route = backStackEntry.destination.route
+            if (route == Screens.TabBar.route) {
+                appManager.pendingNotificationTap?.let { notification ->
+                    appManager.pendingNotificationTap = null // Consume
+                    val authPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AuthPreferences>()
+                    if (authPreferences.isLoggedIn()) {
+                        AppNotificationClickListener(
+                            notification = notification,
+                            navController = navController
+                        )
+                    }
+                }
             }
         }
+    }
 
+    LaunchedEffect(Unit) {
         appManager.notificationTapEvent.collect { notification ->
             appManager.pendingNotificationTap = null // Ensure reset
             println(notification)
@@ -221,6 +229,9 @@ fun AppNavigation() {
             )
         }
         composable(Screens.TabBar.route) {
+            val homeViewModel: org.example.project.homescreen.HomeScreenViewModel = koinInject()
+            val isProjectListEmpty by homeViewModel.isProjectListEmpty.collectAsStateWithLifecycle()
+
             AppTabBar(
                 onProfileClick = {
                     navController.navigate(Screens.ProfileScreen.route)
@@ -235,7 +246,11 @@ fun AppNavigation() {
                         }
 
                         ActionOverview.PERMIT_TO_WORK -> {
-                            navController.navigate(Screens.PermitToWorkListScreen.route)
+                            if (isProjectListEmpty) {
+                                navController.navigate(Screens.SubContractorRestrictionScreen.route)
+                            } else {
+                                navController.navigate(Screens.PermitToWorkListScreen.route)
+                            }
                         }
 
                         ActionOverview.OBSERVATIONS -> {
@@ -277,6 +292,7 @@ fun AppNavigation() {
                 onToolboxTalksClicked = { navController.navigate(Screens.ToolBoxTalkListScreen.route) },
                 onPermitDetailClick = { permitId -> navController.navigate("${Screens.PermitDetailScreen.route}/$permitId") },
                 onNavigateToProject = { groupId, groupCode -> navController.navigate("${Screens.ProjectDetailScreen.route}/${groupId}/${groupCode}") },
+                onNavigateToProfile = { userId -> navController.navigate("${Screens.ProfileScreen.route}/${userId}")},
                 onLogout = {
                     navController.navigate(Screens.Login.route) {
                         popUpTo(0) {
@@ -284,6 +300,30 @@ fun AppNavigation() {
                         }
                     }
                 }
+            )
+        }
+        composable(
+            route = Screens.ProfileScreenWithArguments.route,
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.savedStateHandle.get<Int>("userId") ?: -1
+            ProfileScreen(
+                userId = userId,
+                isViewProfile = true,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screens.SubContractorRestrictionScreen.route) {
+            org.example.project.ui.screens.SubContractorRestrictionScreen(
+                isPermitSection = true,
+                onBackClicked = { navController.popBackStack() }
             )
         }
         composable(Screens.PreTaskListScreen.route) {

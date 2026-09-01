@@ -5,16 +5,19 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.AuthRepository
+import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 import org.example.project.manager.AppManager
 
 class ProfileViewModel(
     private val preferences: AuthPreferences,
     private val repository: AuthRepository,
-    private val appManager: AppManager
+    private val appManager: AppManager,
+    private val projectRepository: ProjectRepository
 ): ViewModel() {
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Ready())
     val uiState = _uiState.asStateFlow()
@@ -56,6 +59,25 @@ class ProfileViewModel(
                     )
                     preferences.saveLoggedInUser(updatedUser)
                     user = updatedUser
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = ProfileUiState.Error(
+                        message = response.message
+                    )
+                }
+            }
+        }
+    }
+    fun fetchUserDetails(userId: Int) {
+        _uiState.value = ProfileUiState.Loading
+        viewModelScope.launch {
+            val response = projectRepository.viewProjectMember(
+                userId
+            )
+            when(response) {
+                is NetworkResult.Success -> {
+                    _uiState.value = ProfileUiState.Ready()
+                    user = response.data
                 }
                 is NetworkResult.Error -> {
                     _uiState.value = ProfileUiState.Error(

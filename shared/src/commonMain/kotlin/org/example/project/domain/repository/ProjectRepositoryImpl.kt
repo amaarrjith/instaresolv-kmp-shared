@@ -13,6 +13,7 @@ import org.example.project.data.model.ProjectDetail
 import org.example.project.data.model.ProjectDetailRequest
 import org.example.project.data.model.ProjectListRequest
 import org.example.project.data.model.ProjectListResponse
+import org.example.project.data.model.ProjectUserViewRequest
 import org.example.project.data.model.UserResponse
 import org.example.project.data.model.ViewProjectRequest
 import org.example.project.data.model.ViewProjectResponse
@@ -221,6 +222,14 @@ class ProjectRepositoryImpl(
             org.example.project.data.model.EmployeeAllListRequest(
                 pageNumber = pageNumber,
                 searchKey = searchKey
+            )
+        )
+    }
+
+    override suspend fun viewProjectMember(userId: Int): NetworkResult<UserResponse> {
+        return apiService.viewGroupMember(
+            ProjectUserViewRequest(
+                userId = userId
             )
         )
     }

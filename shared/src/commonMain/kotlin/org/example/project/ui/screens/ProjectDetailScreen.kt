@@ -481,7 +481,11 @@ fun  ProjectDetailScreenContent(
     if (showLeaveProjectDialog.value != null) {
         AppExitDialog(
             title = stringResource(Res.string.removeUser),
-            description = "Are you sure you want to ic_rejected this user",
+            description =  if (showLeaveProjectDialog.value?.userId == loggedInUserId) {
+                "Are you sure you want to leave this project ?"
+            } else {
+                "Are you sure you want to remove this user ?"
+            },
             visible = true,
             onConfirm = {
                 val member = showLeaveProjectDialog.value!!

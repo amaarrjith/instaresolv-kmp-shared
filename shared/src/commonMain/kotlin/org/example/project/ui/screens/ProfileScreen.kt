@@ -65,10 +65,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.project.ui.components.AppConfirmationDialog
 import org.example.project.ui.components.AppExitDialog
+import org.example.project.ui.components.AppImagePreviewDialog
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun ProfileScreen(
+    userId: Int? = null,
+    isViewProfile: Boolean = false,
     onBack: () -> Unit
 ) {
     val viewModel: ProfileViewModel = koinInject()
@@ -77,11 +80,21 @@ fun ProfileScreen(
     var isLogoutAlertShown by remember {
         mutableStateOf(false)
     }
+    var previewImageUrl by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        if (userId != null) {
+            viewModel.fetchUserDetails(userId)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 ProfileScreenTopBar(
+                    isViewProfile = isViewProfile,
                     uiState = uiState,
                     onEditClick = {
                         if (!isLogoutLoading) {
@@ -149,17 +162,24 @@ fun ProfileScreen(
                         }
                         ProfileUiState.isEditing -> {
                             ProfileEditScreen(
-                                viewModel = viewModel
+                                viewModel = viewModel,
+                                onImageClick = { url ->
+                                    previewImageUrl = url
+                                }
                             )
                         }
                         is ProfileUiState.Ready -> {
                             ProfileScreenContent(
+                                isViewProfile = isViewProfile,
                                 uiState = uiState.value as ProfileUiState.Ready,
                                 viewModel = viewModel,
                                 onLogout = {
                                     if (!isLogoutLoading) {
                                         isLogoutAlertShown = true
                                     }
+                                },
+                                onImageClick = { url ->
+                                    previewImageUrl = url
                                 }
                             )
                         }
@@ -181,27 +201,44 @@ fun ProfileScreen(
                     ) { }
             )
         }
+
+        previewImageUrl?.let { url ->
+            AppImagePreviewDialog(
+                imageUrl = url,
+                onDismiss = { previewImageUrl = null }
+            )
+        }
     }
 }
 
 @Composable
 fun ProfileScreenContent(
+    isViewProfile: Boolean,
     uiState: ProfileUiState.Ready,
     viewModel: ProfileViewModel,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onImageClick: (String) -> Unit = {}
 ) {
     var logoutAlertShown by remember {
         mutableStateOf(false)
     }
+    val profileImageUrl = viewModel.user?.profileImage
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
         WebImageView(
-            imageUrl = viewModel.user?.profileImage,
+            imageUrl = profileImageUrl,
             modifier = Modifier
-                .clip(CircleShape)
                 .size(80.dp)
+                .clip(CircleShape)
+                .then(
+                    if (!profileImageUrl.isNullOrBlank()) {
+                        Modifier.clickable {
+                            onImageClick(profileImageUrl)
+                        }
+                    } else Modifier
+                )
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -225,26 +262,29 @@ fun ProfileScreenContent(
     )
     ProfileScreenItem(stringResource(Res.string.company), viewModel.user?.company?.takeIf { it.isNotBlank() } ?: "-")
     Spacer(modifier = Modifier.height(60.dp))
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        AppPrimaryButton(
-            title = stringResource(Res.string.logout),
-            isLoading = uiState.isLogoutLoading,
-            enabled = !uiState.isLogoutLoading,
-            onClick = {
-                if (!uiState.isLogoutLoading) {
-                    onLogout()
-                }
-            },
-        )
+    if (!isViewProfile) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            AppPrimaryButton(
+                title = stringResource(Res.string.logout),
+                isLoading = uiState.isLogoutLoading,
+                enabled = !uiState.isLogoutLoading,
+                onClick = {
+                    if (!uiState.isLogoutLoading) {
+                        onLogout()
+                    }
+                },
+            )
+        }
     }
 }
 
 @Composable
 fun ProfileEditScreen(
-    viewModel: ProfileViewModel
+    viewModel: ProfileViewModel,
+    onImageClick: (String) -> Unit = {}
 ) {
     var name by remember { mutableStateOf(viewModel.user?.name ?: "") }
     var email by remember { mutableStateOf(viewModel.user?.email ?: "") }
@@ -280,7 +320,16 @@ fun ProfileEditScreen(
             ) {
                 WebImageView(
                     imageUrl = profileImage,
-                    modifier = Modifier.fillMaxSize().clip(CircleShape)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .then(
+                            if (profileImage.isNotBlank()) {
+                                Modifier.clickable {
+                                    onImageClick(profileImage)
+                                }
+                            } else Modifier
+                        )
                 )
 
                 if (isImageUploading.value) {
@@ -368,6 +417,7 @@ fun ProfileEditScreen(
 
 @Composable
 fun ProfileScreenTopBar(
+    isViewProfile: Boolean,
     uiState: State<ProfileUiState>,
     onEditClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -392,7 +442,7 @@ fun ProfileScreenTopBar(
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = stringResource(Res.string.profile).uppercase(),
+            text = stringResource(if (isViewProfile) Res.string.profile else Res.string.viewProfile).uppercase(),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold
@@ -400,7 +450,7 @@ fun ProfileScreenTopBar(
             color = AppColors.Black
         )
         Spacer(modifier = Modifier.weight(1f))
-        if (uiState.value !is ProfileUiState.isEditing) {
+        if (uiState.value !is ProfileUiState.isEditing && !isViewProfile) {
             Row(
                 modifier = Modifier
                     .padding(end = 26.dp),

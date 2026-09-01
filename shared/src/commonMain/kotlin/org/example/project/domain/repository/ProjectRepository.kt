@@ -97,4 +97,8 @@ interface ProjectRepository {
         pageNumber: Int,
         searchKey: String
     ): NetworkResult<List<EmployeeData>>
+
+    suspend fun viewProjectMember(
+        userId: Int
+    ): NetworkResult<UserResponse>
 }

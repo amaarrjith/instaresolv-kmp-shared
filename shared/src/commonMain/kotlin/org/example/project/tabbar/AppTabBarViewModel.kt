@@ -23,6 +23,8 @@ class AppTabBarViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
+    val user = authPreferences.getLoggedInUser()
+
     init {
         getHomeContents(showRefreshSpinner = false)
     }
