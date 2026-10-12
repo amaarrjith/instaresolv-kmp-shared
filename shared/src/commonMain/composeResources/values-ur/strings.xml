@@ -354,6 +354,13 @@
     <string name="resolve1">حل کریں</string>
     <string name="message">پیغام</string>
     <string name="authorizedPerson">مجاز شخص</string>
+    <string name="subcontractorAuthorizedPerson">ذیلی ٹھیکیدار کا مجاز شخص</string>
+    <string name="subContractorAuthorisation">ذیلی ٹھیکیدار کی اجازت</string>
+    <string name="subcontractorAuthorisation">ذیلی ٹھیکیدار کی اجازت</string>
+    <string name="subContractorAuthorizerName">ذیلی ٹھیکیدار کے مجاز شخص کا نام</string>
+    <string name="subcontractorAuthorizerName">ذیلی ٹھیکیدار کے مجاز شخص کا نام</string>
+    <string name="instaresolvAuthorizerName">انسٹاریزولو کے مجاز شخص کا نام</string>
+    <string name="instaResolvAuthorizerName">انسٹاریزولو کے مجاز شخص کا نام</string>
     <string name="back">واپس</string>
     <string name="createObservation">بنائیں - مشاہدہ</string>
     <string name="endTime1">اختتامی وقت *</string>

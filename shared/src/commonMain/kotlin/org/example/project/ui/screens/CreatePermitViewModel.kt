@@ -25,6 +25,8 @@ import org.example.project.utilities.formatTimestamp
 import kotlin.collections.emptyList
 import kotlin.time.Clock
 
+import org.example.project.data.model.CompanyType
+import org.example.project.data.model.GroupUser
 import org.example.project.data.repository.PermitDraftRepository
 
 data class CreatePermitUiState(
@@ -47,6 +49,7 @@ data class CreatePermitUiState(
     val permitDateMillis: Long? = null,
     val startTime: String = "",
     val endTime: String = "",
+    val contractorName: String = "",
     val isSubmitting: Boolean = false,
     var submitSuccess: Boolean = false,
     val submitError: String? = null,
@@ -59,10 +62,26 @@ class CreatePermitViewModel(
     private val permitDraftRepository: PermitDraftRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CreatePermitUiState())
+    val loggedUser = authPreferences.getLoggedInUser()
+    private val loggedUserInfo = authPreferences.getLoggedInUserInfo()
+
+    val isSubContractor: Boolean =
+        CompanyType.fromInt(loggedUser?.userRole) == CompanyType.SUB_CONTRACTOR
+
+    val defaultContractorName: String = if (isSubContractor) {
+        loggedUser?.company?.takeIf { it.isNotBlank() }
+            ?: loggedUserInfo?.companyName?.takeIf { it.isNotBlank() }
+            ?: ""
+    } else {
+        "InstaResolv Private Limited"
+    }
+
+    private val _uiState = MutableStateFlow(CreatePermitUiState(contractorName = defaultContractorName))
     val uiState: StateFlow<CreatePermitUiState> = _uiState.asStateFlow()
 
-    val logginedUser = authPreferences.getLoggedInUser()
+    fun updateContractorName(name: String) {
+        _uiState.update { it.copy(contractorName = name) }
+    }
 
     init {
         fetchProjects()
@@ -74,7 +93,7 @@ class CreatePermitViewModel(
             when (val result = permitRepository.getPermitProjectList(request)) {
                 is NetworkResult.Success -> {
                     // Give only the projects of the user where he is requestor (assuming userRole == 1)
-                    val mappedProjects = result.data?.groups?.filter { it.userRole == 1 }?.map { it.toProject() } ?: emptyList()
+                    val mappedProjects = result.data.groups.map { it.toProject() } ?: emptyList()
                     _uiState.update { it.copy(projects = mappedProjects) }
                 }
                 is NetworkResult.Error -> {}
@@ -99,8 +118,15 @@ class CreatePermitViewModel(
             )
             when (val result = permitRepository.getPermitUserList(request)) {
                 is NetworkResult.Success -> {
-                    val mappedUsers = result.data?.users?.map { it.toGroupUser() } ?: emptyList()
-                    _uiState.update { it.copy(authorizedUsers = mappedUsers) }
+                    var mappedUsers: List<GroupUser> = emptyList()
+                    mappedUsers = if (isSubContractor) {
+                        result.data.users.filter { it.userRole == 2 }.map { it.toGroupUser() }
+                    } else {
+                        result.data.users.map { it.toGroupUser() }
+                    }
+                    _uiState.update {
+                        it.copy(authorizedUsers = mappedUsers)
+                    }
                 }
                 is NetworkResult.Error -> {}
             }
@@ -218,6 +244,11 @@ class CreatePermitViewModel(
                 return
             }
 
+            isSubContractor && currentState.contractorName.isBlank() -> {
+                _uiState.update { it.copy(submitError = "Please enter contractor name") }
+                return
+            }
+
             currentState.selectedUser == null -> {
                 _uiState.update { it.copy(submitError = "Please select an authorized person") }
                 return
@@ -266,8 +297,10 @@ class CreatePermitViewModel(
 
                 validFrom = convertTo24HourFormat(currentState.startTime, true), // UTC time mapping may be required
                 endTime = convertTo24HourFormat(currentState.endTime, true), // UTC time mapping may be required
-                contractorName = "InstaResolv Private Limited",
-                requestContractor = logginedUser?.name ?: "Unknown",
+                contractorName = currentState.contractorName.ifBlank {
+                    if (isSubContractor) "" else "InstaResolv Private Limited"
+                },
+                requestContractor = loggedUser?.name ?: "Unknown",
                 signatureImageUrl = currentState.signatureUrl,
                 images = emptyList(),
                 project = PermitValidityProject(
@@ -319,6 +352,7 @@ class CreatePermitViewModel(
                        state.permitDateMillis != null ||
                        state.startTime.isNotBlank() ||
                        state.endTime.isNotBlank() ||
+                       (isSubContractor && state.contractorName.isNotBlank()) ||
                        state.certificateValidityAnswers.any { it.value.isNotBlank() } ||
                        state.generalConditionAnswers.any { it.value.isNotBlank() } ||
                        state.generalConditionRemarks.any { it.value.isNotBlank() } ||
@@ -347,7 +381,9 @@ class CreatePermitViewModel(
                 signatureDateMillis = state.signatureDateMillis,
                 signatureTime = state.signatureTime,
                 reportedBy = user?.name ?: "",
-                contractorName = "InstaResolv Private Limited",
+                contractorName = state.contractorName.ifBlank {
+                    if (isSubContractor) "" else "InstaResolv Private Limited"
+                },
                 createdAt = run {
                     val localDateTime = Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
                     val year = localDateTime.year
@@ -401,11 +437,14 @@ class CreatePermitViewModel(
             }
         } ?: emptyMap()
 
+        val restoredContractorName = draft.contractorName?.takeIf { it.isNotBlank() } ?: defaultContractorName
+
         _uiState.update { state ->
             state.copy(
                 draftId = draft.id,
                 selectedProject = project,
                 selectedUser = user,
+                contractorName = restoredContractorName,
                 permitDateMillis = draft.permitDateMillis,
                 startTime = draft.startTime ?: "",
                 endTime = draft.endTime ?: "",
@@ -429,7 +468,7 @@ class CreatePermitViewModel(
         }
     }
 
-    fun getDraftById(draftId: Long): org.example.project.shared.db.PermitDraft? {
+    suspend fun getDraftById(draftId: Long): org.example.project.shared.db.PermitDraft? {
         return permitDraftRepository.getDraftById(draftId)
     }
 }

@@ -60,14 +60,14 @@ import org.example.project.ui.components.WebImageView
 import org.example.project.data.settings.formatDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PermitDraftListScreen(
     onBackClicked: () -> Unit,
     onDraftClicked: (Long) -> Unit
 ) {
-    val viewModel: PermitToWorkListViewModel = koinInject()
+    val viewModel: PermitToWorkListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }

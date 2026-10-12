@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    android:paddingTop="35dp">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="35dp"
+        android:paddingHorizontal="15dp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnClose"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/ic_mt_close"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnUndo"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="15dp"
+            android:src="@drawable/ic_mt_redo"/>
+            
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnRedo"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="25dp"
+            android:src="@drawable/ic_mt_undo"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnShape"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="25dp"
+            android:src="@drawable/ic_mt_shapes"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnText"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="25dp"
+            android:src="@drawable/ic_mt_draw_text"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnDraw"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/ic_mt_pen"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="25dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_mt_emoji"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <ja.burhanrashid52.photoeditor.PhotoEditorView
+        android:id="@+id/previewImage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="25dp"/>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/shapePanel"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:orientation="horizontal"
+        android:background="#DDFFFFFF"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="10dp">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/shapeCircle"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="8dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/shape_item_selector"
+            android:tint="@color/shape_tint_selector"
+            android:src="@drawable/ic_mt_circle"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/shapeArrow"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="8dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/shape_item_selector"
+            android:tint="@color/shape_tint_selector"
+            android:src="@drawable/ic_mt_arrow"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/shapeRect"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="8dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/shape_item_selector"
+            android:tint="@color/shape_tint_selector"
+            android:src="@drawable/ic_mt_rect"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/shapeLine"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="8dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/shape_item_selector"
+            android:tint="@color/shape_tint_selector"
+            android:src="@drawable/ic_mt_line"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never"
+        android:layout_gravity="center"
+        android:layout_marginBottom="25dp"
+        android:layout_marginHorizontal="10dp"
+        android:scrollbars="none"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:id="@+id/llTextColorPickerView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:gravity="center"/>
+    </HorizontalScrollView>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/llSeekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="10dp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/label_text_size"/>
+            
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="10"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="20dp"/>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnEraser"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_mt_eraser"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="45dp"
+        android:gravity="center"
+        android:layout_marginHorizontal="25dp"
+        android:text="@string/btn_next_caps"
+        android:textAllCaps="true"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:fontFamily="@font/poppins_medium"
+        android:background="@drawable/bg_primary_button"
+        android:elevation="4dp"
+        android:stateListAnimator="@null"/>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

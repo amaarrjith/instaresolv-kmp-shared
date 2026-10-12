@@ -48,12 +48,6 @@ import org.example.project.ui.components.imagepicker.AppImagePicker
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-private enum class ImageFlowState {
-    IDLE,
-    CROP,
-    ANNOTATE
-}
-
 @Composable
 fun AppImageCreateBox(
     imageUrl: String?,
@@ -68,11 +62,13 @@ fun AppImageCreateBox(
     val showPreview = remember { mutableStateOf(false) }
     val isUploading = remember { mutableStateOf(false) }
     val isAIDescriptionLoading = remember { mutableStateOf(false) }
-
-    var imageFlowState by remember { mutableStateOf(ImageFlowState.IDLE) }
-    var rawPickedBytes by remember { mutableStateOf<ByteArray?>(null) }
-    var croppedBytes by remember { mutableStateOf<ByteArray?>(null) }
     var finalBytesToUpload by remember { mutableStateOf<ByteArray?>(null) }
+
+    val nativeEditorLauncher = rememberNativeImageEditorLauncher { editedBytes ->
+        if (editedBytes != null) {
+            finalBytesToUpload = editedBytes
+        }
+    }
 
     AppImagePicker(
         showPicker = showPicker,
@@ -87,8 +83,7 @@ fun AppImageCreateBox(
             onDescriptionChange(newDesc)
         },
         onImagePicked = { bytes ->
-            rawPickedBytes = bytes
-            imageFlowState = ImageFlowState.CROP
+            nativeEditorLauncher.launch(bytes)
         },
         onImageUploaded = { url ->
             finalBytesToUpload = null
@@ -112,41 +107,6 @@ fun AppImageCreateBox(
         AppImagePreviewDialog(
             imageUrl = imageUrl,
             onDismiss = { showPreview.value = false }
-        )
-    }
-
-    // Sequential Step 1: Crop Dialog
-    if (imageFlowState == ImageFlowState.CROP && rawPickedBytes != null) {
-        AppImageCropDialog(
-            imageBytes = rawPickedBytes,
-            onDismiss = {
-                imageFlowState = ImageFlowState.IDLE
-                rawPickedBytes = null
-            },
-            onCropApplied = { cropped ->
-                croppedBytes = cropped
-                imageFlowState = ImageFlowState.ANNOTATE
-            }
-        )
-    }
-
-    // Sequential Step 2: Edit / Annotate Dialog
-    if (imageFlowState == ImageFlowState.ANNOTATE && (croppedBytes != null || rawPickedBytes != null)) {
-        val bytesForEditing = croppedBytes ?: rawPickedBytes!!
-        AppImageEditorDialog(
-            imageBytes = bytesForEditing,
-            onDismiss = {
-                imageFlowState = ImageFlowState.IDLE
-                rawPickedBytes = null
-                croppedBytes = null
-            },
-            onEditApplied = { finalAnnotatedBytes ->
-                imageFlowState = ImageFlowState.IDLE
-                rawPickedBytes = null
-                croppedBytes = null
-                // Step 3: Automatically upload final cropped & annotated image
-                finalBytesToUpload = finalAnnotatedBytes
-            }
         )
     }
 

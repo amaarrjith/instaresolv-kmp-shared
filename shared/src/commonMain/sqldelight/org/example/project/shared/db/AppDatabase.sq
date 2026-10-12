@@ -20,6 +20,8 @@ CREATE TABLE ObservationDraft (
     userId INTEGER NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_observation_draft_user ON ObservationDraft(userId);
+
 insertDraft:
 INSERT INTO ObservationDraft(title, location, description, groupSpecified, groupJson, reportedBy, customResponsiblePersonName, responsiblePersonId, responsiblePersonName, responsiblePersonEmail, audioLink, imageDescriptionsJson, notificationToJson, createdAt, userId)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
@@ -50,6 +52,9 @@ SELECT * FROM ObservationDraft;
 getDraftsByUserId:
 SELECT * FROM ObservationDraft WHERE userId = ? ORDER BY id DESC;
 
+getDraftById:
+SELECT * FROM ObservationDraft WHERE id = ?;
+
 deleteDraft:
 DELETE FROM ObservationDraft WHERE id = ?;
 
@@ -68,6 +73,8 @@ CREATE TABLE ViolationDraft (
     createdAt TEXT,
     userId INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_violation_draft_user ON ViolationDraft(userId);
 
 insertViolationDraft:
 INSERT INTO ViolationDraft(facilitiesId, facilityJson, employeeName, employeeId, violationDate, violationDateMillis, location, description, imagesJson, reportedBy, createdAt, userId)
@@ -96,6 +103,9 @@ SELECT * FROM ViolationDraft;
 getViolationDraftsByUserId:
 SELECT * FROM ViolationDraft WHERE userId = ? ORDER BY id DESC;
 
+getViolationDraftById:
+SELECT * FROM ViolationDraft WHERE id = ?;
+
 deleteViolationDraft:
 DELETE FROM ViolationDraft WHERE id = ?;
 
@@ -119,6 +129,8 @@ CREATE TABLE PermitDraft (
     createdAt TEXT,
     userId INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_permit_draft_user ON PermitDraft(userId);
 
 insertPermitDraft:
 INSERT INTO PermitDraft(permitTypeId, permitTypeJson, projectJson, userJson, permitDateMillis, startTime, endTime, certificateValidityAnswersJson, generalConditionAnswersJson, generalConditionRemarksJson, signatureUrl, signatureDateMillis, signatureTime, reportedBy, contractorName, createdAt, userId)
@@ -152,6 +164,9 @@ SELECT * FROM PermitDraft;
 getPermitDraftsByUserId:
 SELECT * FROM PermitDraft WHERE userId = ? ORDER BY id DESC;
 
+getPermitDraftById:
+SELECT * FROM PermitDraft WHERE id = ?;
+
 deletePermitDraft:
 DELETE FROM PermitDraft WHERE id = ?;
 
@@ -166,6 +181,8 @@ CREATE TABLE LessonLearnedDraft (
     createdAt TEXT,
     userId INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_lesson_learned_draft_user ON LessonLearnedDraft(userId);
 
 insertLessonLearnedDraft:
 INSERT OR REPLACE INTO LessonLearnedDraft (
@@ -206,6 +223,8 @@ CREATE TABLE IncidentDraft (
     createdAt TEXT,
     userId INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_incident_draft_user ON IncidentDraft(userId);
 
 insertIncidentDraft:
 INSERT OR REPLACE INTO IncidentDraft (
@@ -251,6 +270,8 @@ CREATE TABLE ToolBoxTalkDraft (
     userId INTEGER NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_toolbox_talk_draft_user ON ToolBoxTalkDraft(userId);
+
 insertToolBoxTalkDraft:
 INSERT OR REPLACE INTO ToolBoxTalkDraft (
     id,
@@ -291,6 +312,8 @@ CREATE TABLE PreTaskQuestion (
     imageUrl TEXT NOT NULL,
     updatedTime TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_pretask_question_content ON PreTaskQuestion(contentId);
 
 insertPreTaskContent:
 INSERT OR REPLACE INTO PreTaskContent(id, title, updatedTime, sortOrder)
@@ -346,6 +369,8 @@ CREATE TABLE PreTaskDraft (
     createdAt TEXT,
     userId INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_pretask_draft_user ON PreTaskDraft(userId);
 
 insertPreTaskDraft:
 INSERT OR REPLACE INTO PreTaskDraft(
@@ -441,6 +466,8 @@ CREATE TABLE InspectionDraft (
     createdAt TEXT,
     userId INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_inspection_draft_user ON InspectionDraft(userId);
 
 insertInspectionDraft:
 INSERT OR REPLACE INTO InspectionDraft(

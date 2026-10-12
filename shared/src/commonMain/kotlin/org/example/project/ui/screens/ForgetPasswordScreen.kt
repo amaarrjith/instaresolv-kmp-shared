@@ -43,7 +43,7 @@ import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -52,7 +52,7 @@ import instaresolv.shared.generated.resources.*
 fun ForgetPasswordScreen(
     onBackButtonPressed: () -> Unit,
 ) {
-    val viewModel: ForgetPasswordViewModel = koinInject()
+    val viewModel: ForgetPasswordViewModel = koinViewModel()
     val email = remember { mutableStateOf("") }
     val uiState = viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()

@@ -6,4 +6,11 @@
     <string name="access_restricted_description">This section is currently unavailable for subcontractor accounts. Please contact your administrator for more information.</string>
     <string name="permit_restriction_description">To access the Permit module, you must be a member of at least one project</string>
     <string name="no_project_assigned">No Project Assigned</string>
+    <string name="subcontractorAuthorizedPerson">Subcontractor Authorized Person</string>
+    <string name="subContractorAuthorisation">Sub Contractor Authorisation</string>
+    <string name="subcontractorAuthorisation">Sub Contractor Authorisation</string>
+    <string name="subContractorAuthorizerName">Sub Contractor Authorizer Name</string>
+    <string name="subcontractorAuthorizerName">Sub Contractor Authorizer Name</string>
+    <string name="instaresolvAuthorizerName">InstaResolv Authorizer Name</string>
+    <string name="instaResolvAuthorizerName">InstaResolv Authorizer Name</string>
 </resources>

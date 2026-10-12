@@ -31,7 +31,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.platform.LocalDensity
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AddEmployeeBlock(
@@ -42,7 +42,7 @@ fun AddEmployeeBlock(
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     
-    val viewModel: AddEmployeeViewModel = koinInject()
+    val viewModel: AddEmployeeViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
     var employeeCode by remember { mutableStateOf("") }

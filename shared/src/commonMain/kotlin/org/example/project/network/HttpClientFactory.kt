@@ -27,7 +27,11 @@ import org.example.project.data.settings.AuthPreferences
 import io.ktor.client.request.header
 import org.example.project.getPlatform
 
-internal const val BASE_URL = "https://instaresolv-dev.zoondia.org/api/"
+import org.example.project.config.AppConfig
+
+internal val BASE_URL: String
+    get() = AppConfig.baseUrl
+
 
 internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, appPreferences: AppPreferences) {
     install(ContentNegotiation) {
@@ -46,6 +50,7 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, 
 
     install(Auth) {
         bearer {
+            cacheTokens = false
             loadTokens {
                 val access = authPreferences.getAccessToken()
                 val refresh = authPreferences.getRefreshToken()
@@ -92,13 +97,15 @@ internal fun HttpClientConfig<*>.commonConfig(authPreferences: AuthPreferences, 
         }
     }
 
-    install(Logging) {
-        logger = object : Logger {
-            override fun log(message: String) {
-                println("KTOR => $message")
+    if (AppConfig.isLoggingEnabled) {
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    println("KTOR => $message")
+                }
             }
+            level = LogLevel.ALL
         }
-        level = LogLevel.ALL
     }
 
     defaultRequest {

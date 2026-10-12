@@ -354,6 +354,13 @@
     <string name="resolve1">Resolve</string>
     <string name="message">Message</string>
     <string name="authorizedPerson">Authorized Person</string>
+    <string name="subcontractorAuthorizedPerson">Subcontractor Authorized Person</string>
+    <string name="subContractorAuthorisation">Sub Contractor Authorisation</string>
+    <string name="subcontractorAuthorisation">Sub Contractor Authorisation</string>
+    <string name="subContractorAuthorizerName">Sub Contractor Authorizer Name</string>
+    <string name="subcontractorAuthorizerName">Sub Contractor Authorizer Name</string>
+    <string name="instaresolvAuthorizerName">InstaResolv Authorizer Name</string>
+    <string name="instaResolvAuthorizerName">InstaResolv Authorizer Name</string>
     <string name="back">Back</string>
     <string name="createObservation">CREATE - OBSERVATION</string>
     <string name="endTime1">End Time *</string>

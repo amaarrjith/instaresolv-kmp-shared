@@ -62,7 +62,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -71,7 +71,7 @@ fun PermitDetailScreen(
     id: Int,
     onBackClicked: () -> Unit
 ) {
-    val viewModel: PermitDetailViewModel = koinInject()
+    val viewModel: PermitDetailViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val userType by viewModel.userType.collectAsState()
     val authorizerName by viewModel.authorizerName.collectAsState()
@@ -104,6 +104,9 @@ fun PermitDetailScreen(
     val certificateClosureDate by viewModel.certificateClosureDate.collectAsState()
     val certificateClosureTime by viewModel.certificateClosureTime.collectAsState()
     val isSubmittingCertificateClosure by viewModel.isSubmittingCertificateClosure.collectAsState()
+
+    val authorizerPersons by viewModel.authorizerPersons.collectAsState()
+    val selectedAuthorizerPerson by viewModel.selectedAuthorizerPerson.collectAsState()
 
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
 
@@ -212,6 +215,8 @@ fun PermitDetailScreen(
                         authorizerName = authorizerName,
                         hsePersons = hsePersons,
                         selectedHsePerson = selectedHsePerson,
+                        authorizerPersons = authorizerPersons,
+                        selectedAuthorizerPerson = selectedAuthorizerPerson,
                         msraNumber = msraNumber,
                         signatureUrl = signatureUrl,
                         signatureDate = signatureDate,
@@ -286,6 +291,8 @@ fun PermitDetailContent(
     authorizerName: String,
     hsePersons: List<GroupUser>,
     selectedHsePerson: GroupUser?,
+    authorizerPersons: List<GroupUser>,
+    selectedAuthorizerPerson: GroupUser?,
     msraNumber: String,
     signatureUrl: String?,
     signatureDate: String,
@@ -334,7 +341,48 @@ fun PermitDetailContent(
             PermitValiditySection(data, onImageClick)
             EvidenceImagesSection(data, onImageClick)
 
-            // Authorization Request Form
+            // Subcontractor Authorization Section
+            if (userType == PermitFormUserType.SUBCONTRACTOR_AUTHORIZER) {
+                SubContractorAuthorizerFormSection(
+                    data = data,
+                    authorizerName = authorizerName,
+                    authorizerPersons = authorizerPersons,
+                    selectedAuthorizerPerson = selectedAuthorizerPerson,
+                    signatureUrl = signatureUrl,
+                    signatureDate = signatureDate,
+                    signatureTime = signatureTime,
+                    viewModel = viewModel,
+                    isAuthorizing = isAuthorizing
+                )
+            }
+            if (userType == PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER) {
+                SubContractorAuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick
+                )
+            }
+
+            if (userType == PermitFormUserType.INSTARESOLV_AUTHORIZER) {
+                SubContractorAuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick
+                )
+
+                AuthorizerFormSection(
+                    data = data,
+                    authorizerName = authorizerName,
+                    hsePersons = hsePersons,
+                    selectedHsePerson = selectedHsePerson,
+                    msraNumber = msraNumber,
+                    signatureUrl = signatureUrl,
+                    signatureDate = signatureDate,
+                    signatureTime = signatureTime,
+                    additionalPrecautions = additionalPrecautions,
+                    viewModel = viewModel,
+                    isAuthorizing = isAuthorizing
+                )
+            }
+
             if (userType == PermitFormUserType.AUTHORIZER) {
                 AuthorizerFormSection(
                     data = data,
@@ -979,6 +1027,234 @@ fun AuthorizerFormSection(
             }
         )
     }
+}
+
+
+@Composable
+fun SubContractorAuthorizerFormSection(
+    data: PermitDetailData,
+    authorizerName: String,
+    authorizerPersons: List<GroupUser>,
+    selectedAuthorizerPerson: GroupUser?,
+    signatureUrl: String?,
+    signatureDate: String,
+    signatureTime: String,
+    viewModel: PermitDetailViewModel,
+    isAuthorizing: Boolean
+) {
+    Text(
+        text = stringResource(Res.string.subContractorAuthorisation),
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppTextField(
+        title = stringResource(Res.string.subContractorAuthorizerName),
+        placeholder = stringResource(Res.string.subContractorAuthorizerName),
+        value = authorizerName,
+        onValueChange = {},
+        enabled = false,
+        readOnly = true,
+        isMandatory = true
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppUserDropdown(
+        title = stringResource(Res.string.instaresolvAuthorizerName),
+        isMandatory = true,
+        placeholder = stringResource(Res.string.selectPerson),
+        users = authorizerPersons,
+        selectedUser = selectedAuthorizerPerson,
+        onUserSelected = viewModel::onAuthorizerPersonSelected
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppSignCreateBox(
+        signatureUrl = signatureUrl,
+        onSignatureUploaded = viewModel::onSignatureUploaded,
+        onRemoveSignatureClick = viewModel::onRemoveSignatureClick
+    )
+
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = buildAnnotatedString {
+                    append("Time")
+                },
+                style = textStyle(12.sp, FontWeight.SemiBold)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            AppTimePicker(
+                text = stringResource(Res.string.txt_0000),
+                selectedTime = signatureTime,
+                onTimeSelected = {  },
+                enabled = false
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = buildAnnotatedString {
+                    append("Date")
+                },
+                style = textStyle(12.sp, FontWeight.SemiBold)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            AppDatePicker(
+                text = signatureDate.ifBlank { "YYYY-MM-DD" },
+                onDateSelected = { },
+                selectedDateMillis = null,
+                enabled = false
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        AppPrimaryButton(
+            title = stringResource(Res.string.submit),
+            isLoading = isAuthorizing,
+            onClick = {
+                data.permitId?.let { viewModel.submitSubContractorAuthorization(it) }
+            }
+        )
+    }
+}
+
+@Composable
+fun SubContractorAuthorizerViewerSection(
+    data: PermitDetailData,
+    onImageClick: (String) -> Unit
+) {
+    val subAuth = data.subContractorAuthorization ?: return
+
+    Text(
+        text = stringResource(Res.string.subContractorAuthorisation),
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    if (!subAuth.subContractorAuthorizerName.isNullOrBlank()) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.subContractorAuthorizerName),
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.Black
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subAuth.subContractorAuthorizerName,
+                style = textStyle(12.sp, FontWeight.Bold),
+                color = AppColors.Primary
+            )
+        }
+    }
+
+    if (subAuth.alnasrAuthorizer != null) {
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+        Text(
+            text = stringResource(Res.string.instaresolvAuthorizerName),
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (subAuth.alnasrAuthorizer.image != null) {
+                WebImageView(
+                    imageUrl = subAuth.alnasrAuthorizer.image,
+                    modifier = Modifier.size(36.dp).clip(CircleShape)
+                )
+            } else {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_avatar),
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    tint = Color.Unspecified
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text(
+                    text = subAuth.alnasrAuthorizer.name ?: "N/A",
+                    style = textStyle(14.sp, FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+                if (subAuth.alnasrAuthorizer.email != null) {
+                    Text(
+                        text = subAuth.alnasrAuthorizer.email,
+                        style = textStyle(12.sp, FontWeight.Normal),
+                        color = AppColors.TextGray
+                    )
+                }
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
+    }
+
+    if (!subAuth.signatureImageUrl.isNullOrBlank()) {
+        Text(
+            text = stringResource(Res.string.signature),
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        WebImageView(
+            imageUrl = subAuth.signatureImageUrl,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onImageClick(subAuth.signatureImageUrl) },
+            contentScale = ContentScale.Fit
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (!subAuth.authorizationDate.isNullOrBlank()) {
+            val formattedDate = runCatching {
+                formatDate(
+                    subAuth.authorizationDate,
+                    "yyyy-MM-dd",
+                    "dd MMM yyyy"
+                )
+            }.getOrElse { subAuth.authorizationDate }
+            Text(
+                text = "Date : $formattedDate",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+        if (!subAuth.authorizationTime.isNullOrBlank()) {
+            val formattedTime = runCatching {
+                utcToLocal(
+                    subAuth.authorizationTime,
+                    inputFormat = "HH:mm:ss",
+                    outputFormat = "hh:mm a"
+                )
+            }.getOrElse { subAuth.authorizationTime }
+            Text(
+                text = "Time : $formattedTime",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+    }
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 }
 
 @Composable

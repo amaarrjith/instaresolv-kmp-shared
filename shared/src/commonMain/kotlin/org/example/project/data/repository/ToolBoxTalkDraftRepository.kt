@@ -1,11 +1,14 @@
 package org.example.project.data.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import org.example.project.data.model.CreateToolBoxTalkDraftRequest
 import org.example.project.shared.db.AppDatabase
 import org.example.project.shared.db.ToolBoxTalkDraft
 
 class ToolBoxTalkDraftRepository(private val database: AppDatabase) {
-    fun saveDraft(request: CreateToolBoxTalkDraftRequest) {
+    suspend fun saveDraft(request: CreateToolBoxTalkDraftRequest) = withContext(Dispatchers.IO) {
         val idValue = if (request.id == 0L) null else request.id
         database.appDatabaseQueries.insertToolBoxTalkDraft(
             id = idValue,
@@ -24,15 +27,15 @@ class ToolBoxTalkDraftRepository(private val database: AppDatabase) {
         )
     }
 
-    fun getAllDrafts(userId: Int): List<ToolBoxTalkDraft> {
-        return database.appDatabaseQueries.getToolBoxTalkDraftsByUserId(userId.toLong()).executeAsList()
+    suspend fun getAllDrafts(userId: Int): List<ToolBoxTalkDraft> = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getToolBoxTalkDraftsByUserId(userId.toLong()).executeAsList()
     }
 
-    fun getDraftById(id: Long): ToolBoxTalkDraft? {
-        return database.appDatabaseQueries.getToolBoxTalkDraftById(id).executeAsOneOrNull()
+    suspend fun getDraftById(id: Long): ToolBoxTalkDraft? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getToolBoxTalkDraftById(id).executeAsOneOrNull()
     }
 
-    fun deleteDraft(id: Long) {
+    suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deleteToolBoxTalkDraft(id)
     }
 }

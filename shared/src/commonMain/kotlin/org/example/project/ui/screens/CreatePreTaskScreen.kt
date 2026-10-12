@@ -37,7 +37,7 @@ import org.example.project.typography.textStyle
 import org.example.project.ui.components.*
 import org.example.project.utilites.*
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import kotlinx.serialization.encodeToString
@@ -50,7 +50,7 @@ fun CreatePreTaskScreen(
     isFromDraft: Boolean = false,
     draftId: Long = -1L
 ) {
-    val viewModel: CreatePreTaskViewModel = koinInject()
+    val viewModel: CreatePreTaskViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val showExitPopup = remember { mutableStateOf(false) }

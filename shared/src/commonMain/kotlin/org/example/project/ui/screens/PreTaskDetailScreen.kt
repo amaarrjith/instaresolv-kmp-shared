@@ -36,7 +36,7 @@ import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.utilites.ToastHost
@@ -46,7 +46,7 @@ fun PreTaskDetailScreen(
     preTaskId: Int,
     onBackClicked: () -> Unit
 ) {
-    val viewModel: PreTaskDetailViewModel = koinInject()
+    val viewModel: PreTaskDetailViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     
     var previewImageUrl by remember { mutableStateOf<String?>(null) }

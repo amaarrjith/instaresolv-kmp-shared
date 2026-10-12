@@ -1,11 +1,14 @@
 package org.example.project.data.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import org.example.project.data.model.CreatePreTaskDraftRequest
 import org.example.project.shared.db.AppDatabase
 import org.example.project.shared.db.PreTaskDraft
 
 class PreTaskDraftRepository(private val database: AppDatabase) {
-    fun saveDraft(request: CreatePreTaskDraftRequest) {
+    suspend fun saveDraft(request: CreatePreTaskDraftRequest) = withContext(Dispatchers.IO) {
         val idValue = if (request.id == 0L) null else request.id
         database.appDatabaseQueries.insertPreTaskDraft(
             id = idValue,
@@ -31,15 +34,15 @@ class PreTaskDraftRepository(private val database: AppDatabase) {
         )
     }
 
-    fun getAllDrafts(userId: Int): List<PreTaskDraft> {
-        return database.appDatabaseQueries.getPreTaskDraftsByUserId(userId.toLong()).executeAsList()
+    suspend fun getAllDrafts(userId: Int): List<PreTaskDraft> = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getPreTaskDraftsByUserId(userId.toLong()).executeAsList()
     }
 
-    fun getDraftById(id: Long): PreTaskDraft? {
-        return database.appDatabaseQueries.getPreTaskDraftById(id).executeAsOneOrNull()
+    suspend fun getDraftById(id: Long): PreTaskDraft? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getPreTaskDraftById(id).executeAsOneOrNull()
     }
 
-    fun deleteDraft(id: Long) {
+    suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deletePreTaskDraft(id)
     }
 }

@@ -63,7 +63,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -74,7 +74,7 @@ fun PreTaskListScreen(
     onCreateClicked: () -> Unit = {},
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: PreTaskListViewModel = koinInject()
+    val viewModel: PreTaskListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedPreTaskId by remember { mutableStateOf<Int?>(null) }
@@ -196,7 +196,10 @@ fun PreTaskListScreen(
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize().padding(top = 25.dp),
                             ) {
-                                items(uiState.preTasks.size) { index ->
+                                items(
+                                    count = uiState.preTasks.size,
+                                    key = { index -> uiState.preTasks[index].id }
+                                ) { index ->
                                     if (index >= uiState.preTasks.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.fetchPreTasks(isRefresh = false)

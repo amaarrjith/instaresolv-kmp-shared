@@ -17,6 +17,7 @@ interface PermitRepository {
     suspend fun submitPermitValidity(request: org.example.project.data.model.PermitValiditySubmitRequest): NetworkResult<org.example.project.data.model.PermitValiditySubmitResponse>
     suspend fun getPermitDetail(request: org.example.project.data.model.PermitDetailRequest): NetworkResult<org.example.project.data.model.PermitDetailData>
     suspend fun submitPermitAuthorization(request: org.example.project.data.model.PermitAuthorizationSubmitRequest): NetworkResult<org.example.project.data.model.PermitAuthorizationSubmitResponse>
+    suspend fun submitPermitSubContractorAuthorization(request: org.example.project.data.model.PermitSubContractorAuthorizationSubmitRequest): NetworkResult<CommonModelResponse>
     suspend fun submitPermitAction(request: org.example.project.data.model.PermitActionRequest): NetworkResult<CommonModelResponse>
     suspend fun submitPermitClosureRequest(request: org.example.project.data.model.PermitClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun submitPermitCertificateClosure(request: org.example.project.data.model.PermitCertificateClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>

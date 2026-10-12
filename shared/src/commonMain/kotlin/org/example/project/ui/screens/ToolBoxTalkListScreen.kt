@@ -42,7 +42,7 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -54,7 +54,7 @@ fun ToolBoxTalkListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: ToolBoxTalkListViewModel = koinInject()
+    val viewModel: ToolBoxTalkListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedToolboxTalkId by remember { mutableStateOf<Int?>(null) }
@@ -201,7 +201,10 @@ fun ToolBoxTalkListScreen(
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize().padding(top = 25.dp)
                             ) {
-                                items(uiState.items.size) { index ->
+                                items(
+                                    count = uiState.items.size,
+                                    key = { index -> uiState.items[index].id }
+                                ) { index ->
                                     if (index >= uiState.items.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.fetchToolBoxTalks(isRefresh = false)

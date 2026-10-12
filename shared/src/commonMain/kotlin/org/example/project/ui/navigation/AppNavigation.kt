@@ -15,6 +15,7 @@ import org.example.project.data.model.ProjectMember
 import org.example.project.manager.AppManager
 import org.example.project.navigation.Screens
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.example.project.ui.ActionOverview
 import org.example.project.ui.AppTabBar
 import org.example.project.ui.ForgetPasswordScreen
@@ -229,7 +230,7 @@ fun AppNavigation() {
             )
         }
         composable(Screens.TabBar.route) {
-            val homeViewModel: org.example.project.homescreen.HomeScreenViewModel = koinInject()
+            val homeViewModel: org.example.project.homescreen.HomeScreenViewModel = koinViewModel()
             val isProjectListEmpty by homeViewModel.isProjectListEmpty.collectAsStateWithLifecycle()
 
             AppTabBar(

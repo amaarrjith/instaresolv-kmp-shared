@@ -354,6 +354,13 @@
     <string name="resolve1">Resolver</string>
     <string name="message">Mensaje</string>
     <string name="authorizedPerson">Persona autorizada</string>
+    <string name="subcontractorAuthorizedPerson">Persona autorizada del subcontratista</string>
+    <string name="subContractorAuthorisation">Autorización del subcontratista</string>
+    <string name="subcontractorAuthorisation">Autorización del subcontratista</string>
+    <string name="subContractorAuthorizerName">Nombre del autorizador del subcontratista</string>
+    <string name="subcontractorAuthorizerName">Nombre del autorizador del subcontratista</string>
+    <string name="instaresolvAuthorizerName">Nombre del autorizador de InstaResolv</string>
+    <string name="instaResolvAuthorizerName">Nombre del autorizador de InstaResolv</string>
     <string name="back">Atrás</string>
     <string name="createObservation">CREAR - OBSERVACIÓN</string>
     <string name="endTime1">Hora de finalización *</string>

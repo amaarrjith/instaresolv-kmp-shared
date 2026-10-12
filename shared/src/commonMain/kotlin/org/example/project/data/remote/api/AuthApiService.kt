@@ -401,6 +401,10 @@ interface AuthApiService {
         request: org.example.project.data.model.PermitAuthorizationSubmitRequest
     ): NetworkResult<org.example.project.data.model.PermitAuthorizationSubmitResponse>
 
+    suspend fun submitPermitSubContractorAuthorization(
+        request: org.example.project.data.model.PermitSubContractorAuthorizationSubmitRequest
+    ): NetworkResult<CommonModelResponse>
+
     suspend fun submitPermitAction(
         request: org.example.project.data.model.PermitActionRequest
     ): NetworkResult<CommonModelResponse>

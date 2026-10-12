@@ -16,7 +16,7 @@ import org.example.project.ui.components.imagepicker.ImagePickerUiState
 import org.example.project.ui.components.imagepicker.ImagePickerViewModel
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AppSignPicker(
@@ -24,7 +24,7 @@ fun AppSignPicker(
     onIsUploading: ((Boolean) -> Unit)? = null,
     onSignatureUploaded: (String) -> Unit
 ) {
-    val viewModel: ImagePickerViewModel = koinInject()
+    val viewModel: ImagePickerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     

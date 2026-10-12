@@ -40,7 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.example.project.data.model.LessonLearnedData
 import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ErrorRetryView
@@ -79,7 +79,7 @@ fun LessonsLearnedListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: LessonsLearnedListViewModel = koinInject()
+    val viewModel: LessonsLearnedListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedLessonId by remember { mutableStateOf<Int?>(null) }
@@ -247,7 +247,10 @@ fun LessonsLearnedListScreen(
                                 modifier = Modifier.fillMaxSize()
                                     .padding(top = 25.dp),
                             ) {
-                                items(uiState.lessons.size) { index ->
+                                items(
+                                    count = uiState.lessons.size,
+                                    key = { index -> uiState.lessons[index].id }
+                                ) { index ->
                                     if (index >= uiState.lessons.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.fetchLessonsLearned(isRefresh = false)

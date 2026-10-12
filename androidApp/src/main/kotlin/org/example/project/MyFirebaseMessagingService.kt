@@ -13,23 +13,28 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d("FCM", "New Token: $token")
+        if (BuildConfig.DEBUG) {
+            Log.d("FCM", "New Token: $token")
+        }
         authPreferences.saveFCMToken(token)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.d("FCM", "Message Received from: ${remoteMessage.from}")
+        if (BuildConfig.DEBUG) {
+            Log.d("FCM", "Message Received from: ${remoteMessage.from}")
+        }
         
         val data = remoteMessage.data
-        if (data.isNotEmpty()) {
+        if (data.isNotEmpty() && BuildConfig.DEBUG) {
             Log.d("FCM", "Message data payload: $data")
         }
         
-        // Handle notification payload
-        remoteMessage.notification?.let {
-            Log.d("FCM", "Message Notification Body: ${it.body}")
-            showNotification(it.title ?: "Notification", it.body ?: "", data)
+        val notificationTitle = remoteMessage.notification?.title ?: data["title"] ?: "Notification"
+        val notificationBody = remoteMessage.notification?.body ?: data["body"] ?: data["message"] ?: ""
+
+        if (notificationBody.isNotBlank() || remoteMessage.notification != null) {
+            showNotification(notificationTitle, notificationBody, data)
         }
     }
 
@@ -50,19 +55,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
             android.app.PendingIntent.FLAG_ONE_SHOT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notificationBuilder = android.app.Notification.Builder(this, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle(title)
-            .setContentText(messageBody)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setPriority(android.app.Notification.PRIORITY_HIGH)
-            .setDefaults(android.app.Notification.DEFAULT_ALL)
-
-        val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
+        // Create the NotificationChannel on API 26+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = android.app.NotificationChannel(
                 channelId,
@@ -73,10 +66,30 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
                 enableLights(true)
                 enableVibration(true)
             }
+            val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
 
+        val notificationBuilder = androidx.core.app.NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(messageBody)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(androidx.core.app.NotificationCompat.DEFAULT_ALL)
+
         val notificationId = (System.currentTimeMillis() % 100000).toInt()
-        notificationManager.notify(notificationId, notificationBuilder.build())
+        try {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU ||
+                androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                androidx.core.app.NotificationManagerCompat.from(this).notify(notificationId, notificationBuilder.build())
+            }
+        } catch (e: Exception) {
+            if (BuildConfig.DEBUG) {
+                Log.e("FCM", "Failed to show notification: ${e.message}")
+            }
+        }
     }
 }
+

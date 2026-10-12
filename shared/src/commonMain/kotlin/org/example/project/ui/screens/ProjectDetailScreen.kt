@@ -85,7 +85,7 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.data.model.DesignationTypeResponse
@@ -99,7 +99,7 @@ fun ProjectDetailScreen(
     onEditClick: (ProjectDetail) -> Unit,
     onTrainingClick: (ProjectMember) -> Unit
 ) {
-    val viewModel: ProjectDetailViewModel = koinInject()
+    val viewModel: ProjectDetailViewModel = koinViewModel()
     val uiState = viewModel.uiState.collectAsState()
     val inviteStatus = viewModel.inviteStatus.collectAsState()
     val isAppAdmin = UserType.fromInt(viewModel.loggedInUser?.userType ?: -1) == UserType.APP_ADMIN

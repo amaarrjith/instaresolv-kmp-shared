@@ -52,7 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.ObservationItem
 import org.example.project.ui.components.AppLoader
@@ -92,7 +92,7 @@ fun ObservationListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit
 ) {
-    val viewModel: ObservationListViewModel = koinInject()
+    val viewModel: ObservationListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
@@ -113,7 +113,7 @@ fun ObservationListScreen(
                 fileDownloader.downloadFile(url, fileName)
                 viewModel.setExportToastMessage("Downloading Observation Report")
             } catch (e: Exception) {
-                uiState.errorExcel = e.message
+                viewModel.setErrorExcel(e.message)
             }
             viewModel.clearExportUrl()
         }
@@ -264,15 +264,19 @@ fun ObservationListScreen(
                                 modifier = Modifier.fillMaxSize()
                                     .padding(top = 25.dp),
                             ) {
-                                items(uiState.observations.size) { index ->
+                                items(
+                                    count = uiState.observations.size,
+                                    key = { index -> uiState.observations[index].observationId }
+                                ) { index ->
+                                    val observation = uiState.observations[index]
                                     if (index >= uiState.observations.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.fetchObservations(isRefresh = false)
                                         }
                                     }
                                     ObservationListItem(
-                                        observation = uiState.observations[index],
-                                        onClick = { selectedObservationId = uiState.observations[index].observationId }
+                                        observation = observation,
+                                        onClick = { selectedObservationId = observation.observationId }
                                     )
                                 }
                                 if (uiState.isPaginating) {
@@ -298,7 +302,7 @@ fun ObservationListScreen(
             ToastHost(
                 visible = uiState.errorExcel != null,
                 message = uiState.errorExcel  ?: "",
-                onDismiss = { uiState.errorExcel = null },
+                onDismiss = { viewModel.clearErrorExcel() },
                 type = org.example.project.utilites.ToastType.Success,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
             )

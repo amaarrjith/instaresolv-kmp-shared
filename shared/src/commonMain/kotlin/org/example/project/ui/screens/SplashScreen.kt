@@ -35,7 +35,7 @@ import instaresolv.shared.generated.resources.ic_app_logo
 import kotlinx.coroutines.delay
 import org.example.project.splash.SplashUiState
 import org.example.project.splash.SplashViewModel
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +50,7 @@ fun SplashScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
-    val viewModel: SplashViewModel = koinInject()
+    val viewModel: SplashViewModel = koinViewModel()
     val uiState = viewModel.uiState.collectAsState()
     LaunchedEffect(uiState.value.loadingCompleted) {
         if (uiState.value.loadingCompleted) {
@@ -150,13 +150,14 @@ fun SplashScreenContent(
                 onUpdateNow = {
                     val platformName = getPlatform().name
                     val isIos = platformName.contains("iOS", ignoreCase = true)
+                    val appleId = org.example.project.config.AppConfig.appStoreId
                     val storeUrl = if (isIos) {
-                        "itms-apps://itunes.apple.com/app/id6478951234"
+                        "itms-apps://itunes.apple.com/app/id$appleId"
                     } else {
                         "market://details?id=com.instaresolve.app"
                     }
                     val fallbackUrl = if (isIos) {
-                        "https://apps.apple.com/app/id6478951234"
+                        "https://apps.apple.com/app/id$appleId"
                     } else {
                         "https://play.google.com/store/apps/details?id=com.instaresolve.app"
                     }

@@ -2,6 +2,9 @@ package org.example.project.homescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -260,9 +263,9 @@ class HomeScreenViewModel(
     }
 
     fun getPreTaskContentsList() {
-        val contentUpdatedTime = getLatestContentsUpdatedTime() ?: ""
-        val questionUpdatedTime = getLatestQuestionsUpdatedTime() ?: ""
         viewModelScope.launch {
+            val contentUpdatedTime = getLatestContentsUpdatedTime() ?: ""
+            val questionUpdatedTime = getLatestQuestionsUpdatedTime() ?: ""
             val request = PreTaskContentRequest(
                 contentUpdatedTime = contentUpdatedTime,
                 questionUpdatedTime = questionUpdatedTime
@@ -288,11 +291,11 @@ class HomeScreenViewModel(
         }
     }
 
-    private fun savePreTaskContents(
+    private suspend fun savePreTaskContents(
         contents: List<PreTaskContentData>,
         deletedContentIds: List<Int>,
         isContentsEmpty: Boolean
-    ) {
+    ) = withContext(Dispatchers.IO) {
         val queries = database.appDatabaseQueries
         queries.transaction {
             val existingEntities = queries.getAllPreTaskContents().executeAsList()
@@ -333,11 +336,11 @@ class HomeScreenViewModel(
         println("✅ Pre-task contents synced (added/updated/deleted/missing handled).")
     }
 
-    private fun savePreTaskQuestions(
+    private suspend fun savePreTaskQuestions(
         questions: List<PreTaskQuestionData>,
         deletedQuestionsIds: List<Int>,
         isQuestionsEmpty: Boolean
-    ) {
+    ) = withContext(Dispatchers.IO) {
         val queries = database.appDatabaseQueries
         queries.transaction {
             val existingEntities = queries.getAllPreTaskQuestions().executeAsList()
@@ -379,39 +382,41 @@ class HomeScreenViewModel(
         println("✅ Pre-task questions synced (added/updated/deleted/missing handled).")
     }
 
-    private fun getLatestContentsUpdatedTime(): String? {
-        return database.appDatabaseQueries.getLatestContentUpdatedTime().executeAsOneOrNull()
+    private suspend fun getLatestContentsUpdatedTime(): String? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getLatestContentUpdatedTime().executeAsOneOrNull()
     }
 
-    private fun getLatestQuestionsUpdatedTime(): String? {
-        return database.appDatabaseQueries.getLatestQuestionUpdatedTime().executeAsOneOrNull()
+    private suspend fun getLatestQuestionsUpdatedTime(): String? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getLatestQuestionUpdatedTime().executeAsOneOrNull()
     }
 
-    private fun getLatestAuditItemUpdatedTime(): String? {
-        return database.appDatabaseQueries.getLatestAuditItemUpdatedTime().executeAsOneOrNull()?.formUpdatedTime
+    private suspend fun getLatestAuditItemUpdatedTime(): String? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getLatestAuditItemUpdatedTime().executeAsOneOrNull()?.formUpdatedTime
     }
 
-    private fun getLatestInspectionContentUpdatedTime(): String? {
-        return database.appDatabaseQueries.getLatestInspectionContentUpdatedTime().executeAsOneOrNull()?.updatedTime
+    private suspend fun getLatestInspectionContentUpdatedTime(): String? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getLatestInspectionContentUpdatedTime().executeAsOneOrNull()?.updatedTime
     }
 
     fun getAuditsInspectionForms() {
-        val updatedTime = getLatestAuditItemUpdatedTime() ?: ""
         viewModelScope.launch {
+            val updatedTime = getLatestAuditItemUpdatedTime() ?: ""
             when (val result = inspectionRepository.getAuditItems(updatedTime.takeIf { it.isNotBlank() })) {
                 is NetworkResult.Success -> {
                     val response = result.data
                     if (response.updatedTime != updatedTime) {
-                        val queries = database.appDatabaseQueries
-                        queries.transaction {
-                            queries.clearAllAuditItems()
-                            response.contents.forEach { content ->
-                                queries.insertAuditItem(
-                                    auditItemId = content.auditItemId.toLong(),
-                                    auditItemTitle = content.auditItemTitle,
-                                    image = content.image,
-                                    formUpdatedTime = response.updatedTime
-                                )
+                        withContext(Dispatchers.IO) {
+                            val queries = database.appDatabaseQueries
+                            queries.transaction {
+                                queries.clearAllAuditItems()
+                                response.contents.forEach { content ->
+                                    queries.insertAuditItem(
+                                        auditItemId = content.auditItemId.toLong(),
+                                        auditItemTitle = content.auditItemTitle,
+                                        image = content.image,
+                                        formUpdatedTime = response.updatedTime
+                                    )
+                                }
                             }
                         }
                         println("✅ Audit items updated locally with latest data!")
@@ -434,23 +439,25 @@ class HomeScreenViewModel(
                 is NetworkResult.Success -> {
                     val response = result.data
                     if (response.contentsList.isNotEmpty()) {
-                        val queries = database.appDatabaseQueries
-                        queries.transaction {
-                            response.contentsList.forEach { content ->
-                                val type = content.type ?: 0
-                                val version = content.version ?: ""
-                                val questionsJson = Json.encodeToString(content.contents)
-                                
-                                val currentInstant = kotlin.time.Clock.System.now()
-                                val currentDt = currentInstant.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
-                                val timeNow = "${currentDt.year}-${currentDt.month.number.toString().padStart(2, '0')}-${currentDt.day.toString().padStart(2, '0')} ${currentDt.hour.toString().padStart(2, '0')}:${currentDt.minute.toString().padStart(2, '0')}:${currentDt.second.toString().padStart(2, '0')}"
-                                
-                                queries.insertInspectionContentCache(
-                                    type = type.toLong(),
-                                    version = version,
-                                    questionsJson = questionsJson,
-                                    updatedTime = timeNow
-                                )
+                        withContext(Dispatchers.IO) {
+                            val queries = database.appDatabaseQueries
+                            queries.transaction {
+                                response.contentsList.forEach { content ->
+                                    val type = content.type ?: 0
+                                    val version = content.version ?: ""
+                                    val questionsJson = Json.encodeToString(content.contents)
+                                    
+                                    val currentInstant = kotlin.time.Clock.System.now()
+                                    val currentDt = currentInstant.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+                                    val timeNow = "${currentDt.year}-${currentDt.month.number.toString().padStart(2, '0')}-${currentDt.day.toString().padStart(2, '0')} ${currentDt.hour.toString().padStart(2, '0')}:${currentDt.minute.toString().padStart(2, '0')}:${currentDt.second.toString().padStart(2, '0')}"
+                                    
+                                    queries.insertInspectionContentCache(
+                                        type = type.toLong(),
+                                        version = version,
+                                        questionsJson = questionsJson,
+                                        updatedTime = timeNow
+                                    )
+                                }
                             }
                         }
                         println("✅ Inspection contents updated locally with latest data!")

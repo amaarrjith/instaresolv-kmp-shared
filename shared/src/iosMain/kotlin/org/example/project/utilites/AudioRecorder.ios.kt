@@ -24,7 +24,8 @@ actual class AudioRecorder {
             audioSession.setActive(true, error = null)
             
             val fileName = "AudioRecord_${NSUUID().UUIDString}.wav"
-            val filePath = NSTemporaryDirectory() + fileName
+            val tempDir = NSTemporaryDirectory().removeSuffix("/")
+            val filePath = "$tempDir/$fileName"
             currentFilePath = filePath
             
             val url = NSURL.fileURLWithPath(filePath)
@@ -53,6 +54,12 @@ actual class AudioRecorder {
         audioRecorder?.stop()
         audioRecorder = null
         isRecording = false
+
+        try {
+            val audioSession = AVAudioSession.sharedInstance()
+            audioSession.setCategory(AVAudioSessionCategoryPlayback, error = null)
+            audioSession.setActive(true, error = null)
+        } catch (_: Exception) {}
     }
 
     actual fun isRecording(): Boolean = isRecording

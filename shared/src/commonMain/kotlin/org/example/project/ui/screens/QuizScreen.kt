@@ -29,7 +29,7 @@ import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -40,7 +40,7 @@ fun QuizScreen(
     trainingId: Int,
     onBackClicked: () -> Unit
 ) {
-    val viewModel: QuizViewModel = koinInject(
+    val viewModel: QuizViewModel = koinViewModel(
         parameters = { parametersOf(trainingId) }
     )
     val uiState by viewModel.uiState.collectAsState()

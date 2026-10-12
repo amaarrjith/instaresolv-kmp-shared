@@ -46,6 +46,10 @@ class PermitRepositoryImpl(
         return apiService.submitPermitAuthorization(request)
     }
 
+    override suspend fun submitPermitSubContractorAuthorization(request: org.example.project.data.model.PermitSubContractorAuthorizationSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.submitPermitSubContractorAuthorization(request)
+    }
+
     override suspend fun submitPermitAction(request: org.example.project.data.model.PermitActionRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
         return apiService.submitPermitAction(request)
     }

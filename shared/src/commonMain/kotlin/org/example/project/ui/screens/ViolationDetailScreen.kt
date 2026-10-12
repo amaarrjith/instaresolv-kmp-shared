@@ -45,7 +45,7 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -56,7 +56,7 @@ fun ViolationDetailScreen(
     onBackClicked: () -> Unit,
     onRefreshList: () -> Unit = {}
 ) {
-    val viewModel: ViolationDetailViewModel = koinInject()
+    val viewModel: ViolationDetailViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }

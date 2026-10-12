@@ -1,11 +1,14 @@
 package org.example.project.data.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import org.example.project.data.model.CreateIncidentDraftRequest
 import org.example.project.shared.db.AppDatabase
 import org.example.project.shared.db.IncidentDraft
 
 class IncidentDraftRepository(private val database: AppDatabase) {
-    fun saveDraft(request: CreateIncidentDraftRequest) {
+    suspend fun saveDraft(request: CreateIncidentDraftRequest) = withContext(Dispatchers.IO) {
         val idValue = if (request.id == 0L) null else request.id
         database.appDatabaseQueries.insertIncidentDraft(
             id = idValue,
@@ -30,15 +33,15 @@ class IncidentDraftRepository(private val database: AppDatabase) {
         )
     }
 
-    fun getAllDrafts(userId: Int): List<IncidentDraft> {
-        return database.appDatabaseQueries.getIncidentDraftsByUserId(userId.toLong()).executeAsList()
+    suspend fun getAllDrafts(userId: Int): List<IncidentDraft> = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getIncidentDraftsByUserId(userId.toLong()).executeAsList()
     }
 
-    fun getDraftById(id: Long): IncidentDraft? {
-        return database.appDatabaseQueries.getIncidentDraftById(id).executeAsOneOrNull()
+    suspend fun getDraftById(id: Long): IncidentDraft? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getIncidentDraftById(id).executeAsOneOrNull()
     }
 
-    fun deleteDraft(id: Long) {
+    suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deleteIncidentDraft(id)
     }
 }

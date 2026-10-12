@@ -11,19 +11,17 @@ import org.jetbrains.compose.resources.painterResource
 fun WebImageView(
     imageUrl: String?,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.FillBounds
 ) {
     val modelUrl = imageUrl?.takeIf { it.isNotBlank() }
 
     AsyncImage(
         model = modelUrl,
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         contentScale = contentScale,
         error = painterResource(Res.drawable.ic_placeholder_project),
-        placeholder = painterResource(Res.drawable.ic_placeholder_project),
-        onError = {
-            println("Image load error for url ($modelUrl): ${it.result.throwable}")
-        }
+        placeholder = painterResource(Res.drawable.ic_placeholder_project)
     )
 }

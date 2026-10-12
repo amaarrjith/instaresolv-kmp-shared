@@ -25,7 +25,7 @@ data class ObservationListState(
     val error: String? = null,
     val endReached: Boolean = false,
     val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
-    var errorExcel: String? = null,
+    val errorExcel: String? = null,
     val drafts: List<org.example.project.shared.db.ObservationDraft> = emptyList()
 )
 
@@ -59,6 +59,14 @@ class ObservationListViewModel(
         _exportToastMessage.value = message
     }
 
+    fun clearErrorExcel() {
+        _uiState.update { it.copy(errorExcel = null) }
+    }
+
+    fun setErrorExcel(message: String?) {
+        _uiState.update { it.copy(errorExcel = message) }
+    }
+
     private val _draftToastMessage = MutableStateFlow<String?>(null)
     val draftToastMessage: StateFlow<String?> = _draftToastMessage.asStateFlow()
 
@@ -88,8 +96,11 @@ class ObservationListViewModel(
     }
 
     fun loadDrafts() {
-        val userId = authPreferences.getLoggedInUser()?.userId ?: -1
-        _uiState.update { it.copy(drafts = draftRepository.getAllDrafts(userId)) }
+        viewModelScope.launch {
+            val userId = authPreferences.getLoggedInUser()?.userId ?: -1
+            val drafts = draftRepository.getAllDrafts(userId)
+            _uiState.update { it.copy(drafts = drafts) }
+        }
     }
 
     fun deleteDrafts(ids: List<Long>, successMessage: String) {
@@ -123,9 +134,9 @@ class ObservationListViewModel(
         viewModelScope.launch {
             val filter = _uiState.value.appliedFilterState
             val status = when {
-                filter.selectedStatuses.contains("Open Observations") && filter.selectedStatuses.contains("Closed Observations") -> -1
-                filter.selectedStatuses.contains("Open Observations") -> 1
-                filter.selectedStatuses.contains("Closed Observations") -> 2
+                filter.selectedStatuses.any { it.contains("Open", ignoreCase = true) } && filter.selectedStatuses.any { it.contains("Closed", ignoreCase = true) } -> -1
+                filter.selectedStatuses.any { it.contains("Open", ignoreCase = true) } -> 1
+                filter.selectedStatuses.any { it.contains("Closed", ignoreCase = true) } -> 2
                 else -> -1
             }
             val groupSpecified = when {
@@ -184,9 +195,9 @@ class ObservationListViewModel(
             _isExporting.value = true
             val filter = _uiState.value.appliedFilterState
             val status = when {
-                filter.selectedStatuses.contains("Open Observations") && filter.selectedStatuses.contains("Closed Observations") -> -1
-                filter.selectedStatuses.contains("Open Observations") -> 1
-                filter.selectedStatuses.contains("Closed Observations") -> 2
+                filter.selectedStatuses.any { it.contains("Open", ignoreCase = true) } && filter.selectedStatuses.any { it.contains("Closed", ignoreCase = true) } -> -1
+                filter.selectedStatuses.any { it.contains("Open", ignoreCase = true) } -> 1
+                filter.selectedStatuses.any { it.contains("Closed", ignoreCase = true) } -> 2
                 else -> -1
             }
             val groupSpecified = when {

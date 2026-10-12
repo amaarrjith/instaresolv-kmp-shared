@@ -24,7 +24,7 @@ import org.example.project.colors.AppColors
 import org.example.project.data.model.Project
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.example.project.ui.screens.EmptyScreenView
 import org.jetbrains.compose.resources.stringResource
 
@@ -39,7 +39,7 @@ fun AppProjectDropdown(
     projects: List<Project>? = null,
     modifier: Modifier = Modifier
 ) {
-    val viewModel: AppProjectDropdownViewModel = koinInject()
+    val viewModel: AppProjectDropdownViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     
     val displayProjects = projects ?: uiState.projects

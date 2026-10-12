@@ -22,6 +22,7 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.model.toGroupUser
+import org.example.project.ui.screens.AuthorizerFormSection
 import org.example.project.utilities.convertTo24HourFormat
 import org.example.project.utilities.formatTimestamp
 import kotlin.time.Clock
@@ -53,6 +54,12 @@ class PermitDetailViewModel(
     private val _selectedHsePerson = MutableStateFlow<GroupUser?>(null)
     val selectedHsePerson: StateFlow<GroupUser?> = _selectedHsePerson.asStateFlow()
 
+    private val _authorizerPersons = MutableStateFlow<List<GroupUser>>(emptyList())
+    val authorizerPersons: StateFlow<List<GroupUser>> = _authorizerPersons.asStateFlow()
+
+    private val _selectedAuthorizerPerson = MutableStateFlow<GroupUser?>(null)
+    val selectedAuthorizerPerson: StateFlow<GroupUser?> = _selectedAuthorizerPerson.asStateFlow()
+
     private val _msraNumber = MutableStateFlow("")
     val msraNumber: StateFlow<String> = _msraNumber.asStateFlow()
 
@@ -76,6 +83,10 @@ class PermitDetailViewModel(
 
     fun onHsePersonSelected(user: GroupUser) {
         _selectedHsePerson.value = user
+    }
+
+    fun onAuthorizerPersonSelected(user: GroupUser) {
+        _selectedAuthorizerPerson.value = user
     }
 
     fun onMsraNumberChanged(number: String) {
@@ -123,7 +134,97 @@ class PermitDetailViewModel(
         }
     }
 
+    private fun fetchAuthorizers(groupId: Int, groupCode: String) {
+        viewModelScope.launch {
+            // using designationType = 1 as default
+            val request = org.example.project.data.model.PermitUserListRequest(
+                groupId = groupId,
+                groupCode = groupCode,
+                designationType = 1
+            )
+            when (val result = repository.getPermitUserList(request)) {
+                is NetworkResult.Success -> {
+                    val mappedUsers = result.data.users.filter { it.userRole == 1 }.map { it.toGroupUser() }
+                    _authorizerPersons.value = mappedUsers
+                }
+                is NetworkResult.Error -> {}
+            }
+        }
+    }
+
+    fun submitSubContractorAuthorization(permitId: Int) {
+        val authorizer = _authorizerName.value
+        val authorizerPersonId = _selectedAuthorizerPerson.value?.userId ?: 0
+        val signature = _signatureUrl.value ?: ""
+        val date = _signatureDate.value
+        val time = _signatureTime.value
+        val state = _uiState.value as? PermitDetailUiState.Success ?: return
+
+        if (authorizerPersonId == 0) {
+            _uiState.value = state.copy(submitError = "Please select an authorizer person")
+            return
+        }
+        if (signature.isBlank()) {
+            _uiState.value = state.copy(submitError = "Please add your signature")
+            return
+        }
+
+        var formattedDate = date
+        var formattedTime = time
+        if (date.isNotBlank() && time.isNotBlank()) {
+            try {
+                val localDateTimeStr = "${date}T${time}"
+                val instant = kotlinx.datetime.LocalDateTime.parse(localDateTimeStr).toInstant(kotlinx.datetime.TimeZone.currentSystemDefault())
+                val utcDateTime = instant.toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+                
+                val day = utcDateTime.day.toString().padStart(2, '0')
+                val month = utcDateTime.month.number.toString().padStart(2, '0')
+                formattedDate = "$day-$month-${utcDateTime.year}"
+                
+                val hour = utcDateTime.hour.toString().padStart(2, '0')
+                val min = utcDateTime.minute.toString().padStart(2, '0')
+                val sec = utcDateTime.second.toString().padStart(2, '0')
+                formattedTime = "$hour:$min:$sec"
+            } catch (e: Exception) {
+                val parts = date.split("-")
+                if (parts.size == 3) {
+                    formattedDate = "${parts[2]}-${parts[1]}-${parts[0]}"
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            isAuthorizing.value = true
+            val request = org.example.project.data.model.PermitSubContractorAuthorizationSubmitRequest(
+                permitId = permitId,
+                subContractorAuthorizationRequest = org.example.project.data.model.PermitSubContractorAuthorizationRequestPayload(
+                    subContractorAuthorizerName = authorizer,
+                    alnasrAuthorizerUserId = authorizerPersonId.toString(),
+                    signatureImageUrl = signature,
+                    authorizationTime = formattedTime,
+                    authorizationDate = formattedDate
+                )
+            )
+            println("SubContractor Authorization Request: $request")
+            val result = repository.submitPermitSubContractorAuthorization(request)
+            isAuthorizing.value = false
+            when (result) {
+                is NetworkResult.Success -> {
+                    submitSuccessMessage.value = result.data.statusMessage ?: "Subcontractor Authorization Done Successfully"
+                    loadPermitDetail(permitId)
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = state.copy(submitError = result.message ?: "Failed to authorize permit")
+                }
+            }
+        }
+    }
+
     fun authorizePermit(permitId: Int) {
+        if (_userType.value == PermitFormUserType.SUBCONTRACTOR_AUTHORIZER) {
+            submitSubContractorAuthorization(permitId)
+            return
+        }
         val authorizer = _authorizerName.value
         val msra = _msraNumber.value
         val hsePersonId = _selectedHsePerson.value?.userId ?: 0
@@ -132,6 +233,7 @@ class PermitDetailViewModel(
         val time = _signatureTime.value
         val notes = _additionalPrecautions.value
         val state = _uiState.value as? PermitDetailUiState.Success ?: return
+
         if (hsePersonId == 0) {
             _uiState.value = state.copy(submitError = "Please select an HSE person")
             return
@@ -144,6 +246,7 @@ class PermitDetailViewModel(
             _uiState.value = state.copy(submitError = "Please add your signature")
             return
         }
+
         var formattedDate = date
         var formattedTime = time
         if (date.isNotBlank() && time.isNotBlank()) {
@@ -188,9 +291,10 @@ class PermitDetailViewModel(
             when (result) {
                 is NetworkResult.Success -> {
                     submitSuccessMessage.value = result.data.statusMessage ?: "Success"
+                    loadPermitDetail(permitId)
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = PermitDetailUiState.Error(result.message ?: "Failed to authorize permit")
+                    _uiState.value = state.copy(submitError = result.message ?: "Failed to authorize permit")
                 }
             }
         }
@@ -479,9 +583,21 @@ class PermitDetailViewModel(
             2 -> handleUserTypeForSubContractor(permit)
             else -> handleUserTypeForAlNasr(permit)
         }
-        
-        if (_userType.value == PermitFormUserType.AUTHORIZER) {
+
+        if (_userType.value == PermitFormUserType.SUBCONTRACTOR_AUTHORIZER) {
             val groupCode = permit.certificateValidity?.project?.groupCode
+            if (groupCode != null) {
+                val extractedGroupId = groupCode.substringAfter("-").toIntOrNull() ?: -1
+                fetchAuthorizers(extractedGroupId, groupCode)
+            }
+        }
+
+        if (
+            _userType.value == PermitFormUserType.AUTHORIZER ||
+            _userType.value == PermitFormUserType.INSTARESOLV_AUTHORIZER
+        ) {
+            val groupCode = permit.certificateValidity?.project?.groupCode
+
             if (groupCode != null) {
                 val extractedGroupId = groupCode.substringAfter("-").toIntOrNull() ?: -1
                 fetchHSEUsers(extractedGroupId, groupCode)
@@ -609,16 +725,17 @@ class PermitDetailViewModel(
                     _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER
                     return
                 }
+
                 if (subAuthSign.isNullOrEmpty()) {
                     _userType.value = PermitFormUserType.REQUESTOR
                     return
                 }
                 if (isAuthorizedAlNasr && authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    _userType.value = PermitFormUserType.INSTARESOLV_AUTHORIZER
                     return
                 }
                 if (authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER
+                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER
                     return
                 }
                 if (isRequestedUser && requestForCertificateClosureSign.isNullOrEmpty()) {
@@ -626,7 +743,7 @@ class PermitDetailViewModel(
                     return
                 }
                 if (requestForCertificateClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    _userType.value = PermitFormUserType.INSTARESOLV_AUTHORIZER
                     return
                 }
                 if (isAuthorizedSubContractor && subClosureSign.isNullOrEmpty()) {
@@ -676,8 +793,12 @@ class PermitDetailViewModel(
                     _userType.value = PermitFormUserType.REQUESTOR
                     return
                 }
+                if (isAuthorizedAlNasr && authSign.isNullOrEmpty()) {
+                    _userType.value = PermitFormUserType.AUTHORIZER
+                    return
+                }
                 if (authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER
+                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER
                     return
                 }
                 if (certificateRequestSign.isNullOrEmpty()) { 
@@ -702,8 +823,12 @@ class PermitDetailViewModel(
                     _userType.value = PermitFormUserType.REQUESTOR
                     return
                 }
+                if (isAuthorizedAlNasr && authSign.isNullOrEmpty()) {
+                    _userType.value = PermitFormUserType.AUTHORIZER
+                    return
+                }
                 if (authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER
+                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER
                     return
                 }
                 if (certificateRequestSign.isNullOrEmpty()) {
@@ -720,5 +845,6 @@ class PermitDetailViewModel(
                 }
             }
         }
+        println("User Type is ${userType.value}")
     }
 }

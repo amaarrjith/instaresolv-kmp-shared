@@ -183,15 +183,31 @@ data class PermitAuthorizationSubmitResponse(
     val statusMessage: String
 )
 
+@Serializable
+data class PermitSubContractorAuthorizationSubmitRequest(
+    val permitId: Int,
+    val subContractorAuthorizationRequest: PermitSubContractorAuthorizationRequestPayload
+)
+
+@Serializable
+data class PermitSubContractorAuthorizationRequestPayload(
+    val subContractorAuthorizerName: String,
+    val alnasrAuthorizerUserId: String,
+    val signatureImageUrl: String,
+    val authorizationTime: String,
+    val authorizationDate: String
+)
+
 enum class PermitFormUserType {
     REQUESTOR,
     AUTHORIZER,
-
     AUTHORIZER_VIEWER,
     CERTIFICATE_CLOSURE,
     REQUEST_FOR_CERTIFICATE_CLOSURE,
     REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER,
     SUBCONTRACTOR_AUTHORIZER,
+    SUBCONTRACTOR_AUTHORIZER_VIEWER,
+    INSTARESOLV_AUTHORIZER,
     SUBCONTRACTOR_CLOSURE,
     NONE
 }

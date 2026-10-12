@@ -235,7 +235,7 @@ class CreateViolationViewModel(
         }
     }
 
-    fun getDraftById(draftId: Long): org.example.project.shared.db.ViolationDraft? {
+    suspend fun getDraftById(draftId: Long): org.example.project.shared.db.ViolationDraft? {
         return violationDraftRepository.getDraftById(draftId)
     }
 

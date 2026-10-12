@@ -34,6 +34,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         }
         
         FirebaseApp.configure()
+        IosImageEditorProvider.shared.bridge = SwiftImageEditorBridge()
         
         UNUserNotificationCenter.current().delegate = self
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]

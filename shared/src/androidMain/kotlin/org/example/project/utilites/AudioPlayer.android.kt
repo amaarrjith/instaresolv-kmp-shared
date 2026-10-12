@@ -15,21 +15,30 @@ actual class AudioPlayer(private val context: Context) {
 
     actual fun prepare(filePath: String) {
         if (currentFilePath != filePath || mediaPlayer == null) {
-            mediaPlayer?.release()
+            try {
+                mediaPlayer?.release()
+            } catch (_: Exception) {}
             isPrepared = false
+            isPlaying = false
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(filePath)
                 setOnPreparedListener { 
                     isPrepared = true 
                 }
-                setOnErrorListener { _, _, _ ->
-                    isPrepared = true 
+                setOnErrorListener { mp, _, _ ->
+                    this@AudioPlayer.isPrepared = false
+                    this@AudioPlayer.isPlaying = false
+                    try {
+                        mp.reset()
+                    } catch (_: Exception) {}
                     true
                 }
                 prepareAsync()
                 setOnCompletionListener {
                     this@AudioPlayer.isPlaying = false
-                    this.seekTo(0)
+                    try {
+                        this.seekTo(0)
+                    } catch (_: Exception) {}
                 }
             }
             currentFilePath = filePath
@@ -42,41 +51,53 @@ actual class AudioPlayer(private val context: Context) {
         }
         
         try {
+            val wasPrepared = isPrepared && currentFilePath == filePath
             prepare(filePath)
-            if (isPrepared) {
+            if (wasPrepared && isPrepared) {
                 mediaPlayer?.start()
                 isPlaying = true
             } else {
-                mediaPlayer?.setOnPreparedListener {
+                mediaPlayer?.setOnPreparedListener { mp ->
                     isPrepared = true
-                    it.start()
-                    isPlaying = true
+                    try {
+                        mp.start()
+                        this@AudioPlayer.isPlaying = true
+                    } catch (e: Exception) {
+                        this@AudioPlayer.isPlaying = false
+                    }
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
             isPlaying = false
         }
     }
 
     actual fun pause() {
-        mediaPlayer?.let {
-            if (it.isPlaying) {
-                it.pause()
-                isPlaying = false
+        try {
+            mediaPlayer?.let {
+                if (it.isPlaying) {
+                    it.pause()
+                    isPlaying = false
+                }
             }
+        } catch (_: Exception) {
+            isPlaying = false
         }
     }
 
     actual fun stop() {
-        mediaPlayer?.let {
-            if (it.isPlaying) {
-                it.stop()
+        try {
+            mediaPlayer?.let {
+                if (it.isPlaying) {
+                    it.stop()
+                }
+                it.release()
             }
-            it.release()
-        }
+        } catch (_: Exception) {}
         mediaPlayer = null
         isPlaying = false
+        isPrepared = false
+        currentFilePath = null
     }
 
     actual fun isPlaying(): Boolean = isPlaying
@@ -109,5 +130,12 @@ actual class AudioPlayer(private val context: Context) {
 @Composable
 actual fun rememberAudioPlayer(): AudioPlayer {
     val context = LocalContext.current
-    return remember { AudioPlayer(context) }
+    val audioPlayer = remember { AudioPlayer(context) }
+    androidx.compose.runtime.DisposableEffect(audioPlayer) {
+        onDispose {
+            audioPlayer.stop()
+        }
+    }
+    return audioPlayer
 }
+

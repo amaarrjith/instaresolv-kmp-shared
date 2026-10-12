@@ -28,7 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import org.example.project.utilites.ToastHost
@@ -47,7 +47,7 @@ fun CreateObservationScreen(
     onBackClicked: () -> Unit
 ) {
     val showExitPopup = remember { mutableStateOf(false) }
-    val viewModel: CreateObservationViewModel = koinInject()
+    val viewModel: CreateObservationViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val observationTitle = remember { mutableStateOf("") }
     val location = remember { mutableStateOf("") }

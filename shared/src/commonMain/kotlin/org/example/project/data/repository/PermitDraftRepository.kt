@@ -1,5 +1,8 @@
 package org.example.project.data.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.project.data.model.CreatePermitDraftRequest
@@ -7,7 +10,7 @@ import org.example.project.shared.db.AppDatabase
 import org.example.project.shared.db.PermitDraft
 
 class PermitDraftRepository(private val database: AppDatabase) {
-    fun saveDraft(request: CreatePermitDraftRequest) {
+    suspend fun saveDraft(request: CreatePermitDraftRequest) = withContext(Dispatchers.IO) {
         val permitTypeJson = request.permitType?.let { Json.encodeToString(it) }
         val projectJson = request.selectedProject?.let { Json.encodeToString(it) }
         val userJson = request.selectedUser?.let { Json.encodeToString(it) }
@@ -59,15 +62,15 @@ class PermitDraftRepository(private val database: AppDatabase) {
         }
     }
 
-    fun getAllDrafts(userId: Int): List<PermitDraft> {
-        return database.appDatabaseQueries.getPermitDraftsByUserId(userId.toLong()).executeAsList()
+    suspend fun getAllDrafts(userId: Int): List<PermitDraft> = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getPermitDraftsByUserId(userId.toLong()).executeAsList()
     }
 
-    fun getDraftById(id: Long): PermitDraft? {
-        return database.appDatabaseQueries.getAllPermitDrafts().executeAsList().find { it.id == id }
+    suspend fun getDraftById(id: Long): PermitDraft? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getPermitDraftById(id).executeAsOneOrNull()
     }
 
-    fun deleteDraft(id: Long) {
+    suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deletePermitDraft(id)
     }
 }

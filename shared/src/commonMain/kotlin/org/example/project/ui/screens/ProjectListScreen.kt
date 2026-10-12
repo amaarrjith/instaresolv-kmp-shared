@@ -69,7 +69,7 @@ import org.example.project.ui.screens.MemberStatusIcon
 import org.example.project.utilites.AppSearchBar
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -79,7 +79,7 @@ fun ProjectListScreen(
     onProjectClicked: (Project) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val viewModel: ProjectViewModel = koinInject()
+    val viewModel: ProjectViewModel = koinViewModel()
     val uiState = viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     var showRequestModal by remember { mutableStateOf(false) }
@@ -247,7 +247,10 @@ fun ProjectListScreenView(
             modifier = Modifier.fillMaxSize()
         ) {
             LazyColumn {
-                items(uiState.projectList.size) { item ->
+                items(
+                    count = uiState.projectList.size,
+                    key = { index -> uiState.projectList[index].groupId }
+                ) { item ->
                     ProjectListCard(
                         project = uiState.projectList[item],
                         onClick = { project ->

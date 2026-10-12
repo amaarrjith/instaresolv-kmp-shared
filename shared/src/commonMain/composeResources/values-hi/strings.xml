@@ -354,6 +354,13 @@
     <string name="resolve1">समाधान करें</string>
     <string name="message">संदेश</string>
     <string name="authorizedPerson">अधिकृत व्यक्ति</string>
+    <string name="subcontractorAuthorizedPerson">उप-ठेकेदार अधिकृत व्यक्ति</string>
+    <string name="subContractorAuthorisation">उप-ठेकेदार प्राधिकरण</string>
+    <string name="subcontractorAuthorisation">उप-ठेकेदार प्राधिकरण</string>
+    <string name="subContractorAuthorizerName">उप-ठेकेदार प्राधिकारी का नाम</string>
+    <string name="subcontractorAuthorizerName">उप-ठेकेदार प्राधिकारी का नाम</string>
+    <string name="instaresolvAuthorizerName">इंस्टारिसॉल्व प्राधिकारी का नाम</string>
+    <string name="instaResolvAuthorizerName">इंस्टारिसॉल्व प्राधिकारी का नाम</string>
     <string name="back">वापस</string>
     <string name="createObservation">बनाएं - अवलोकन</string>
     <string name="endTime1">समाप्ति समय *</string>

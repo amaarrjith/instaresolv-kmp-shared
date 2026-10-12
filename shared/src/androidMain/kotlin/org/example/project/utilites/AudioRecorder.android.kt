@@ -27,9 +27,17 @@ actual class AudioRecorder(private val context: Context) {
     private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
     private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
 
-    @SuppressLint("MissingPermission")
     actual fun startRecording() {
         if (isRecording) return
+
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.RECORD_AUDIO
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            android.util.Log.w("AudioRecorder", "RECORD_AUDIO permission not granted, cannot start recording")
+            return
+        }
 
         val fileName = "AudioRecord_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.wav"
         val outputFile = File(context.cacheDir, fileName)
@@ -62,32 +70,35 @@ actual class AudioRecorder(private val context: Context) {
 
     private fun writeAudioDataToFile(outputFile: File) {
         val data = ByteArray(bufferSize)
-        val os = FileOutputStream(outputFile)
-        
-        // Write dummy header
-        writeWavHeader(os, 0, sampleRate, 1, 16)
-        
         var totalAudioLen = 0L
 
-        while (isRecording) {
-            val read = audioRecord?.read(data, 0, bufferSize) ?: 0
-            if (read > 0) {
-                os.write(data, 0, read)
-                totalAudioLen += read
-            }
-        }
-        
-        os.close()
+        try {
+            FileOutputStream(outputFile).use { os ->
+                // Write dummy header
+                writeWavHeader(os, 0, sampleRate, 1, 16)
 
-        // Fix header with correct size
-        val raf = RandomAccessFile(outputFile, "rw")
-        val totalDataLen = totalAudioLen + 36
-        
-        raf.seek(4)
-        raf.write(intToByteArray(totalDataLen.toInt()), 0, 4)
-        raf.seek(40)
-        raf.write(intToByteArray(totalAudioLen.toInt()), 0, 4)
-        raf.close()
+                while (isRecording) {
+                    val read = audioRecord?.read(data, 0, bufferSize) ?: 0
+                    if (read > 0) {
+                        os.write(data, 0, read)
+                        totalAudioLen += read
+                    }
+                }
+            }
+
+            // Fix header with correct size
+            if (outputFile.exists() && totalAudioLen > 0) {
+                RandomAccessFile(outputFile, "rw").use { raf ->
+                    val totalDataLen = totalAudioLen + 36
+                    raf.seek(4)
+                    raf.write(intToByteArray(totalDataLen.toInt()), 0, 4)
+                    raf.seek(40)
+                    raf.write(intToByteArray(totalAudioLen.toInt()), 0, 4)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun writeWavHeader(
@@ -160,10 +171,16 @@ actual class AudioRecorder(private val context: Context) {
     actual fun stopRecording() {
         if (!isRecording) return
         isRecording = false
-        audioRecord?.stop()
-        audioRecord?.release()
+        try {
+            audioRecord?.stop()
+        } catch (_: Exception) {}
+        try {
+            audioRecord?.release()
+        } catch (_: Exception) {}
         audioRecord = null
-        recordingThread?.join()
+        try {
+            recordingThread?.join(500)
+        } catch (_: Exception) {}
         recordingThread = null
     }
 
@@ -175,5 +192,11 @@ actual class AudioRecorder(private val context: Context) {
 @Composable
 actual fun rememberAudioRecorder(): AudioRecorder {
     val context = LocalContext.current
-    return remember { AudioRecorder(context) }
+    val recorder = remember { AudioRecorder(context) }
+    androidx.compose.runtime.DisposableEffect(recorder) {
+        onDispose {
+            recorder.stopRecording()
+        }
+    }
+    return recorder
 }

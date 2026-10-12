@@ -90,9 +90,9 @@ actual fun CustomVideoPlayer(
         }
     }
 
-    // Periodically update playback progress
-    LaunchedEffect(exoPlayer) {
-        while (true) {
+    // Periodically update playback progress only while playing to save battery
+    LaunchedEffect(exoPlayer, isPlaying) {
+        while (isPlaying) {
             val duration = exoPlayer.duration
             val current = exoPlayer.currentPosition
             if (duration > 0) {

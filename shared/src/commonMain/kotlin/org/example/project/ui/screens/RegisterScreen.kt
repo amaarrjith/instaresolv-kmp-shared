@@ -79,7 +79,7 @@ import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -90,7 +90,7 @@ fun RegisterScreen(
     isTermsClicked: () -> Unit = {},
     isPrivacyClicked: () -> Unit = {}
 ) {
-    val viewModel: RegisterViewModel = koinInject()
+    val viewModel: RegisterViewModel = koinViewModel()
     val uiState = viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()

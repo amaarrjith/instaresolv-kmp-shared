@@ -1,11 +1,14 @@
 package org.example.project.data.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import org.example.project.data.model.CreateInspectionDraftRequest
 import org.example.project.shared.db.AppDatabase
 import org.example.project.shared.db.InspectionDraft
 
 class InspectionDraftRepository(private val database: AppDatabase) {
-    fun saveDraft(request: CreateInspectionDraftRequest) {
+    suspend fun saveDraft(request: CreateInspectionDraftRequest) = withContext(Dispatchers.IO) {
         val idValue = if (request.id == 0L) null else request.id
         database.appDatabaseQueries.insertInspectionDraft(
             id = idValue,
@@ -27,15 +30,15 @@ class InspectionDraftRepository(private val database: AppDatabase) {
         )
     }
 
-    fun getAllDrafts(userId: Int): List<InspectionDraft> {
-        return database.appDatabaseQueries.getInspectionDraftsByUserId(userId.toLong()).executeAsList()
+    suspend fun getAllDrafts(userId: Int): List<InspectionDraft> = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getInspectionDraftsByUserId(userId.toLong()).executeAsList()
     }
 
-    fun getDraftById(id: Long): InspectionDraft? {
-        return database.appDatabaseQueries.getInspectionDraftById(id).executeAsOneOrNull()
+    suspend fun getDraftById(id: Long): InspectionDraft? = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.getInspectionDraftById(id).executeAsOneOrNull()
     }
 
-    fun deleteDraft(id: Long) {
+    suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deleteInspectionDraft(id)
     }
 }

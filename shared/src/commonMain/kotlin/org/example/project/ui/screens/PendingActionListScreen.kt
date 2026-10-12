@@ -57,7 +57,7 @@ import org.example.project.ui.PermitActionBottomSheet
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.stringResource
@@ -72,7 +72,7 @@ fun PendingActionListScreen(
     onPermitClick: (Int) -> Unit = {},
     onNavigateToProject: (Int, String) -> Unit = { _, _ -> }
 ) {
-    val viewModel: PendingActionListViewModel = koinInject()
+    val viewModel: PendingActionListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     
     var selectedTab by remember { mutableStateOf(0) }

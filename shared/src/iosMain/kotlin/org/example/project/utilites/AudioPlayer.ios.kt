@@ -31,12 +31,14 @@ actual class AudioPlayer {
             audioSession.setActive(true, error = null)
 
             val url = if (filePath.startsWith("http")) {
-                NSURL.URLWithString(filePath)!!
+                NSURL.URLWithString(filePath)
             } else {
                 NSURL.fileURLWithPath(filePath)
             }
-            avPlayer = AVPlayer(uRL = url)
-            currentFilePath = filePath
+            if (url != null) {
+                avPlayer = AVPlayer(uRL = url)
+                currentFilePath = filePath
+            }
         }
     }
 

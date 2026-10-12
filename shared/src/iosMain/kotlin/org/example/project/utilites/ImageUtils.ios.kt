@@ -19,16 +19,43 @@ import org.jetbrains.skia.PathBuilder
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
 
+private const val MAX_IMAGE_DIMENSION = 2048
+
 actual fun ImageBitmap.toByteArray(): ByteArray? {
     val skiaBitmap = this.asSkiaBitmap()
     val image = Image.makeFromBitmap(skiaBitmap)
-    return image.encodeToData(EncodedImageFormat.PNG)?.bytes
+    val bytes = image.encodeToData(EncodedImageFormat.PNG)?.bytes
+    image.close()
+    return bytes
 }
 
 actual fun ByteArray.toImageBitmap(): ImageBitmap? {
     return try {
         val skiaImage = Image.makeFromEncoded(this)
-        Bitmap.makeFromImage(skiaImage).asComposeImageBitmap()
+        if (skiaImage.width > MAX_IMAGE_DIMENSION || skiaImage.height > MAX_IMAGE_DIMENSION) {
+            val scale = minOf(
+                MAX_IMAGE_DIMENSION.toFloat() / skiaImage.width,
+                MAX_IMAGE_DIMENSION.toFloat() / skiaImage.height
+            )
+            val targetW = (skiaImage.width * scale).toInt().coerceAtLeast(1)
+            val targetH = (skiaImage.height * scale).toInt().coerceAtLeast(1)
+            val surface = Surface.makeRasterN32Premul(targetW, targetH)
+            surface.canvas.drawImageRect(
+                skiaImage,
+                Rect.makeWH(skiaImage.width.toFloat(), skiaImage.height.toFloat()),
+                Rect.makeWH(targetW.toFloat(), targetH.toFloat())
+            )
+            val snapshot = surface.makeImageSnapshot()
+            val bitmap = Bitmap.makeFromImage(snapshot)
+            snapshot.close()
+            surface.close()
+            skiaImage.close()
+            bitmap.asComposeImageBitmap()
+        } else {
+            val bitmap = Bitmap.makeFromImage(skiaImage)
+            skiaImage.close()
+            bitmap.asComposeImageBitmap()
+        }
     } catch (e: Exception) {
         null
     }
@@ -51,13 +78,28 @@ actual fun cropImage(
         val w = ((rightRatio - leftRatio) * imgWidth).toInt().coerceIn(1, imgWidth - x)
         val h = ((bottomRatio - topRatio) * imgHeight).toInt().coerceIn(1, imgHeight - y)
         
-        val surface = Surface.makeRasterN32Premul(w, h)
+        val scale = if (w > MAX_IMAGE_DIMENSION || h > MAX_IMAGE_DIMENSION) {
+            minOf(
+                MAX_IMAGE_DIMENSION.toFloat() / w,
+                MAX_IMAGE_DIMENSION.toFloat() / h
+            )
+        } else {
+            1f
+        }
+        val dstW = (w * scale).toInt().coerceAtLeast(1)
+        val dstH = (h * scale).toInt().coerceAtLeast(1)
+
+        val surface = Surface.makeRasterN32Premul(dstW, dstH)
         val srcRect = Rect.makeLTRB(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat())
-        val dstRect = Rect.makeWH(w.toFloat(), h.toFloat())
+        val dstRect = Rect.makeWH(dstW.toFloat(), dstH.toFloat())
         
         surface.canvas.drawImageRect(skiaImage, srcRect, dstRect)
         val snapshot = surface.makeImageSnapshot()
-        snapshot.encodeToData(EncodedImageFormat.JPEG, 90)?.bytes ?: imageBytes
+        val result = snapshot.encodeToData(EncodedImageFormat.JPEG, 90)?.bytes ?: imageBytes
+        snapshot.close()
+        surface.close()
+        skiaImage.close()
+        result
     } catch (e: Exception) {
         imageBytes
     }
@@ -69,18 +111,30 @@ actual fun drawAnnotationsOnImage(
 ): ByteArray? {
     return try {
         val skiaImage = Image.makeFromEncoded(imageBytes)
-        val w = skiaImage.width
-        val h = skiaImage.height
-        val surface = Surface.makeRasterN32Premul(w, h)
+        val scale = if (skiaImage.width > MAX_IMAGE_DIMENSION || skiaImage.height > MAX_IMAGE_DIMENSION) {
+            minOf(
+                MAX_IMAGE_DIMENSION.toFloat() / skiaImage.width,
+                MAX_IMAGE_DIMENSION.toFloat() / skiaImage.height
+            )
+        } else {
+            1f
+        }
+        val targetW = (skiaImage.width * scale).toInt().coerceAtLeast(1)
+        val targetH = (skiaImage.height * scale).toInt().coerceAtLeast(1)
+
+        val surface = Surface.makeRasterN32Premul(targetW, targetH)
+        surface.canvas.drawImageRect(
+            skiaImage,
+            Rect.makeWH(skiaImage.width.toFloat(), skiaImage.height.toFloat()),
+            Rect.makeWH(targetW.toFloat(), targetH.toFloat())
+        )
         
-        surface.canvas.drawImage(skiaImage, 0f, 0f)
-        
-        val scale = (w / 400f).coerceAtLeast(1f)
+        val strokeScale = (targetW / 400f).coerceAtLeast(1f)
 
         for (stroke in strokes) {
             val paint = Paint().apply {
                 color = stroke.colorInt
-                strokeWidth = stroke.strokeWidth * scale
+                strokeWidth = stroke.strokeWidth * strokeScale
                 mode = PaintMode.STROKE
                 strokeCap = PaintStrokeCap.ROUND
                 strokeJoin = PaintStrokeJoin.ROUND
@@ -88,36 +142,24 @@ actual fun drawAnnotationsOnImage(
             if (stroke.points.isNotEmpty()) {
                 val builder = PathBuilder()
                 val first = stroke.points.first()
-                builder.moveTo(first.x * w, first.y * h)
+                builder.moveTo(first.x * targetW, first.y * targetH)
                 for (pt in stroke.points.drop(1)) {
-                    builder.lineTo(pt.x * w, pt.y * h)
+                    builder.lineTo(pt.x * targetW, pt.y * targetH)
                 }
                 val skiaPath = builder.snapshot()
                 surface.canvas.drawPath(skiaPath, paint)
+                skiaPath.close()
             }
+            paint.close()
         }
         
         val snapshot = surface.makeImageSnapshot()
-        snapshot.encodeToData(EncodedImageFormat.JPEG, 90)?.bytes ?: imageBytes
+        val result = snapshot.encodeToData(EncodedImageFormat.JPEG, 90)?.bytes ?: imageBytes
+        snapshot.close()
+        surface.close()
+        skiaImage.close()
+        result
     } catch (e: Exception) {
         imageBytes
-    }
-}
-
-@Composable
-actual fun AppPlatformCropView(
-    imageBytes: ByteArray,
-    onCropped: (ByteArray) -> Unit,
-    onCancel: () -> Unit,
-    modifier: Modifier
-) {
-    val imageBitmap = remember(imageBytes) { imageBytes.toImageBitmap() }
-    if (imageBitmap != null) {
-        Image(
-            bitmap = imageBitmap,
-            contentDescription = "Crop Target",
-            modifier = modifier,
-            contentScale = ContentScale.Fit
-        )
     }
 }

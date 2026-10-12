@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.example.project.ui.components.AppLoader
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,6 +54,7 @@ import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.CompanyType
 import org.example.project.ui.components.AppExitPopup
 
 @Composable
@@ -66,7 +65,7 @@ fun CreatePermitScreen(
     isFromDraft: Boolean = false,
     draftId: Long = -1L
 ) {
-    val viewModel: CreatePermitViewModel = koinInject()
+    val viewModel: CreatePermitViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var localError by remember { mutableStateOf<String?>(null) }
     val showExitPopup = remember { mutableStateOf(false) }
@@ -186,11 +185,12 @@ fun CreatePermitScreen(
                         )
                     }
                     AppTextField(
-                        value = "InstaResolv Private Limited",
-                        onValueChange = {},
+                        value = uiState.contractorName,
+                        onValueChange = { viewModel.updateContractorName(it) },
                         title = stringResource(Res.string.contractorName),
-                        placeholder = "",
-                        enabled = false,
+                        placeholder = stringResource(Res.string.contractorName),
+                        enabled = viewModel.isSubContractor,
+                        readOnly = !viewModel.isSubContractor,
                         isMandatory = true
                     )
                     AppProjectDropdown(
@@ -254,7 +254,7 @@ fun CreatePermitScreen(
                                     selectedTime = uiState.startTime,
                                     onTimeSelected = { viewModel.updateStartTime(it) },
                                     enabled = uiState.permitDateMillis != null,
-                                    restrictPastTime = isToday
+                                    restrictPastTime = false
                                 )
                                 if (uiState.permitDateMillis == null) {
                                     Box(
@@ -285,7 +285,8 @@ fun CreatePermitScreen(
                                             viewModel.updateEndTime(endTime)
                                         }
                                     },
-                                    enabled = uiState.permitDateMillis != null && uiState.startTime.isNotBlank()
+                                    enabled = uiState.permitDateMillis != null && uiState.startTime.isNotBlank(),
+                                    restrictPastTime = isToday
                                 )
                                 if (uiState.permitDateMillis == null) {
                                     Box(
@@ -305,7 +306,7 @@ fun CreatePermitScreen(
                     }
                     if (uiState.selectedProject != null) {
                         AppUserDropdown(
-                            title = stringResource(Res.string.authorizedPerson),
+                            title = if (!viewModel.isSubContractor) stringResource(Res.string.authorizedPerson) else stringResource(Res.string.subcontractorAuthorizedPerson),
                             selectedUser = uiState.selectedUser,
                             onUserSelected = { viewModel.updateSelectedUser(it) },
                             placeholder = stringResource(Res.string.chooseUser),
@@ -356,7 +357,7 @@ fun CreatePermitScreen(
                         color = AppColors.Primary
                     )
                     AppTextField(
-                        value = viewModel.logginedUser?.name ?: "",
+                        value = viewModel.loggedUser?.name ?: "",
                         onValueChange = {
 
                         },

@@ -46,7 +46,7 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.utilites.ToastHost
@@ -56,7 +56,7 @@ fun InspectionDetailScreen(
     inspectionId: Int,
     onBackClicked: () -> Unit
 ) {
-    val viewModel: InspectionDetailViewModel = koinInject()
+    val viewModel: InspectionDetailViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showSharePopup by remember { mutableStateOf(false) }
     var infoMessage by remember { mutableStateOf<String?>(null) }

@@ -58,7 +58,7 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import kotlinx.coroutines.delay
@@ -74,7 +74,7 @@ fun ProfileScreen(
     isViewProfile: Boolean = false,
     onBack: () -> Unit
 ) {
-    val viewModel: ProfileViewModel = koinInject()
+    val viewModel: ProfileViewModel = koinViewModel()
     val uiState = viewModel.uiState.collectAsState()
     val isLogoutLoading = (uiState.value as? ProfileUiState.Ready)?.isLogoutLoading == true
     var isLogoutAlertShown by remember {

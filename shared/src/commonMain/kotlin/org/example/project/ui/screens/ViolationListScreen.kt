@@ -60,7 +60,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -72,7 +72,7 @@ fun ViolationListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit
 ) {
-    val viewModel: ViolationListViewModel = koinInject()
+    val viewModel: ViolationListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedViolationId by remember { mutableStateOf<Int?>(null) }
@@ -239,15 +239,19 @@ fun ViolationListScreen(
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize().padding(top = 25.dp)
                             ) {
-                                items(uiState.violations.size) { index ->
+                                items(
+                                    count = uiState.violations.size,
+                                    key = { index -> uiState.violations[index].id }
+                                ) { index ->
+                                    val violation = uiState.violations[index]
                                     if (index >= uiState.violations.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.loadViolations(isRefresh = false)
                                         }
                                     }
                                     ViolationListItem(
-                                        violation = uiState.violations[index],
-                                        onClick = { selectedViolationId = uiState.violations[index].id }
+                                        violation = violation,
+                                        onClick = { selectedViolationId = violation.id }
                                     )
                                 }
                                 if (uiState.isPaginating) {

@@ -203,8 +203,11 @@ class ViolationListViewModel(
     }
 
     fun loadDrafts() {
-        val userId = authPreferences.getLoggedInUser()?.userId ?: -1
-        _uiState.update { it.copy(drafts = draftRepository.getAllDrafts(userId)) }
+        viewModelScope.launch {
+            val userId = authPreferences.getLoggedInUser()?.userId ?: -1
+            val drafts = draftRepository.getAllDrafts(userId)
+            _uiState.update { it.copy(drafts = drafts) }
+        }
     }
 
     fun deleteDrafts(ids: List<Long>, successMessage: String) {

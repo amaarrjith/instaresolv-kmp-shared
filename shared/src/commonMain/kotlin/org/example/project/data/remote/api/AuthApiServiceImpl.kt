@@ -724,6 +724,14 @@ class AuthApiServiceImpl(
         }
     }
 
+    override suspend fun submitPermitSubContractorAuthorization(
+        request: org.example.project.data.model.PermitSubContractorAuthorizationSubmitRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_SUBCONTRACTOR_AUTHORIZATION) {
+            jsonBody(request)
+        }
+    }
+
     override suspend fun submitPermitAction(
         request: org.example.project.data.model.PermitActionRequest
     ): NetworkResult<CommonModelResponse> = safeApiCall {

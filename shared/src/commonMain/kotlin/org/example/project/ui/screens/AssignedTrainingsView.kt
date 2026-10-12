@@ -74,14 +74,14 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.ui.screens.EmptyScreenView
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppSearchBar
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssignedTrainingsView(
     member: ProjectMember,
     onBackClick: () -> Unit,
-    viewModel: AssignedTrainingsViewModel = koinInject()
+    viewModel: AssignedTrainingsViewModel = koinViewModel()
 ) {
     val designationTypes = viewModel.designations.collectAsState().value
     val uiState by viewModel.uiState.collectAsState()
@@ -216,7 +216,10 @@ fun AssignedTrainingsView(
                                         bottom = 24.dp
                                     )
                                 ) {
-                                    items(uiState.trainings.size) { index ->
+                                    items(
+                                        count = uiState.trainings.size,
+                                        key = { index -> uiState.trainings[index].id }
+                                    ) { index ->
                                         if (index >= uiState.trainings.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
                                             LaunchedEffect(key1 = index) {
                                                 viewModel.loadTrainings(isRefresh = false)
@@ -596,7 +599,10 @@ fun AddTrainingModal(
                         modifier = Modifier.fillMaxWidth().height(300.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(trainings.size) { index ->
+                        items(
+                            count = trainings.size,
+                            key = { index -> trainings[index].id }
+                        ) { index ->
                             val training = trainings[index]
                             
                             // Trigger load more when approaching the end

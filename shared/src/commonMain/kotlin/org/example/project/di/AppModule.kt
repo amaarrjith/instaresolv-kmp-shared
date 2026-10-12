@@ -98,9 +98,10 @@ import org.example.project.data.repository.IncidentDraftRepository
 import org.example.project.data.repository.ToolBoxTalkDraftRepository
 import org.example.project.data.repository.PreTaskDraftRepository
 import org.example.project.data.repository.InspectionDraftRepository
+import org.koin.core.module.dsl.viewModel
 
 val appModule = module {
-    factory { createHttpClient(get(), get()) }
+    single { createHttpClient(get(), get()) }
     factory<AuthApiService> { AuthApiServiceImpl(get()) }
     factory<AuthRepository> { AuthRepositoryImpl(get()) }
     factory<org.example.project.data.remote.api.AudioApiService> { org.example.project.data.remote.api.AudioApiServiceImpl(get()) }
@@ -109,61 +110,61 @@ val appModule = module {
     single { LoginValidator() }
     single { RegisterValidator() }
     single { OTPValidator() }
-    factory { ProjectViewModel(get(),get()) }
-    factory { NotificationsViewModel(get()) }
-    factory { AppTabBarViewModel(get(), get()) }
-    factory { HomeScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    factory { LoginViewModel(get(), get(), get()) }
-    factory { SplashViewModel(get(), get(), get()) }
-    factory { ProfileViewModel(get(), get(), get(), get()) }
-    factory { CreateProjectViewModel(get(), get()) }
-    factory { WelcomeScreenViewModel(get()) }
-    factory { ForgetPasswordViewModel(get(), get()) }
-    factory { ProjectDetailViewModel(get(), get()) }
-    factory { RegisterViewModel(get(), get()) }
-    factory { ObservationDetailViewModel(get(), get()) }
-    factory { CreateObservationViewModel(get(), get(), get(), get()) }
-    factory { CreateIncidentViewModel(get(), get(), get(), get()) }
-    factory { AppProjectDropdownViewModel(get()) }
-    factory { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
-    factory { ImagePickerViewModel(get()) }
-    factory { GeneralContentsViewModel(get()) }
-    factory { ChangePasswordViewModel(get()) }
-    factory { DeleteAccountViewModel(get(), get()) }
-    factory { ContactUsViewModel(get()) }
+    viewModel { ProjectViewModel(get(),get()) }
+    viewModel { NotificationsViewModel(get()) }
+    viewModel { AppTabBarViewModel(get(), get()) }
+    viewModel { HomeScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get()) }
+    viewModel { CreateProjectViewModel(get(), get()) }
+    viewModel { WelcomeScreenViewModel(get()) }
+    viewModel { ForgetPasswordViewModel(get(), get()) }
+    viewModel { ProjectDetailViewModel(get(), get()) }
+    viewModel { RegisterViewModel(get(), get()) }
+    viewModel { ObservationDetailViewModel(get(), get()) }
+    viewModel { CreateObservationViewModel(get(), get(), get(), get()) }
+    viewModel { CreateIncidentViewModel(get(), get(), get(), get()) }
+    viewModel { AppProjectDropdownViewModel(get()) }
+    viewModel { (email: String, tempUserId: Int) -> OTPVerificationViewModel(get(), get(), get(), email, tempUserId) }
+    viewModel { ImagePickerViewModel(get()) }
+    viewModel { GeneralContentsViewModel(get()) }
+    viewModel { ChangePasswordViewModel(get()) }
+    viewModel { DeleteAccountViewModel(get(), get()) }
+    viewModel { ContactUsViewModel(get()) }
     factory<ToolBoxTalkRepository> { ToolBoxTalkRepositoryImpl(get()) }
-    factory { ToolBoxTalkListViewModel(get(), get(), get()) }
-    factory { CreateToolBoxTalkViewModel(get(), get(), get(), get()) }
-    factory { ToolBoxTalkDetailViewModel(get()) }
-    factory { org.example.project.ui.screens.AssignedTrainingsViewModel(get(), get()) }
-    factory { PendingActionListViewModel(get(), get(), get(), get(), get()) }
+    viewModel { ToolBoxTalkListViewModel(get(), get(), get()) }
+    viewModel { CreateToolBoxTalkViewModel(get(), get(), get(), get()) }
+    viewModel { ToolBoxTalkDetailViewModel(get()) }
+    viewModel { org.example.project.ui.screens.AssignedTrainingsViewModel(get(), get()) }
+    viewModel { PendingActionListViewModel(get(), get(), get(), get(), get()) }
     factory<PendingActionRepository> { PendingActionRepositoryImpl(get()) }
-    factory { ObservationListViewModel(get(), get(), get()) }
+    viewModel { ObservationListViewModel(get(), get(), get()) }
     factory<ObservationRepository> { ObservationRepositoryImpl(get()) }
     factory<InspectionRepository> { InspectionRepositoryImpl(get()) }
-    factory { AuditInspectionListViewModel(get(), get(), get()) }
-    factory { CreateInspectionViewModel(get(), get(), get(), get()) }
-    factory { InspectionDetailViewModel(get()) }
-    factory { IncidentListViewModel(get(), get(), get()) }
+    viewModel { AuditInspectionListViewModel(get(), get(), get()) }
+    viewModel { CreateInspectionViewModel(get(), get(), get(), get()) }
+    viewModel { InspectionDetailViewModel(get()) }
+    viewModel { IncidentListViewModel(get(), get(), get()) }
     factory<IncidentRepository> { IncidentRepositoryImpl(get()) }
-    factory { IncidentDetailViewModel(get()) }
+    viewModel { IncidentDetailViewModel(get()) }
     
-    factory { ViolationListViewModel(get(), get(), get(), get()) }
+    viewModel { ViolationListViewModel(get(), get(), get(), get()) }
     factory<ViolationRepository> { ViolationRepositoryImpl(get()) }
-    factory { ViolationDetailViewModel(get()) }
-    factory { org.example.project.ui.components.AddEmployeeViewModel(get()) }
-    factory { FilterBottomSheetViewModel(get()) }
-    factory { CreateViolationViewModel(get(), get(), get(), get()) }
+    viewModel { ViolationDetailViewModel(get()) }
+    viewModel { org.example.project.ui.components.AddEmployeeViewModel(get()) }
+    viewModel { FilterBottomSheetViewModel(get()) }
+    viewModel { CreateViolationViewModel(get(), get(), get(), get()) }
     
     factory<PreTaskRepository> { PreTaskRepositoryImpl(get()) }
-    factory { PreTaskListViewModel(get(), get(), get()) }
-    factory { PreTaskDetailViewModel(get()) }
-    factory { CreatePreTaskViewModel(get(), get(), get(), get(), get()) }
+    viewModel { PreTaskListViewModel(get(), get(), get()) }
+    viewModel { PreTaskDetailViewModel(get()) }
+    viewModel { CreatePreTaskViewModel(get(), get(), get(), get(), get()) }
     
     factory<LessonLearnedRepository> { LessonLearnedRepositoryImpl(get()) }
-    factory { LessonsLearnedListViewModel(get(), get(), get()) }
-    factory { LessonsLearnedDetailViewModel(get()) }
-    factory {
+    viewModel { LessonsLearnedListViewModel(get(), get(), get()) }
+    viewModel { LessonsLearnedDetailViewModel(get()) }
+    viewModel {
         CreateLessonLearnedViewModel(
             get(),
             authPreferences = get(),
@@ -173,23 +174,23 @@ val appModule = module {
     factory { LessonLearnedDraftRepository(get()) }
 
     factory<TrainingRepository> { TrainingRepositoryImpl(get()) }
-    factory { TrainingListViewModel(get()) }
-    factory { (trainingId: Int) -> TrainingDetailViewModel(get(), trainingId) }
-    factory { (trainingId: Int) -> TrainingVideoViewModel(get(), trainingId) }
-    factory { (trainingId: Int) -> QuizViewModel(get(), trainingId) }
+    viewModel { TrainingListViewModel(get()) }
+    viewModel { (trainingId: Int) -> TrainingDetailViewModel(get(), trainingId) }
+    viewModel { (trainingId: Int) -> TrainingVideoViewModel(get(), trainingId) }
+    viewModel { (trainingId: Int) -> QuizViewModel(get(), trainingId) }
     
     factory<PermitRepository> { PermitRepositoryImpl(get()) }
     factory { PermitDraftRepository(get()) }
-    factory { PermitToWorkListViewModel(get(), get(), get()) }
-    factory { CreatePermitViewModel(get(), get(), get()) }
-    factory { PermitDetailViewModel(get(), get(), get()) }
+    viewModel { PermitToWorkListViewModel(get(), get(), get()) }
+    viewModel { CreatePermitViewModel(get(), get(), get()) }
+    viewModel { PermitDetailViewModel(get(), get(), get()) }
     
     single { GlobalSettingsViewModel(get()) }
     single { AuthPreferences(get()) }
     single { AppPreferences(get()) }
     single<Settings> { Settings() }
     single {
-        val manager = org.example.project.manager.AppManager(get())
+        val manager = org.example.project.manager.AppManager(get(), get())
         org.example.project.manager.AppManager.init(manager)
         manager
     }

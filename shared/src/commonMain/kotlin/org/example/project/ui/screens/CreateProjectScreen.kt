@@ -53,7 +53,7 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.ResizeOptions
@@ -87,7 +87,7 @@ fun CreateProjectScreen(
     project: ProjectDetail? = null,
     onBack: () -> Unit
 ) {
-    val viewModel: CreateProjectViewModel = koinInject()
+    val viewModel: CreateProjectViewModel = koinViewModel()
     val uiState = viewModel.uiState.collectAsState()
     val projectImage = viewModel.uploadedImageUrl.collectAsState()
     val projectTitle = remember { mutableStateOf(project?.groupName ?: "") }

@@ -41,7 +41,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -54,7 +54,7 @@ fun PermitToWorkListScreen(
     onItemClicked: (Int) -> Unit = {},
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: PermitToWorkListViewModel = koinInject()
+    val viewModel: PermitToWorkListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var showAddModal by remember { mutableStateOf(false) }
@@ -294,15 +294,19 @@ fun PermitToWorkListScreen(
                                 modifier = Modifier.fillMaxSize()
                                     .padding(top = 25.dp),
                             ) {
-                                items(uiState.permits.size) { index ->
+                                items(
+                                    count = uiState.permits.size,
+                                    key = { index -> uiState.permits[index].id }
+                                ) { index ->
+                                    val permit = uiState.permits[index]
                                     if (index >= uiState.permits.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.fetchPermits(isRefresh = false)
                                         }
                                     }
                                     PermitListItem(
-                                        permit = uiState.permits[index],
-                                        onClick = { onItemClicked(uiState.permits[index].id) }
+                                        permit = permit,
+                                        onClick = { onItemClicked(permit.id) }
                                     )
                                 }
                                 if (uiState.isPaginating) {

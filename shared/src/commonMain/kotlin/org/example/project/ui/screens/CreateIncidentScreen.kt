@@ -32,7 +32,7 @@ import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.ui.components.AppDatePicker
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.ui.IncidentType
@@ -61,7 +61,7 @@ fun CreateIncidentScreen(
     isFromDraft: Boolean = false,
     draftId: Long = -1L
 ) {
-    val viewModel: CreateIncidentViewModel = koinInject()
+    val viewModel: CreateIncidentViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
@@ -540,15 +540,15 @@ fun CreateIncidentScreen(
                                                     color = AppColors.Black
                                                 )
                                                 Box(
-                                                    modifier = Modifier.width(60.dp),
+                                                    modifier = Modifier
+                                                        .size(48.dp)
+                                                        .clickable { viewModel.onRemoveInjuredEmployee(index) },
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     Image(
                                                         painter = painterResource(Res.drawable.ic_trash),
-                                                        contentDescription = null,
-                                                        modifier = Modifier
-                                                            .size(20.dp)
-                                                            .clickable { viewModel.onRemoveInjuredEmployee(index) }
+                                                        contentDescription = stringResource(Res.string.delete),
+                                                        modifier = Modifier.size(20.dp)
                                                     )
                                                 }
                                             }

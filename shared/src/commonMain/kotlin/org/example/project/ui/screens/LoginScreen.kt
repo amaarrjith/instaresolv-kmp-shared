@@ -55,7 +55,7 @@ import org.example.project.login.LoginUiState
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.utilites.getAppInfo
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -68,7 +68,7 @@ fun LoginScreen(
     navigateToRegister: () -> Unit,
     navigateToForgetPassword: () -> Unit,
 ) {
-    val vm: LoginViewModel = koinInject()
+    val vm: LoginViewModel = koinViewModel()
     val uiState by vm.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()

@@ -74,7 +74,7 @@ import org.example.project.ui.components.PdfGenerationLoader
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.rememberFileDownloader
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -107,8 +107,8 @@ fun HomeScreenContentView(
     onNavigateToProfile: (Int) -> Unit,
     onLogout: () -> Unit = {}
 ) {
-    val viewModel: ProfileViewModel = koinInject()
-    val vm: HomeScreenViewModel = koinInject()
+    val viewModel: ProfileViewModel = koinViewModel()
+    val vm: HomeScreenViewModel = koinViewModel()
     val isGeneratingPdf by vm.isGeneratingPdf.collectAsState()
     val pdfUrl by vm.pdfUrl.collectAsState()
     val pdfToastMessage by vm.pdfToastMessage.collectAsState()
@@ -687,9 +687,8 @@ fun AssignedToMeCard(
                 showObservationDrawer = false
             },
             onActionClick = { action ->
-                println("action: $action")
-                when (action) {
-                    "Reject", "Reject Join", "Reject Change", "Reject Delete" -> {
+                when {
+                    action.contains("Reject", ignoreCase = true) -> {
                         viewModel.approveOrRejectPendingAction(
                             assignedToMe.observation?.pendingActionId ?: -1,
                             action = 2,
@@ -701,7 +700,7 @@ fun AssignedToMeCard(
                             }
                         )
                     }
-                    "Approve", "Approve Join", "Approve Change", "Approve Delete" -> {
+                    action.contains("Approve", ignoreCase = true) -> {
                         viewModel.approveOrRejectPendingAction(
                             assignedToMe.observation?.pendingActionId ?: -1,
                             action = 1,
@@ -713,21 +712,23 @@ fun AssignedToMeCard(
                             }
                         )
                     }
-                    "View Project" -> {
+                    action.contains("View Project", ignoreCase = true) -> {
                         val groupCode = assignedToMe.observation?.groupCode ?: ""
                         val groupId = groupCode.substringAfter("-").toIntOrNull()
                         onNavigateToProject(groupId ?: -1, assignedToMe.observation?.groupCode ?: "")
                     }
-                    "View Report", "View Observation", "View Observation Closeout" -> {
+                    action.contains("View Report", ignoreCase = true) ||
+                    action.contains("View Observation", ignoreCase = true) ||
+                    action.contains("View Observation Closeout", ignoreCase = true) -> {
                         selectedObservationId = assignedToMe.observation?.contentId
                     }
-                    "Generate PDF" -> {
+                    action.contains("Generate PDF", ignoreCase = true) -> {
                         viewModel.generatePdf(assignedToMe.observation?.contentId ?: -1)
                     }
-                    "Close Observation" -> {
+                    action.contains("Close Observation", ignoreCase = true) -> {
                         closeObservationId = assignedToMe.observation?.contentId
                     }
-                    "Request Observation Responsible Person Change" -> {
+                    action.contains("Request Observation Responsible Person Change", ignoreCase = true) -> {
                         val obs = assignedToMe.observation
                         val groupCode = assignedToMe.observation?.groupCode
                         val groupId = groupCode?.substringAfter("-")?.toIntOrNull()
@@ -736,13 +737,13 @@ fun AssignedToMeCard(
                         }
                         showRequestResponsiblePersonSheet = true
                     }
-                    "Request to Delete Observation" -> {
+                    action.contains("Request to Delete Observation", ignoreCase = true) -> {
                         showRequestDeleteSheet = true
                     }
-                    "View Justification" -> {
+                    action.contains("View Justification", ignoreCase = true) -> {
                         justification = assignedToMe.observation?.justification
                     }
-                    "View Profile" -> {
+                    action.contains("View Profile", ignoreCase = true) -> {
                         showUserProfile(assignedToMe.observation?.userId ?: -1)
                     }
                 }

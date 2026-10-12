@@ -63,10 +63,15 @@ actual fun rememberAppCameraLauncher(onResult: (ByteArray?) -> Unit): AppCameraL
     return remember {
         AppCameraLauncher(
             onLaunch = {
-                val picker = UIImagePickerController()
-                picker.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
-                picker.delegate = delegate
-                UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(picker, true, null)
+                if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera)) {
+                    val picker = UIImagePickerController()
+                    picker.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+                    picker.delegate = delegate
+                    val rootVC = UIApplication.sharedApplication.keyWindow?.rootViewController
+                    rootVC?.presentViewController(picker, true, null)
+                } else {
+                    onResult(null)
+                }
             }
         )
     }

@@ -354,6 +354,13 @@
     <string name="resolve1">حل</string>
     <string name="message">رسالة</string>
     <string name="authorizedPerson">الشخص المفوّض</string>
+    <string name="subcontractorAuthorizedPerson">الشخص المفوّض للمقاول من الباطن</string>
+    <string name="subContractorAuthorisation">تفويض المقاول من الباطن</string>
+    <string name="subcontractorAuthorisation">تفويض المقاول من الباطن</string>
+    <string name="subContractorAuthorizerName">اسم مفوّض المقاول من الباطن</string>
+    <string name="subcontractorAuthorizerName">اسم مفوّض المقاول من الباطن</string>
+    <string name="instaresolvAuthorizerName">اسم مفوّض إنستاريسولف</string>
+    <string name="instaResolvAuthorizerName">اسم مفوّض إنستاريسولف</string>
     <string name="back">رجوع</string>
     <string name="createObservation">إنشاء - ملاحظة</string>
     <string name="endTime1">وقت الانتهاء *</string>

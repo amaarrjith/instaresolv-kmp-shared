@@ -61,7 +61,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -80,7 +80,7 @@ fun AuditInspectionListScreen(
     onItemClicked: (Int) -> Unit = {},
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: AuditInspectionListViewModel = koinInject()
+    val viewModel: AuditInspectionListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var showAddModal by remember { mutableStateOf(false) }
@@ -245,15 +245,19 @@ fun AuditInspectionListScreen(
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize().padding(top = 25.dp)
                             ) {
-                                items(uiState.inspections.size) { index ->
+                                items(
+                                    count = uiState.inspections.size,
+                                    key = { index -> uiState.inspections[index].id ?: index }
+                                ) { index ->
+                                    val inspection = uiState.inspections[index]
                                     if (index >= uiState.inspections.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.fetchInspections(isRefresh = false)
                                         }
                                     }
                                     InspectionListItem(
-                                        inspection = uiState.inspections[index],
-                                        onClick = { uiState.inspections[index].id?.let { selectedInspectionId = it } }
+                                        inspection = inspection,
+                                        onClick = { inspection.id?.let { selectedInspectionId = it } }
                                     )
                                 }
                                 if (uiState.isPaginating) {
@@ -315,7 +319,10 @@ fun AuditInspectionListScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
-                                    items(uiState.auditItems.size) { index ->
+                                    items(
+                                        count = uiState.auditItems.size,
+                                        key = { index -> uiState.auditItems[index].auditItemId }
+                                    ) { index ->
                                         val item = uiState.auditItems[index]
                                         Row(
                                             modifier = Modifier

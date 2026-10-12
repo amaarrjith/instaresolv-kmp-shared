@@ -168,9 +168,9 @@ class AuditInspectionListViewModel(
         viewModelScope.launch {
             val filter = _uiState.value.appliedFilterState
             val status = when {
-                filter.selectedStatuses.contains("Open Observations") && filter.selectedStatuses.contains("Closed Observations") -> -1
-                filter.selectedStatuses.contains("Open Observations") -> 1
-                filter.selectedStatuses.contains("Closed Observations") -> 2
+                filter.selectedStatuses.any { it.contains("Open", ignoreCase = true) } && filter.selectedStatuses.any { it.contains("Closed", ignoreCase = true) } -> -1
+                filter.selectedStatuses.any { it.contains("Open", ignoreCase = true) } -> 1
+                filter.selectedStatuses.any { it.contains("Closed", ignoreCase = true) } -> 2
                 else -> -1
             }
 

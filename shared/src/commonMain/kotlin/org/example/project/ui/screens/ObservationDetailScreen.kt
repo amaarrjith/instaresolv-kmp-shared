@@ -72,7 +72,7 @@ import org.example.project.utilites.ToastType
 import org.example.project.ui.components.AppStatusDialog
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import instaresolv.shared.generated.resources.*
 
@@ -83,7 +83,7 @@ fun ObservationDetailScreen(
     onBackClicked: () -> Unit,
     startWithCloseForm: Boolean = false
 ) {
-    val viewModel: ObservationDetailViewModel = koinInject()
+    val viewModel: ObservationDetailViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val closeUiState by viewModel.closeUiState.collectAsState()
     

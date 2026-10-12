@@ -27,11 +27,3 @@ expect fun drawAnnotationsOnImage(
     imageBytes: ByteArray,
     strokes: List<DrawStrokeData>
 ): ByteArray?
-
-@Composable
-expect fun AppPlatformCropView(
-    imageBytes: ByteArray,
-    onCropped: (ByteArray) -> Unit,
-    onCancel: () -> Unit,
-    modifier: Modifier
-)

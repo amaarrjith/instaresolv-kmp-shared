@@ -63,7 +63,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -75,7 +75,7 @@ fun IncidentListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: IncidentListViewModel = koinInject()
+    val viewModel: IncidentListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedIncidentId by remember { mutableStateOf<Int?>(null) }
@@ -243,15 +243,19 @@ fun IncidentListScreen(
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize().padding(top = 25.dp)
                             ) {
-                                items(uiState.incidents.size) { index ->
+                                items(
+                                    count = uiState.incidents.size,
+                                    key = { index -> uiState.incidents[index].id }
+                                ) { index ->
+                                    val incident = uiState.incidents[index]
                                     if (index >= uiState.incidents.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
                                         LaunchedEffect(key1 = index) {
                                             viewModel.loadIncidents(isRefresh = false)
                                         }
                                     }
                                     IncidentListItem(
-                                        incident = uiState.incidents[index],
-                                        onClick = { selectedIncidentId = uiState.incidents[index].id }
+                                        incident = incident,
+                                        onClick = { selectedIncidentId = incident.id }
                                     )
                                 }
                                 if (uiState.isPaginating) {

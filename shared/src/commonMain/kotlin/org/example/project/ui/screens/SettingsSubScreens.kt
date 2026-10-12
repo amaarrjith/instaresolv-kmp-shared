@@ -52,7 +52,7 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.rememberScrollState
@@ -76,7 +76,7 @@ import org.example.project.utilites.AppWebView
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = false, onBack: () -> Unit) {
-    val viewModel: GeneralContentsViewModel = koinInject()
+    val viewModel: GeneralContentsViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(type) {
@@ -181,7 +181,7 @@ fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = fals
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangePasswordScreen(onBack: () -> Unit) {
-    val viewModel: ChangePasswordViewModel = koinInject()
+    val viewModel: ChangePasswordViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var oldPassword by remember { mutableStateOf("") }
@@ -325,7 +325,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactUsScreen(onBack: () -> Unit) {
-    val viewModel: ContactUsViewModel = koinInject()
+    val viewModel: ContactUsViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var fullName by remember { mutableStateOf("") }
@@ -576,7 +576,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteAccountScreen(onBack: () -> Unit) {
-    val viewModel: DeleteAccountViewModel = koinInject()
+    val viewModel: DeleteAccountViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var password by remember { mutableStateOf("") }

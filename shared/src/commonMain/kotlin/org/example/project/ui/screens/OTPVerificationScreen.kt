@@ -51,7 +51,7 @@ import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.jetbrains.compose.resources.stringResource
 import kotlinx.coroutines.delay
@@ -65,7 +65,7 @@ fun OTPVerificationScreen(
     tempUserId: Int = 0,
     email: String = ""
 ){
-    val viewModel: OTPVerificationViewModel = koinInject(
+    val viewModel: OTPVerificationViewModel = koinViewModel(
         parameters = {
             parametersOf(email, tempUserId)
         }

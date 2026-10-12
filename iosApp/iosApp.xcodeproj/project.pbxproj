@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		742F44FA3015157A0035BA1E /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 742F44F93015157A0035BA1E /* FirebaseCrashlytics */; };
 		742F44FC3015157A0035BA1E /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 742F44FB3015157A0035BA1E /* FirebaseMessaging */; };
+		74D91EDE2F58B75400285539 /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = 74D91EDD2F58B75400285539 /* TOCropViewController */; };
+		74D91EE92F58B8D800285539 /* Drawsana in Frameworks */ = {isa = PBXBuildFile; productRef = 74D91EE82F58B8D800285539 /* Drawsana */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +50,8 @@
 			files = (
 				742F44FC3015157A0035BA1E /* FirebaseMessaging in Frameworks */,
 				742F44FA3015157A0035BA1E /* FirebaseCrashlytics in Frameworks */,
+				74D91EDE2F58B75400285539 /* TOCropViewController in Frameworks */,
+				74D91EE92F58B8D800285539 /* Drawsana in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +98,8 @@
 			packageProductDependencies = (
 				742F44F93015157A0035BA1E /* FirebaseCrashlytics */,
 				742F44FB3015157A0035BA1E /* FirebaseMessaging */,
+				74D91EDD2F58B75400285539 /* TOCropViewController */,
+				74D91EE82F58B8D800285539 /* Drawsana */,
 			);
 			productName = iosApp;
 			productReference = D2791C5D888A4E7872F9D96A /* InstaResolv.app */;
@@ -125,6 +131,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				742F44F83015157A0035BA1E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				74D91EDC2F58B75300285539 /* XCRemoteSwiftPackageReference "TOCropViewController" */,
+				74D91EE72F58B8D800285539 /* XCRemoteSwiftPackageReference "Drawsana" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0AB7E65411BC4AEBA8A1BEED /* Products */;
@@ -410,6 +418,22 @@
 				minimumVersion = 12.16.0;
 			};
 		};
+		74D91EDC2F58B75300285539 /* XCRemoteSwiftPackageReference "TOCropViewController" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/TimOliver/TOCropViewController.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+		74D91EE72F58B8D800285539 /* XCRemoteSwiftPackageReference "Drawsana" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Asana/Drawsana.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.12.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -422,6 +446,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 742F44F83015157A0035BA1E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
+		};
+		74D91EDD2F58B75400285539 /* TOCropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 74D91EDC2F58B75300285539 /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = TOCropViewController;
+		};
+		74D91EE82F58B8D800285539 /* Drawsana */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 74D91EE72F58B8D800285539 /* XCRemoteSwiftPackageReference "Drawsana" */;
+			productName = Drawsana;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

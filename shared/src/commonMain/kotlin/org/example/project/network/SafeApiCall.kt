@@ -16,6 +16,12 @@ import kotlinx.serialization.json.jsonPrimitive
 import io.ktor.client.statement.bodyAsText
 import org.example.project.data.model.CommonResponse
 
+val networkJson = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    encodeDefaults = true
+}
+
 fun HttpRequestBuilder.jsonBody(body: Any) {
     contentType(ContentType.Application.Json)
     setBody(body)
@@ -30,32 +36,48 @@ suspend inline fun <reified T> safeApiCall(
         when {
             status.isSuccess() -> {
                 val bodyText = response.bodyAsText()
-                val json = Json { ignoreUnknownKeys = true; isLenient = true }
-                val jsonElement = try {
-                    json.parseToJsonElement(bodyText)
-                } catch (e: Exception) {
-                    null
-                }
-                
-                val hasError = jsonElement?.jsonObject?.get("hasError")?.jsonPrimitive?.booleanOrNull == true
-                if (hasError) {
-                    val errorCode = jsonElement.jsonObject["errorCode"]?.jsonPrimitive?.intOrNull
-                    val message = jsonElement.jsonObject["message"]?.jsonPrimitive?.contentOrNull ?: "Something went wrong"
-                    NetworkResult.Error(
-                        message = message,
-                        type = mapErrorCodeToType(errorCode),
-                        errorCode = errorCode
-                    )
-                } else {
-                    val body = json.decodeFromString<CommonResponse<T>>(bodyText)
-                    val data = body.response
-                    if (data != null) {
-                        NetworkResult.Success(data)
-                    } else {
-                        NetworkResult.Error(
-                            message = "Empty response body",
-                            type = ErrorType.UNKNOWN
-                        )
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    try {
+                        val body = networkJson.decodeFromString<CommonResponse<T>>(bodyText)
+                        if (body.hasError) {
+                            NetworkResult.Error(
+                                message = body.message ?: "Something went wrong",
+                                type = mapErrorCodeToType(body.errorCode),
+                                errorCode = body.errorCode
+                            )
+                        } else {
+                            val data = body.response
+                            if (data != null) {
+                                NetworkResult.Success(data)
+                            } else {
+                                NetworkResult.Error(
+                                    message = "Empty response body",
+                                    type = ErrorType.UNKNOWN
+                                )
+                            }
+                        }
+                    } catch (parseEx: Exception) {
+                        if (parseEx is kotlinx.coroutines.CancellationException) throw parseEx
+                        val jsonElement = try {
+                            networkJson.parseToJsonElement(bodyText)
+                        } catch (e: Exception) {
+                            null
+                        }
+                        val hasError = jsonElement?.jsonObject?.get("hasError")?.jsonPrimitive?.booleanOrNull == true
+                        val errorCode = jsonElement?.jsonObject?.get("errorCode")?.jsonPrimitive?.intOrNull
+                        val message = jsonElement?.jsonObject?.get("message")?.jsonPrimitive?.contentOrNull ?: "Something went wrong"
+                        if (hasError) {
+                            NetworkResult.Error(
+                                message = message,
+                                type = mapErrorCodeToType(errorCode),
+                                errorCode = errorCode
+                            )
+                        } else {
+                            NetworkResult.Error(
+                                message = parseEx.message ?: "Failed to parse response",
+                                type = ErrorType.UNKNOWN
+                            )
+                        }
                     }
                 }
             }
@@ -66,6 +88,7 @@ suspend inline fun <reified T> safeApiCall(
                 val errorMsg = try {
                     response.body<CommonResponse<T>>().message ?: "Validation failed"
                 } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
                     "Validation failed"
                 }
                 NetworkResult.Error(errorMsg, ErrorType.VALIDATION)
@@ -84,6 +107,7 @@ suspend inline fun <reified T> safeApiCall(
     } catch (e: kotlinx.io.IOException) {
         NetworkResult.Error("Network error: check your internet connection", ErrorType.NETWORK)
     } catch (e: Exception) {
+        if (e is kotlinx.coroutines.CancellationException) throw e
         NetworkResult.Error(e.message ?: "An unexpected error occurred", ErrorType.UNKNOWN)
     }
 }

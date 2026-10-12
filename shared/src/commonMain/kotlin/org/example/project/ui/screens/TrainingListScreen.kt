@@ -34,7 +34,7 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -44,7 +44,7 @@ fun TrainingListScreen(
     onBackClicked: () -> Unit,
     onItemClicked: (Int) -> Unit
 ) {
-    val viewModel: TrainingListViewModel = koinInject()
+    val viewModel: TrainingListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }

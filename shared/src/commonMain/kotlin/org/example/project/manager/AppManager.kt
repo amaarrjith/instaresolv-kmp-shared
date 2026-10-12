@@ -6,7 +6,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import org.example.project.data.model.NotificationListModel
 
 class AppManager(
-    private val settings: Settings
+    private val settings: Settings,
+    private val database: org.example.project.shared.db.AppDatabase? = null
 ) {
     private val _logoutEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val logoutEvent = _logoutEvent.asSharedFlow()
@@ -38,7 +39,7 @@ class AppManager(
     }
 
     /**
-     * Clears user session credentials and details from Settings.
+     * Clears user session credentials and details from Settings and cached database records.
      */
     fun logout() {
         settings.remove("is_logged_in")
@@ -47,8 +48,18 @@ class AppManager(
         settings.remove("token_expiry")
         settings.remove("logged_in_user")
         settings.remove("logged_in_user_info")
+        settings.remove("designation_types")
+        try {
+            database?.appDatabaseQueries?.transaction {
+                database.appDatabaseQueries.clearAllPreTaskContents()
+                database.appDatabaseQueries.clearAllPreTaskQuestions()
+                database.appDatabaseQueries.clearAllAuditItems()
+                database.appDatabaseQueries.clearAllInspectionContentCaches()
+            }
+        } catch (_: Exception) {}
         _logoutEvent.tryEmit(Unit)
     }
+
 
     companion object {
         private var instance: AppManager? = null

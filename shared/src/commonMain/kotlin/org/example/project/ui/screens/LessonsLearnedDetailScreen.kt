@@ -46,7 +46,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -56,7 +56,7 @@ fun LessonsLearnedDetailScreen(
     id: Int,
     onClose: () -> Unit
 ) {
-    val viewModel: LessonsLearnedDetailViewModel = koinInject()
+    val viewModel: LessonsLearnedDetailViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }

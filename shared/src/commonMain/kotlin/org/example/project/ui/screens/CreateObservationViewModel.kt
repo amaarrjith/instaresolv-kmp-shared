@@ -264,11 +264,11 @@ class CreateObservationViewModel(
         _uiState.value = _uiState.value.copy(error = null)
     }
 
-    fun getDraftById(draftId: Long): org.example.project.shared.db.ObservationDraft? {
+    suspend fun getDraftById(draftId: Long): org.example.project.shared.db.ObservationDraft? {
         return observationDraftRepository.getDraftById(draftId)
     }
 
-    fun deleteDraftById(draftId: Long) {
+    suspend fun deleteDraftById(draftId: Long) {
         observationDraftRepository.deleteDraft(draftId)
     }
 

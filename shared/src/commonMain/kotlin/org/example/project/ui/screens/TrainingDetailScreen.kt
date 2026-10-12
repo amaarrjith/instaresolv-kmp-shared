@@ -43,7 +43,7 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
@@ -59,7 +59,7 @@ fun TrainingDetailScreen(
     onScormVideoClicked: (String) -> Unit,
     onStartQuizClicked: (Int) -> Unit
 ) {
-    val viewModel: TrainingDetailViewModel = koinInject(
+    val viewModel: TrainingDetailViewModel = koinViewModel(
         parameters = { parametersOf(trainingId) }
     )
     val uiState by viewModel.uiState.collectAsState()

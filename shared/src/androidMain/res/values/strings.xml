@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_add_text_to_image">Add Text</string>
+    <string name="label_choose_color">Choose Color</string>
+    <string name="btn_next_caps">NEXT</string>
+    <string name="label_text_size">Text Size</string>
+</resources>
