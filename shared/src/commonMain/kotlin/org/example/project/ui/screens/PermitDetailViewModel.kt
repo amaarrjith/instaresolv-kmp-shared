@@ -337,6 +337,12 @@ class PermitDetailViewModel(
     val certificateClosureDate = MutableStateFlow("")
     val certificateClosureTime = MutableStateFlow("")
     val isSubmittingCertificateClosure = MutableStateFlow(false)
+
+    val subContractorClosureAuthorizerName = MutableStateFlow(authPreferences.getLoggedInUser()?.name ?: "")
+    val subContractorClosureSignatureUrl = MutableStateFlow<String?>(null)
+    val subContractorClosureDate = MutableStateFlow("")
+    val subContractorClosureTime = MutableStateFlow("")
+    val isSubmittingSubContractorClosure = MutableStateFlow(false)
     
     private val _selectedAction = MutableStateFlow(-1)
 
@@ -527,6 +533,102 @@ class PermitDetailViewModel(
         }
     }
 
+    fun onSubContractorClosureAuthorizerNameChanged(name: String) {
+        subContractorClosureAuthorizerName.value = name
+    }
+
+    fun onSubContractorClosureSignatureUploaded(url: String) {
+        subContractorClosureSignatureUrl.value = url
+        val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val month = now.monthNumber.toString().padStart(2, '0')
+        val day = now.dayOfMonth.toString().padStart(2, '0')
+        subContractorClosureDate.value = "${now.year}-$month-$day"
+
+        val hour = now.hour.toString().padStart(2, '0')
+        val min = now.minute.toString().padStart(2, '0')
+        val sec = now.second.toString().padStart(2, '0')
+        subContractorClosureTime.value = "$hour:$min:$sec"
+    }
+
+    fun onRemoveSubContractorClosureSignatureClick() {
+        subContractorClosureSignatureUrl.value = null
+        subContractorClosureDate.value = ""
+        subContractorClosureTime.value = ""
+    }
+
+    fun submitPermitSubContractorClosure(permitId: Int) {
+        val authorizer = subContractorClosureAuthorizerName.value
+        val signatureUrl = subContractorClosureSignatureUrl.value
+        val state = _uiState.value as? PermitDetailUiState.Success ?: return
+
+        if (authorizer.isBlank()) {
+            _uiState.value = state.copy(submitError = "Please enter authorizer name")
+            return
+        }
+        if (signatureUrl.isNullOrBlank()) {
+            _uiState.value = state.copy(submitError = "Please provide your signature")
+            return
+        }
+
+        val date = subContractorClosureDate.value
+        val time = subContractorClosureTime.value
+
+        var utcDate = date
+        var utcTime = time
+        if (date.isNotBlank() && time.isNotBlank()) {
+            try {
+                val localDateTimeStr = "${date}T${time}"
+                val instant = kotlinx.datetime.LocalDateTime.parse(localDateTimeStr)
+                    .toInstant(TimeZone.currentSystemDefault())
+                val utcDateTime = instant.toLocalDateTime(TimeZone.UTC)
+
+                val utcMonth = utcDateTime.monthNumber.toString().padStart(2, '0')
+                val utcDay = utcDateTime.dayOfMonth.toString().padStart(2, '0')
+                utcDate = "${utcDateTime.year}-$utcMonth-$utcDay"
+
+                val utcHour = utcDateTime.hour.toString().padStart(2, '0')
+                val utcMin = utcDateTime.minute.toString().padStart(2, '0')
+                val utcSec = utcDateTime.second.toString().padStart(2, '0')
+                utcTime = "$utcHour:$utcMin:$utcSec"
+            } catch (e: Exception) {
+                val currentUtc = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.UTC)
+                val utcMonth = currentUtc.monthNumber.toString().padStart(2, '0')
+                val utcDay = currentUtc.dayOfMonth.toString().padStart(2, '0')
+                utcDate = "${currentUtc.year}-$utcMonth-$utcDay"
+
+                val utcHour = currentUtc.hour.toString().padStart(2, '0')
+                val utcMin = currentUtc.minute.toString().padStart(2, '0')
+                val utcSec = currentUtc.second.toString().padStart(2, '0')
+                utcTime = "$utcHour:$utcMin:$utcSec"
+            }
+        }
+
+        viewModelScope.launch {
+            isSubmittingSubContractorClosure.value = true
+
+            val request = org.example.project.data.model.PermitSubContractorClosureSubmitRequest(
+                permitId = permitId,
+                subContractorClosureRequest = org.example.project.data.model.SubContractorClosureRequestPayload(
+                    authorizerName = authorizer,
+                    signatureImageUrl = signatureUrl,
+                    closureTime = utcTime,
+                    closureDate = utcDate
+                )
+            )
+
+            when (val result = repository.submitPermitSubContractorClosure(request)) {
+                is org.example.project.network.NetworkResult.Success -> {
+                    submitSuccessMessage.value = result.data.statusMessage ?: "Subcontractor Closure Done Successfully"
+                    loadPermitDetail(permitId)
+                }
+                is org.example.project.network.NetworkResult.Error -> {
+                    _uiState.value = state.copy(submitError = result.message ?: "Failed to submit closure")
+                }
+            }
+            isSubmittingSubContractorClosure.value = false
+        }
+    }
+
     fun submitPermitAction(permitId: Int) {
         val user = authPreferences.getLoggedInUser() ?: return
         val action = _selectedAction.value
@@ -702,149 +804,393 @@ class PermitDetailViewModel(
             }
         }
     }
-    
+
+
     private fun handleUserTypeForSubContractor(permit: PermitDetailData) {
-        val currentUserId = authPreferences.getLoggedInUser()?.userId ?: return
+        val tag = "PermitUserTypeDebug"
 
-        val isAuthorizedSubContractor = currentUserId == permit.certificateValidity?.authorizedPerson?.userId
-        val isAuthorizedAlNasr = currentUserId == permit.subContractorAuthorization?.alnasrAuthorizer?.userId
-        val isRequestedUser = currentUserId == permit.permitRequestedUser?.userId
+        fun log(message: String) {
+            println("[$tag] $message")
+        }
 
-        val certificateRequestSign = permit.certificateValidity?.signatureImageUrl
-        val subAuthSign = permit.subContractorAuthorization?.signatureImageUrl
-        val authSign = permit.authorizationRequest?.signatureImageUrl
-        val subClosureSign = permit.subContractorClosure?.signatureImageUrl
-        val certClosureSign = permit.certificateClosure?.signatureImageUrl
-        val requestForCertificateClosureSign = permit.requestForCertificateClosure?.signatureImageUrl
+        fun logResult(userType: PermitFormUserType, reason: String) {
+            _userType.value = userType
+            log("FINAL USER TYPE: $userType | Reason: $reason")
+        }
 
-        val status = permit.permitStatus?.let { PermitStatus.fromValue(it) }
+        log("========== START handleUserTypeForSubContractor ==========")
+
+        val loggedInUser = authPreferences.getLoggedInUser()
+        val currentUserId = loggedInUser?.userId
+
+        log("Logged-in user ID: $currentUserId")
+
+        if (currentUserId == null) {
+            log("EXIT: Logged-in user ID is null")
+            return
+        }
+
+        // User identification
+        val authorizedSubContractorId =
+            permit.certificateValidity?.authorizedPerson?.userId
+
+        val authorizedAlNasrId =
+            permit.subContractorAuthorization?.alnasrAuthorizer?.userId
+
+        val requestedUserId = permit.permitRequestedUser?.userId
+
+        val isAuthorizedSubContractor =
+            currentUserId == authorizedSubContractorId
+
+        val isAuthorizedAlNasr =
+            currentUserId == authorizedAlNasrId
+
+        val isRequestedUser =
+            currentUserId == requestedUserId
+
+        log("USER IDENTIFICATION:")
+        log("Current user ID: $currentUserId")
+        log("Authorized subcontractor ID: $authorizedSubContractorId")
+        log("Authorized AlNasr ID: $authorizedAlNasrId")
+        log("Requested user ID: $requestedUserId")
+        log("isAuthorizedSubContractor: $isAuthorizedSubContractor")
+        log("isAuthorizedAlNasr: $isAuthorizedAlNasr")
+        log("isRequestedUser: $isRequestedUser")
+
+        // Signature information
+        val certificateRequestSign =
+            permit.certificateValidity?.signatureImageUrl
+
+        val subAuthSign =
+            permit.subContractorAuthorization?.signatureImageUrl
+
+        val authSign =
+            permit.authorizationRequest?.signatureImageUrl
+
+        val subClosureSign =
+            permit.subContractorClosure?.signatureImageUrl
+
+        val certClosureSign =
+            permit.certificateClosure?.signatureImageUrl
+
+        val requestForCertificateClosureSign =
+            permit.requestForCertificateClosure?.signatureImageUrl
+
+        log("SIGNATURE INFORMATION:")
+        log("certificateRequestSign exists: ${!certificateRequestSign.isNullOrEmpty()}")
+        log("subAuthSign exists: ${!subAuthSign.isNullOrEmpty()}")
+        log("authSign exists: ${!authSign.isNullOrEmpty()}")
+        log("subClosureSign exists: ${!subClosureSign.isNullOrEmpty()}")
+        log("certClosureSign exists: ${!certClosureSign.isNullOrEmpty()}")
+        log("requestForCertificateClosureSign exists: ${!requestForCertificateClosureSign.isNullOrEmpty()}")
+
+        // Permit status
+        val rawStatus = permit.permitStatus
+        val status = rawStatus?.let { PermitStatus.fromValue(it) }
+
+        log("PERMIT INFORMATION:")
+        log("Permit ID: ${permit.permitId}")
+        log("Permit code: ${permit.permitCode}")
+        log("Raw permit status: $rawStatus")
+        log("Parsed permit status: $status")
+
+        log("EVALUATING STATUS BRANCH: $status")
 
         when (status) {
-            PermitStatus.PENDING_ALNASR_CLOSURE, PermitStatus.PENDING_ALNASR_AUTHORIZATION, PermitStatus.PENDING_SUBCONTRACTOR_CLOSURE, PermitStatus.PENDING_SUBCONTRACTOR_AUTHORIZATION -> {
+            PermitStatus.PENDING_ALNASR_CLOSURE,
+            PermitStatus.PENDING_ALNASR_AUTHORIZATION,
+            PermitStatus.PENDING_SUBCONTRACTOR_CLOSURE,
+            PermitStatus.PENDING_SUBCONTRACTOR_AUTHORIZATION -> {
+
+                log("BRANCH: Pending authorization/closure")
+
+                log("CHECK 1: isAuthorizedSubContractor=$isAuthorizedSubContractor, subAuthSignEmpty=${subAuthSign.isNullOrEmpty()}")
                 if (isAuthorizedSubContractor && subAuthSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_AUTHORIZER,
+                        "Authorized subcontractor; subcontractor authorization signature missing"
+                    )
                     return
                 }
 
+                log("CHECK 2: subAuthSignEmpty=${subAuthSign.isNullOrEmpty()}")
                 if (subAuthSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUESTOR
+                    logResult(
+                        PermitFormUserType.REQUESTOR,
+                        "Subcontractor authorization signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 3: isAuthorizedAlNasr=$isAuthorizedAlNasr, authSignEmpty=${authSign.isNullOrEmpty()}")
                 if (isAuthorizedAlNasr && authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.INSTARESOLV_AUTHORIZER
+                    logResult(
+                        PermitFormUserType.INSTARESOLV_AUTHORIZER,
+                        "Authorized AlNasr user; authorization signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 4: authSignEmpty=${authSign.isNullOrEmpty()}")
                 if (authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER,
+                        "Authorization signature missing; viewer fallback"
+                    )
                     return
                 }
+
+                log("CHECK 5: isRequestedUser=$isRequestedUser, requestForCertificateClosureSignEmpty=${requestForCertificateClosureSign.isNullOrEmpty()}")
                 if (isRequestedUser && requestForCertificateClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    logResult(
+                        PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE,
+                        "Requested user; certificate closure request signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 6: requestForCertificateClosureSignEmpty=${requestForCertificateClosureSign.isNullOrEmpty()}")
                 if (requestForCertificateClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.INSTARESOLV_AUTHORIZER
+                    logResult(
+                        PermitFormUserType.INSTARESOLV_AUTHORIZER,
+                        "Certificate closure request signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 7: isAuthorizedSubContractor=$isAuthorizedSubContractor, subClosureSignEmpty=${subClosureSign.isNullOrEmpty()}")
                 if (isAuthorizedSubContractor && subClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_CLOSURE
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_CLOSURE,
+                        "Authorized subcontractor; subcontractor closure signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 8: subClosureSignEmpty=${subClosureSign.isNullOrEmpty()}")
                 if (subClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    logResult(
+                        PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER,
+                        "Subcontractor closure signature missing; viewer fallback"
+                    )
                     return
                 }
+
+                log("CHECK 9: isAuthorizedAlNasr=$isAuthorizedAlNasr, certClosureSignEmpty=${certClosureSign.isNullOrEmpty()}")
                 if (isAuthorizedAlNasr && certClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.CERTIFICATE_CLOSURE
+                    logResult(
+                        PermitFormUserType.CERTIFICATE_CLOSURE,
+                        "Authorized AlNasr user; certificate closure signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 10: certClosureSignEmpty=${certClosureSign.isNullOrEmpty()}")
                 if (certClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_CLOSURE
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_CLOSURE_VIEWER,
+                        "Certificate closure signature missing; fallback"
+                    )
                     return
                 }
-                if (isRequestedUser && subAuthSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUESTOR
-                    return
-                }
-                if (certClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
-                    return
-                }
+
+                log("No condition matched in pending branch")
             }
+
             PermitStatus.OPEN -> {
+                log("BRANCH: OPEN")
+                log("isRequestedUser=$isRequestedUser")
+
                 if (isRequestedUser) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    logResult(
+                        PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE,
+                        "Permit OPEN; logged-in user is requestor"
+                    )
                 } else {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    logResult(
+                        PermitFormUserType.INSTARESOLV_AUTHORIZER_VIEWER,
+                        "Permit OPEN; logged-in user is not requestor"
+                    )
                 }
             }
-            PermitStatus.CANCELLED, PermitStatus.SUSPENDED -> {
-                _userType.value = PermitFormUserType.AUTHORIZER
+
+            PermitStatus.CANCELLED,
+            PermitStatus.SUSPENDED -> {
+                log("BRANCH: CANCELLED/SUSPENDED")
+
+                logResult(
+                    PermitFormUserType.AUTHORIZER,
+                    "Permit is cancelled or suspended"
+                )
             }
+
             PermitStatus.CLOSED, null -> {
-                _userType.value = PermitFormUserType.NONE
+                log("BRANCH: CLOSED or unknown status")
+
+                logResult(
+                    PermitFormUserType.NONE,
+                    "Permit is closed or status could not be parsed"
+                )
             }
+
             PermitStatus.EXPIRED -> {
+                log("BRANCH: EXPIRED")
+
+                log("CHECK 1: certificateRequestSignEmpty=${certificateRequestSign.isNullOrEmpty()}")
                 if (certificateRequestSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUESTOR
+                    logResult(
+                        PermitFormUserType.REQUESTOR,
+                        "Expired permit; certificate request signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 2: subAuthSignEmpty=${subAuthSign.isNullOrEmpty()}")
                 if (subAuthSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUESTOR
+                    logResult(
+                        PermitFormUserType.REQUESTOR,
+                        "Expired permit; subcontractor authorization signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 3: isAuthorizedAlNasr=$isAuthorizedAlNasr, authSignEmpty=${authSign.isNullOrEmpty()}")
                 if (isAuthorizedAlNasr && authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    logResult(
+                        PermitFormUserType.AUTHORIZER,
+                        "Expired permit; authorized AlNasr user; authorization signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 4: authSignEmpty=${authSign.isNullOrEmpty()}")
                 if (authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER,
+                        "Expired permit; authorization signature missing"
+                    )
                     return
                 }
-                if (certificateRequestSign.isNullOrEmpty()) { 
-                    _userType.value = PermitFormUserType.AUTHORIZER
+
+                log("CHECK 5: certificateRequestSignEmpty=${certificateRequestSign.isNullOrEmpty()}")
+                if (certificateRequestSign.isNullOrEmpty()) {
+                    logResult(
+                        PermitFormUserType.AUTHORIZER,
+                        "Expired permit; certificate request signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 6: subClosureSignEmpty=${subClosureSign.isNullOrEmpty()}")
                 if (subClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    logResult(
+                        PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE,
+                        "Expired permit; subcontractor closure signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 7: certClosureSignEmpty=${certClosureSign.isNullOrEmpty()}")
                 if (certClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_CLOSURE
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_CLOSURE,
+                        "Expired permit; certificate closure signature missing"
+                    )
                     return
                 }
+
+                log("No condition matched in EXPIRED branch")
             }
+
+            PermitStatus.PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED -> {
+                log("BRANCH: PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED")
+
+                logResult(
+                    PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER,
+                    "AlNasr authorization pending on expired permit"
+                )
+            }
+
+            PermitStatus.PENDING_SUBCONTRACTOR_AUTHORIZATION_AND_EXPIRED -> {
+                log("BRANCH: PENDING_SUBCONTRACTOR_AUTHORIZATION_AND_EXPIRED")
+
+                logResult(
+                    PermitFormUserType.REQUESTOR,
+                    "Subcontractor authorization pending on expired permit"
+                )
+            }
+
             else -> {
+                log("BRANCH: ELSE, status=$status")
+
+                log("CHECK 1: certificateRequestSignEmpty=${certificateRequestSign.isNullOrEmpty()}")
                 if (certificateRequestSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUESTOR
+                    logResult(
+                        PermitFormUserType.REQUESTOR,
+                        "Certificate request signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 2: subAuthSignEmpty=${subAuthSign.isNullOrEmpty()}")
                 if (subAuthSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUESTOR
+                    logResult(
+                        PermitFormUserType.REQUESTOR,
+                        "Subcontractor authorization signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 3: isAuthorizedAlNasr=$isAuthorizedAlNasr, authSignEmpty=${authSign.isNullOrEmpty()}")
                 if (isAuthorizedAlNasr && authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    logResult(
+                        PermitFormUserType.AUTHORIZER,
+                        "Authorized AlNasr user; authorization signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 4: authSignEmpty=${authSign.isNullOrEmpty()}")
                 if (authSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_AUTHORIZER_VIEWER,
+                        "Authorization signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 5: certificateRequestSignEmpty=${certificateRequestSign.isNullOrEmpty()}")
                 if (certificateRequestSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.AUTHORIZER
+                    logResult(
+                        PermitFormUserType.AUTHORIZER,
+                        "Certificate request signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 6: subClosureSignEmpty=${subClosureSign.isNullOrEmpty()}")
                 if (subClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE
+                    logResult(
+                        PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE,
+                        "Subcontractor closure signature missing"
+                    )
                     return
                 }
+
+                log("CHECK 7: certClosureSignEmpty=${certClosureSign.isNullOrEmpty()}")
                 if (certClosureSign.isNullOrEmpty()) {
-                    _userType.value = PermitFormUserType.SUBCONTRACTOR_CLOSURE
+                    logResult(
+                        PermitFormUserType.SUBCONTRACTOR_CLOSURE,
+                        "Certificate closure signature missing"
+                    )
                     return
                 }
+
+                log("No condition matched in ELSE branch")
             }
         }
-        println("User Type is ${userType.value}")
+
+        log("END: No condition returned a user type. Current value=${_userType.value}")
+        log("========== END handleUserTypeForSubContractor ==========")
     }
 }

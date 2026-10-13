@@ -104,16 +104,16 @@ fun ToastView(
 
     Box(
         modifier = Modifier
-            .padding(bottom = 40.dp)
-//            .padding(horizontal = 22.dp)
             .fillMaxWidth()
             .shadow(
                 elevation = 8.dp,
+                shape = RoundedCornerShape(10.dp),
                 ambientColor = Color.Black.copy(alpha = 0.08f),
                 spotColor = Color.Black.copy(alpha = 0.08f)
             )
             .background(
                 color = style.backgroundColor,
+                shape = RoundedCornerShape(10.dp)
             )
             .height(IntrinsicSize.Min)
     ) {
@@ -177,6 +177,8 @@ fun BoxScope.ToastHost(
     AnimatedVisibility(
         modifier = Modifier
             .align(Alignment.BottomCenter)
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 40.dp)
             .then(modifier ?: Modifier),
         visible = visible,
         enter = slideInVertically { it } + fadeIn(),

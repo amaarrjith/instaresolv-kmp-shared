@@ -18,9 +18,10 @@ class ForgetPasswordViewModel(
     var uiState = _uiState.asStateFlow()
 
     fun forgetPassword(email: String) {
+        val trimmedEmail = email.trim()
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            validator.validateEmail(email)?.let { error ->
+            validator.validateEmail(trimmedEmail)?.let { error ->
                 _uiState.update { state ->
                     state.copy(
                         isLoading = false,
@@ -29,7 +30,7 @@ class ForgetPasswordViewModel(
                 }
                 return@launch
             }
-            when(val result = repository.forgetPassword(email)) {
+            when(val result = repository.forgetPassword(trimmedEmail)) {
                 is NetworkResult.Success -> {
                     _uiState.update {
                         it.copy(

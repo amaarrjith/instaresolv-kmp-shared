@@ -9,12 +9,12 @@ enum class PermitStatus(val value: Int, val title: String, val colorHex: Long) {
     SUSPENDED(4, "Suspended", 0xFFE5A93C),
     EXPIRED(5, "Expired", 0xFF757575),
     CLOSED(6, "Closed", 0xFF2E6AC6),
-    PENDING_ALNASR_AUTHORIZATION(8, "Pending Alnasr Authorization", 0xFFE5A93C),
-    PENDING_ALNASR_CLOSURE(9, "Pending Alnasr Closure", 0xFFE5A93C),
+    PENDING_ALNASR_AUTHORIZATION(8, "Pending InstaResolv Authorization", 0xFFE5A93C),
+    PENDING_ALNASR_CLOSURE(9, "Pending InstaResolv Closure", 0xFFE5A93C),
     PENDING_SUBCONTRACTOR_AUTHORIZATION(10, "Pending SubContractor Authorization", 0xFFE5A93C),
     PENDING_SUBCONTRACTOR_CLOSURE(11, "Pending SubContractor Closure", 0xFFE5A93C),
-    PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED(12, "Pending Alnasr Authorization & Expired", 0xFF757575),
-    PENDING_ALNASR_CLOSURE_AND_EXPIRED(13, "Pending Alnasr Closure & Expired", 0xFF757575),
+    PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED(12, "Pending InstaResolv Authorization & Expired", 0xFF757575),
+    PENDING_ALNASR_CLOSURE_AND_EXPIRED(13, "Pending InstaResolv Closure & Expired", 0xFF757575),
     PENDING_SUBCONTRACTOR_AUTHORIZATION_AND_EXPIRED(14, "Pending SubContractor Authorization & Expired", 0xFF757575),
     PENDING_SUBCONTRACTOR_CLOSURE_AND_EXPIRED(15, "Pending SubContractor Closure & Expired", 0xFF757575);
 

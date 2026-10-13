@@ -26,7 +26,7 @@ import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.ui.components.AppExitPopup
@@ -40,7 +40,7 @@ fun CreateLessonsLearnedScreen(
     isFromDraft: Boolean = false,
     draftId: Long = -1L
 ) {
-    val viewModel: CreateLessonLearnedViewModel = koinViewModel()
+    val viewModel: CreateLessonLearnedViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }

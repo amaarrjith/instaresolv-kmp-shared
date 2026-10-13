@@ -35,7 +35,7 @@ import instaresolv.shared.generated.resources.ic_app_logo
 import kotlinx.coroutines.delay
 import org.example.project.splash.SplashUiState
 import org.example.project.splash.SplashViewModel
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +50,7 @@ fun SplashScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
-    val viewModel: SplashViewModel = koinViewModel()
+    val viewModel: SplashViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     LaunchedEffect(uiState.value.loadingCompleted) {
         if (uiState.value.loadingCompleted) {

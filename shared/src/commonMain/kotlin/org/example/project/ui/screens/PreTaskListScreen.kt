@@ -63,7 +63,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -74,7 +74,7 @@ fun PreTaskListScreen(
     onCreateClicked: () -> Unit = {},
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: PreTaskListViewModel = koinViewModel()
+    val viewModel: PreTaskListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedPreTaskId by remember { mutableStateOf<Int?>(null) }
@@ -233,8 +233,7 @@ fun PreTaskListScreen(
                 visible = errorToastMessage != null,
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
         }
     }

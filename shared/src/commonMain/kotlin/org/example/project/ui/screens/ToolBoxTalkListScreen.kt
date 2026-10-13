@@ -42,7 +42,7 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -54,7 +54,7 @@ fun ToolBoxTalkListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: ToolBoxTalkListViewModel = koinViewModel()
+    val viewModel: ToolBoxTalkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedToolboxTalkId by remember { mutableStateOf<Int?>(null) }
@@ -240,16 +240,14 @@ fun ToolBoxTalkListScreen(
                 visible = errorToastMessage != null,
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
 
             ToastHost(
                 visible = exportToastMessage != null,
                 message = exportToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearExportToast() },
-                type = ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = ToastType.Success
             )
 
             if (selectedToolboxTalkId != null) {

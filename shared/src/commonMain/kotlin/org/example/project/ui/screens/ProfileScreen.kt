@@ -8,14 +8,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -58,14 +64,18 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.example.project.ui.components.AppConfirmationDialog
 import org.example.project.ui.components.AppExitDialog
 import org.example.project.ui.components.AppImagePreviewDialog
+import org.example.project.utilites.AppInfo
+import org.example.project.utilites.getAppInfo
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -74,8 +84,12 @@ fun ProfileScreen(
     isViewProfile: Boolean = false,
     onBack: () -> Unit
 ) {
-    val viewModel: ProfileViewModel = koinViewModel()
+    val viewModel: ProfileViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
+    val appInfo = remember { getAppInfo() }
+    val currentYear = remember {
+        kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
+    }
     val isLogoutLoading = (uiState.value as? ProfileUiState.Ready)?.isLogoutLoading == true
     var isLogoutAlertShown by remember {
         mutableStateOf(false)
@@ -114,12 +128,51 @@ fun ProfileScreen(
             }
         ) { paddingValues ->
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
                     .background(Color.White)
-                    .padding(paddingValues)
-                    .padding(horizontal = 28.dp)
-                    .imePadding()
+                    .padding(top = paddingValues.calculateTopPadding())
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
             ) {
+                val scrollState = rememberScrollState()
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 28.dp)
+                        .verticalScroll(scrollState)
+                ) {
+                    when(uiState.value) {
+                        ProfileUiState.Loading -> {
+                            AppLoader()
+                        }
+                        ProfileUiState.isEditing -> {
+                            ProfileEditScreen(
+                                viewModel = viewModel,
+                                onImageClick = { url ->
+                                    previewImageUrl = url
+                                }
+                            )
+                        }
+                        is ProfileUiState.Ready, is ProfileUiState.Success, is ProfileUiState.Error -> {
+                            ProfileScreenContent(
+                                isViewProfile = isViewProfile,
+                                appInfo,
+                                currentYear,
+                                uiState = (uiState.value as? ProfileUiState.Ready) ?: ProfileUiState.Ready(),
+                                viewModel = viewModel,
+                                onLogout = {
+                                    if (!isLogoutLoading) {
+                                        isLogoutAlertShown = true
+                                    }
+                                },
+                                onImageClick = { url ->
+                                    previewImageUrl = url
+                                }
+                            )
+                        }
+                    }
+                }
+
                 ToastHost(
                     visible = uiState.value is ProfileUiState.Success,
                     message = (uiState.value as? ProfileUiState.Success)?.successMessage.orEmpty(),
@@ -151,43 +204,6 @@ fun ProfileScreen(
                         isLogoutAlertShown = false
                     }
                 )
-
-                Column(
-                    modifier = Modifier.fillMaxSize()
-
-                ) {
-                    when(uiState.value) {
-                        ProfileUiState.Loading -> {
-                            AppLoader()
-                        }
-                        ProfileUiState.isEditing -> {
-                            ProfileEditScreen(
-                                viewModel = viewModel,
-                                onImageClick = { url ->
-                                    previewImageUrl = url
-                                }
-                            )
-                        }
-                        is ProfileUiState.Ready -> {
-                            ProfileScreenContent(
-                                isViewProfile = isViewProfile,
-                                uiState = uiState.value as ProfileUiState.Ready,
-                                viewModel = viewModel,
-                                onLogout = {
-                                    if (!isLogoutLoading) {
-                                        isLogoutAlertShown = true
-                                    }
-                                },
-                                onImageClick = { url ->
-                                    previewImageUrl = url
-                                }
-                            )
-                        }
-                        else -> {
-
-                        }
-                    }
-                }
             }
         }
 
@@ -214,6 +230,8 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenContent(
     isViewProfile: Boolean,
+    appInfo: AppInfo,
+    currentYear: Int,
     uiState: ProfileUiState.Ready,
     viewModel: ProfileViewModel,
     onLogout: () -> Unit,
@@ -278,6 +296,32 @@ fun ProfileScreenContent(
                 },
             )
         }
+        Spacer(modifier = Modifier.height(24.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = appInfo.formattedVersionInfo,
+                style = textStyle(
+                    size = 10.sp,
+                    weight = FontWeight.Normal
+                ),
+                color = AppColors.TextGray,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(Res.string.copyrightText, currentYear),
+                style = textStyle(
+                    size = 10.sp,
+                    weight = FontWeight.Normal
+                ),
+                color = AppColors.TextGray,
+                textAlign = TextAlign.Center
+            )
+        }
+        Spacer(modifier = Modifier.height(30.dp))
     }
 }
 
@@ -412,6 +456,7 @@ fun ProfileEditScreen(
                 viewModel.saveProfile(name, profileImage, email, designation, company)
             }
         )
+        Spacer(Modifier.height(24.dp))
     }
 }
 

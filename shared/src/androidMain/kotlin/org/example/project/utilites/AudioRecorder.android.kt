@@ -16,7 +16,10 @@ import java.util.Date
 import java.util.Locale
 import kotlin.concurrent.thread
 
-actual class AudioRecorder(private val context: Context) {
+actual class AudioRecorder(
+    private val context: Context,
+    private val onRequestPermission: (() -> Unit)? = null
+) {
     private var isRecording = false
     private var currentFilePath: String? = null
     private var audioRecord: AudioRecord? = null
@@ -35,7 +38,8 @@ actual class AudioRecorder(private val context: Context) {
                 android.Manifest.permission.RECORD_AUDIO
             ) != android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
-            android.util.Log.w("AudioRecorder", "RECORD_AUDIO permission not granted, cannot start recording")
+            android.util.Log.w("AudioRecorder", "RECORD_AUDIO permission not granted, requesting permission")
+            onRequestPermission?.invoke()
             return
         }
 
@@ -192,7 +196,32 @@ actual class AudioRecorder(private val context: Context) {
 @Composable
 actual fun rememberAudioRecorder(): AudioRecorder {
     val context = LocalContext.current
-    val recorder = remember { AudioRecorder(context) }
+    val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            android.util.Log.w("AudioRecorder", "RECORD_AUDIO permission denied by user")
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.RECORD_AUDIO
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    val recorder = remember {
+        AudioRecorder(
+            context = context,
+            onRequestPermission = {
+                permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+            }
+        )
+    }
     androidx.compose.runtime.DisposableEffect(recorder) {
         onDispose {
             recorder.stopRecording()

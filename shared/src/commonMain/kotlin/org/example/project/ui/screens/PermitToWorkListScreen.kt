@@ -41,7 +41,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -54,7 +54,7 @@ fun PermitToWorkListScreen(
     onItemClicked: (Int) -> Unit = {},
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: PermitToWorkListViewModel = koinViewModel()
+    val viewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var showAddModal by remember { mutableStateOf(false) }
@@ -334,32 +334,28 @@ fun PermitToWorkListScreen(
                 visible = errorToastMessage != null,
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
 
             ToastHost(
                 visible = uiState.errorMessage != null,
                 message = uiState.errorMessage  ?: "",
                 onDismiss = { viewModel.clearErrorMessage() },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
 
             ToastHost(
                 visible = uiState.exportError != null,
                 message = uiState.exportError ?: "",
                 onDismiss = { viewModel.clearExportError() },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
 
             ToastHost(
                 visible = uiState.exportSuccessMessage != null,
                 message = uiState.exportSuccessMessage ?: "",
                 onDismiss = { viewModel.clearExportSuccess() },
-                type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Success
             )
         }
     }
@@ -409,7 +405,7 @@ private fun PermitListItem(
                             text = statusTitle.uppercase(),
                             style = textStyle(size = 9.sp, weight = FontWeight.Bold),
                             color = Color.White,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Left
                         )
                     }
                 }

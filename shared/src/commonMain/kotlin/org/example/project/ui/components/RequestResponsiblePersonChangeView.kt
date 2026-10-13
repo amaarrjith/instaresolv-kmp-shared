@@ -96,6 +96,7 @@ fun RequestResponsiblePersonChangeView(
 
             AppMultilineTextField(
                 title = stringResource(Res.string.description),
+                isMandatory = true,
                 value = justification,
                 onValueChange = {
                     errorMessage = ""
@@ -153,8 +154,7 @@ fun RequestResponsiblePersonChangeView(
             message = errorMessage,
             onDismiss = {
                 errorMessage = ""
-            },
-            modifier = Modifier.padding(horizontal = 20.dp)
+            }
         )
     }
 }

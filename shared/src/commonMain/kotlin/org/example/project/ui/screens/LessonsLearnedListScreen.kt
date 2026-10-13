@@ -40,7 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.example.project.data.model.LessonLearnedData
 import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ErrorRetryView
@@ -79,7 +79,7 @@ fun LessonsLearnedListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: LessonsLearnedListViewModel = koinViewModel()
+    val viewModel: LessonsLearnedListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedLessonId by remember { mutableStateOf<Int?>(null) }
@@ -285,16 +285,14 @@ fun LessonsLearnedListScreen(
                 visible = errorToastMessage != null,
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
 
             ToastHost(
                 visible = exportToastMessage != null,
                 message = exportToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearExportToast() },
-                type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Success
             )
         }
     }

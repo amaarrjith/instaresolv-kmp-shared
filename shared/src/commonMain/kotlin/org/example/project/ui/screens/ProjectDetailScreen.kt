@@ -84,22 +84,26 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
+import org.example.project.utilites.rememberFileDownloader
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.data.model.DesignationTypeResponse
 import org.example.project.ui.components.AppExposedDropdownMenu
+import kotlin.time.Clock
 
 @Composable
 fun ProjectDetailScreen(
     groupId: Int,
     groupCode: String,
+    projectUpdated: Boolean = false,
+    onProjectUpdatedConsumed: () -> Unit = {},
     onBackClick: () -> Unit,
     onEditClick: (ProjectDetail) -> Unit,
     onTrainingClick: (ProjectMember) -> Unit
 ) {
-    val viewModel: ProjectDetailViewModel = koinViewModel()
+    val viewModel: ProjectDetailViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     val inviteStatus = viewModel.inviteStatus.collectAsState()
     val isAppAdmin = UserType.fromInt(viewModel.loggedInUser?.userType ?: -1) == UserType.APP_ADMIN
@@ -108,11 +112,22 @@ fun ProjectDetailScreen(
     val successToastMessage = remember { mutableStateOf<String?>(null) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
     val designationTypes = viewModel.designations
+    val fileDownloader = rememberFileDownloader()
     LaunchedEffect(Unit) {
         viewModel.getProjectDetails(
             groupId = groupId,
             groupCode = groupCode
         )
+    }
+    LaunchedEffect(projectUpdated) {
+        if (projectUpdated) {
+            viewModel.getProjectDetails(
+                groupId = groupId,
+                groupCode = groupCode
+            )
+            successToastMessage.value = "Project Updated Successfully"
+            onProjectUpdatedConsumed()
+        }
     }
     Scaffold(
         containerColor = Color.White,
@@ -129,9 +144,8 @@ fun ProjectDetailScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 22.dp)
-                .imePadding()
         ) {
             when(uiState.value) {
                 is ProjectDetailUiState.Loading -> {
@@ -201,6 +215,25 @@ fun ProjectDetailScreen(
                         },
                         onTrainingClick = { member ->
                             onTrainingClick(member)
+                        },
+                        onExportTraining = {
+                            val project = (uiState.value as? ProjectDetailUiState.Success)?.project
+                            val url = project?.trainingFileUrl.orEmpty()
+                            if (url.isNotBlank()) {
+                                try {
+                                    val ext = if (url.substringBefore("?").endsWith(".xls", ignoreCase = true)) "xls" else "xlsx"
+                                    val safeName = project?.groupName
+                                        ?.replace(Regex("[^a-zA-Z0-9_-]"), "_")
+                                        ?.takeIf { it.isNotBlank() } ?: "Project"
+                                    val fileName = "${safeName}_Training_Details_${Clock.System.now().toEpochMilliseconds()}.$ext"
+                                    fileDownloader.downloadFile(url, fileName)
+                                    successToastMessage.value = "Downloading training details..."
+                                } catch (e: Exception) {
+                                    errorMessage.value = e.message ?: "Failed to export training details"
+                                }
+                            } else {
+                                errorMessage.value = "Training details file is not available"
+                            }
                         }
                     )
                 }
@@ -246,8 +279,11 @@ fun ProjectDetailScreen(
                     title = stringResource(Res.string.success),
                     description = successMessage.value ?: "",
                     onDismiss = {
+                        val message = successMessage.value
                         successMessage.value = null
-//                        onBackClick()
+                        if (message?.contains("Delete", ignoreCase = true) == true) {
+                            onBackClick()
+                        }
                     }
                 )
             }
@@ -290,7 +326,8 @@ fun  ProjectDetailScreenContent(
     onChangeRoleSubmit: (Int, Int) -> Unit,
     onRemoveMemberSubmit: (Int) -> Unit,
     onChangeDesignationSubmit: (Int, List<Int>) -> Unit,
-    onTrainingClick: (ProjectMember) -> Unit
+    onTrainingClick: (ProjectMember) -> Unit,
+    onExportTraining: () -> Unit
 ) {
     val isSearchBarVisible = remember {
         mutableStateOf(false)
@@ -307,6 +344,8 @@ fun  ProjectDetailScreenContent(
     val showLeaveProjectDialog = remember { mutableStateOf<ProjectMember?>(null) }
     Column(
         modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 22.dp)
             .verticalScroll(rememberScrollState())
     ) {
         WebImageView(
@@ -406,6 +445,9 @@ fun  ProjectDetailScreenContent(
                 isAppAdmin = isAppAdmin,
                 isProjectAdmin = project.isAdmin,
                 trainingFileUrl = project.trainingFileUrl,
+                onExportTraining = {
+                    onExportTraining()
+                },
                 onTransferAdminClick = { showTransferAdminSheet.value = true },
                 onDeleteProjectClick = { showDeleteSheet.value = true },
                 onExitProjectClick = { showExitDialog.value = true }
@@ -506,6 +548,7 @@ fun SettingsContentView(
     isAppAdmin: Boolean,
     isProjectAdmin: Boolean,
     trainingFileUrl: String,
+    onExportTraining: () -> Unit = {},
     onTransferAdminClick: () -> Unit = {},
     onDeleteProjectClick: () -> Unit = {},
     onExitProjectClick: () -> Unit = {}
@@ -535,7 +578,7 @@ fun SettingsContentView(
                     SettingsItemRow(
                         title = stringResource(Res.string.exportTrainingDetails),
                         subtitle = stringResource(Res.string.downloadAllMembersTrainingDetails),
-                        onClick = {}
+                        onClick = onExportTraining
                     )
                 }
 
@@ -557,7 +600,7 @@ fun SettingsContentView(
                     SettingsItemRow(
                         title = stringResource(Res.string.exportTrainingDetails),
                         subtitle = stringResource(Res.string.downloadAllMembersTrainingDetails),
-                        onClick = {}
+                        onClick = onExportTraining
                     )
                 }
 
@@ -574,7 +617,7 @@ fun SettingsContentView(
                     SettingsItemRow(
                         title = stringResource(Res.string.exportTrainingDetails),
                         subtitle = stringResource(Res.string.downloadAllMembersTrainingDetails),
-                        onClick = {}
+                        onClick = onExportTraining
                     )
                 }
 
@@ -985,10 +1028,11 @@ fun InviteMemberBottomSheet(
         containerColor = Color.White
     ) {
         Box(modifier = Modifier.fillMaxWidth()
-            .padding(horizontal = 22.dp)) {
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 22.dp)
                     .padding(bottom = 30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -1158,11 +1202,11 @@ fun DeleteProjectBottomSheet(
         containerColor = Color.White
     ) {
         Box(modifier = Modifier.fillMaxWidth()
-            .padding(horizontal = 22.dp)) {
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-
+                    .padding(horizontal = 22.dp)
                     .padding(bottom = 30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -1200,7 +1244,7 @@ fun DeleteProjectBottomSheet(
                 Button(
                     onClick = {
                         if (password.value.isNotBlank()) {
-                            onDelete(password.value) { errorMsg ->
+                            onDelete(password.value.trim()) { errorMsg ->
                                 if (errorMsg != null) {
                                     errorMessage.value = errorMsg
                                 } else {
@@ -1405,10 +1449,11 @@ fun TransferAdminBottomSheet(
         sheetState = sheetState,
         containerColor = Color.White
     ) {
-        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp)) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 22.dp)
                     .padding(bottom = 30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

@@ -12,19 +12,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.window.Dialog
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
@@ -53,7 +59,7 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.ResizeOptions
@@ -85,9 +91,11 @@ import org.example.project.ui.components.AppMultilineTextField
 @Composable
 fun CreateProjectScreen(
     project: ProjectDetail? = null,
-    onBack: () -> Unit
+    isEdit: Boolean = project != null,
+    onBack: () -> Unit,
+    onUpdateSuccess: (() -> Unit)? = null
 ) {
-    val viewModel: CreateProjectViewModel = koinViewModel()
+    val viewModel: CreateProjectViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     val projectImage = viewModel.uploadedImageUrl.collectAsState()
     val projectTitle = remember { mutableStateOf(project?.groupName ?: "") }
@@ -111,10 +119,14 @@ fun CreateProjectScreen(
     )
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = Color.White,
         topBar = {
             CreateProjectScreenTopBar(
-                isEdit = project != null,
+                isEdit = isEdit,
                 onBack = {
                     showExitPopup.value = true
                 }
@@ -122,58 +134,50 @@ fun CreateProjectScreen(
         },
         bottomBar = {
             CreateProjectScreenBottomBar(
-                isEdit = project != null,
-                onCancel = {    onBack()    },
-                onCreate = {    viewModel.createProject(
-                    groupCode = project?.groupCode ?: "",
-                    groupName = projectTitle.value,
-                    description = projectDescription.value,
-                    groupImage = projectImage.value
-                )   }
+                isEdit = isEdit,
+                onCancel = { onBack() },
+                onCreate = {
+                    viewModel.createProject(
+                        groupCode = project?.groupCode ?: "",
+                        groupName = projectTitle.value,
+                        description = projectDescription.value,
+                        groupImage = projectImage.value
+                    )
+                }
             )
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
+            modifier = Modifier
+                .fillMaxSize()
                 .background(Color.White)
-                .padding(horizontal = 22.dp)
+                .padding(paddingValues)
         ) {
-            if (uiState.value is CreateProjectUiState.Success) {
-                if (project != null) {
-                    ToastHost(
-                        visible = true,
-                        message = stringResource(Res.string.projectUpdatedSuccessfully),
-                        onDismiss = {
-                            viewModel.clearState()
-                            onBack()
-                        },
-                        type = ToastType.Success
-                    )
-                    LaunchedEffect(Unit) {
-                        delay(1500)
+            LaunchedEffect(uiState.value) {
+                if (uiState.value is CreateProjectUiState.Success && isEdit) {
+                    onUpdateSuccess?.invoke() ?: onBack()
+                }
+            }
+
+            if (uiState.value is CreateProjectUiState.Success && !isEdit) {
+                Dialog(
+                    onDismissRequest = {
                         viewModel.clearState()
                         onBack()
                     }
-                } else {
-                    Dialog(
-                        onDismissRequest = {
+                ) {
+                    CreateProjectScreenContent(
+                        isEdit = false,
+                        viewModel = viewModel,
+                        uiState = uiState.value as CreateProjectUiState.Success,
+                        onBack = {
                             viewModel.clearState()
                             onBack()
                         }
-                    ) {
-                        CreateProjectScreenContent(
-                            isEdit = false,
-                            viewModel = viewModel,
-                            uiState = uiState.value as CreateProjectUiState.Success,
-                            onBack = {
-                                viewModel.clearState()
-                                onBack()
-                            }
-                        )
-                    }
+                    )
                 }
             }
+
             ToastHost(
                 visible = uiState.value is CreateProjectUiState.Error,
                 message = (uiState.value as? CreateProjectUiState.Error)?.errorMessage.orEmpty(),
@@ -182,72 +186,79 @@ fun CreateProjectScreen(
                 },
                 type = ToastType.Error
             )
-            when(uiState.value) {
-                is CreateProjectUiState.isLoading -> {
+
+            when {
+                uiState.value is CreateProjectUiState.isLoading || (uiState.value is CreateProjectUiState.Success && isEdit) -> {
                     AppLoader()
-                } else -> {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Box(
-                        modifier = Modifier.size(84.dp).clip(CircleShape),
-                        contentAlignment = Alignment.Center
+                }
+                else -> {
+                    val scrollState = rememberScrollState()
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 22.dp)
+                            .verticalScroll(scrollState)
                     ) {
-                        WebImageView(
-                            imageUrl = projectImage.value,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        if (isImageUploading.value) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.Black.copy(alpha = 0.4f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    color = Color.White,
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
-                                )
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Box(
+                            modifier = Modifier.size(84.dp).clip(CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            WebImageView(
+                                imageUrl = projectImage.value,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            if (isImageUploading.value) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.4f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = Color.White,
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
                             }
                         }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    if (projectImage.value.isBlank()) {
-                        AppBorderButton(
-                            title = stringResource(Res.string.uploadProjectImage),
-                            onClick = {
-                                showImagePicker.value = true
-                            },
-                            modifier = Modifier.width(200.dp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        if (projectImage.value.isBlank()) {
+                            AppBorderButton(
+                                title = stringResource(Res.string.uploadProjectImage),
+                                onClick = {
+                                    showImagePicker.value = true
+                                },
+                                modifier = Modifier.width(200.dp)
+                            )
+                        } else {
+                            AppBorderButton(
+                                title = stringResource(Res.string.changeProjectImage),
+                                onClick = {
+                                    showImagePicker.value = true
+                                },
+                                modifier = Modifier.width(200.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(35.dp))
+                        AppTextField(
+                            value = projectTitle.value,
+                            onValueChange = { projectTitle.value = it },
+                            title = stringResource(Res.string.projectTitle),
+                            placeholder = stringResource(Res.string.projectTitle)
                         )
-                    } else {
-                        AppBorderButton(
-                            title = stringResource(Res.string.changeProjectImage),
-                            onClick = {
-                                showImagePicker.value = true
-                            },
-                            modifier = Modifier.width(200.dp)
+                        Spacer(modifier = Modifier.height(20.dp))
+                        AppMultilineTextField(
+                            value = projectDescription.value,
+                            onValueChange = { projectDescription.value = it },
+                            title = stringResource(Res.string.projectDescription),
+                            placeholder = stringResource(Res.string.projectDescription),
                         )
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
-                    Spacer(modifier = Modifier.height(35.dp))
-                    AppTextField(
-                        value = projectTitle.value,
-                        onValueChange = { projectTitle.value = it },
-                        title = stringResource(Res.string.projectTitle),
-                        placeholder = stringResource(Res.string.projectTitle)
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    AppMultilineTextField(
-                        value = projectDescription.value,
-                        onValueChange = { projectDescription.value = it },
-                        title = stringResource(Res.string.projectDescription),
-                        placeholder = stringResource(Res.string.projectDescription),
-                    )
                 }
-            }
             }
         }
 

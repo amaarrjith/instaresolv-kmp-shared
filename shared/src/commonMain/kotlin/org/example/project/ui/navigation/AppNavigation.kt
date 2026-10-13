@@ -2,6 +2,7 @@ package org.example.project.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
@@ -15,7 +16,6 @@ import org.example.project.data.model.ProjectMember
 import org.example.project.manager.AppManager
 import org.example.project.navigation.Screens
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
 import org.example.project.ui.ActionOverview
 import org.example.project.ui.AppTabBar
 import org.example.project.ui.ForgetPasswordScreen
@@ -230,7 +230,7 @@ fun AppNavigation() {
             )
         }
         composable(Screens.TabBar.route) {
-            val homeViewModel: org.example.project.homescreen.HomeScreenViewModel = koinViewModel()
+            val homeViewModel: org.example.project.homescreen.HomeScreenViewModel = koinInject()
             val isProjectListEmpty by homeViewModel.isProjectListEmpty.collectAsStateWithLifecycle()
 
             AppTabBar(
@@ -639,6 +639,7 @@ fun AppNavigation() {
         }
         composable(Screens.CreateProjectScreen.route) {
             CreateProjectScreen(
+                isEdit = false,
                 onBack = {
                     navController.popBackStack()
                 }
@@ -647,14 +648,25 @@ fun AppNavigation() {
         composable(Screens.ProjectDetailScreenWithArgs.route) { backStackEntry ->
             val groupId = backStackEntry.savedStateHandle.get<String>("groupId")?.toIntOrNull() ?: -1
             val groupCode = backStackEntry.savedStateHandle.get<String>("groupCode") ?: "-1"
+            val projectUpdatedState = backStackEntry.savedStateHandle.getStateFlow("projectUpdated", false).collectAsState()
             ProjectDetailScreen(
                 groupId = groupId,
                 groupCode = groupCode,
+                projectUpdated = projectUpdatedState.value,
+                onProjectUpdatedConsumed = {
+                    backStackEntry.savedStateHandle["projectUpdated"] = false
+                },
                 onBackClick = {
                     navController.popBackStack()
                 },
                 onEditClick = { projectDetail ->
-                    navController.currentBackStackEntry?.savedStateHandle?.set("project", Json.encodeToString(projectDetail))
+                    val jsonStr = try {
+                        Json { ignoreUnknownKeys = true; isLenient = true }.encodeToString(projectDetail)
+                    } catch (e: Exception) {
+                        ""
+                    }
+                    backStackEntry.savedStateHandle.set("project", jsonStr)
+                    navController.currentBackStackEntry?.savedStateHandle?.set("project", jsonStr)
                     navController.navigate(Screens.EditProjectScreen.route)
                 },
                 onTrainingClick = { member ->
@@ -665,16 +677,26 @@ fun AppNavigation() {
         }
         composable(Screens.EditProjectScreen.route) {
             val projectJson = navController.previousBackStackEntry?.savedStateHandle?.get<String>("project")
-            val project = projectJson?.let {
-                Json.decodeFromString<ProjectDetail>(it)
+            val project = androidx.compose.runtime.remember(projectJson) {
+                projectJson?.let {
+                    try {
+                        Json { ignoreUnknownKeys = true; isLenient = true }.decodeFromString<ProjectDetail>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
             }
             CreateProjectScreen(
+                isEdit = true,
                 project = project,
                 onBack = {
                     navController.popBackStack()
+                },
+                onUpdateSuccess = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set("projectUpdated", true)
+                    navController.popBackStack()
                 }
             )
-
         }
         composable(Screens.AssignedTrainingsScreen.route) {
             val memberJson = navController.previousBackStackEntry?.savedStateHandle?.get<String>("member")

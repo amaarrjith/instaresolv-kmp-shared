@@ -1,13 +1,20 @@
 package org.example.project.utilites
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -23,48 +30,117 @@ actual class AppCameraLauncher(
 @Composable
 actual fun rememberAppCameraLauncher(onResult: (ByteArray?) -> Unit): AppCameraLauncher {
     val context = LocalContext.current
-    val photoFile = remember {
-        val dir = File(context.cacheDir, "camera_photos").apply { mkdirs() }
-        File(dir, "temp_capture.jpg")
-    }
-    val photoUri: Uri = remember(photoFile) {
-        val authority = "${context.packageName}.fileprovider"
-        FileProvider.getUriForFile(context, authority, photoFile)
+    val currentOnResult by rememberUpdatedState(onResult)
+    var currentPhotoFile by remember { mutableStateOf<File?>(null) }
+    var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
+
+    fun prepareFileAndUri(): Pair<File, Uri>? {
+        return try {
+            val dir = File(context.cacheDir, "camera_photos").apply { mkdirs() }
+            val file = File(dir, "temp_capture_${System.currentTimeMillis()}.jpg")
+            if (file.exists()) {
+                file.delete()
+            }
+            file.createNewFile()
+            val authority = "${context.packageName}.fileprovider"
+            val uri = FileProvider.getUriForFile(context, authority, file)
+            Pair(file, uri)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success && photoFile.exists()) {
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        val file = currentPhotoFile
+        if (success && file != null && file.exists() && file.length() > 0) {
             try {
                 // Downsample large camera photos to max 2048px to prevent OutOfMemoryError while maintaining crisp quality
                 val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                BitmapFactory.decodeFile(photoFile.absolutePath, options)
+                BitmapFactory.decodeFile(file.absolutePath, options)
                 val maxDim = maxOf(options.outWidth, options.outHeight)
                 var sampleSize = 1
                 while (maxDim / sampleSize > 2048) {
                     sampleSize *= 2
                 }
                 val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-                val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath, decodeOptions)
+                val bitmap = BitmapFactory.decodeFile(file.absolutePath, decodeOptions)
                 if (bitmap != null) {
                     val stream = ByteArrayOutputStream()
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-                    onResult(stream.toByteArray())
+                    currentOnResult(stream.toByteArray())
                 } else {
-                    onResult(null)
+                    currentOnResult(null)
                 }
             } catch (e: Exception) {
-                onResult(null)
+                e.printStackTrace()
+                currentOnResult(null)
             } finally {
-                photoFile.delete()
+                file.delete()
+                currentPhotoFile = null
+                currentPhotoUri = null
             }
         } else {
-            onResult(null)
+            file?.delete()
+            currentPhotoFile = null
+            currentPhotoUri = null
+            currentOnResult(null)
+        }
+    }
+
+    fun launchCameraInternal() {
+        val pair = prepareFileAndUri()
+        if (pair != null) {
+            currentPhotoFile = pair.first
+            currentPhotoUri = pair.second
+            try {
+                takePictureLauncher.launch(pair.second)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                pair.first.delete()
+                currentPhotoFile = null
+                currentPhotoUri = null
+                currentOnResult(null)
+            }
+        } else {
+            currentOnResult(null)
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchCameraInternal()
+        } else {
+            currentOnResult(null)
+        }
+    }
+
+    val launchAction = rememberUpdatedState {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            launchCameraInternal()
+        } else {
+            try {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                currentOnResult(null)
+            }
         }
     }
 
     return remember {
         AppCameraLauncher(
-            onLaunch = { launcher.launch(photoUri) }
+            onLaunch = { launchAction.value() }
         )
     }
 }
+

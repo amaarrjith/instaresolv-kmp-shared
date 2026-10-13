@@ -29,7 +29,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.example.project.ui.IncidentType
 import org.example.project.ui.screens.PermitToWorkListViewModel
 
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,8 +43,8 @@ fun AppFilterBottomSheet(
     onApply: (AppFilterState) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val viewModel: FilterBottomSheetViewModel = koinViewModel()
-    val permitViewModel: PermitToWorkListViewModel = koinViewModel()
+    val viewModel: FilterBottomSheetViewModel = koinInject()
+    val permitViewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val permitUiState by permitViewModel.uiState.collectAsState()
     val filterData = uiState.filterData

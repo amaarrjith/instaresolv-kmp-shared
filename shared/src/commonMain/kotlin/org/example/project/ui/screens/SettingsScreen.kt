@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -89,11 +90,15 @@ fun SettingsScreen(
         }
     ) { paddingValues ->
         Box(
-            Modifier
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 28.dp)
         ) {
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 28.dp)
+            ) {
                 item { SettingsRow(title = stringResource(Res.string.appLanguage), subText = currentLanguage.title, action = { showLanguageSheet = true }) }
                 item { SettingsRow(title = stringResource(Res.string.changePassword), subText = stringResource(Res.string.emptyStr), action = { onChangePasswordClick() }) }
                 item { 

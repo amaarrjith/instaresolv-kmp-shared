@@ -63,7 +63,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -75,7 +75,7 @@ fun IncidentListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: IncidentListViewModel = koinViewModel()
+    val viewModel: IncidentListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedIncidentId by remember { mutableStateOf<Int?>(null) }
@@ -281,24 +281,21 @@ fun IncidentListScreen(
                 visible = uiState.errorExcel != null,
                 message = uiState.errorExcel ?: "",
                 onDismiss = { uiState.errorExcel = null },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
 
             ToastHost(
                 visible = errorToastMessage != null,
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
 
             ToastHost(
                 visible = exportToastMessage != null,
                 message = exportToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearExportToast() },
-                type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Success
             )
         }
     }

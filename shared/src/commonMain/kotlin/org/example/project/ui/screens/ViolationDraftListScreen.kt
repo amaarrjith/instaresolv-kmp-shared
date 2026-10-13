@@ -57,14 +57,14 @@ import org.example.project.utilites.ToastType
 import org.example.project.ui.components.WebImageView
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun ViolationDraftListScreen(
     onBackClicked: () -> Unit,
     onDraftClicked: (Long) -> Unit
 ) {
-    val viewModel: ViolationListViewModel = koinViewModel()
+    val viewModel: ViolationListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }

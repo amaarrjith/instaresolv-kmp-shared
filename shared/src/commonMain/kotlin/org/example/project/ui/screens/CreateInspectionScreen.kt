@@ -34,7 +34,7 @@ import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.ui.components.AppStatusDialog
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -52,7 +52,7 @@ fun CreateInspectionScreen(
     isFromDraft: Boolean = false,
     draftId: Long = -1L
 ) {
-    val viewModel: CreateInspectionViewModel = koinViewModel()
+    val viewModel: CreateInspectionViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }
@@ -260,7 +260,8 @@ fun CreateInspectionScreen(
                     AppDatePicker(
                         text = stringResource(Res.string.txt_18Aug2025),
                         selectedDateMillis = uiState.inspectionDateMillis,
-                        onDateSelected = { viewModel.onDateSelected(it) }
+                        onDateSelected = { viewModel.onDateSelected(it) },
+                        restrictFutureDates = true
                     )
                 }
 

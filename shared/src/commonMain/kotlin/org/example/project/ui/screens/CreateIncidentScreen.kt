@@ -32,7 +32,7 @@ import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.ui.components.AppDatePicker
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.ui.IncidentType
@@ -61,7 +61,7 @@ fun CreateIncidentScreen(
     isFromDraft: Boolean = false,
     draftId: Long = -1L
 ) {
-    val viewModel: CreateIncidentViewModel = koinViewModel()
+    val viewModel: CreateIncidentViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val showSuccessDialog = remember { mutableStateOf(false) }

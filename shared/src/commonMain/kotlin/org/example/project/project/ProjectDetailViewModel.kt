@@ -231,6 +231,10 @@ class ProjectDetailViewModel(
             }
         }
     }
+
+    fun downloadTrainingMatrix(fileUrl: String) {
+
+    }
 }
 
 sealed class InviteStatus {

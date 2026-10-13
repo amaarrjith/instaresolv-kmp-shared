@@ -18,7 +18,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -55,7 +59,7 @@ import org.example.project.login.LoginUiState
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.utilites.getAppInfo
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -68,7 +72,7 @@ fun LoginScreen(
     navigateToRegister: () -> Unit,
     navigateToForgetPassword: () -> Unit,
 ) {
-    val vm: LoginViewModel = koinViewModel()
+    val vm: LoginViewModel = koinInject()
     val uiState by vm.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
@@ -81,38 +85,36 @@ fun LoginScreen(
 
     Box(
         modifier = Modifier
-            .background(Color.White)
-            .navigationBarsPadding()
-            .statusBarsPadding()
             .fillMaxSize()
-            .padding(horizontal = 28.dp)
-            .imePadding()
-            .verticalScroll(scrollState)
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { 
-                    focusManager.clearFocus()
-                })
-            }
+            .background(Color.White)
+            .statusBarsPadding()
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
     ) {
-        LoginScreenContent(
-            navigateToRegister = navigateToRegister,
-            navigateToForgetPassword = navigateToForgetPassword,
-            viewModel = vm,
-            uiState
-        )
-
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp)
+                .fillMaxSize()
+                .padding(horizontal = 28.dp)
+                .verticalScroll(scrollState)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { 
+                        focusManager.clearFocus()
+                    })
+                }
         ) {
-            ToastHost(
-                visible = uiState.errorMessage != null,
-                type = ToastType.Error,
-                message = uiState.errorMessage.orEmpty(),
-                onDismiss = vm::clearError
+            LoginScreenContent(
+                navigateToRegister = navigateToRegister,
+                navigateToForgetPassword = navigateToForgetPassword,
+                viewModel = vm,
+                uiState
             )
         }
+
+        ToastHost(
+            visible = uiState.errorMessage != null,
+            type = ToastType.Error,
+            message = uiState.errorMessage.orEmpty(),
+            onDismiss = vm::clearError
+        )
     }
 }
 
@@ -132,7 +134,7 @@ fun LoginScreenContent(
     }
     
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Spacer(modifier = Modifier.height(100.dp))
         Box(
@@ -147,7 +149,7 @@ fun LoginScreenContent(
                     .sizeIn(maxWidth = 220.dp, maxHeight = 140.dp),
             )
         }
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(48.dp))
         Column(
             modifier = Modifier
                 .fillMaxWidth()

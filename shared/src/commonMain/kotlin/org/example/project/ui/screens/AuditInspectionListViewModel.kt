@@ -179,7 +179,11 @@ class AuditInspectionListViewModel(
                 limit = 20,
                 searchKey = _uiState.value.searchKey,
                 reportedByPersons = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
-                projectIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() },
+                projectIds = if (filter.noProjectSelected) {
+                    listOf(-1)
+                } else {
+                    filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+                },
                 openDate = formatMillis(filter.dateOpenMillis),
                 endDate = formatMillis(filter.dateCloseMillis)
             )

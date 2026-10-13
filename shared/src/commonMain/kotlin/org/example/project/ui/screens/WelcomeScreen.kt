@@ -62,7 +62,7 @@ import org.example.project.typography.textStyle
 import org.example.project.welcomescreen.WelcomeScreenViewModel
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -70,7 +70,7 @@ import instaresolv.shared.generated.resources.*
 fun WelcomeScreen(
     onNavigateToLogin: () -> Unit,
 ) {
-    val viewModel: WelcomeScreenViewModel = koinViewModel()
+    val viewModel: WelcomeScreenViewModel = koinInject()
     var currentIndex by remember { mutableStateOf(0) }
     
     val descriptions = listOf(

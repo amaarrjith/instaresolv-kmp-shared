@@ -25,7 +25,7 @@ import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.ui.components.AppDatePicker
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.example.project.utilites.ToastHost
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.utilites.ToastType
@@ -43,7 +43,7 @@ fun CreateViolationScreen(
     draftId: Long = -1L,
     onBackClicked: () -> Unit
 ) {
-    val viewModel: CreateViolationViewModel = koinViewModel()
+    val viewModel: CreateViolationViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     
     LaunchedEffect(isFromDraft, draftId) {
@@ -279,8 +279,7 @@ fun CreateViolationScreen(
                 visible = uiState.error != null,
                 message = uiState.error.orEmpty(),
                 onDismiss = { viewModel.clearError() },
-                type = ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter)
+                type = ToastType.Error
             )
         }
 

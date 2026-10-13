@@ -62,6 +62,10 @@ class PermitRepositoryImpl(
         return apiService.submitPermitCertificateClosure(request)
     }
 
+    override suspend fun submitPermitSubContractorClosure(request: org.example.project.data.model.PermitSubContractorClosureSubmitRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.submitPermitSubContractorClosure(request)
+    }
+
     override suspend fun generatePermitExcel(request: org.example.project.data.model.PermitExcelRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
         return apiService.generatePermitExcel(request)
     }

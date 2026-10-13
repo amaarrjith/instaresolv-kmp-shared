@@ -77,6 +77,7 @@ fun AppMultilineTextField(
     value: String,
     onValueChange: (String) -> Unit,
     title: String = "",
+    isMandatory: Boolean = false,
     placeholder: String,
     isVoiceEnabled: Boolean = false,
     onAudioUrlProcessed: (String?) -> Unit = {},
@@ -104,11 +105,23 @@ fun AppMultilineTextField(
 
     Column(modifier = modifier) {
         if (title.isNotEmpty()) {
-            Text(
-                text = title,
-                style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
-                color = AppColors.Black
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(
+                    text = title,
+                    style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
+                    color = AppColors.Black
+                )
+                if (isMandatory) {
+                    Text(
+                        text = "*",
+                        style = textStyle(
+                            size = 12.sp,
+                            weight = FontWeight.SemiBold
+                        ),
+                        color = Color.Red
+                    )
+                }
+            }
             Spacer(Modifier.height(8.dp))
         }
         Box {

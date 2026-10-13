@@ -52,7 +52,7 @@ import org.example.project.typography.textStyle
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.screens.BriefsScreen
 import org.example.project.ui.screens.SettingsScreen
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -87,13 +87,11 @@ fun AppTabBar(
 ) {
 
     val selectedIndex = rememberSaveable { mutableStateOf(0) }
-    val viewModel: AppTabBarViewModel = koinViewModel()
+    val viewModel: AppTabBarViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-    var isSubContractor by remember {mutableStateOf(false)}
-
-    LaunchedEffect(Unit) {
-        isSubContractor = CompanyType.fromInt(viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
+    val isSubContractor = remember(viewModel.user?.userRole) {
+        CompanyType.fromInt(viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
     }
 
     val navItems = listOf(

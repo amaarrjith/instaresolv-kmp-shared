@@ -417,6 +417,10 @@ interface AuthApiService {
         request: org.example.project.data.model.PermitCertificateClosureSubmitRequest
     ): NetworkResult<CommonModelResponse>
 
+    suspend fun submitPermitSubContractorClosure(
+        request: org.example.project.data.model.PermitSubContractorClosureSubmitRequest
+    ): NetworkResult<CommonModelResponse>
+
     suspend fun generatePermitExcel(
         request: org.example.project.data.model.PermitExcelRequest
     ): NetworkResult<CommonModelResponse>

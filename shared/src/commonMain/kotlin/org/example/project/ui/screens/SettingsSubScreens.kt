@@ -1,10 +1,16 @@
 package org.example.project.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -52,7 +58,7 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.rememberScrollState
@@ -76,7 +82,7 @@ import org.example.project.utilites.AppWebView
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = false, onBack: () -> Unit) {
-    val viewModel: GeneralContentsViewModel = koinViewModel()
+    val viewModel: GeneralContentsViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(type) {
@@ -181,7 +187,7 @@ fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = fals
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangePasswordScreen(onBack: () -> Unit) {
-    val viewModel: ChangePasswordViewModel = koinViewModel()
+    val viewModel: ChangePasswordViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var oldPassword by remember { mutableStateOf("") }
@@ -235,14 +241,16 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 22.dp)
-                .imePadding()
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(top = paddingValues.calculateTopPadding())
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 22.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -325,7 +333,7 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactUsScreen(onBack: () -> Unit) {
-    val viewModel: ContactUsViewModel = koinViewModel()
+    val viewModel: ContactUsViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var fullName by remember { mutableStateOf("") }
@@ -376,12 +384,14 @@ fun ContactUsScreen(onBack: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .background(Color.White)
+                .padding(top = paddingValues.calculateTopPadding())
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 24.dp)
                     .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -502,7 +512,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(64.dp))
             }
 
             ToastHost(
@@ -576,7 +586,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteAccountScreen(onBack: () -> Unit) {
-    val viewModel: DeleteAccountViewModel = koinViewModel()
+    val viewModel: DeleteAccountViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var password by remember { mutableStateOf("") }
@@ -639,13 +649,17 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 22.dp)
-                .imePadding()
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(top = paddingValues.calculateTopPadding())
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
         ) {
             Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 22.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(32.dp))
@@ -715,6 +729,8 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
 
             if (uiState.isLoading && uiState.step == DeleteAccountStep.FETCHING_TERMS) {

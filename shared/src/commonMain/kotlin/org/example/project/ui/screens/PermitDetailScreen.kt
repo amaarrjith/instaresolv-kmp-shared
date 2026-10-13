@@ -62,16 +62,17 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.PermitSubContractorClosure
 
 @Composable
 fun PermitDetailScreen(
     id: Int,
     onBackClicked: () -> Unit
 ) {
-    val viewModel: PermitDetailViewModel = koinViewModel()
+    val viewModel: PermitDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val userType by viewModel.userType.collectAsState()
     val authorizerName by viewModel.authorizerName.collectAsState()
@@ -104,6 +105,12 @@ fun PermitDetailScreen(
     val certificateClosureDate by viewModel.certificateClosureDate.collectAsState()
     val certificateClosureTime by viewModel.certificateClosureTime.collectAsState()
     val isSubmittingCertificateClosure by viewModel.isSubmittingCertificateClosure.collectAsState()
+
+    val subContractorClosureAuthorizerName by viewModel.subContractorClosureAuthorizerName.collectAsState()
+    val subContractorClosureSignatureUrl by viewModel.subContractorClosureSignatureUrl.collectAsState()
+    val subContractorClosureDate by viewModel.subContractorClosureDate.collectAsState()
+    val subContractorClosureTime by viewModel.subContractorClosureTime.collectAsState()
+    val isSubmittingSubContractorClosure by viewModel.isSubmittingSubContractorClosure.collectAsState()
 
     val authorizerPersons by viewModel.authorizerPersons.collectAsState()
     val selectedAuthorizerPerson by viewModel.selectedAuthorizerPerson.collectAsState()
@@ -239,7 +246,12 @@ fun PermitDetailScreen(
                         certificateClosureSignatureUrl = certificateClosureSignatureUrl,
                         certificateClosureDate = certificateClosureDate,
                         certificateClosureTime = certificateClosureTime,
-                        isSubmittingCertificateClosure = isSubmittingCertificateClosure
+                        isSubmittingCertificateClosure = isSubmittingCertificateClosure,
+                        subContractorClosureAuthorizerName = subContractorClosureAuthorizerName,
+                        subContractorClosureSignatureUrl = subContractorClosureSignatureUrl,
+                        subContractorClosureDate = subContractorClosureDate,
+                        subContractorClosureTime = subContractorClosureTime,
+                        isSubmittingSubContractorClosure = isSubmittingSubContractorClosure
                     )
                 }
             }
@@ -315,7 +327,12 @@ fun PermitDetailContent(
     certificateClosureSignatureUrl: String?,
     certificateClosureDate: String,
     certificateClosureTime: String,
-    isSubmittingCertificateClosure: Boolean
+    isSubmittingCertificateClosure: Boolean,
+    subContractorClosureAuthorizerName: String,
+    subContractorClosureSignatureUrl: String?,
+    subContractorClosureDate: String,
+    subContractorClosureTime: String,
+    isSubmittingSubContractorClosure: Boolean
 ) {
     Box(
         modifier = Modifier
@@ -410,7 +427,29 @@ fun PermitDetailContent(
                 )
             }
 
+            if(userType == PermitFormUserType.INSTARESOLV_AUTHORIZER_VIEWER) {
+                SubContractorAuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick
+                )
+
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+            }
+
             if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE) {
+                if (data.subContractorAuthorization != null) {
+                    SubContractorAuthorizerViewerSection(
+                        data = data,
+                        onImageClick = onImageClick
+                    )
+                }
                 AuthorizerViewerSection(
                     data = data,
                     onImageClick = onImageClick,
@@ -433,6 +472,12 @@ fun PermitDetailContent(
             }
 
             if (userType == PermitFormUserType.REQUEST_FOR_CERTIFICATE_CLOSURE_VIEWER) {
+                if (data.subContractorAuthorization != null) {
+                    SubContractorAuthorizerViewerSection(
+                        data,
+                        onImageClick
+                    )
+                }
                 AuthorizerViewerSection(
                     data = data,
                     onImageClick = onImageClick,
@@ -442,10 +487,17 @@ fun PermitDetailContent(
                     viewModel = viewModel
                 )
                 RequestForCertificateClosureViewerSection(data, onImageClick)
+                PermitSubContractorClosureViewSection(data, onImageClick)
                 PermitCertificateClosureViewerSection(data, onImageClick)
             }
 
-            if (userType == PermitFormUserType.CERTIFICATE_CLOSURE) {
+            if (userType == PermitFormUserType.SUBCONTRACTOR_CLOSURE) {
+                if (data.subContractorAuthorization != null) {
+                    SubContractorAuthorizerViewerSection(
+                        data,
+                        onImageClick
+                    )
+                }
                 AuthorizerViewerSection(
                     data = data,
                     onImageClick = onImageClick,
@@ -455,6 +507,58 @@ fun PermitDetailContent(
                     viewModel = viewModel
                 )
                 RequestForCertificateClosureViewerSection(data, onImageClick)
+                PermitSubContractorClosureFormSection(
+                    data = data,
+                    authorizerName = subContractorClosureAuthorizerName,
+                    subContractorClosureSignatureUrl = subContractorClosureSignatureUrl,
+                    subContractorClosureDate = subContractorClosureDate,
+                    subContractorClosureTime = subContractorClosureTime,
+                    isSubmittingSubContractorClosure = isSubmittingSubContractorClosure,
+                    viewModel = viewModel
+                )
+            }
+
+            if (userType == PermitFormUserType.SUBCONTRACTOR_CLOSURE_VIEWER) {
+                if (data.subContractorAuthorization != null) {
+                    SubContractorAuthorizerViewerSection(
+                        data,
+                        onImageClick
+                    )
+                }
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+                RequestForCertificateClosureViewerSection(data, onImageClick)
+                PermitSubContractorClosureViewSection(
+                    data,
+                    onImageClick
+                )
+            }
+
+            if (userType == PermitFormUserType.CERTIFICATE_CLOSURE) {
+                if (data.subContractorAuthorization != null) {
+                    SubContractorAuthorizerViewerSection(
+                        data,
+                        onImageClick
+                    )
+                }
+                AuthorizerViewerSection(
+                    data = data,
+                    onImageClick = onImageClick,
+                    canCancelOrSuspend = canCancelOrSuspend,
+                    canReactivate = canReactivate,
+                    actionLoading = actionLoading,
+                    viewModel = viewModel
+                )
+                RequestForCertificateClosureViewerSection(data, onImageClick)
+                if (data.subContractorClosure != null) {
+                    PermitSubContractorClosureViewSection(data, onImageClick)
+                }
                 PermitCertificateClosureSection(
                     data = data,
                     userName = authorizerName,
@@ -467,6 +571,12 @@ fun PermitDetailContent(
             }
 
             if (userType == PermitFormUserType.NONE) {
+                if (data.subContractorAuthorization != null) {
+                    SubContractorAuthorizerViewerSection(
+                        data,
+                        onImageClick
+                    )
+                }
                 AuthorizerViewerSection(
                     data = data,
                     onImageClick = onImageClick,
@@ -476,6 +586,7 @@ fun PermitDetailContent(
                     viewModel = viewModel
                 )
                 RequestForCertificateClosureViewerSection(data, onImageClick)
+                PermitSubContractorClosureViewSection(data, onImageClick)
                 PermitCertificateClosureViewerSection(data, onImageClick)
             }
 
@@ -2120,3 +2231,168 @@ fun PermitCertificateClosureViewerSection(data: PermitDetailData, onImageClick: 
 
     HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 }
+
+@Composable
+fun PermitSubContractorClosureFormSection(
+    data: PermitDetailData,
+    authorizerName: String,
+    subContractorClosureSignatureUrl: String?,
+    subContractorClosureDate: String,
+    subContractorClosureTime: String,
+    isSubmittingSubContractorClosure: Boolean,
+    viewModel: PermitDetailViewModel
+) {
+    Text(
+        text = stringResource(Res.string.subContractorClosure),
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppTextField(
+        value = authorizerName,
+        onValueChange = viewModel::onSubContractorClosureAuthorizerNameChanged,
+        title = stringResource(Res.string.subContractorAuthorizerName),
+        placeholder = stringResource(Res.string.subContractorAuthorizerName),
+        modifier = Modifier.fillMaxWidth(),
+        isMandatory = true,
+        enabled = false,
+        readOnly = true
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AppSignCreateBox(
+        onSignatureUploaded = viewModel::onSubContractorClosureSignatureUploaded,
+        onRemoveSignatureClick = viewModel::onRemoveSubContractorClosureSignatureClick,
+        signatureUrl = subContractorClosureSignatureUrl
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = stringResource(Res.string.time), style = textStyle(12.sp, FontWeight.SemiBold))
+            Spacer(modifier = Modifier.height(8.dp))
+            AppTimePicker(
+                text = stringResource(Res.string.txt_0000),
+                selectedTime = subContractorClosureTime,
+                onTimeSelected = { },
+                enabled = false
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = stringResource(Res.string.date), style = textStyle(12.sp, FontWeight.SemiBold))
+            Spacer(modifier = Modifier.height(8.dp))
+            AppDatePicker(
+                text = subContractorClosureDate.ifBlank { "YYYY-MM-DD" },
+                onDateSelected = { },
+                selectedDateMillis = null,
+                enabled = false
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        AppPrimaryButton(
+            title = stringResource(Res.string.submit),
+            isLoading = isSubmittingSubContractorClosure,
+            onClick = { data.permitId?.let { viewModel.submitPermitSubContractorClosure(it) } },
+            modifier = Modifier.fillMaxWidth().height(48.dp)
+        )
+    }
+}
+
+@Composable
+fun PermitSubContractorClosureViewSection(
+    data: PermitDetailData,
+    onImageClick: (String) -> Unit
+) {
+    val closureDetails = data.subContractorClosure ?: return
+
+    Text(
+        text = stringResource(Res.string.subContractorClosure),
+        style = textStyle(14.sp, FontWeight.Bold),
+        color = AppColors.Primary
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    if (!closureDetails.authorizerName.isNullOrBlank()) {
+        Text(
+            text = stringResource(Res.string.subContractorAuthorizerName),
+            style = textStyle(12.sp, FontWeight.Medium),
+            color = AppColors.Black
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = closureDetails.authorizerName,
+            style = textStyle(12.sp, FontWeight.Bold),
+            color = AppColors.Primary
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (!closureDetails.signatureImageUrl.isNullOrBlank()) {
+        Text(
+            text = stringResource(Res.string.signature),
+            style = textStyle(12.sp, FontWeight.Normal),
+            color = AppColors.TextGray
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        WebImageView(
+            imageUrl = closureDetails.signatureImageUrl,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onImageClick(closureDetails.signatureImageUrl) },
+            contentScale = ContentScale.Fit
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (!closureDetails.closureDate.isNullOrBlank()) {
+            val formattedDate = runCatching {
+                formatDate(
+                    closureDetails.closureDate,
+                    "yyyy-MM-dd",
+                    "dd MMM yyyy"
+                )
+            }.getOrElse { closureDetails.closureDate }
+            Text(
+                text = "Date : $formattedDate",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+        if (!closureDetails.closureTime.isNullOrBlank()) {
+            val formattedTime = runCatching {
+                utcToLocal(
+                    closureDetails.closureTime,
+                    inputFormat = "HH:mm:ss",
+                    outputFormat = "hh:mm a"
+                )
+            }.getOrElse { closureDetails.closureTime }
+            Text(
+                text = "Time : $formattedTime",
+                style = textStyle(12.sp, FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+        }
+    }
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+}
+

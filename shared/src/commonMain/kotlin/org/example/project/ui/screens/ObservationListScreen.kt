@@ -52,7 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.ObservationItem
 import org.example.project.ui.components.AppLoader
@@ -92,7 +92,7 @@ fun ObservationListScreen(
     onCreateClicked: () -> Unit,
     onDraftClicked: () -> Unit
 ) {
-    val viewModel: ObservationListViewModel = koinViewModel()
+    val viewModel: ObservationListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
@@ -303,23 +303,20 @@ fun ObservationListScreen(
                 visible = uiState.errorExcel != null,
                 message = uiState.errorExcel  ?: "",
                 onDismiss = { viewModel.clearErrorExcel() },
-                type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Success
             )
 
             ToastHost(
                 visible = errorToastMessage != null,
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
-                type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Error
             )
             ToastHost(
                 visible = exportToastMessage != null,
                 message = exportToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearExportToast() },
-                type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = org.example.project.utilites.ToastType.Success
             )
         }
     }

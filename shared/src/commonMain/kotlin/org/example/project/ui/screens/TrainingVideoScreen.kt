@@ -26,7 +26,7 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.LockScreenOrientation
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -39,7 +39,7 @@ fun TrainingVideoScreen(
     // Lock orientation to Landscape
     LockScreenOrientation(landscape = true)
 
-    val viewModel: TrainingVideoViewModel = koinViewModel(
+    val viewModel: TrainingVideoViewModel = koinInject(
         parameters = { parametersOf(trainingId) }
     )
     val uiState by viewModel.uiState.collectAsState()

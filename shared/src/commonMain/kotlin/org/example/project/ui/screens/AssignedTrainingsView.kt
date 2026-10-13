@@ -74,14 +74,14 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.ui.screens.EmptyScreenView
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppSearchBar
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssignedTrainingsView(
     member: ProjectMember,
     onBackClick: () -> Unit,
-    viewModel: AssignedTrainingsViewModel = koinViewModel()
+    viewModel: AssignedTrainingsViewModel = koinInject()
 ) {
     val designationTypes = viewModel.designations.collectAsState().value
     val uiState by viewModel.uiState.collectAsState()

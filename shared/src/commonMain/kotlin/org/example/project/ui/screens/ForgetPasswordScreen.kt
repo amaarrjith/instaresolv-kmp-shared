@@ -7,7 +7,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -43,7 +49,7 @@ import org.example.project.utilites.AppTextField
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -52,14 +58,16 @@ import instaresolv.shared.generated.resources.*
 fun ForgetPasswordScreen(
     onBackButtonPressed: () -> Unit,
 ) {
-    val viewModel: ForgetPasswordViewModel = koinViewModel()
+    val viewModel: ForgetPasswordViewModel = koinInject()
     val email = remember { mutableStateOf("") }
     val uiState = viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     Scaffold(
         containerColor = Color.White,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             CenterAlignedTopAppBar(
+                modifier = Modifier.statusBarsPadding(),
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White
                 ),
@@ -75,57 +83,65 @@ fun ForgetPasswordScreen(
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize()
-                .imePadding()
-                .verticalScroll(scrollState)
-                .padding(paddingValues)
-                .padding(horizontal = 28.dp)
-                .background(Color.White),
-            contentAlignment = Alignment.Center
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = paddingValues.calculateTopPadding())
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                .background(Color.White)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 28.dp)
+                    .verticalScroll(scrollState),
+                contentAlignment = Alignment.TopCenter
             ) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_forget_password),
-                    contentDescription = null,
-                    modifier = Modifier.size(88.dp)
-                )
-                Spacer(modifier = Modifier.height(50.dp))
-                Text(
-                    text = stringResource(Res.string.forgotPassword),
-                    style = textStyle(
-                        size = 18.sp,
-                        weight = FontWeight.Bold
-                    )
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
+                Column(
                     modifier = Modifier
-                        .padding(horizontal = 56.dp),
-                    text = stringResource(Res.string.forgotPasswordDescription),
-                    style = textStyle(
-                        size = 14.sp,
-                        weight = FontWeight.Normal
-                    ),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(50.dp))
-                AppTextField(
-                    value = email.value,
-                    onValueChange = { email.value = it },
-                    title = stringResource(Res.string.emailId),
-                    placeholder = stringResource(Res.string.emailPlaceholder)
-                )
-                Spacer(modifier = Modifier.height(50.dp))
-                AppPrimaryButton(
-                    title = stringResource(Res.string.resetPassword),
-                    onClick = {
-                        viewModel.forgetPassword(email.value)
-                    },
-                    isLoading = uiState.value.isLoading
-                )
+                        .fillMaxWidth()
+                        .padding(top = 40.dp, bottom = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_forget_password),
+                        contentDescription = null,
+                        modifier = Modifier.size(88.dp)
+                    )
+                    Spacer(modifier = Modifier.height(40.dp))
+                    Text(
+                        text = stringResource(Res.string.forgotPassword),
+                        style = textStyle(
+                            size = 18.sp,
+                            weight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 40.dp),
+                        text = stringResource(Res.string.forgotPasswordDescription),
+                        style = textStyle(
+                            size = 14.sp,
+                            weight = FontWeight.Normal
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(40.dp))
+                    AppTextField(
+                        value = email.value,
+                        onValueChange = { email.value = it },
+                        title = stringResource(Res.string.emailId),
+                        placeholder = stringResource(Res.string.emailPlaceholder)
+                    )
+                    Spacer(modifier = Modifier.height(40.dp))
+                    AppPrimaryButton(
+                        title = stringResource(Res.string.resetPassword),
+                        onClick = {
+                            viewModel.forgetPassword(email.value)
+                        },
+                        isLoading = uiState.value.isLoading
+                    )
+                }
             }
             ToastHost(
                 visible = uiState.value.errorMessage != null,

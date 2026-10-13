@@ -57,14 +57,14 @@ import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun IncidentDraftListScreen(
     onBackClicked: () -> Unit,
     onDraftClicked: (Long) -> Unit
 ) {
-    val viewModel: IncidentListViewModel = koinViewModel()
+    val viewModel: IncidentListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }

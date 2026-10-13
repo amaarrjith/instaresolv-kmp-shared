@@ -28,7 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.example.project.ui.components.AppLoader
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +65,7 @@ fun CreatePermitScreen(
     isFromDraft: Boolean = false,
     draftId: Long = -1L
 ) {
-    val viewModel: CreatePermitViewModel = koinViewModel()
+    val viewModel: CreatePermitViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var localError by remember { mutableStateOf<String?>(null) }
     val showExitPopup = remember { mutableStateOf(false) }

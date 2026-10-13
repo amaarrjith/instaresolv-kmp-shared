@@ -10,7 +10,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -51,7 +57,7 @@ import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.jetbrains.compose.resources.stringResource
 import kotlinx.coroutines.delay
@@ -65,7 +71,7 @@ fun OTPVerificationScreen(
     tempUserId: Int = 0,
     email: String = ""
 ){
-    val viewModel: OTPVerificationViewModel = koinViewModel(
+    val viewModel: OTPVerificationViewModel = koinInject(
         parameters = {
             parametersOf(email, tempUserId)
         }
@@ -94,8 +100,10 @@ fun OTPVerificationScreen(
     }
     Scaffold(
         containerColor = Color.White,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             CenterAlignedTopAppBar(
+                modifier = Modifier.statusBarsPadding(),
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White
                 ),
@@ -111,23 +119,24 @@ fun OTPVerificationScreen(
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .background(Color.White)
-                .padding(paddingValues)
-                .imePadding()
-                .verticalScroll(scrollState),
-            contentAlignment = Alignment.Center
+                .padding(top = paddingValues.calculateTopPadding())
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
         ) {
             Box(
-                modifier = Modifier.fillMaxSize()
-                    .padding(horizontal = 28.dp),
-                contentAlignment = Alignment.BottomCenter
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 28.dp)
+                    .verticalScroll(scrollState),
+                contentAlignment = Alignment.TopCenter
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .fillMaxWidth()
+                        .padding(top = 40.dp, bottom = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = stringResource(Res.string.verifyOtp),
@@ -193,16 +202,15 @@ fun OTPVerificationScreen(
                             viewModel.verifyOTP(otp)
                         }
                     )
-
                 }
+            }
 
-                ToastHost(
-                    visible = uiState.value.errorMessage != null,
-                    type = ToastType.Error,
-                    message = uiState.value.errorMessage.orEmpty(),
-                ) {
-                    viewModel.clearError()
-                }
+            ToastHost(
+                visible = uiState.value.errorMessage != null,
+                type = ToastType.Error,
+                message = uiState.value.errorMessage.orEmpty(),
+            ) {
+                viewModel.clearError()
             }
         }
     }

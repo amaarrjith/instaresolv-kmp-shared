@@ -47,7 +47,7 @@ import org.example.project.utilites.AppPrimaryButton
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun ProjectRequestPopUpView(
@@ -55,7 +55,7 @@ fun ProjectRequestPopUpView(
     notification: NotificationListModel,
     buttonText: String = "Okay",
     icon: DrawableResource = Res.drawable.ic_rejected,
-    viewModel: ProjectViewModel = koinViewModel(),
+    viewModel: ProjectViewModel = koinInject(),
     onDismiss: () -> Unit
 ) {
     var project by remember { mutableStateOf<Project?>(null) }

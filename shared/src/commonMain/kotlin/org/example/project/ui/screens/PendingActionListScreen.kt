@@ -57,12 +57,13 @@ import org.example.project.ui.PermitActionBottomSheet
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.data.model.CompanyType
+import org.example.project.ui.components.AppStatusDialog
 import org.example.project.ui.components.ObservationActionBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +73,7 @@ fun PendingActionListScreen(
     onPermitClick: (Int) -> Unit = {},
     onNavigateToProject: (Int, String) -> Unit = { _, _ -> }
 ) {
-    val viewModel: PendingActionListViewModel = koinViewModel()
+    val viewModel: PendingActionListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     
     var selectedTab by remember { mutableStateOf(0) }
@@ -93,6 +94,7 @@ fun PendingActionListScreen(
     val groupUsers by viewModel.groupUsers.collectAsState()
     var actionSuccessMessage by remember { mutableStateOf<String?>(null) }
     var actionErrorMessage by remember { mutableStateOf<String?>(null) }
+    var justification by remember { mutableStateOf<String?>(null) }
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -418,8 +420,9 @@ fun PendingActionListScreen(
                         }
                         "Request Observation Responsible Person Change" -> {
                             pendingActionForModal = action
-                            if (action.groupId != null && action.groupCode != null) {
-                                viewModel.fetchGroupUsers(action.groupId, action.groupCode)
+                            if (action.groupCode != null) {
+                                val groupId = action.groupCode.substringAfter("-").toInt()
+                                viewModel.fetchGroupUsers(groupId, action.groupCode)
                             }
                             showRequestResponsiblePersonSheet = true
                             selectedActionForSheet = null
@@ -428,6 +431,9 @@ fun PendingActionListScreen(
                             pendingActionForModal = action
                             showRequestDeleteSheet = true
                             selectedActionForSheet = null
+                        }
+                        "View Justification" -> {
+                            justification = action.justification
                         }
                     }
                 }
@@ -574,6 +580,19 @@ fun PendingActionListScreen(
             }
         }
 
+        justification?.let { msg ->
+            AppStatusDialog(
+                visible = true,
+                title = "Justification",
+                description = msg,
+                buttonText = "OK",
+                icon = Res.drawable.ic_justification,
+                onDismiss = {
+                    justification = null
+                }
+            )
+        }
+
         actionSuccessMessage?.let { msg ->
             org.example.project.ui.components.AppStatusDialog(
                 visible = true,
@@ -585,22 +604,21 @@ fun PendingActionListScreen(
         }
 
         actionErrorMessage?.let { msg ->
-            Box(modifier = Modifier.fillMaxWidth()) {
-                ToastHost(
-                    visible = true,
-                    message = msg,
-                    onDismiss = { actionErrorMessage = null },
-                    type = org.example.project.utilites.ToastType.Error
-                )
-            }
+            ToastHost(
+                visible = true,
+                message = msg,
+                onDismiss = { actionErrorMessage = null },
+                type = org.example.project.utilites.ToastType.Error,
+                modifier = Modifier.padding(bottom = 20.dp)
+            )
         }
     
         ToastHost(
-            modifier = Modifier.padding(horizontal = 22.dp),
             visible = pdfToastMessage != null || pdfErrorToastMessage != null,
             type = if (pdfErrorToastMessage != null) org.example.project.utilites.ToastType.Error else org.example.project.utilites.ToastType.Success,
             message = pdfErrorToastMessage ?: pdfToastMessage ?: "",
-            onDismiss = { viewModel.clearToasts() }
+            onDismiss = { viewModel.clearToasts() },
+            modifier = Modifier.padding(bottom = 20.dp)
         )
     }
 }

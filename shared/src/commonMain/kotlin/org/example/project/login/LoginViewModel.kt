@@ -35,7 +35,10 @@ class LoginViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            validator.validateEmail(_uiState.value.email)?.let { error ->
+            val email = _uiState.value.email.trim()
+            val password = _uiState.value.password.trim()
+
+            validator.validateEmail(email)?.let { error ->
                 _uiState.update { state ->
                     state.copy(
                         isLoading = false,
@@ -45,7 +48,7 @@ class LoginViewModel(
                 return@launch
             }
 
-            validator.validatePassword(_uiState.value.password)?.let { error ->
+            validator.validatePassword(password)?.let { error ->
                 _uiState.update { state ->
                     state.copy(
                         isLoading = false,
@@ -57,8 +60,8 @@ class LoginViewModel(
 
 
             when (val result = repository.login(
-                _uiState.value.email,
-                _uiState.value.password
+                email,
+                password
             )) {
                 is NetworkResult.Success -> {
                     result.data.auth?.let { auth ->

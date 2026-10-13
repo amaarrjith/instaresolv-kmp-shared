@@ -208,7 +208,9 @@ enum class PermitFormUserType {
     SUBCONTRACTOR_AUTHORIZER,
     SUBCONTRACTOR_AUTHORIZER_VIEWER,
     INSTARESOLV_AUTHORIZER,
+    INSTARESOLV_AUTHORIZER_VIEWER,
     SUBCONTRACTOR_CLOSURE,
+    SUBCONTRACTOR_CLOSURE_VIEWER,
     NONE
 }
 
@@ -245,6 +247,20 @@ data class PermitCertificateClosureSubmitRequest(
 @Serializable
 data class CertificateClosureSubmit(
     val contractorName: String,
+    val signatureImageUrl: String,
+    val closureTime: String,
+    val closureDate: String
+)
+
+@Serializable
+data class PermitSubContractorClosureSubmitRequest(
+    val permitId: Int,
+    val subContractorClosureRequest: SubContractorClosureRequestPayload
+)
+
+@Serializable
+data class SubContractorClosureRequestPayload(
+    val authorizerName: String,
     val signatureImageUrl: String,
     val closureTime: String,
     val closureDate: String

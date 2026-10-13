@@ -47,14 +47,14 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun ObservationDraftListScreen(
     onBackClicked: () -> Unit,
     onDraftClicked: (Long) -> Unit
 ) {
-    val viewModel: ObservationListViewModel = koinViewModel()
+    val viewModel: ObservationListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }

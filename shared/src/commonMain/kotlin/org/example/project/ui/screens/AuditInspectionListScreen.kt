@@ -61,7 +61,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -80,7 +80,7 @@ fun AuditInspectionListScreen(
     onItemClicked: (Int) -> Unit = {},
     onDraftClicked: () -> Unit = {}
 ) {
-    val viewModel: AuditInspectionListViewModel = koinViewModel()
+    val viewModel: AuditInspectionListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var showAddModal by remember { mutableStateOf(false) }
@@ -149,10 +149,11 @@ fun AuditInspectionListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
-            Column {
+            Column(
+                modifier = Modifier.padding(horizontal = 22.dp)
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -367,7 +368,7 @@ fun AuditInspectionListScreen(
                 message = uiState.errorExcel ?: "",
                 onDismiss = { viewModel.clearErrorExcel() },
                 type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                modifier = Modifier.align(Alignment.BottomCenter)
             )
 
             ToastHost(
@@ -375,7 +376,7 @@ fun AuditInspectionListScreen(
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
                 type = org.example.project.utilites.ToastType.Error,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                modifier = Modifier.align(Alignment.BottomCenter)
             )
 
             val exportToastMessage by viewModel.exportToastMessage.collectAsState()
@@ -384,7 +385,7 @@ fun AuditInspectionListScreen(
                 message = exportToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearExportToast() },
                 type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
     }
@@ -479,36 +480,37 @@ fun InspectionListItem(
                 }
 
 
-                // User row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    WebImageView(
-                        imageUrl = inspection.facilities?.groupImage ?: "",
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier.weight(1f, fill = false)
+                if (inspection.facilities != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        WebImageView(
+                            imageUrl = inspection.facilities.groupImage ?: "",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier.weight(1f, fill = false)
+                        ) {
+                            Text(
+                                text = inspection.facilities.groupName ?: "",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                                color = AppColors.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = inspection.facilities?.groupName ?: "",
+                            text = inspection.facilities.groupCode ?: "",
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                            style = textStyle(size = 9.sp, weight = FontWeight.Medium),
                             color = AppColors.Black
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = inspection.facilities?.groupCode ?: "",
-                        maxLines = 1,
-                        style = textStyle(size = 9.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
                 }
             }
         }

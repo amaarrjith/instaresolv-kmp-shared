@@ -1,5 +1,6 @@
 package org.example.project.utilites
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,11 +19,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -33,9 +39,12 @@ import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_eye_open
 import instaresolv.shared.generated.resources.ic_eye_closed
 import instaresolv.shared.generated.resources.ic_search
+import instaresolv.shared.generated.resources.ic_toast_close
+import instaresolv.shared.generated.resources.removeImage
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AppTextField(
@@ -190,7 +199,27 @@ fun AppSearchBar(
                     size = 14.sp,
                     weight = FontWeight.Medium
                 ).copy(color = AppColors.Black),
-                cursorBrush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)
+                cursorBrush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary),
+                decorationBox = { innerTextField ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            innerTextField()
+                        }
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_toast_close),
+                            contentDescription = stringResource(Res.string.removeImage),
+                            tint = Color(0xFFFF4B4B),
+                            modifier = Modifier
+                                .size(12.dp)
+                                .clickable {
+                                    onValueChange("")
+                                }
+                        )
+                    }
+                }
             )
         }
     }

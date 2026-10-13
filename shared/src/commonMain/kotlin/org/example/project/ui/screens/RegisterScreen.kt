@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -79,7 +82,7 @@ import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.AppTextField
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -90,46 +93,45 @@ fun RegisterScreen(
     isTermsClicked: () -> Unit = {},
     isPrivacyClicked: () -> Unit = {}
 ) {
-    val viewModel: RegisterViewModel = koinViewModel()
+    val viewModel: RegisterViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(Color.White)
-            .padding(horizontal = 28.dp)
-            .padding(bottom = 10.dp)
-            .navigationBarsPadding()
-            .imePadding()
-            .verticalScroll(scrollState)
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { focusManager.clearFocus() })
-            }
+            .statusBarsPadding()
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
     ) {
-        RegisterScreenContent(
-            isLoginClicked = {
-                isLoginClicked()
-            },
-            isRegisterCompleted = {
-                tempUserId, email ->
-                isRegisterCompleted(tempUserId, email)
-            },
-            isTermsClicked = { isTermsClicked() },
-            isPrivacyClicked = { isPrivacyClicked() },
-            viewModel,
-            uiState
-        )
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .fillMaxSize()
+                .padding(horizontal = 28.dp)
+                .verticalScroll(scrollState)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { focusManager.clearFocus() })
+                }
         ) {
-            ToastHost(
-                visible = uiState.value.errorMessage != null,
-                type = ToastType.Error,
-                message = uiState.value.errorMessage.orEmpty(),
-            ) {
-                viewModel.clearError()
-            }
+            RegisterScreenContent(
+                isLoginClicked = {
+                    isLoginClicked()
+                },
+                isRegisterCompleted = { tempUserId, email ->
+                    isRegisterCompleted(tempUserId, email)
+                },
+                isTermsClicked = { isTermsClicked() },
+                isPrivacyClicked = { isPrivacyClicked() },
+                viewModel,
+                uiState
+            )
+        }
+        ToastHost(
+            visible = uiState.value.errorMessage != null,
+            type = ToastType.Error,
+            message = uiState.value.errorMessage.orEmpty(),
+        ) {
+            viewModel.clearError()
         }
     }
 }
@@ -181,9 +183,9 @@ fun RegisterScreenContent(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
     ) {
-        Spacer(modifier = Modifier.height(94.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = stringResource(Res.string.register),
             style = textStyle(
@@ -396,7 +398,7 @@ fun RegisterScreenContent(
                 }
             )
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 

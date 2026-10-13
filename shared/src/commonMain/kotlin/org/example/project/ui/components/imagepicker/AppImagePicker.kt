@@ -27,7 +27,7 @@ import org.example.project.ui.components.ImageSourcePickerBottomSheet
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun AppImagePicker(
@@ -42,7 +42,7 @@ fun AppImagePicker(
     onImagePicked: ((ByteArray) -> Unit)? = null,
     onImageUploaded: (String) -> Unit
 ) {
-    val viewModel: ImagePickerViewModel = koinViewModel()
+    val viewModel: ImagePickerViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
 

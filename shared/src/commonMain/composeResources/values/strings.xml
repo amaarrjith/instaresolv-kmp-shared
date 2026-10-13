@@ -359,6 +359,7 @@
     <string name="subcontractorAuthorisation">Sub Contractor Authorisation</string>
     <string name="subContractorAuthorizerName">Sub Contractor Authorizer Name</string>
     <string name="subcontractorAuthorizerName">Sub Contractor Authorizer Name</string>
+    <string name="subContractorClosure">Sub Contractor Closure</string>
     <string name="instaresolvAuthorizerName">InstaResolv Authorizer Name</string>
     <string name="instaResolvAuthorizerName">InstaResolv Authorizer Name</string>
     <string name="back">Back</string>

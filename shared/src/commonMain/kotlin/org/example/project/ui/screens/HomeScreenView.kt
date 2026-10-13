@@ -74,7 +74,7 @@ import org.example.project.ui.components.PdfGenerationLoader
 import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.rememberFileDownloader
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -107,8 +107,8 @@ fun HomeScreenContentView(
     onNavigateToProfile: (Int) -> Unit,
     onLogout: () -> Unit = {}
 ) {
-    val viewModel: ProfileViewModel = koinViewModel()
-    val vm: HomeScreenViewModel = koinViewModel()
+    val viewModel: ProfileViewModel = koinInject()
+    val vm: HomeScreenViewModel = koinInject()
     val isGeneratingPdf by vm.isGeneratingPdf.collectAsState()
     val pdfUrl by vm.pdfUrl.collectAsState()
     val pdfToastMessage by vm.pdfToastMessage.collectAsState()
@@ -118,7 +118,9 @@ fun HomeScreenContentView(
     val pdfModuleType by vm.pdfModuleType.collectAsState()
     var actionErrorMessage: String? by remember { mutableStateOf(null) }
     var isRoleUpdated by remember { mutableStateOf(false) }
-    var isSubContractor by remember { mutableStateOf(false) }
+    val isSubContractor = remember(vm.user?.userRole, viewModel.user?.userRole) {
+        CompanyType.fromInt(vm.user?.userRole ?: viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
+    }
     
     val downloadingMsg = stringResource(Res.string.downloading_report, pdfModuleType ?: "")
     val failedMsg = stringResource(Res.string.failed_to_download_report, pdfModuleType ?: "")
@@ -139,7 +141,6 @@ fun HomeScreenContentView(
         vm.userCheckRole { isUpdated ->
             isRoleUpdated = isUpdated
         }
-        isSubContractor = CompanyType.fromInt(viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
     }
 
 
@@ -174,11 +175,13 @@ fun HomeScreenContentView(
 
                 ) {
                     Spacer(modifier = Modifier.height(22.dp))
-                    PendingActionsCardView(
-                        actionOverview?.pendingActionsCount ?: 0,
-                        onPendingActionViewAllClick
-                    )
-                    Spacer(modifier = Modifier.height(26.dp))
+                    if (!isSubContractor) {
+                        PendingActionsCardView(
+                            actionOverview?.pendingActionsCount ?: 0,
+                            onPendingActionViewAllClick
+                        )
+                        Spacer(modifier = Modifier.height(26.dp))
+                    }
                     if (assignedToMe?.permit != null || !isSubContractor) {
                         AssignedToMeCard(
                             assignedToMe = assignedToMe,
@@ -243,7 +246,6 @@ fun HomeScreenContentView(
         }
 
         ToastHost(
-            modifier = Modifier.padding(horizontal = 22.dp),
             visible = pdfToastMessage != null || pdfErrorToastMessage != null,
             type = if (pdfErrorToastMessage != null) ToastType.Error else ToastType.Success,
             message = pdfErrorToastMessage ?: pdfToastMessage ?: "",
@@ -253,7 +255,6 @@ fun HomeScreenContentView(
         )
 
         ToastHost(
-            modifier = Modifier.padding(horizontal = 22.dp),
             visible = actionErrorMessage != null ,
             type = ToastType.Error,
             message = actionErrorMessage ?: "",

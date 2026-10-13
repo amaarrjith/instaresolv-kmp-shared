@@ -44,7 +44,7 @@ import org.example.project.ui.components.WebImageView
 import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,7 +59,7 @@ fun IncidentDetailScreen(
     onBackClicked: () -> Unit,
     onRefreshList: () -> Unit = {}
 ) {
-    val viewModel: IncidentDetailViewModel = koinViewModel()
+    val viewModel: IncidentDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showSharePopup by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -163,8 +163,7 @@ fun IncidentDetailScreen(
                 visible = infoMessage != null,
                 message = infoMessage.orEmpty(),
                 onDismiss = { infoMessage = null },
-                type = org.example.project.utilites.ToastType.Info,
-                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter)
+                type = org.example.project.utilites.ToastType.Info
             )
         }
 

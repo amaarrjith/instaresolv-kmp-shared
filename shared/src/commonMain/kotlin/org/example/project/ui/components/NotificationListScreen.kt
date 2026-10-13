@@ -52,7 +52,7 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 fun isObservationNotification(type: Int): Boolean {
     val notificationType = AppNotificationType.fromValue(type) ?: return false
@@ -96,7 +96,7 @@ fun NotificationListScreen(
     onBackClicked: () -> Unit,
     onNotificationClick: ((NotificationListModel) -> Unit)? = null
 ) {
-    val viewModel: NotificationsViewModel = koinViewModel()
+    val viewModel: NotificationsViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
     var selectedPopupNotification by remember { mutableStateOf<NotificationListModel?>(null) }
@@ -371,7 +371,6 @@ fun AppNotificationClickListener(
     onNavigate: ((String) -> Unit)? = null,
     onShowPopUp: ((NotificationListModel) -> Unit)? = null
 ) {
-    if (notification.pushType == 1) {
         val notificationType = AppNotificationType.fromValue(notification.type)
         val route = when (notificationType) {
             AppNotificationType.OBSERVATION_CREATED,
@@ -456,7 +455,4 @@ fun AppNotificationClickListener(
                 navController?.navigate(destinationRoute)
             }
         }
-    } else {
-        navController?.navigate(Screens.PendingActionListScreen.route)
     }
-}

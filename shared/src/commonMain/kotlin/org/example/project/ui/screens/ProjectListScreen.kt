@@ -69,7 +69,7 @@ import org.example.project.ui.screens.MemberStatusIcon
 import org.example.project.utilites.AppSearchBar
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 
@@ -79,7 +79,7 @@ fun ProjectListScreen(
     onProjectClicked: (Project) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val viewModel: ProjectViewModel = koinViewModel()
+    val viewModel: ProjectViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     var showRequestModal by remember { mutableStateOf(false) }
@@ -459,10 +459,11 @@ fun RequestProjectBottomSheet(
         sheetState = sheetState,
         containerColor = Color.White
     ) {
-        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp)) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 22.dp)
                     .padding(bottom = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

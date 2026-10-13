@@ -756,6 +756,14 @@ class AuthApiServiceImpl(
         }
     }
 
+    override suspend fun submitPermitSubContractorClosure(
+        request: org.example.project.data.model.PermitSubContractorClosureSubmitRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.PERMIT_SUBCONTRACTOR_CLOSURE) {
+            jsonBody(request)
+        }
+    }
+
     override suspend fun generatePermitExcel(
         request: org.example.project.data.model.PermitExcelRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {

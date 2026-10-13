@@ -72,9 +72,10 @@ import org.example.project.utilites.ToastType
 import org.example.project.ui.components.AppStatusDialog
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.UserRole
 
 @Composable
 fun ObservationDetailScreen(
@@ -83,7 +84,7 @@ fun ObservationDetailScreen(
     onBackClicked: () -> Unit,
     startWithCloseForm: Boolean = false
 ) {
-    val viewModel: ObservationDetailViewModel = koinViewModel()
+    val viewModel: ObservationDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val closeUiState by viewModel.closeUiState.collectAsState()
     
@@ -258,16 +259,14 @@ fun ObservationDetailScreen(
                 visible = errorMessage != null,
                 message = errorMessage ?: "",
                 onDismiss = { errorMessage = null },
-                type = ToastType.Error,
-                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter)
+                type = ToastType.Error
             )
 
             ToastHost(
                 visible = infoMessage != null,
                 message = infoMessage ?: "",
                 onDismiss = { infoMessage = null },
-                type = ToastType.Info,
-                modifier = Modifier.padding(horizontal = 22.dp).align(Alignment.BottomCenter)
+                type = ToastType.Info
             )
             
             if (isGeneratingPdf) {
@@ -285,8 +284,7 @@ fun ObservationDetailScreen(
                 visible = pdfToastMessage != null,
                 message = pdfToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearPdfToastMessage() },
-                type = ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                type = ToastType.Success
             )
         }
         
@@ -686,39 +684,86 @@ fun ObservationDetailInfo(
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(color = Color(0xFFF0F0F5))
         Spacer(Modifier.height(24.dp))
-        if (ObservationStatus.fromId(detail.status ?: -1) == ObservationStatus.OPEN) {
-            Text(
-                text = stringResource(Res.string.actions),
-                style = textStyle(size = 14.sp, weight = FontWeight.Bold),
-                color = AppColors.Black
-            )
-            Spacer(Modifier.height(16.dp))
+        val isOpen =
+            ObservationStatus.fromId(detail.status ?: -1) == ObservationStatus.OPEN
 
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { onCloseObservationClick() },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(Res.string.closeObservation),
-                        style = textStyle(size = 14.sp, weight = FontWeight.Bold),
-                        color = AppColors.Primary
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(Res.string.closeThisObservationWithDetailed),
-                        style = textStyle(size = 12.sp, weight = FontWeight.Normal),
-                        color = AppColors.TextGray
+        val isGroupSpecified = detail.groupSpecified ?: false
+        val isCancelable = detail.isCancelable ?: false
+
+        val userRole = detail.group?.userRole
+
+        val canCloseObservation = if (!isGroupSpecified) {
+            isOpen
+        } else {
+            isCancelable && isOpen
+        }
+
+        val canDeleteObservation = if (isGroupSpecified) {
+            userRole == UserRole.SUPER_ADMIN.value ||
+                    userRole == UserRole.ADMIN.value
+        } else {
+            true
+        }
+
+        Column {
+            if (canCloseObservation) {
+                Text(
+                    text = stringResource(Res.string.actions),
+                    style = textStyle(size = 14.sp, weight = FontWeight.Bold),
+                    color = AppColors.Black
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onCloseObservationClick()
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.closeObservation),
+                            style = textStyle(
+                                size = 14.sp,
+                                weight = FontWeight.Bold
+                            ),
+                            color = AppColors.Primary
+                        )
+
+                        Spacer(Modifier.height(4.dp))
+
+                        Text(
+                            text = stringResource(
+                                Res.string.closeThisObservationWithDetailed
+                            ),
+                            style = textStyle(
+                                size = 12.sp,
+                                weight = FontWeight.Normal
+                            ),
+                            color = AppColors.TextGray
+                        )
+                    }
+
+                    Image(
+                        painter = painterResource(Res.drawable.ic_right_icon),
+                        contentDescription = null,
+                        modifier = Modifier.rtlScale()
                     )
                 }
-                Image(
-                    painter = painterResource(Res.drawable.ic_right_icon),
-                    contentDescription = null,
-                    modifier = Modifier.rtlScale()
-                )
+
+                Spacer(Modifier.height(16.dp))
             }
 
-            Spacer(Modifier.height(16.dp))
+            if (canDeleteObservation) {
+                // Add your existing Delete Observation UI here.
+                // Match the iOS horizontal padding (28.5.dp)
+                // and top padding (20.dp).
+            }
         }
 
         if (detail.closeDetails != null) {

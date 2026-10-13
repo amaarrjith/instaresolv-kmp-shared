@@ -26,13 +26,20 @@ class RegisterViewModel(
         designation: String,
         company: String,
         isTermsAccepted: Boolean) {
-       viewModelScope.launch {
+        val trimmedFullName = fullName.trim()
+        val trimmedEmail = emailId.trim()
+        val trimmedPassword = password.trim()
+        val trimmedConfirmPassword = confirmPassword.trim()
+        val trimmedDesignation = designation.trim()
+        val trimmedCompany = company.trim()
+
+        viewModelScope.launch {
            _uiState.update { state ->
                state.copy(
                    isLoading = true
                )
            }
-            validator.validateFullName(fullName)?.let { error ->
+            validator.validateFullName(trimmedFullName)?.let { error ->
                 _uiState.update { state ->
                     state.copy(
                         isLoading = false,
@@ -41,7 +48,7 @@ class RegisterViewModel(
                 }
                 return@launch
             }
-           validator.validateEmail(emailId)?.let { error ->
+           validator.validateEmail(trimmedEmail)?.let { error ->
                _uiState.update { state ->
                    state.copy(
                        isLoading = false,
@@ -50,7 +57,7 @@ class RegisterViewModel(
                }
                return@launch
            }
-           validator.validatePassword(password)?.let { error ->
+           validator.validatePassword(trimmedPassword)?.let { error ->
                _uiState.update { state ->
                    state.copy(
                        isLoading = false,
@@ -59,7 +66,7 @@ class RegisterViewModel(
                }
                return@launch
            }
-           validator.validateConfirmPassword(password, confirmPassword)?.let { error ->
+           validator.validateConfirmPassword(trimmedPassword, trimmedConfirmPassword)?.let { error ->
                _uiState.update { state ->
                    state.copy(
                        isLoading = false,
@@ -80,12 +87,12 @@ class RegisterViewModel(
            }
            val result = repository.register(
                profileImage = profileImageUrl,
-               fullName = fullName,
-               email = emailId,
-               password = password,
-               confirmPassword = confirmPassword,
-               designation = designation,
-               company = company,
+               fullName = trimmedFullName,
+               email = trimmedEmail,
+               password = trimmedPassword,
+               confirmPassword = trimmedConfirmPassword,
+               designation = trimmedDesignation,
+               company = trimmedCompany,
                isTermsAccepted = isTermsAccepted
            )
            when(result) {

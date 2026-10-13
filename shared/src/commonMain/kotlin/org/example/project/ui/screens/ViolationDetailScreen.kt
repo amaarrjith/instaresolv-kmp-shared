@@ -45,7 +45,7 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -56,7 +56,7 @@ fun ViolationDetailScreen(
     onBackClicked: () -> Unit,
     onRefreshList: () -> Unit = {}
 ) {
-    val viewModel: ViolationDetailViewModel = koinViewModel()
+    val viewModel: ViolationDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }
@@ -172,19 +172,14 @@ fun ViolationDetailScreen(
                 visible = infoMessage != null,
                 message = infoMessage.orEmpty(),
                 onDismiss = { infoMessage = null },
-                type = org.example.project.utilites.ToastType.Info,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 20.dp)
-                    .padding(horizontal = 22.dp)
+                type = org.example.project.utilites.ToastType.Info
             )
 
             ToastHost(
                 visible = pdfToastMessage != null,
                 message = pdfToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearPdfToastMessage() },
-                type = org.example.project.utilites.ToastType.Success,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).padding(horizontal = 22.dp)
+                type = org.example.project.utilites.ToastType.Success
             )
         }
     }
