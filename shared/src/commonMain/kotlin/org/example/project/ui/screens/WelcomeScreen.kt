@@ -144,15 +144,7 @@ fun WelcomeScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                AnimatedContent(targetState = currentIndex, label = stringResource(Res.string.descriptionanimation)) { targetIndex ->
-                    Text(
-                        text = descriptions[targetIndex],
-                        color = Color.Black.copy(alpha = 0.6f),
-                        style = textStyle(size = 12.sp, weight = FontWeight.Normal),
-                        lineHeight = 18.sp,
-                        modifier = Modifier.heightIn(min = 52.dp, max = 72.dp)
-                    )
-                }
+
             }
 
             Spacer(modifier = Modifier.height(20.dp))
