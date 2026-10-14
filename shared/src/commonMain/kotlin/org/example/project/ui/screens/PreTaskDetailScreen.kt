@@ -40,6 +40,7 @@ import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.utilites.ToastHost
+import kotlin.time.Clock
 
 @Composable
 fun PreTaskDetailScreen(
@@ -52,7 +53,27 @@ fun PreTaskDetailScreen(
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var isTranslationDone by remember { mutableStateOf(false) }
+    var showSharePopup by remember { mutableStateOf(false) }
+    val textSharer = org.example.project.utilites.rememberTextSharer()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
+
+    val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
+
+    LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "PreTask_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setPdfToastMessage("Downloading Pre-Task Report")
+            } catch (e: Exception) {
+                // Handle error
+            }
+            viewModel.clearPdfUrl()
+        }
+    }
 
     LaunchedEffect(preTaskId) {
         viewModel.loadPreTaskDetail(preTaskId)
@@ -76,19 +97,19 @@ fun PreTaskDetailScreen(
                             AppBorderButton(
                                 title = stringResource(Res.string.generatePdf),
                                 onClick = {
-
+                                    viewModel.generatePdf(preTaskId)
                                 },
                                 modifier = Modifier.weight(1f)
                             )
                             Row(
                                 modifier = Modifier.weight(1f)
-                                    .clickable { }
+                                    .clickable { showSharePopup = true }
                                     .height(48.dp)
                                     .padding(horizontal = 8.dp),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                                Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
                                 Spacer(Modifier.width(8.dp))
                                 Image(
                                     painter = painterResource(Res.drawable.ic_share),
@@ -101,30 +122,34 @@ fun PreTaskDetailScreen(
             }
         }
     ) { paddingValues ->
-        when (val state = uiState) {
-            is PreTaskDetailUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    AppLoader()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(top = 40.dp)
+                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .background(Color.White)
+        ) {
+            when (val state = uiState) {
+                is PreTaskDetailUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        AppLoader()
+                    }
                 }
-            }
-            is PreTaskDetailUiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ErrorRetryView(
-                        errorMessage = state.message,
-                        modifier = Modifier.fillMaxSize(),
-                        onRetryClick = { viewModel.loadPreTaskDetail(preTaskId) }
-                    )
+                is PreTaskDetailUiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        ErrorRetryView(
+                            errorMessage = state.message,
+                            modifier = Modifier.fillMaxSize(),
+                            onRetryClick = { viewModel.loadPreTaskDetail(preTaskId) }
+                        )
+                    }
                 }
-            }
-            is PreTaskDetailUiState.Success -> {
-                val data = state.data
-                Box() {
+                is PreTaskDetailUiState.Success -> {
+                    val data = state.data
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White)
-                            .padding(paddingValues)
-                            .padding(top = 40.dp)
                     ) {
                         // Header Handle
                         Box(
@@ -596,16 +621,27 @@ fun PreTaskDetailScreen(
                             }
                         }
                     } // end scrollable Column
-                    }
-                    ToastHost(
-                        visible = infoMessage != null,
-                        message = infoMessage.orEmpty(),
-                        onDismiss = { infoMessage = null },
-                        type = org.example.project.utilites.ToastType.Info
-                    )
-                }
-            }
-        }
+                } // end outer Column
+            } // end is PreTaskDetailUiState.Success
+        } // end when
+
+        ToastHost(
+            visible = infoMessage != null,
+            message = infoMessage.orEmpty(),
+            onDismiss = { infoMessage = null },
+            type = org.example.project.utilites.ToastType.Info
+        )
+
+        ToastHost(
+            visible = pdfToastMessage != null,
+            message = pdfToastMessage.orEmpty(),
+            onDismiss = { viewModel.clearPdfToastMessage() },
+            type = org.example.project.utilites.ToastType.Success
+        )
+    }
+
+    if (isGeneratingPdf) {
+        org.example.project.ui.components.PdfGenerationLoader()
     }
 
     if (previewImageUrl != null) {
@@ -613,6 +649,23 @@ fun PreTaskDetailScreen(
             imageUrl = previewImageUrl!!,
             onDismiss = { previewImageUrl = null }
         )
+    }
+
+    if (showSharePopup) {
+        val detail = (uiState as? PreTaskDetailUiState.Success)?.data
+        org.example.project.ui.components.SharePopupDialog(
+            onDismiss = { showSharePopup = false },
+            onTxtClick = {
+                detail?.let {
+                    val text = org.example.project.utilites.DetailTextFormatter.formatPreTask(it)
+                    textSharer.shareText(text, it.taskTitle ?: "Pre-Task Details")
+                }
+            },
+            onPdfClick = {
+                viewModel.generatePdf(preTaskId)
+            }
+        )
+    }
     }
 }
 

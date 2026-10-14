@@ -244,6 +244,9 @@ interface AuthApiService {
     suspend fun generateObservationPdf(request: org.example.project.data.model.GenerateObservationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun generateViolationPdf(request: org.example.project.data.model.GenerateViolationPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
     suspend fun generatePermitPdf(request: org.example.project.data.model.GeneratePermitPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generateInspectionPdf(request: org.example.project.data.model.GenerateInspectionPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generateToolBoxTalkPdf(request: org.example.project.data.model.GenerateToolBoxTalkPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
+    suspend fun generatePreTaskPdf(request: org.example.project.data.model.GeneratePreTaskPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse>
 
     suspend fun getInspectionList(
         request: org.example.project.data.model.InspectionListRequest
@@ -267,6 +270,10 @@ interface AuthApiService {
 
     suspend fun generateViolationExcel(
         request: org.example.project.data.model.ViolationListRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
+    suspend fun generatePreTaskExcel(
+        request: org.example.project.data.model.PreTaskListRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse>
 
     suspend fun createViolation(

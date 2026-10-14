@@ -78,6 +78,49 @@ class PermitDetailViewModel(
     private val _canCancelOrSuspend = MutableStateFlow(false)
     val canCancelOrSuspend: StateFlow<Boolean> = _canCancelOrSuspend.asStateFlow()
 
+    private val _isGeneratingPdf = MutableStateFlow(false)
+    val isGeneratingPdf: StateFlow<Boolean> = _isGeneratingPdf.asStateFlow()
+
+    private val _pdfUrl = MutableStateFlow<String?>(null)
+    val pdfUrl: StateFlow<String?> = _pdfUrl.asStateFlow()
+
+    private val _pdfToastMessage = MutableStateFlow<String?>(null)
+    val pdfToastMessage: StateFlow<String?> = _pdfToastMessage.asStateFlow()
+
+    fun generatePdf(permitId: Int) {
+        viewModelScope.launch {
+            _isGeneratingPdf.value = true
+            val request = org.example.project.data.model.GeneratePermitPdfRequest(permitId = permitId)
+            when (val result = repository.generatePermitPdf(request)) {
+                is NetworkResult.Success -> {
+                    _isGeneratingPdf.value = false
+                    val url = result.data.resolvedPdfUrl
+                    if (!url.isNullOrBlank()) {
+                        _pdfUrl.value = url
+                    } else {
+                        _pdfToastMessage.value = result.data.statusMessage ?: "Failed to generate Permit PDF"
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _isGeneratingPdf.value = false
+                    _pdfToastMessage.value = result.message ?: "Failed to generate Permit PDF"
+                }
+            }
+        }
+    }
+
+    fun setPdfToastMessage(message: String) {
+        _pdfToastMessage.update { message }
+    }
+
+    fun clearPdfToastMessage() {
+        _pdfToastMessage.update { null }
+    }
+
+    fun clearPdfUrl() {
+        _pdfUrl.update { null }
+    }
+
     private val _canReactivate = MutableStateFlow(false)
     val canReactivate: StateFlow<Boolean> = _canReactivate.asStateFlow()
 

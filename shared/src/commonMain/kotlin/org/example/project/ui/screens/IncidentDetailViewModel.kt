@@ -60,7 +60,7 @@ class IncidentDetailViewModel(
             when (val result = incidentRepository.generatePdf(request)) {
                 is NetworkResult.Success -> {
                     _isGeneratingPdf.value = false
-                    val url = result.data?.pdfUrl ?: result.data?.excelUrl
+                    val url = result.data?.resolvedPdfUrl
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {

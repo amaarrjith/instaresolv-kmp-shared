@@ -480,7 +480,7 @@ fun PendingActionListScreen(
         }
 
         // View Report modal
-        if (viewReportObservationId != null) {
+        viewReportObservationId?.let { obsId ->
             val detailSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ModalBottomSheet(
                 onDismissRequest = { viewReportObservationId = null },
@@ -490,7 +490,7 @@ fun PendingActionListScreen(
             ) {
                 Box(modifier = Modifier.fillMaxHeight(0.9f)) {
                     ObservationDetailScreen(
-                        observationId = viewReportObservationId!!,
+                        observationId = obsId,
                         onBackClicked = { viewReportObservationId = null },
                         onRefreshList = {
                             viewReportObservationId = null
@@ -502,7 +502,7 @@ fun PendingActionListScreen(
         }
 
         // Close Observation modal
-        if (closeObservationId != null) {
+        closeObservationId?.let { obsId ->
             val closeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ModalBottomSheet(
                 onDismissRequest = { closeObservationId = null },
@@ -512,7 +512,7 @@ fun PendingActionListScreen(
             ) {
                 Box(modifier = Modifier.fillMaxHeight(0.9f)) {
                     ObservationDetailScreen(
-                        observationId = closeObservationId!!,
+                        observationId = obsId,
                         onBackClicked = { closeObservationId = null },
                         onRefreshList = {
                             closeObservationId = null

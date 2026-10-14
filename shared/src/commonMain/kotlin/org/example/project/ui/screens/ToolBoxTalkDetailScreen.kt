@@ -41,6 +41,7 @@ import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.utilites.ToastHost
+import kotlin.time.Clock
 
 @Composable
 fun ToolBoxTalkDetailScreen(
@@ -53,7 +54,27 @@ fun ToolBoxTalkDetailScreen(
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var isTranslationDone by remember { mutableStateOf(false) }
+    var showSharePopup by remember { mutableStateOf(false) }
+    val textSharer = org.example.project.utilites.rememberTextSharer()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
+
+    val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
+
+    LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "Toolbox_Talk_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setPdfToastMessage("Downloading Toolbox Talk Report")
+            } catch (e: Exception) {
+                // Handle error
+            }
+            viewModel.clearPdfUrl()
+        }
+    }
 
     LaunchedEffect(id) {
         viewModel.loadToolBoxTalkDetail(id)
@@ -61,7 +82,7 @@ fun ToolBoxTalkDetailScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize().imePadding(),
-        containerColor = Color.White,
+        containerColor = Color.Transparent,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (uiState is ToolBoxTalkDetailUiState.Success) {
@@ -77,19 +98,19 @@ fun ToolBoxTalkDetailScreen(
                         AppBorderButton(
                             title = stringResource(Res.string.generatePdf),
                             onClick = {
-                                // PDF generation block
+                                viewModel.generatePdf(id)
                             },
                             modifier = Modifier.weight(1f)
                         )
                         Row(
                             modifier = Modifier.weight(1f)
-                                .clickable { }
+                                .clickable { showSharePopup = true }
                                 .height(48.dp)
                                 .padding(horizontal = 8.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                            Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
                             Spacer(Modifier.width(8.dp))
                             Image(
                                 painter = painterResource(Res.drawable.ic_share),
@@ -101,46 +122,34 @@ fun ToolBoxTalkDetailScreen(
             }
         }
     ) { paddingValues ->
-        when (val state = uiState) {
-            is ToolBoxTalkDetailUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(top = 40.dp)
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    AppLoader()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(top = 40.dp)
+                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .background(Color.White)
+        ) {
+            when (val state = uiState) {
+                is ToolBoxTalkDetailUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        AppLoader()
+                    }
                 }
-            }
-            is ToolBoxTalkDetailUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(top = 40.dp)
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    ErrorRetryView(
-                        errorMessage = state.message,
-                        modifier = Modifier.fillMaxSize(),
-                        onRetryClick = { viewModel.loadToolBoxTalkDetail(id) }
-                    )
+                is ToolBoxTalkDetailUiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        ErrorRetryView(
+                            errorMessage = state.message,
+                            modifier = Modifier.fillMaxSize(),
+                            onRetryClick = { viewModel.loadToolBoxTalkDetail(id) }
+                        )
+                    }
                 }
-            }
-            is ToolBoxTalkDetailUiState.Success -> {
-                val data = state.data
-                Box() {
+                is ToolBoxTalkDetailUiState.Success -> {
+                    val data = state.data
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White)
-                            .padding(paddingValues)
-                            .padding(top = 40.dp)
                     ) {
                         // Header Handle
                         Box(
@@ -503,21 +512,49 @@ fun ToolBoxTalkDetailScreen(
                             }
                         }
                     } // end scrollable Column
-                    }
-                    ToastHost(
-                        visible = infoMessage != null,
-                        message = infoMessage.orEmpty(),
-                        onDismiss = { infoMessage = null },
-                        type = org.example.project.utilites.ToastType.Info
-                    )
-                }
-            }
+                } // end outer Column
+            } // end is ToolBoxTalkDetailUiState.Success
+        } // end when
+
+        ToastHost(
+            visible = infoMessage != null,
+            message = infoMessage.orEmpty(),
+            onDismiss = { infoMessage = null },
+            type = org.example.project.utilites.ToastType.Info
+        )
+
+        ToastHost(
+            visible = pdfToastMessage != null,
+            message = pdfToastMessage.orEmpty(),
+            onDismiss = { viewModel.clearPdfToastMessage() },
+            type = org.example.project.utilites.ToastType.Success
+        )
+    }
+
+        if (isGeneratingPdf) {
+            org.example.project.ui.components.PdfGenerationLoader()
         }
 
         if (previewImageUrl != null) {
             org.example.project.ui.components.AppImagePreviewDialog(
                 imageUrl = previewImageUrl!!,
                 onDismiss = { previewImageUrl = null }
+            )
+        }
+
+        if (showSharePopup) {
+            val detail = (uiState as? ToolBoxTalkDetailUiState.Success)?.data
+            org.example.project.ui.components.SharePopupDialog(
+                onDismiss = { showSharePopup = false },
+                onTxtClick = {
+                    detail?.let {
+                        val text = org.example.project.utilites.DetailTextFormatter.formatToolBoxTalk(it)
+                        textSharer.shareText(text, it.topic ?: "Toolbox Talk Details")
+                    }
+                },
+                onPdfClick = {
+                    viewModel.generatePdf(id)
+                }
             )
         }
     }

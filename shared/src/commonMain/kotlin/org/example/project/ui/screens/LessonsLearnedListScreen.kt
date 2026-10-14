@@ -148,12 +148,13 @@ fun LessonsLearnedListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
 
 
-            Column() {
+            Column(
+                modifier = Modifier.padding(horizontal = 22.dp)
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

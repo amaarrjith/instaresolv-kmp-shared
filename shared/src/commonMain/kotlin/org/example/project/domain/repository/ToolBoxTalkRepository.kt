@@ -11,4 +11,5 @@ interface ToolBoxTalkRepository {
     suspend fun generateToolBoxTalkExcel(request: ToolBoxTalkExcelRequest): NetworkResult<CommonModelResponse>
     suspend fun createToolBoxTalk(request: org.example.project.data.model.CreateToolBoxTalkRequest): NetworkResult<org.example.project.data.model.CreateToolBoxTalkResponseData>
     suspend fun getToolBoxTalkDetail(request: org.example.project.data.model.ToolBoxTalkDetailRequest): NetworkResult<org.example.project.data.model.ToolBoxTalkItem>
+    suspend fun generateToolBoxTalkPdf(request: org.example.project.data.model.GenerateToolBoxTalkPdfRequest): NetworkResult<CommonModelResponse>
 }

@@ -94,7 +94,11 @@ class PermitToWorkListViewModel(
                 PermitStatus.entries.find { it.title.equals(statusName, ignoreCase = true) }?.value
             }.takeIf { it.isNotEmpty() }
 
-            val projectIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val projectIds = if (filter.noProjectSelected) {
+                listOf(-1)
+            } else {
+                filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            }
             val authorizerIds = filter.selectedAuthorizers.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             val requestorIds = filter.selectedRequestors.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             val hseAssignedIds = filter.selectedHseAssigned.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
@@ -204,7 +208,11 @@ class PermitToWorkListViewModel(
                 PermitStatus.entries.find { it.title.equals(statusName, ignoreCase = true) }?.value
             }.takeIf { it.isNotEmpty() }
 
-            val projectIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            val projectIds = if (filter.noProjectSelected) {
+                listOf(-1)
+            } else {
+                filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            }
             val authorizerIds = filter.selectedAuthorizers.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             val requestorIds = filter.selectedRequestors.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             val hseAssignedIds = filter.selectedHseAssigned.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }

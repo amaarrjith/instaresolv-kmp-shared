@@ -75,7 +75,11 @@ class AuditInspectionListViewModel(
             val currentState = _uiState.value
             val appliedFilters = currentState.appliedFilterState
 
-            val projectIds = appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            val projectIds = if (appliedFilters.noProjectSelected) {
+                listOf(-1)
+            } else {
+                appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            }
             val reportedByPersons = appliedFilters.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }
 
             val request = org.example.project.data.model.InspectionListRequest(
@@ -83,8 +87,8 @@ class AuditInspectionListViewModel(
                 page = 1,
                 limit = 1000,
                 sortType = 1,
-                projectIds = if (projectIds.isNotEmpty()) projectIds else emptyList(),
-                reportedByPersons = if (reportedByPersons.isNotEmpty()) reportedByPersons else emptyList(),
+                projectIds = projectIds,
+                reportedByPersons = reportedByPersons,
                 openDate = formatMillis(appliedFilters.dateOpenMillis),
                 endDate = formatMillis(appliedFilters.dateCloseMillis)
             )

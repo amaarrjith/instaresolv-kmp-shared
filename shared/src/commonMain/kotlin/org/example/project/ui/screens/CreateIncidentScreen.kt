@@ -227,11 +227,13 @@ fun CreateIncidentScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .imePadding()
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = 20.dp),
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 20.dp)
+                    .padding(horizontal = 22.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Facility / Project

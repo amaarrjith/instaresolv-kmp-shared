@@ -171,7 +171,7 @@ fun NotificationListScreen(
                 }
             }
 
-            if (selectedObservationId != null) {
+            selectedObservationId?.let { obsId ->
                 val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                 ModalBottomSheet(
                     onDismissRequest = { selectedObservationId = null },
@@ -181,7 +181,7 @@ fun NotificationListScreen(
                 ) {
                     Box(modifier = Modifier.fillMaxHeight(0.9f)) {
                         ObservationDetailScreen(
-                            observationId = selectedObservationId!!,
+                            observationId = obsId,
                             onBackClicked = { selectedObservationId = null },
                             onRefreshList = {
                                 viewModel.getNotifications()

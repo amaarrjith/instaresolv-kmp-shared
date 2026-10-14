@@ -66,6 +66,7 @@ import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.data.model.PermitSubContractorClosure
+import kotlin.time.Clock
 
 @Composable
 fun PermitDetailScreen(
@@ -116,6 +117,25 @@ fun PermitDetailScreen(
     val selectedAuthorizerPerson by viewModel.selectedAuthorizerPerson.collectAsState()
 
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
+    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val textSharer = org.example.project.utilites.rememberTextSharer()
+    var showSharePopup by remember { mutableStateOf(false) }
+
+    LaunchedEffect(pdfUrl) {
+        pdfUrl?.let { url ->
+            try {
+                val fileName = "Permit_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setPdfToastMessage("Downloading Permit Report")
+            } catch (e: Exception) {
+                // Handle error
+            }
+            viewModel.clearPdfUrl()
+        }
+    }
 
     LaunchedEffect(id) {
         viewModel.loadPermitDetail(id)
@@ -161,18 +181,18 @@ fun PermitDetailScreen(
                         ) {
                             AppBorderButton(
                                 title = stringResource(Res.string.generatePdf),
-                                onClick = { },
+                                onClick = { viewModel.generatePdf(id) },
                                 modifier = Modifier.weight(1f)
                             )
                             Row(
                                 modifier = Modifier.weight(1f)
-                                    .clickable {  }
+                                    .clickable { showSharePopup = true }
                                     .height(48.dp)
                                     .padding(horizontal = 8.dp),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Share", style = textStyle(size = 14.sp, FontWeight.Bold), color = AppColors.Black)
+                                Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, FontWeight.Bold), color = AppColors.Black)
                                 Spacer(Modifier.width(8.dp))
                                 Image(
                                     painter = painterResource(Res.drawable.ic_share),
@@ -290,6 +310,33 @@ fun PermitDetailScreen(
                 onAddImageSlot = viewModel::onAddImageSlot,
                 onDismiss = viewModel::onActionDialogDismiss,
                 onSubmit = { viewModel.submitPermitAction(id) }
+            )
+        }
+
+        if (isGeneratingPdf) {
+            org.example.project.ui.components.PdfGenerationLoader()
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            ToastHost(
+                visible = pdfToastMessage != null,
+                message = pdfToastMessage.orEmpty(),
+                onDismiss = { viewModel.clearPdfToastMessage() },
+                type = ToastType.Success
+            )
+        }
+
+        if (showSharePopup) {
+            val detail = (uiState as? PermitDetailUiState.Success)?.data
+            org.example.project.ui.components.SharePopupDialog(
+                onDismiss = { showSharePopup = false },
+                onTxtClick = {
+                    detail?.let {
+                        val text = org.example.project.utilites.DetailTextFormatter.formatPermit(it)
+                        textSharer.shareText(text, it.permitCode ?: "Permit to Work Details")
+                    }
+                },
+                onPdfClick = { viewModel.generatePdf(id) }
             )
         }
     }

@@ -122,10 +122,11 @@ fun ToolBoxTalkListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
-            Column {
+            Column(
+                Modifier.padding(horizontal = 22.dp)
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -247,14 +248,21 @@ fun ToolBoxTalkListScreen(
                 visible = exportToastMessage != null,
                 message = exportToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearExportToast() },
-                type = ToastType.Success
+                type = if (
+                    exportToastMessage.orEmpty().contains("failed", ignoreCase = true) ||
+                    exportToastMessage.orEmpty().contains("error", ignoreCase = true)
+                ) {
+                    ToastType.Error
+                } else {
+                    ToastType.Success
+                }
             )
 
             if (selectedToolboxTalkId != null) {
                 ModalBottomSheet(
                     onDismissRequest = { selectedToolboxTalkId = null },
                     sheetState = sheetState,
-                    containerColor = Color.Transparent,
+                    containerColor = Color.White,
                     dragHandle = null
                 ) {
                     Box(modifier = Modifier.fillMaxHeight(0.9f)) {

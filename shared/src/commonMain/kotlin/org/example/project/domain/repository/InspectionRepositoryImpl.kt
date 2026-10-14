@@ -42,6 +42,12 @@ class InspectionRepositoryImpl(
         return apiService.generateInspectionExcel(request)
     }
 
+    override suspend fun generateInspectionPdf(
+        request: org.example.project.data.model.GenerateInspectionPdfRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generateInspectionPdf(request)
+    }
+
     override suspend fun getInspectionContentsList(request: InspectionContentsRequest): NetworkResult<InspectionContentsResponse> {
         return apiService.getInspectionContentsList(request)
     }

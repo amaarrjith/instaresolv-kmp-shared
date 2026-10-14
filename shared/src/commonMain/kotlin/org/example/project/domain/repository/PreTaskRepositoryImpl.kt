@@ -27,4 +27,12 @@ class PreTaskRepositoryImpl(
     override suspend fun getPreTaskDetail(request: org.example.project.data.model.PreTaskDetailRequest): NetworkResult<org.example.project.data.model.PreTaskDetailResponseData> {
         return apiService.getPreTaskDetail(request)
     }
+
+    override suspend fun generatePreTaskExcel(request: PreTaskListRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generatePreTaskExcel(request)
+    }
+
+    override suspend fun generatePreTaskPdf(request: org.example.project.data.model.GeneratePreTaskPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> {
+        return apiService.generatePreTaskPdf(request)
+    }
 }

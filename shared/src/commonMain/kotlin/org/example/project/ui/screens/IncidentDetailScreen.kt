@@ -71,6 +71,7 @@ fun IncidentDetailScreen(
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val textSharer = org.example.project.utilites.rememberTextSharer()
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
@@ -117,7 +118,7 @@ fun IncidentDetailScreen(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                            Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
                             Spacer(Modifier.width(8.dp))
                             Image(
                                 painter = painterResource(Res.drawable.ic_share),
@@ -165,13 +166,26 @@ fun IncidentDetailScreen(
                 onDismiss = { infoMessage = null },
                 type = org.example.project.utilites.ToastType.Info
             )
+
+            ToastHost(
+                visible = pdfToastMessage != null,
+                message = pdfToastMessage.orEmpty(),
+                onDismiss = { viewModel.clearPdfToastMessage() },
+                type = org.example.project.utilites.ToastType.Success
+            )
         }
 
         
         if (showSharePopup) {
-            org.example.project.ui.components.SharePopupBottomSheet(
+            val detail = (uiState as? IncidentDetailUiState.Success)?.detail
+            org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
-                onTxtClick = { /* Handle TXT share */ },
+                onTxtClick = {
+                    detail?.let {
+                        val text = org.example.project.utilites.DetailTextFormatter.formatIncident(it)
+                        textSharer.shareText(text, "Incident Details #${it.id}")
+                    }
+                },
                 onPdfClick = { viewModel.generatePdf(incidentId) }
             )
         }
@@ -261,48 +275,49 @@ fun IncidentDetailContent(
             modifier = Modifier.verticalScroll(scrollState)
         ) {
             // Project
-            Text(
-                text = stringResource(Res.string.project),
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray
-            )
-            Spacer(Modifier.height(11.dp))
-            Row {
-                WebImageView(
-                    imageUrl = detail.facilities?.groupImage,
-                    modifier = Modifier.size(42.dp).clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
+            if (detail.facilities != null) {
+                Text(
+                    text = stringResource(Res.string.project),
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
                 )
-                Spacer(modifier = Modifier.width(10.dp))
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    Text(
-                        text = detail.facilities?.groupName ?: "",
-                        style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
-                        color = AppColors.Black
+                Spacer(Modifier.height(11.dp))
+                Row {
+                    WebImageView(
+                        imageUrl = detail.facilities?.groupImage,
+                        modifier = Modifier.size(42.dp).clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
                     )
-                    if (!detail.facilities?.groupCode.isNullOrEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color.Gray)
-                        ) {
-                            Text(
-                                text = detail.facilities?.groupCode ?: "",
-                                modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-                                style = textStyle(
-                                    size = 10.sp,
-                                    weight = FontWeight.SemiBold
-                                ),
-                                color = Color.White
-                            )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Text(
+                            text = detail.facilities?.groupName ?: "",
+                            style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
+                            color = AppColors.Black
+                        )
+                        if (!detail.facilities?.groupCode.isNullOrEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.Gray)
+                            ) {
+                                Text(
+                                    text = detail.facilities?.groupCode ?: "",
+                                    modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
+                                    style = textStyle(
+                                        size = 10.sp,
+                                        weight = FontWeight.SemiBold
+                                    ),
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
                 }
+                Spacer(Modifier.height(24.dp))
             }
-
-            Spacer(Modifier.height(24.dp))
             HorizontalDivider(color = Color(0xFFF0F0F5))
             Spacer(Modifier.height(24.dp))
 

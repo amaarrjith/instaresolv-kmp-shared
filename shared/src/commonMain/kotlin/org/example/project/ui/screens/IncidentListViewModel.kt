@@ -101,11 +101,15 @@ class IncidentListViewModel(
             val appliedFilters = currentState.appliedFilterState
 
             // Filter fields mapped to API request
-            val projectIds = appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            val projectIds = if (appliedFilters.noProjectSelected) {
+                listOf(-1)
+            } else {
+                appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            }
             val reportedByPersons = appliedFilters.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }
             
             // Note: IncidentType filtering is now supported by AppFilterBottomSheet
-            val incidentTypes: List<Int>? = appliedFilters.selectedIncidentTypes
+            val incidentTypes: List<Int> = appliedFilters.selectedIncidentTypes
 
             val request = IncidentRequest(
                 searchKey = currentState.searchKey,
@@ -157,7 +161,11 @@ class IncidentListViewModel(
             val currentState = _uiState.value
             val appliedFilters = currentState.appliedFilterState
 
-            val projectIds = appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            val projectIds = if (appliedFilters.noProjectSelected) {
+                listOf(-1)
+            } else {
+                appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            }
             val reportedByPersons = appliedFilters.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }
             val incidentTypes: List<Int>? = appliedFilters.selectedIncidentTypes
 

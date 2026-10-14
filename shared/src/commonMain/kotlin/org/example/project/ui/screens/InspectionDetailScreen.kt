@@ -65,7 +65,9 @@ fun InspectionDetailScreen(
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val textSharer = org.example.project.utilites.rememberTextSharer()
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
@@ -112,7 +114,7 @@ fun InspectionDetailScreen(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                            Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
                             Spacer(Modifier.width(8.dp))
                             Image(
                                 painter = painterResource(Res.drawable.ic_share),
@@ -169,13 +171,26 @@ fun InspectionDetailScreen(
                     onDismiss = { infoMessage = null },
                     type = org.example.project.utilites.ToastType.Info
                 )
+
+                ToastHost(
+                    visible = pdfToastMessage != null,
+                    message = pdfToastMessage.orEmpty(),
+                    onDismiss = { viewModel.clearPdfToastMessage() },
+                    type = org.example.project.utilites.ToastType.Success
+                )
             }
         }
         
         if (showSharePopup) {
-            org.example.project.ui.components.SharePopupBottomSheet(
+            val detail = (uiState as? InspectionDetailUiState.Success)?.detail
+            org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
-                onTxtClick = { /* Handle TXT share */ },
+                onTxtClick = {
+                    detail?.let {
+                        val text = org.example.project.utilites.DetailTextFormatter.formatInspection(it)
+                        textSharer.shareText(text, "Inspection Details #${it.id}")
+                    }
+                },
                 onPdfClick = { viewModel.generatePdf(inspectionId) }
             )
         }

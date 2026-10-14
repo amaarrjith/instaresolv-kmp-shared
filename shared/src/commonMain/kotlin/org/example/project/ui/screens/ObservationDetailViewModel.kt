@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.data.model.DeleteObservationRequest
 import org.example.project.data.model.ObservationDetailRequest
 import org.example.project.data.model.ObservationDetailResponse
 import org.example.project.data.model.TranslateAudioRequest
@@ -27,6 +28,13 @@ sealed class CloseObservationState {
     data class Error(val message: String) : CloseObservationState()
 }
 
+sealed class DeleteObservationState {
+    object Idle : DeleteObservationState()
+    object Loading : DeleteObservationState()
+    data class Success(val message: String) : DeleteObservationState()
+    data class Error(val message: String) : DeleteObservationState()
+}
+
 class ObservationDetailViewModel(
     private val observationRepository: ObservationRepository,
     private val audioRepository: AudioRepository
@@ -44,7 +52,10 @@ class ObservationDetailViewModel(
     private val _pdfToastMessage = MutableStateFlow<String?>(null)
     val pdfToastMessage: StateFlow<String?> = _pdfToastMessage
 
+    private var currentObservationId: Int? = null
+
     fun loadObservationDetail(observationId: Int, notificationId: Int = -1) {
+        currentObservationId = observationId
         viewModelScope.launch {
             _uiState.value = ObservationDetailUiState.Loading
             val request = ObservationDetailRequest(
@@ -142,7 +153,7 @@ class ObservationDetailViewModel(
             when (val result = observationRepository.generatePdf(request)) {
                 is NetworkResult.Success -> {
                     _isGeneratingPdf.value = false
-                    val url = result.data?.pdfUrl ?: result.data?.excelUrl
+                    val url = result.data?.resolvedPdfUrl
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
@@ -167,5 +178,30 @@ class ObservationDetailViewModel(
 
     fun clearPdfToastMessage() {
         _pdfToastMessage.value = null
+    }
+
+    private val _deleteUiState = MutableStateFlow<DeleteObservationState>(DeleteObservationState.Idle)
+    val deleteUiState: StateFlow<DeleteObservationState> = _deleteUiState
+
+    fun deleteObservation(observationId: Int? = null) {
+        val id = observationId ?: currentObservationId ?: return
+        viewModelScope.launch {
+            _deleteUiState.value = DeleteObservationState.Loading
+            val request = DeleteObservationRequest(observationId = id)
+            when (val result = observationRepository.deleteObservation(request)) {
+                is NetworkResult.Success -> {
+                    val message = result.data.statusMessage?.takeIf { it.isNotBlank() } ?: "Successfully deleted"
+                    _deleteUiState.value = DeleteObservationState.Success(message)
+                }
+                is NetworkResult.Error -> {
+                    val message = result.message.takeIf { it.isNotBlank() } ?: "Failed to delete observation"
+                    _deleteUiState.value = DeleteObservationState.Error(message)
+                }
+            }
+        }
+    }
+
+    fun resetDeleteState() {
+        _deleteUiState.value = DeleteObservationState.Idle
     }
 }

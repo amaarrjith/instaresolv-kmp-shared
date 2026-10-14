@@ -251,6 +251,24 @@ class AuthApiServiceImpl(
             jsonBody(request)
         }
     }
+
+    override suspend fun generateInspectionPdf(request: org.example.project.data.model.GenerateInspectionPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_INSPECTION_PDF) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generateToolBoxTalkPdf(request: org.example.project.data.model.GenerateToolBoxTalkPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_TOOLBOX_TALK_PDF) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generatePreTaskPdf(request: org.example.project.data.model.GeneratePreTaskPdfRequest): NetworkResult<org.example.project.data.model.CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_PRE_TASK_PDF) {
+            jsonBody(request)
+        }
+    }
     
     override suspend fun changePassword(request: org.example.project.data.model.ChangePasswordRequest): NetworkResult<CommonModelResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.CHANGE_PASSWORD) {
@@ -446,6 +464,14 @@ class AuthApiServiceImpl(
         request: org.example.project.data.model.ViolationListRequest
     ): NetworkResult<CommonModelResponse> = safeApiCall {
         httpClient.post(ApiEndpoints.GENERATE_VIOLATION_EXCEL) {
+            jsonBody(request)
+        }
+    }
+
+    override suspend fun generatePreTaskExcel(
+        request: org.example.project.data.model.PreTaskListRequest
+    ): NetworkResult<CommonModelResponse> = safeApiCall {
+        httpClient.post(ApiEndpoints.GENERATE_PRE_TASK_EXCEL) {
             jsonBody(request)
         }
     }

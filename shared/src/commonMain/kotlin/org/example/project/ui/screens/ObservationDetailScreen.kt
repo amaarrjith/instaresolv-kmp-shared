@@ -24,13 +24,16 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,7 +78,17 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import kotlin.time.Clock
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.model.ObservationImageDescription
 import org.example.project.data.model.UserRole
+import org.example.project.data.settings.timeAgo
+import org.example.project.ui.components.AppConfirmationDialog
+import org.example.project.ui.components.AppExitDialog
+import org.example.project.ui.components.AppImagePreviewDialog
+import org.example.project.ui.components.PdfGenerationLoader
+import org.example.project.ui.components.SharePopupDialog
+import org.example.project.utilites.DetailTextFormatter
+import org.example.project.utilites.rememberFileDownloader
+import org.example.project.utilites.rememberTextSharer
 
 @Composable
 fun ObservationDetailScreen(
@@ -87,11 +100,13 @@ fun ObservationDetailScreen(
     val viewModel: ObservationDetailViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     val closeUiState by viewModel.closeUiState.collectAsState()
+    val deleteUiState by viewModel.deleteUiState.collectAsState()
     
     var isClosingObservation by remember { mutableStateOf(startWithCloseForm) }
     var closeDescription by remember { mutableStateOf("") }
-    val closeImages = remember { androidx.compose.runtime.mutableStateListOf(ObservationImage()) }
+    val closeImages = remember { mutableStateListOf(ObservationImage()) }
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var deleteSuccessMessage by remember { mutableStateOf<String?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
@@ -100,7 +115,11 @@ fun ObservationDetailScreen(
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
-    val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val fileDownloader = rememberFileDownloader()
+    val textSharer = rememberTextSharer()
+    var showSharePopup by remember { mutableStateOf(false) }
+
+    var isDeleteObservationClicked by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
@@ -137,6 +156,20 @@ fun ObservationDetailScreen(
             is CloseObservationState.Error -> {
                 errorMessage = state.message
                 viewModel.resetCloseState()
+            }
+            else -> {}
+        }
+    }
+
+    LaunchedEffect(deleteUiState) {
+        when (val state = deleteUiState) {
+            is DeleteObservationState.Success -> {
+                deleteSuccessMessage = state.message
+                viewModel.resetDeleteState()
+            }
+            is DeleteObservationState.Error -> {
+                errorMessage = state.message
+                viewModel.resetDeleteState()
             }
             else -> {}
         }
@@ -185,7 +218,7 @@ fun ObservationDetailScreen(
                             )
                             Row(
                                 modifier = Modifier.weight(1f)
-                                    .clickable { }
+                                    .clickable { showSharePopup = true }
                                     .height(48.dp)
                                     .padding(horizontal = 8.dp),
                                 horizontalArrangement = Arrangement.Center,
@@ -231,6 +264,9 @@ fun ObservationDetailScreen(
                         translatedAudioUrl = state.translatedAudioUrl,
                         isClosingObservation = isClosingObservation,
                         onCloseObservationClick = { isClosingObservation = true },
+                        onDeleteObservationClick = {
+                            isDeleteObservationClicked = true
+                        },
                         closeDescription = closeDescription,
                         onDescriptionChange = { closeDescription = it },
                         closeImages = closeImages,
@@ -270,11 +306,15 @@ fun ObservationDetailScreen(
             )
             
             if (isGeneratingPdf) {
-                org.example.project.ui.components.PdfGenerationLoader()
+                PdfGenerationLoader()
+            }
+
+            if (deleteUiState is DeleteObservationState.Loading) {
+                AppLoader()
             }
             
             previewImageUrl?.let { url ->
-                org.example.project.ui.components.AppImagePreviewDialog(
+                AppImagePreviewDialog(
                     imageUrl = url,
                     onDismiss = { previewImageUrl = null }
                 )
@@ -285,6 +325,20 @@ fun ObservationDetailScreen(
                 message = pdfToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearPdfToastMessage() },
                 type = ToastType.Success
+            )
+        }
+        
+        if (showSharePopup) {
+            val detail = (uiState as? ObservationDetailUiState.Success)?.detail
+            SharePopupDialog(
+                onDismiss = { showSharePopup = false },
+                onTxtClick = {
+                    detail?.let {
+                        val text = DetailTextFormatter.formatObservation(it)
+                        textSharer.shareText(text, it.observationTitle ?: "Observation Details")
+                    }
+                },
+                onPdfClick = { viewModel.generatePdf(observationId) }
             )
         }
         
@@ -301,6 +355,37 @@ fun ObservationDetailScreen(
                 }
             )
         }
+
+        deleteSuccessMessage?.let { msg ->
+            AppStatusDialog(
+                visible = true,
+                title = stringResource(Res.string.success),
+                description = msg,
+                buttonText = "OK",
+                onDismiss = {
+                    deleteSuccessMessage = null
+                    onRefreshList()
+                    onBackClicked()
+                }
+            )
+        }
+
+        if (isDeleteObservationClicked) {
+            AppExitDialog(
+                visible = true,
+                title = stringResource(Res.string.confirmDeletingObservation),
+                primaryButtonText = stringResource(Res.string.yes),
+                secondaryButtonText = stringResource(Res.string.no),
+                description = stringResource(Res.string.areYouSureYouWantToDeleteThisObservation),
+                onConfirm = {
+                    isDeleteObservationClicked = false
+                    viewModel.deleteObservation(observationId)
+                },
+                onDismiss = {
+                    isDeleteObservationClicked = false
+                }
+            )
+        }
     }
 }
 
@@ -312,9 +397,10 @@ fun ObservationDetailContent(
     onTranslate: () -> Unit,
     isClosingObservation: Boolean,
     onCloseObservationClick: () -> Unit,
+    onDeleteObservationClick: () -> Unit,
     closeDescription: String,
     onDescriptionChange: (String) -> Unit,
-    closeImages: androidx.compose.runtime.snapshots.SnapshotStateList<ObservationImage>,
+    closeImages: SnapshotStateList<ObservationImage>,
     onImageClick: (String) -> Unit,
     onTranslateAudio: () -> Unit,
     isTranslatingAudio: Boolean
@@ -446,7 +532,7 @@ fun ObservationDetailContent(
                     observationImages = closeImages
                 )
             } else {
-                ObservationDetailInfo(detail, onCloseObservationClick, onImageClick, isTranslationDone, translatedAudioUrl, onTranslateAudio, isTranslatingAudio)
+                ObservationDetailInfo(detail, onCloseObservationClick, onDeleteObservationClick, onImageClick, isTranslationDone, translatedAudioUrl, onTranslateAudio, isTranslatingAudio)
             }
         }
         }
@@ -457,6 +543,7 @@ fun ObservationDetailContent(
 fun ObservationDetailInfo(
     detail: ObservationDetailResponse,
     onCloseObservationClick: () -> Unit,
+    onDeleteObservationClick: () -> Unit,
     onImageClick: (String) -> Unit,
     isTranslationDone: Boolean,
     translatedAudioUrl: String?,
@@ -683,97 +770,15 @@ fun ObservationDetailInfo(
 
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(color = Color(0xFFF0F0F5))
-        Spacer(Modifier.height(24.dp))
-        val isOpen =
-            ObservationStatus.fromId(detail.status ?: -1) == ObservationStatus.OPEN
-
-        val isGroupSpecified = detail.groupSpecified ?: false
-        val isCancelable = detail.isCancelable ?: false
-
-        val userRole = detail.group?.userRole
-
-        val canCloseObservation = if (!isGroupSpecified) {
-            isOpen
-        } else {
-            isCancelable && isOpen
-        }
-
-        val canDeleteObservation = if (isGroupSpecified) {
-            userRole == UserRole.SUPER_ADMIN.value ||
-                    userRole == UserRole.ADMIN.value
-        } else {
-            true
-        }
-
-        Column {
-            if (canCloseObservation) {
-                Text(
-                    text = stringResource(Res.string.actions),
-                    style = textStyle(size = 14.sp, weight = FontWeight.Bold),
-                    color = AppColors.Black
-                )
-
-                Spacer(Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onCloseObservationClick()
-                        },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.closeObservation),
-                            style = textStyle(
-                                size = 14.sp,
-                                weight = FontWeight.Bold
-                            ),
-                            color = AppColors.Primary
-                        )
-
-                        Spacer(Modifier.height(4.dp))
-
-                        Text(
-                            text = stringResource(
-                                Res.string.closeThisObservationWithDetailed
-                            ),
-                            style = textStyle(
-                                size = 12.sp,
-                                weight = FontWeight.Normal
-                            ),
-                            color = AppColors.TextGray
-                        )
-                    }
-
-                    Image(
-                        painter = painterResource(Res.drawable.ic_right_icon),
-                        contentDescription = null,
-                        modifier = Modifier.rtlScale()
-                    )
-                }
-
-                Spacer(Modifier.height(16.dp))
-            }
-
-            if (canDeleteObservation) {
-                // Add your existing Delete Observation UI here.
-                // Match the iOS horizontal padding (28.5.dp)
-                // and top padding (20.dp).
-            }
-        }
-
         if (detail.closeDetails != null) {
             val closeDetails = detail.closeDetails
-            // Title row: "Observation Closeout" on left, time ago on right
+            Spacer(Modifier.height(24.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Text(
                     text = stringResource(Res.string.observationCloseout),
                     style = textStyle(size = 16.sp, weight = FontWeight.Bold),
@@ -781,7 +786,7 @@ fun ObservationDetailInfo(
                 )
                 if (!closeDetails.date.isNullOrEmpty()) {
                     Text(
-                        text = org.example.project.data.settings.timeAgo(closeDetails.date, isUtc = true),
+                        text = timeAgo(closeDetails.date, isUtc = true),
                         style = textStyle(size = 11.sp, weight = FontWeight.Medium),
                         color = AppColors.TextGray
                     )
@@ -852,6 +857,104 @@ fun ObservationDetailInfo(
 
             Spacer(Modifier.height(24.dp))
         }
+        HorizontalDivider(color = Color(0xFFF0F0F5))
+        Spacer(Modifier.height(24.dp))
+        val isOpen =
+            ObservationStatus.fromId(detail.status ?: -1) == ObservationStatus.OPEN
+
+        val isGroupSpecified = detail.groupSpecified ?: false
+        val isCancelable = detail.isCancelable ?: false
+
+        val userRole = detail.group?.userRole
+
+        val canCloseObservation = if (!isGroupSpecified) {
+            isOpen
+        } else {
+            isCancelable && isOpen
+        }
+
+        val canDeleteObservation = if (isGroupSpecified) {
+            userRole == UserRole.SUPER_ADMIN.value ||
+                    userRole == UserRole.ADMIN.value
+        } else {
+            true
+        }
+        if (canCloseObservation || canDeleteObservation) {
+            Column {
+                Text(
+                    text = stringResource(Res.string.actions),
+                    style = textStyle(size = 14.sp, weight = FontWeight.Bold),
+                    color = AppColors.Black
+                )
+                Spacer(Modifier.height(16.dp))
+                if (canCloseObservation) {
+                    ActionsContentSection(
+                        title = stringResource(Res.string.closeObservation),
+                        description = stringResource(Res.string.closeThisObservationWithDetailed),
+                        action = {
+                            onCloseObservationClick()
+                        }
+                    )
+                    Spacer(Modifier.height(16.dp))
+                }
+                if (canDeleteObservation) {
+                    ActionsContentSection(
+                        title = stringResource(Res.string.deleteObservation),
+                        description = stringResource(Res.string.deleteObservationWithDetailed),
+                        action = {
+                            onDeleteObservationClick()
+                        }
+                    )
+                    Spacer(Modifier.height(16.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ActionsContentSection(
+    title: String,
+    description: String,
+    action: () -> Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                action()
+            },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = title,
+                style = textStyle(
+                    size = 14.sp,
+                    weight = FontWeight.Bold
+                ),
+                color = AppColors.Primary
+            )
+
+            Spacer(Modifier.height(4.dp))
+
+            Text(
+                description,
+                style = textStyle(
+                    size = 12.sp,
+                    weight = FontWeight.Normal
+                ),
+                color = AppColors.TextGray
+            )
+        }
+
+        Image(
+            painter = painterResource(Res.drawable.ic_right_icon),
+            contentDescription = null,
+            modifier = Modifier.rtlScale()
+        )
     }
 }
 
@@ -859,7 +962,7 @@ fun ObservationDetailInfo(
 fun CloseObservationForm(
     description: String,
     onDescriptionChange: (String) -> Unit,
-    observationImages: androidx.compose.runtime.snapshots.SnapshotStateList<ObservationImage>
+    observationImages: SnapshotStateList<ObservationImage>
 ) {
     Column {
         Text(
@@ -891,7 +994,7 @@ fun CloseObservationForm(
                     ),
                     color = AppColors.Black
                 )
-                org.example.project.ui.components.AppImageCreateBox(
+                AppImageCreateBox(
                     imageUrl = observationImage.imageUrl,
                     description = observationImage.description,
                     onDescriptionChange = { newDesc ->
@@ -909,7 +1012,7 @@ fun CloseObservationForm(
         }
         
         if (observationImages.size < 6) {
-            androidx.compose.material3.TextButton(
+            TextButton(
                 onClick = { observationImages.add(ObservationImage()) },
                 modifier = Modifier.align(Alignment.Start)
             ) {

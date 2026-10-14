@@ -28,6 +28,7 @@ data class PreTaskListState(
     val error: String? = null,
     val endReached: Boolean = false,
     val appliedFilterState: org.example.project.data.model.AppFilterState = org.example.project.data.model.AppFilterState(),
+    val errorExcel: String? = null,
     val drafts: List<PreTaskDraft> = emptyList()
 )
 
@@ -39,6 +40,35 @@ class PreTaskListViewModel(
 
     private val _uiState = MutableStateFlow(PreTaskListState())
     val uiState: StateFlow<PreTaskListState> = _uiState.asStateFlow()
+
+    private val _isExporting = MutableStateFlow(false)
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    private val _exportToastMessage = MutableStateFlow<String?>(null)
+    val exportToastMessage: StateFlow<String?> = _exportToastMessage.asStateFlow()
+
+    private val _exportUrl = MutableStateFlow<String?>(null)
+    val exportUrl: StateFlow<String?> = _exportUrl.asStateFlow()
+
+    fun clearExportToast() {
+        _exportToastMessage.value = null
+    }
+
+    fun clearExportUrl() {
+        _exportUrl.value = null
+    }
+
+    fun setExportToastMessage(message: String) {
+        _exportToastMessage.value = message
+    }
+
+    fun clearErrorExcel() {
+        _uiState.update { it.copy(errorExcel = null) }
+    }
+
+    fun setErrorExcel(message: String?) {
+        _uiState.update { it.copy(errorExcel = message) }
+    }
 
     val draftToastMessage = MutableStateFlow<String?>(null)
 
@@ -87,7 +117,11 @@ class PreTaskListViewModel(
                 limit = 20,
                 searchKey = _uiState.value.searchKey,
                 reportedByPersons = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
-                projectIds = filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() },
+                projectIds = if (filter.noProjectSelected) {
+                    listOf(-1)
+                } else {
+                    filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+                },
                 openDate = formatMillis(filter.dateOpenMillis),
                 endDate = formatMillis(filter.dateCloseMillis)
             )
@@ -169,6 +203,41 @@ class PreTaskListViewModel(
             }
             draftToastMessage.value = successMessage
             loadDrafts()
+        }
+    }
+
+    fun exportToExcel() {
+        viewModelScope.launch {
+            _isExporting.value = true
+            val currentState = _uiState.value
+            val filter = currentState.appliedFilterState
+
+            val request = PreTaskListRequest(
+                pageNumber = 1,
+                limit = 1000,
+                sortType = 1,
+                searchKey = currentState.searchKey,
+                reportedByPersons = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() },
+                projectIds = if (filter.noProjectSelected) {
+                    listOf(-1)
+                } else {
+                    filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+                },
+                openDate = formatMillis(filter.dateOpenMillis),
+                endDate = formatMillis(filter.dateCloseMillis)
+            )
+
+            when (val result = repository.generatePreTaskExcel(request)) {
+                is NetworkResult.Success -> {
+                    result.data.excelUrl?.takeIf { it.isNotBlank() }?.let {
+                        _exportUrl.value = it
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _exportToastMessage.value = result.message ?: "Export failed"
+                }
+            }
+            _isExporting.value = false
         }
     }
 }

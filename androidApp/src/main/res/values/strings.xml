@@ -13,4 +13,10 @@
     <string name="subcontractorAuthorizerName">Sub Contractor Authorizer Name</string>
     <string name="instaresolvAuthorizerName">InstaResolv Authorizer Name</string>
     <string name="instaResolvAuthorizerName">InstaResolv Authorizer Name</string>
+    <string name="deleteObservation">Delete Observation</string>
+    <string name="deleteObservationWithDetailed">Delete this observation report</string>
+    <string name="confirmDeletingObservation">Confirm Deleting Observation!</string>
+    <string name="confirmDeletingObservationTitle">Confirm Deleting Observation!</string>
+    <string name="confirmDeletingObservationDescription">Are you sure you want to delete this observation?</string>
+    <string name="areYouSureYouWantToDeleteThisObservation">Are you sure you want to delete this observation?</string>
 </resources>

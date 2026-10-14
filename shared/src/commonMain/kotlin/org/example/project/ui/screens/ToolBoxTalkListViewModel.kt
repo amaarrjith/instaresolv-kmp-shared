@@ -99,15 +99,22 @@ class ToolBoxTalkListViewModel(
         }
 
         viewModelScope.launch {
+            val filter = _uiState.value.appliedFilterState
+            val projectIds = if (filter.noProjectSelected) {
+                listOf(-1)
+            } else {
+                filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            }
+
             val request = ToolBoxTalkListRequest(
                 searchKey = _uiState.value.searchKey.takeIf { it.isNotBlank() },
                 pageNumber = currentPage,
                 limit = 20,
                 sortType = 1,
-                projectIds = _uiState.value.appliedFilterState.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() },
-                openDate = _uiState.value.appliedFilterState.dateOpenMillis?.let { formatDate(it) } ?: "",
-                endDate = _uiState.value.appliedFilterState.dateCloseMillis?.let { formatDate(it) } ?: "",
-                reportedByPersons = _uiState.value.appliedFilterState.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+                projectIds = projectIds,
+                openDate = filter.dateOpenMillis?.let { formatDate(it) } ?: "",
+                endDate = filter.dateCloseMillis?.let { formatDate(it) } ?: "",
+                reportedByPersons = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             )
 
             when (val result = repository.getToolBoxTalkList(request)) {
@@ -142,13 +149,20 @@ class ToolBoxTalkListViewModel(
         viewModelScope.launch {
             _isExporting.value = true
 
+            val filter = _uiState.value.appliedFilterState
+            val projectIds = if (filter.noProjectSelected) {
+                listOf(-1)
+            } else {
+                filter.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+            }
+
             val request = ToolBoxTalkExcelRequest(
                 searchKey = _uiState.value.searchKey.takeIf { it.isNotBlank() },
                 sortBy = 1,
-                projectIds = _uiState.value.appliedFilterState.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }.takeIf { it.isNotEmpty() },
-                openDate = _uiState.value.appliedFilterState.dateOpenMillis?.let { formatDate(it) } ?: "",
-                endDate = _uiState.value.appliedFilterState.dateCloseMillis?.let { formatDate(it) } ?: "",
-                reportedByPersons = _uiState.value.appliedFilterState.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
+                projectIds = projectIds,
+                openDate = filter.dateOpenMillis?.let { formatDate(it) } ?: "",
+                endDate = filter.dateCloseMillis?.let { formatDate(it) } ?: "",
+                reportedByPersons = filter.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }.takeIf { it.isNotEmpty() }
             )
 
             when (val result = repository.generateToolBoxTalkExcel(request)) {

@@ -25,4 +25,8 @@ class ToolBoxTalkRepositoryImpl(
     override suspend fun getToolBoxTalkDetail(request: org.example.project.data.model.ToolBoxTalkDetailRequest): NetworkResult<org.example.project.data.model.ToolBoxTalkItem> {
         return apiService.getToolBoxTalkDetail(request)
     }
+
+    override suspend fun generateToolBoxTalkPdf(request: org.example.project.data.model.GenerateToolBoxTalkPdfRequest): NetworkResult<CommonModelResponse> {
+        return apiService.generateToolBoxTalkPdf(request)
+    }
 }

@@ -166,7 +166,6 @@ fun CreatePermitScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier.padding(paddingValues)
-                .padding(horizontal = 22.dp)
         ) {
             if (uiState.isLoading) {
                 AppLoader()
@@ -174,7 +173,8 @@ fun CreatePermitScreen(
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
-                        .padding(bottom = 30.dp),
+                        .padding(bottom = 30.dp)
+                        .padding(horizontal = 22.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     if (permitTypeName.isNotBlank()) {

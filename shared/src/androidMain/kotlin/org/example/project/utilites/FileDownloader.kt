@@ -8,11 +8,22 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import org.example.project.config.AppConfig
 
 actual class FileDownloader(private val context: Context) {
     actual fun downloadFile(url: String, fileName: String) {
         try {
-            val request = DownloadManager.Request(Uri.parse(url))
+            val fullUrl = when {
+                url.startsWith("http://") || url.startsWith("https://") -> url
+                url.startsWith("/") -> {
+                    val host = AppConfig.baseUrl.substringBefore("/api").trimEnd('/')
+                    "$host$url"
+                }
+                else -> {
+                    "${AppConfig.baseUrl.trimEnd('/')}/$url"
+                }
+            }
+            val request = DownloadManager.Request(Uri.parse(fullUrl))
                 .setTitle(fileName)
                 .setDescription("Downloading file...")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)

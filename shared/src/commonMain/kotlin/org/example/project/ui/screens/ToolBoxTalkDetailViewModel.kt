@@ -24,6 +24,15 @@ class ToolBoxTalkDetailViewModel(
     private val _uiState = MutableStateFlow<ToolBoxTalkDetailUiState>(ToolBoxTalkDetailUiState.Loading)
     val uiState: StateFlow<ToolBoxTalkDetailUiState> = _uiState.asStateFlow()
 
+    private val _isGeneratingPdf = MutableStateFlow(false)
+    val isGeneratingPdf = _isGeneratingPdf.asStateFlow()
+
+    private val _pdfUrl = MutableStateFlow<String?>(null)
+    val pdfUrl = _pdfUrl.asStateFlow()
+
+    private val _pdfToastMessage = MutableStateFlow<String?>(null)
+    val pdfToastMessage = _pdfToastMessage.asStateFlow()
+
     fun loadToolBoxTalkDetail(id: Int) {
         viewModelScope.launch {
             _uiState.value = ToolBoxTalkDetailUiState.Loading
@@ -36,5 +45,39 @@ class ToolBoxTalkDetailViewModel(
                 }
             }
         }
+    }
+
+    fun generatePdf(id: Int) {
+        viewModelScope.launch {
+            _isGeneratingPdf.value = true
+            val request = org.example.project.data.model.GenerateToolBoxTalkPdfRequest(toolBoxId = id)
+            when (val result = repository.generateToolBoxTalkPdf(request)) {
+                is NetworkResult.Success -> {
+                    _isGeneratingPdf.value = false
+                    val url = result.data.resolvedPdfUrl
+                    if (!url.isNullOrBlank()) {
+                        _pdfUrl.value = url
+                    } else {
+                        _pdfToastMessage.value = result.data.statusMessage ?: "Failed to generate PDF"
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _isGeneratingPdf.value = false
+                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                }
+            }
+        }
+    }
+
+    fun clearPdfUrl() {
+        _pdfUrl.value = null
+    }
+
+    fun setPdfToastMessage(message: String) {
+        _pdfToastMessage.value = message
+    }
+
+    fun clearPdfToastMessage() {
+        _pdfToastMessage.value = null
     }
 }

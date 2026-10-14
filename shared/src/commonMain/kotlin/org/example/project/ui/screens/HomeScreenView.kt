@@ -767,7 +767,7 @@ fun AssignedToMeCard(
             }
         )
 
-        if (selectedObservationId != null) {
+        selectedObservationId?.let { obsId ->
             val obsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ModalBottomSheet(
                 onDismissRequest = { selectedObservationId = null },
@@ -777,7 +777,7 @@ fun AssignedToMeCard(
             ) {
                 Box(modifier = Modifier.fillMaxHeight(0.9f)) {
                     ObservationDetailScreen(
-                        observationId = selectedObservationId ?: -1,
+                        observationId = obsId,
                         onBackClicked = { selectedObservationId = null },
                         onRefreshList = onRefreshList
                     )
@@ -785,7 +785,7 @@ fun AssignedToMeCard(
             }
         }
 
-        if (closeObservationId != null) {
+        closeObservationId?.let { obsId ->
             val closeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ModalBottomSheet(
                 onDismissRequest = { closeObservationId = null },
@@ -795,7 +795,7 @@ fun AssignedToMeCard(
             ) {
                 Box(modifier = Modifier.fillMaxHeight(0.9f)) {
                     ObservationDetailScreen(
-                        observationId = closeObservationId ?: -1,
+                        observationId = obsId,
                         onBackClicked = { closeObservationId = null },
                         onRefreshList = {
                             closeObservationId = null

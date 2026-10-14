@@ -66,6 +66,8 @@ fun LessonsLearnedDetailScreen(
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val textSharer = org.example.project.utilites.rememberTextSharer()
+    var showSharePopup by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
@@ -106,13 +108,13 @@ fun LessonsLearnedDetailScreen(
                         )
                         Row(
                             modifier = Modifier.weight(1f)
-                                .clickable { }
+                                .clickable { showSharePopup = true }
                                 .height(48.dp)
                                 .padding(horizontal = 8.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                            Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
                             Spacer(Modifier.width(8.dp))
                             Image(
                                 painter = painterResource(Res.drawable.ic_share),
@@ -175,6 +177,20 @@ fun LessonsLearnedDetailScreen(
                 message = pdfToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearPdfToastMessage() },
                 type = ToastType.Success
+            )
+        }
+        
+        if (showSharePopup) {
+            val detail = (uiState as? LessonsLearnedDetailUiState.Success)?.data
+            org.example.project.ui.components.SharePopupDialog(
+                onDismiss = { showSharePopup = false },
+                onTxtClick = {
+                    detail?.let {
+                        val text = org.example.project.utilites.DetailTextFormatter.formatLessonLearned(it)
+                        textSharer.shareText(text, it.title ?: "Lesson Learned Details")
+                    }
+                },
+                onPdfClick = { viewModel.generatePdf(id) }
             )
         }
     }

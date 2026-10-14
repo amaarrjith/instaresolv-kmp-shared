@@ -26,6 +26,10 @@ interface InspectionRepository {
         request: org.example.project.data.model.InspectionListRequest
     ): NetworkResult<org.example.project.data.model.CommonModelResponse>
 
+    suspend fun generateInspectionPdf(
+        request: org.example.project.data.model.GenerateInspectionPdfRequest
+    ): NetworkResult<org.example.project.data.model.CommonModelResponse>
+
     suspend fun getInspectionContentsList(
         request: InspectionContentsRequest
     ): NetworkResult<InspectionContentsResponse>

@@ -66,6 +66,9 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import kotlin.time.Clock
+import org.example.project.utilites.rememberFileDownloader
+import org.example.project.ui.components.excel.CommonExcelButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,6 +81,9 @@ fun PreTaskListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
     var selectedPreTaskId by remember { mutableStateOf<Int?>(null) }
+    val exportUrl by viewModel.exportUrl.collectAsState()
+    val exportToastMessage by viewModel.exportToastMessage.collectAsState()
+    val fileDownloader = rememberFileDownloader()
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -86,8 +92,30 @@ fun PreTaskListScreen(
         }
     }
 
+    LaunchedEffect(exportUrl) {
+        exportUrl?.let { url ->
+            try {
+                val fileName = "PreTask_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                fileDownloader.downloadFile(url, fileName)
+                viewModel.setExportToastMessage("Downloading Pre Task Report")
+            } catch (e: Exception) {
+                viewModel.setErrorExcel(e.message)
+            }
+            viewModel.clearExportUrl()
+        }
+    }
+
     Scaffold(
         containerColor = Color.White,
+        floatingActionButton = {
+            if (uiState.error == null && uiState.preTasks.isNotEmpty()) {
+                val isExporting by viewModel.isExporting.collectAsState()
+                CommonExcelButton(
+                    isLoading = isExporting,
+                    onClick = { viewModel.exportToExcel() }
+                )
+            }
+        },
         topBar = {
             Row (
                 modifier = Modifier
@@ -117,10 +145,11 @@ fun PreTaskListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
-            Column {
+            Column(
+                modifier = Modifier.padding(horizontal = 22.dp)
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -230,10 +259,24 @@ fun PreTaskListScreen(
             }
 
             ToastHost(
+                visible = uiState.errorExcel != null,
+                message = uiState.errorExcel.orEmpty(),
+                onDismiss = { viewModel.clearErrorExcel() },
+                type = org.example.project.utilites.ToastType.Error
+            )
+
+            ToastHost(
                 visible = errorToastMessage != null,
                 message = errorToastMessage.orEmpty(),
                 onDismiss = { errorToastMessage = null },
                 type = org.example.project.utilites.ToastType.Error
+            )
+
+            ToastHost(
+                visible = exportToastMessage != null,
+                message = exportToastMessage.orEmpty(),
+                onDismiss = { viewModel.clearExportToast() },
+                type = org.example.project.utilites.ToastType.Success
             )
         }
     }

@@ -162,12 +162,13 @@ fun ObservationListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
             val exportToastMessage by viewModel.exportToastMessage.collectAsState()
             
-            Column() {
+            Column(
+                modifier = Modifier.padding(horizontal = 22.dp)
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -221,7 +222,7 @@ fun ObservationListScreen(
                     )
                 }
 
-                if (selectedObservationId != null) {
+                selectedObservationId?.let { obsId ->
                     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                     ModalBottomSheet(
                         onDismissRequest = { selectedObservationId = null },
@@ -231,7 +232,7 @@ fun ObservationListScreen(
                     ) {
                         Box(modifier = Modifier.fillMaxHeight(0.9f)) {
                             org.example.project.ui.screens.ObservationDetailScreen(
-                                observationId = selectedObservationId!!,
+                                observationId = obsId,
                                 onBackClicked = { selectedObservationId = null },
                                 onRefreshList =  {
                                     viewModel.fetchObservations(isRefresh = true)

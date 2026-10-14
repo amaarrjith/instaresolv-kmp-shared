@@ -111,7 +111,11 @@ class ViolationListViewModel(
             val appliedFilters = currentState.appliedFilterState
 
             // Filter fields mapped to API request
-            val projectIds = appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            val projectIds = if (appliedFilters.noProjectSelected) {
+                listOf(-1)
+            } else {
+                appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            }
             val reportedByPersons = appliedFilters.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }
             
             val request = ViolationListRequest(
@@ -164,7 +168,11 @@ class ViolationListViewModel(
             val appliedFilters = currentState.appliedFilterState
 
             // Filter fields mapped to API request
-            val projectIds = appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            val projectIds = if (appliedFilters.noProjectSelected) {
+                listOf(-1)
+            } else {
+                appliedFilters.selectedProjects.mapNotNull { it.groupId.toIntOrNull() }
+            }
             val reportedByPersons = appliedFilters.selectedReportedBy.mapNotNull { it.userId.toIntOrNull() }
 
             val request = ViolationListRequest(

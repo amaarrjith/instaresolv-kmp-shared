@@ -57,8 +57,25 @@ class InspectionDetailViewModel(
     }
 
     fun generatePdf(id: Int) {
-        // Mocking PDF generation for now, since it wasn't specified in the API requirements.
-        // It can be added later if there is an inspection/pdf API.
+        viewModelScope.launch {
+            _isGeneratingPdf.value = true
+            val request = org.example.project.data.model.GenerateInspectionPdfRequest(id = id)
+            when (val result = inspectionRepository.generateInspectionPdf(request)) {
+                is NetworkResult.Success -> {
+                    _isGeneratingPdf.value = false
+                    val url = result.data?.resolvedPdfUrl
+                    if (!url.isNullOrBlank()) {
+                        _pdfUrl.value = url
+                    } else {
+                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _isGeneratingPdf.value = false
+                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                }
+            }
+        }
     }
 
     fun setPdfToastMessage(message: String) {

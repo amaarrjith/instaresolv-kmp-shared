@@ -66,6 +66,8 @@ fun ViolationDetailScreen(
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val textSharer = org.example.project.utilites.rememberTextSharer()
+    var showSharePopup by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
@@ -106,13 +108,13 @@ fun ViolationDetailScreen(
                         )
                         Row(
                             modifier = Modifier.weight(1f)
-                                .clickable { }
+                                .clickable { showSharePopup = true }
                                 .height(48.dp)
                                 .padding(horizontal = 8.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Share", style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
+                            Text(stringResource(Res.string.share), style = textStyle(size = 14.sp, weight = FontWeight.Bold), color = AppColors.Black)
                             Spacer(Modifier.width(8.dp))
                             Image(
                                 painter = painterResource(Res.drawable.ic_share),
@@ -180,6 +182,20 @@ fun ViolationDetailScreen(
                 message = pdfToastMessage.orEmpty(),
                 onDismiss = { viewModel.clearPdfToastMessage() },
                 type = org.example.project.utilites.ToastType.Success
+            )
+        }
+        
+        if (showSharePopup) {
+            val detail = uiState.detail
+            org.example.project.ui.components.SharePopupDialog(
+                onDismiss = { showSharePopup = false },
+                onTxtClick = {
+                    detail?.let {
+                        val text = org.example.project.utilites.DetailTextFormatter.formatViolation(it)
+                        textSharer.shareText(text, "Violation Details #${it.id}")
+                    }
+                },
+                onPdfClick = { viewModel.generatePdf(violationId) }
             )
         }
     }

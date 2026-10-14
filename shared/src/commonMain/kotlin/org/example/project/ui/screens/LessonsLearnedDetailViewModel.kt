@@ -53,7 +53,7 @@ class LessonsLearnedDetailViewModel(
             _isGeneratingPdf.value = true
             when (val result = repository.generateLessonLearnedPdf(GenerateLessonLearnedPdfRequest(id))) {
                 is NetworkResult.Success -> {
-                    val url = result.data.pdfUrl ?: result.data.excelUrl
+                    val url = result.data.resolvedPdfUrl
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {

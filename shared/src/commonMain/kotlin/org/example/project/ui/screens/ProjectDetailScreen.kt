@@ -528,6 +528,8 @@ fun  ProjectDetailScreenContent(
             } else {
                 "Are you sure you want to remove this user ?"
             },
+            primaryButtonText = stringResource(Res.string.yes),
+            secondaryButtonText = stringResource(Res.string.no),
             visible = true,
             onConfirm = {
                 val member = showLeaveProjectDialog.value!!
