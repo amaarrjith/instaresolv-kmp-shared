@@ -51,6 +51,7 @@ fun QuizScreen(
             if (uiState.quizResult == null) {
                 Row(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .statusBarsPadding()
                         .padding(vertical = 10.dp)
                         .padding(end = 22.dp),
@@ -104,7 +105,7 @@ fun QuizScreen(
                     Column {
                         // Question Indicator text
                         Text(
-                            text = "Question ${uiState.currentQuestionIndex + 1} of ${uiState.questions.size}",
+                            text = stringResource(Res.string.quiz_question_index_of_total, uiState.currentQuestionIndex + 1, uiState.questions.size),
                             style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = AppColors.TextGray)
                         )
                         Spacer(modifier = Modifier.height(10.dp))
@@ -132,7 +133,7 @@ fun QuizScreen(
 
                         // Question Index Header
                         Text(
-                            text = "QUESTION : ${"0${uiState.currentQuestionIndex + 1}".takeLast(2)}",
+                            text = stringResource(Res.string.quiz_question_label, uiState.currentQuestionIndex + 1),
                             style = textStyle(size = 11.sp, weight = FontWeight.Bold, color = Color(0xFF2E6AC6)),
                             lineHeight = 16.sp
                         )
@@ -169,7 +170,7 @@ fun QuizScreen(
                             .padding(vertical = 24.dp)
                     ) {
                         val isLastQuestion = uiState.currentQuestionIndex == uiState.questions.size - 1
-                        val nextButtonText = if (isLastQuestion) "Submit" else "Next"
+                        val nextButtonText = if (isLastQuestion) stringResource(Res.string.submit) else stringResource(Res.string.next)
                         val isOptionSelected = selectedOptionId != null
 
                         Button(
@@ -365,7 +366,7 @@ fun QuizResultView(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Score : ${result.correctAnswersCount}/${result.totalQuestionsCount}",
+                    text = stringResource(Res.string.quiz_score_format, result.correctAnswersCount, result.totalQuestionsCount),
                     style = textStyle(size = 18.sp, weight = FontWeight.Bold, color = AppColors.Black)
                 )
             }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +44,7 @@ import org.example.project.data.model.PermitImage
 import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.utcToLocal
 import org.example.project.typography.textStyle
+import org.example.project.ui.components.AnswerBadge
 import org.example.project.ui.components.AppDatePicker
 import org.example.project.ui.components.AppImageCreateBox
 import org.example.project.ui.components.AppImagePreviewDialog
@@ -122,14 +124,16 @@ fun PermitDetailScreen(
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val textSharer = org.example.project.utilites.rememberTextSharer()
+    val coroutineScope = rememberCoroutineScope()
     var showSharePopup by remember { mutableStateOf(false) }
+    val downloadingPermitReportMsg = stringResource(Res.string.downloading_permit_report)
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Permit_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("Permit", id)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Permit Report")
+                viewModel.setPdfToastMessage(downloadingPermitReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -284,7 +288,7 @@ fun PermitDetailScreen(
                 visible = true,
                 title = stringResource(Res.string.success),
                 description = successMessage!!,
-                buttonText = "OK",
+                buttonText = stringResource(Res.string.ok),
                 onDismiss = {
                     viewModel.onDismissSubmitSuccess()
                     onBackClicked()
@@ -328,12 +332,15 @@ fun PermitDetailScreen(
 
         if (showSharePopup) {
             val detail = (uiState as? PermitDetailUiState.Success)?.data
+            val permitToWorkText = stringResource(Res.string.permitToWork)
             org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
                 onTxtClick = {
                     detail?.let {
-                        val text = org.example.project.utilites.DetailTextFormatter.formatPermit(it)
-                        textSharer.shareText(text, it.permitCode ?: "Permit to Work Details")
+                        coroutineScope.launch {
+                            val text = org.example.project.utilites.DetailTextFormatter.formatPermit(it)
+                            textSharer.shareText(text, it.permitCode ?: permitToWorkText)
+                        }
                     }
                 },
                 onPdfClick = { viewModel.generatePdf(id) }
@@ -674,7 +681,7 @@ fun PermitHeaderSection(data: PermitDetailData, userType: PermitFormUserType) {
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = status.title.uppercase(),
+                        text = stringResource(status.stringRes).uppercase(),
                         style = textStyle(size = 9.sp, weight = FontWeight.Bold),
                         color = Color.White,
                         textAlign = TextAlign.Center
@@ -723,7 +730,7 @@ fun FacilityProjectSection(data: PermitDetailData) {
             }
         }
     } else {
-        Text("N/A", style = textStyle(14.sp, FontWeight.SemiBold), color = AppColors.Black)
+        Text(stringResource(Res.string.na), style = textStyle(14.sp, FontWeight.SemiBold), color = AppColors.Black)
     }
     HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
 }
@@ -911,19 +918,22 @@ fun ValiditySectionsSection(data: PermitDetailData) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         data.certificateValidity?.certificateValiditySections?.forEach { section ->
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = section.title ?: "",
                     style = textStyle(12.sp, FontWeight.Medium),
-                    color = AppColors.Black
+                    color = AppColors.Black,
+                    modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = section.answer?.ifBlank { "-" } ?: "-",
-                    style = textStyle(12.sp, FontWeight.Bold),
-                    color = AppColors.Primary
+                Spacer(modifier = Modifier.width(8.dp))
+                AnswerBadge(
+                    answer = section.answer,
+                    naText = "N/A",
+                    style = textStyle(12.sp, FontWeight.Bold)
                 )
             }
         }
@@ -954,21 +964,16 @@ fun GeneralConditionsSection(data: PermitDetailData) {
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = when(condition.answer) {
-                            1 -> "Yes"
-                            2 -> "No"
-                            3 -> "N/A"
-                            else -> "-"
-                        },
-                        style = textStyle(12.sp, FontWeight.Bold),
-                        color = AppColors.Primary
+                    AnswerBadge(
+                        selectedAnswer = condition.answer,
+                        naText = "N/A",
+                        style = textStyle(12.sp, FontWeight.Bold)
                     )
                 }
                 if (!condition.remarks.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Remarks: ${condition.remarks}",
+                        text = stringResource(Res.string.remarks_format, condition.remarks.orEmpty()),
                         style = textStyle(10.sp, FontWeight.Normal),
                         color = AppColors.TextGray
                     )
@@ -1033,22 +1038,28 @@ fun PermitValiditySection(data: PermitDetailData, onImageClick: (String) -> Unit
         ) {
             if (!data.certificateValidity.requestDate.isNullOrBlank()) {
                 Text(
-                    text = "Date : ${formatDate(
-                        data.certificateValidity.requestDate,
-                        "yyyy-MM-dd",
-                        "dd MMM yyyy"
-                    ) }",
+                    text = stringResource(
+                        Res.string.date_format_label,
+                        formatDate(
+                            data.certificateValidity.requestDate,
+                            "yyyy-MM-dd",
+                            "dd MMM yyyy"
+                        )
+                    ),
                     style = textStyle(12.sp, FontWeight.Medium),
                     color = AppColors.TextGray
                 )
             }
             if (!data.certificateValidity.requestTime.isNullOrBlank()) {
                 Text(
-                    text = "Time : ${utcToLocal(
-                        data.certificateValidity.requestTime,
-                        inputFormat = "HH:mm:ss",
-                        outputFormat = "hh:mm a"
-                    )}",
+                    text = stringResource(
+                        Res.string.time_format_label,
+                        utcToLocal(
+                            data.certificateValidity.requestTime,
+                            inputFormat = "HH:mm:ss",
+                            outputFormat = "hh:mm a"
+                        )
+                    ),
                     style = textStyle(12.sp, FontWeight.Medium),
                     color = AppColors.TextGray
                 )
@@ -1391,7 +1402,7 @@ fun SubContractorAuthorizerViewerSection(
                 )
             }.getOrElse { subAuth.authorizationDate }
             Text(
-                text = "Date : $formattedDate",
+                text = stringResource(Res.string.date_format_label, formattedDate),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
@@ -1405,7 +1416,7 @@ fun SubContractorAuthorizerViewerSection(
                 )
             }.getOrElse { subAuth.authorizationTime }
             Text(
-                text = "Time : $formattedTime",
+                text = stringResource(Res.string.time_format_label, formattedTime),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
@@ -1534,22 +1545,28 @@ fun AuthorizerViewerSection(
     ) {
         if (!data.authorizationRequest?.authorizedDate.isNullOrBlank()) {
             Text(
-                text = "Date : ${formatDate(
-                    data.authorizationRequest.authorizedDate,
-                    "yyyy-MM-dd",
-                    "dd MMM yyyy"
-                )}",
+                text = stringResource(
+                    Res.string.date_format_label,
+                    formatDate(
+                        data.authorizationRequest.authorizedDate,
+                        "yyyy-MM-dd",
+                        "dd MMM yyyy"
+                    )
+                ),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
         }
         if (!data.authorizationRequest?.authorizedTime.isNullOrBlank()) {
             Text(
-                text = "Time : ${utcToLocal(
-                    data.authorizationRequest.authorizedTime,
-                    inputFormat = "HH:mm:ss",
-                    outputFormat = "hh:mm a"
-                ) }",
+                text = stringResource(
+                    Res.string.time_format_label,
+                    utcToLocal(
+                        data.authorizationRequest.authorizedTime,
+                        inputFormat = "HH:mm:ss",
+                        outputFormat = "hh:mm a"
+                    )
+                ),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
@@ -1704,22 +1721,28 @@ fun RequestForCertificateClosureViewerSection(data: PermitDetailData, onImageCli
     ) {
         if (!closureDetails.requestDate.isNullOrBlank()) {
             Text(
-                text = "Date : ${formatDate(
-                    closureDetails.requestDate,
-                    "yyyy-MM-dd",
-                    "dd MMM yyyy"
-                )}",
+                text = stringResource(
+                    Res.string.date_format_label,
+                    formatDate(
+                        closureDetails.requestDate,
+                        "yyyy-MM-dd",
+                        "dd MMM yyyy"
+                    )
+                ),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
         }
         if (!closureDetails.requestTime.isNullOrBlank()) {
             Text(
-                text = "Time : ${utcToLocal(
-                    closureDetails.requestTime,
-                    inputFormat = "HH:mm:ss",
-                    outputFormat = "hh:mm a"
-                )}",
+                text = stringResource(
+                    Res.string.time_format_label,
+                    utcToLocal(
+                        closureDetails.requestTime,
+                        inputFormat = "HH:mm:ss",
+                        outputFormat = "hh:mm a"
+                    )
+                ),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
@@ -1899,7 +1922,7 @@ fun ActionDetailSection(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Actioned by: ${details.actionedBy.name}",
+                        text = stringResource(Res.string.actioned_by_format, details.actionedBy.name.orEmpty()),
                         style = textStyle(12.sp, FontWeight.Medium),
                         color = AppColors.Black
                     )
@@ -1909,7 +1932,7 @@ fun ActionDetailSection(
             
             if (!details.remarks.isNullOrEmpty()) {
                 Text(
-                    text = "Remarks: ${details.remarks}",
+                    text = stringResource(Res.string.remarks_format, details.remarks.orEmpty()),
                     style = textStyle(12.sp, FontWeight.Normal),
                     color = AppColors.TextGray
                 )
@@ -2061,7 +2084,7 @@ fun PermitActionDialog(
                             horizontalAlignment = Alignment.Start
                         ) {
                             Text(
-                                text = "Upload Image ${index + 1}",
+                                text = stringResource(Res.string.upload_image_index, index + 1),
                                 style = textStyle(
                                     size = 12.sp,
                                     weight = FontWeight.SemiBold
@@ -2254,22 +2277,28 @@ fun PermitCertificateClosureViewerSection(data: PermitDetailData, onImageClick: 
     ) {
         if (!closureDetails.closureDate.isNullOrBlank()) {
             Text(
-                text = "Date : ${formatDate(
-                    closureDetails.closureDate,
-                    "yyyy-MM-dd",
-                    "dd MMM yyyy"
-                )}",
+                text = stringResource(
+                    Res.string.date_format_label,
+                    formatDate(
+                        closureDetails.closureDate,
+                        "yyyy-MM-dd",
+                        "dd MMM yyyy"
+                    )
+                ),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
         }
         if (!closureDetails.closureTime.isNullOrBlank()) {
             Text(
-                text = "Time : ${utcToLocal(
-                    closureDetails.closureTime,
-                    inputFormat = "HH:mm:ss",
-                    outputFormat = "hh:mm a"
-                )}",
+                text = stringResource(
+                    Res.string.time_format_label,
+                    utcToLocal(
+                        closureDetails.closureTime,
+                        inputFormat = "HH:mm:ss",
+                        outputFormat = "hh:mm a"
+                    )
+                ),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
@@ -2419,7 +2448,7 @@ fun PermitSubContractorClosureViewSection(
                 )
             }.getOrElse { closureDetails.closureDate }
             Text(
-                text = "Date : $formattedDate",
+                text = stringResource(Res.string.date_format_label, formattedDate),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )
@@ -2433,7 +2462,7 @@ fun PermitSubContractorClosureViewSection(
                 )
             }.getOrElse { closureDetails.closureTime }
             Text(
-                text = "Time : $formattedTime",
+                text = stringResource(Res.string.time_format_label, formattedTime),
                 style = textStyle(12.sp, FontWeight.Medium),
                 color = AppColors.TextGray
             )

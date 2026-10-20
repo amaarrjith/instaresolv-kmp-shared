@@ -23,6 +23,10 @@ class DrawsanaEditorWithTopBar: ViewController {
     private let doneButton = UIButton(type: .system)
     private let cancelButton = UIButton(type: .system)
 
+    // MARK: Button Spinner
+    private let buttonSpinner = UIActivityIndicatorView(style: .medium)
+    private var doneIcon: UIImage?
+
     private let mainToolBar = UIView()
     private let mainStack = UIStackView()
 
@@ -139,6 +143,7 @@ class DrawsanaEditorWithTopBar: ViewController {
         // DONE
         let doneIcon = UIImage(named: "icBack")?
             .withRenderingMode(.alwaysTemplate)
+        self.doneIcon = doneIcon
 
         doneButton.setImage(doneIcon, for: .normal)
         doneButton.tintColor = .white
@@ -146,6 +151,11 @@ class DrawsanaEditorWithTopBar: ViewController {
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         doneButton.clipsToBounds = true
         doneButton.addTarget(self, action: #selector(donePressed), for: .touchUpInside)
+
+        buttonSpinner.translatesAutoresizingMaskIntoConstraints = false
+        buttonSpinner.color = .white
+        buttonSpinner.hidesWhenStopped = true
+        doneButton.addSubview(buttonSpinner)
 
         topBar.addSubview(doneButton)
 
@@ -158,7 +168,10 @@ class DrawsanaEditorWithTopBar: ViewController {
             doneButton.rightAnchor.constraint(equalTo: topBar.rightAnchor, constant: -30),
             doneButton.bottomAnchor.constraint(equalTo: topBar.bottomAnchor, constant: -10),
             doneButton.widthAnchor.constraint(equalToConstant: 44),
-            doneButton.heightAnchor.constraint(equalToConstant: 44)
+            doneButton.heightAnchor.constraint(equalToConstant: 44),
+
+            buttonSpinner.centerXAnchor.constraint(equalTo: doneButton.centerXAnchor),
+            buttonSpinner.centerYAnchor.constraint(equalTo: doneButton.centerYAnchor)
         ])
 
         cancelButton.layer.cornerRadius = 22
@@ -450,15 +463,39 @@ class DrawsanaEditorWithTopBar: ViewController {
 
 
     // ============================================================
+    // BUTTON SPINNER
+    // ============================================================
+    private func showLoading(_ show: Bool) {
+        if show {
+            doneButton.setImage(nil, for: .normal)
+            buttonSpinner.startAnimating()
+            view.isUserInteractionEnabled = false
+            doneButton.isEnabled = false
+            cancelButton.isEnabled = false
+        } else {
+            doneButton.setImage(doneIcon, for: .normal)
+            doneButton.imageView?.transform = CGAffineTransform(rotationAngle: .pi)
+            buttonSpinner.stopAnimating()
+            view.isUserInteractionEnabled = true
+            doneButton.isEnabled = true
+            cancelButton.isEnabled = true
+        }
+    }
+
+    // ============================================================
     // ACTIONS
     // ============================================================
     @objc private func cancelPressed() { onCancel?() }
 
     @objc private func donePressed() {
-        guard let final = drawingView.render(over: imageView.image) else {
-            onDone?(baseImage ?? UIImage()); return
+        showLoading(true)
+
+        // Give UIKit a runloop tick so the loading HUD displays immediately before heavy rendering
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            guard let self = self else { return }
+            let final = self.drawingView.render(over: self.imageView.image) ?? (self.baseImage ?? UIImage())
+            self.onDone?(final)
         }
-        onDone?(final)
     }
 
     // Toggle tool tray from the main toolbar arrow button

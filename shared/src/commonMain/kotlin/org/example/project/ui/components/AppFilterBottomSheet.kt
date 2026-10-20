@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -17,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.*
@@ -32,6 +35,23 @@ import org.example.project.ui.screens.PermitToWorkListViewModel
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 
+@Composable
+private fun getFilterTabTitle(tab: String): String = when (tab) {
+    "Status" -> stringResource(Res.string.status)
+    "Project" -> stringResource(Res.string.project)
+    "Reported By" -> stringResource(Res.string.reportedBy)
+    "Date" -> stringResource(Res.string.date)
+    "Incident Type" -> stringResource(Res.string.incidentType)
+    "Observer" -> stringResource(Res.string.observer)
+    "Responsible" -> stringResource(Res.string.responsible)
+    "Authorizer" -> stringResource(Res.string.authorizer)
+    "Requestor" -> stringResource(Res.string.requestor)
+    "HSE Assigned" -> stringResource(Res.string.hseAssigned)
+    "Permit Type" -> stringResource(Res.string.permitType)
+    "Validity" -> stringResource(Res.string.validity)
+    else -> tab
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppFilterBottomSheet(
@@ -39,7 +59,7 @@ fun AppFilterBottomSheet(
     isFromObservation: Boolean = false,
     isFromIncident: Boolean = false,
     isFromPermit: Boolean = false,
-    moduleName: String = "Observations",
+    moduleName: String = stringResource(Res.string.observations),
     onApply: (AppFilterState) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -105,11 +125,13 @@ fun AppFilterBottomSheet(
             HorizontalDivider(color = Color(0xFFE5E5E5))
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 // Sidebar
+                val sidebarScrollState = rememberScrollState()
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
                         .background(Color(0xFFF2F2F2))
-                        .width(135.dp)
+                        .weight(0.38f)
+                        .verticalScroll(sidebarScrollState)
                 ) {
                     tabs.forEach { tab ->
                         val isSelected = selectedTab == tab
@@ -134,16 +156,19 @@ fun AppFilterBottomSheet(
                                 .fillMaxWidth()
                                 .clickable { selectedTab = tab }
                                 .background(if (isSelected) Color.White else Color.Transparent)
-                                .padding(vertical = 14.dp, horizontal = 20.dp),
+                                .padding(vertical = 12.dp, horizontal = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = tab,
-                                style = textStyle(size = 14.sp, weight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium),
+                                text = getFilterTabTitle(tab),
+                                style = textStyle(size = 13.sp, weight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium, lineHeight = 16.sp),
                                 color = if (isSelected) AppColors.Black else Color(0xFF94979D),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f)
                             )
                             if (hasActiveFilter) {
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Box(
                                     modifier = Modifier
                                         .size(8.dp)
@@ -161,7 +186,7 @@ fun AppFilterBottomSheet(
                 // Content area
                 Column(
                     modifier = Modifier
-                        .weight(1f)
+                        .weight(0.62f)
                         .fillMaxHeight()
                         .background(Color.White)
                         .padding(horizontal = 20.dp, vertical = 16.dp)
@@ -171,7 +196,7 @@ fun AppFilterBottomSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = selectedTab,
+                            text = getFilterTabTitle(selectedTab),
                             style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                             color = AppColors.TextGray
                         )
@@ -202,25 +227,28 @@ fun AppFilterBottomSheet(
                     
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         if (selectedTab == "Status") {
-                            val statusOptions = listOf("Open $moduleName", "Closed $moduleName")
                             item {
-                                statusOptions.forEach { option ->
+                                val statusOptions = listOf(
+                                    Pair("Open $moduleName", stringResource(Res.string.open_with_module, moduleName)),
+                                    Pair("Closed $moduleName", stringResource(Res.string.closed_with_module, moduleName))
+                                )
+                                statusOptions.forEach { (optionKey, optionLabel) ->
                                      Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable { 
-                                                tempStatuses = if (tempStatuses.contains(option)) {
-                                                    tempStatuses.filterNot { it == option }
+                                                tempStatuses = if (tempStatuses.contains(optionKey)) {
+                                                    tempStatuses.filterNot { it == optionKey }
                                                 } else {
-                                                    tempStatuses + option
+                                                    tempStatuses + optionKey
                                                 }
                                             }
                                             .padding(vertical = 12.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        val isChecked = tempStatuses.contains(option)
+                                        val isChecked = tempStatuses.contains(optionKey)
                                         Text(
-                                            text = option,
+                                            text = optionLabel,
                                             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )
@@ -282,7 +310,10 @@ fun AppFilterBottomSheet(
                             if (projects.isEmpty()) {
 
                             } else {
-                                items(projects.size) { index ->
+                                items(
+                                    count = projects.size,
+                                    key = { index -> projects[index].groupId ?: index }
+                                ) { index ->
                                     val project = projects[index]
                                     val isChecked = tempProjects.any { it.groupId == project.groupId }
                                     Row(
@@ -338,9 +369,12 @@ fun AppFilterBottomSheet(
                         } else if (selectedTab == "Responsible") {
                             val persons = filterData?.responsiblePersons ?: emptyList()
                             if (persons.isEmpty()) {
-                                item { EmptyScreenView("No Responsible Person Found") }
+                                item { EmptyScreenView(stringResource(Res.string.no_responsible_person_found), modifier = Modifier.fillMaxWidth()) }
                             } else {
-                                items(persons.size) { index ->
+                                items(
+                                    count = persons.size,
+                                    key = { index -> persons[index].userId ?: index }
+                                ) { index ->
                                     val person = persons[index]
                                     val isChecked = tempResponsiblePersons.any { it.userId == person.userId }
                                     Row(
@@ -391,9 +425,12 @@ fun AppFilterBottomSheet(
                         } else if (selectedTab == "Observer") {
                             val observers = filterData?.responsiblePersons ?: emptyList() // Fixed to use observers instead of responsiblePersons
                             if (observers.isEmpty()) {
-                                item { EmptyScreenView("No Observer Found") }
+                                item { EmptyScreenView(stringResource(Res.string.no_observer_found), modifier = Modifier.fillMaxWidth()) }
                             } else {
-                                items(observers.size) { index ->
+                                items(
+                                    count = observers.size,
+                                    key = { index -> observers[index].userId ?: index }
+                                ) { index ->
                                     val observer = observers[index]
                                     val isChecked = tempObservers.any { it.userId == observer.userId }
                                     Row(
@@ -445,9 +482,12 @@ fun AppFilterBottomSheet(
                             // Combine responsiblePersons and observers as per the prompt
                             val allUsers = ((filterData?.responsiblePersons ?: emptyList()) + (filterData?.observers ?: emptyList())).distinctBy { it.userId }
                             if (allUsers.isEmpty()) {
-                                item { EmptyScreenView("No Users Found") }
+                                item { EmptyScreenView(stringResource(Res.string.no_users_found), modifier = Modifier.fillMaxWidth()) }
                             } else {
-                                items(allUsers.size) { index ->
+                                items(
+                                    count = allUsers.size,
+                                    key = { index -> allUsers[index].userId ?: index }
+                                ) { index ->
                                     val user = allUsers[index]
                                     val isChecked = tempReportedBy.any { it.userId == user.userId }
                                     Row(
@@ -532,7 +572,7 @@ fun AppFilterBottomSheet(
                                     ) {
                                         val isChecked = tempIncidentTypes.contains(type.id)
                                         Text(
-                                            text = type.title,
+                                            text = stringResource(type.stringRes),
                                             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )
@@ -549,9 +589,12 @@ fun AppFilterBottomSheet(
                             val authorizers = filterData?.responsiblePersons?.filter { it.designation.contains(1) }
                                 ?: emptyList()
                             if (authorizers.isEmpty()) {
-                                item { EmptyScreenView("No Authorizer Found") }
+                                item { EmptyScreenView(stringResource(Res.string.no_authorizer_found), modifier = Modifier.fillMaxWidth()) }
                             } else {
-                                items(authorizers.size) { index ->
+                                items(
+                                    count = authorizers.size,
+                                    key = { index -> authorizers[index].userId ?: index }
+                                ) { index ->
                                     val authorizer = authorizers[index]
                                     val isChecked = tempAuthorizers.any { it.userId == authorizer.userId }
                                     Row(
@@ -602,9 +645,12 @@ fun AppFilterBottomSheet(
                         } else if (selectedTab == "Requestor") {
                             val requestors = filterData?.responsiblePersons?.filter { it.designation.contains(2) } ?: emptyList()
                             if (requestors.isEmpty()) {
-                                item { EmptyScreenView("No Requestor Found") }
+                                item { EmptyScreenView(stringResource(Res.string.no_requestor_found), modifier = Modifier.fillMaxWidth()) }
                             } else {
-                                items(requestors.size) { index ->
+                                items(
+                                    count = requestors.size,
+                                    key = { index -> requestors[index].userId ?: index }
+                                ) { index ->
                                     val requestor = requestors[index]
                                     val isChecked = tempRequestors.any { it.userId == requestor.userId }
                                     Row(
@@ -655,9 +701,12 @@ fun AppFilterBottomSheet(
                         } else if (selectedTab == "HSE Assigned") {
                             val hseAssignedList = filterData?.responsiblePersons?.filter { it.designation.contains(4) } ?: emptyList()
                             if (hseAssignedList.isEmpty()) {
-                                item { EmptyScreenView("No HSE Assigned Person Found") }
+                                item { EmptyScreenView(stringResource(Res.string.no_hse_assigned_found), modifier = Modifier.fillMaxWidth()) }
                             } else {
-                                items(hseAssignedList.size) { index ->
+                                items(
+                                    count = hseAssignedList.size,
+                                    key = { index -> hseAssignedList[index].userId ?: index }
+                                ) { index ->
                                     val hsePerson = hseAssignedList[index]
                                     val isChecked = tempHseAssigned.any { it.userId == hsePerson.userId }
                                     Row(
@@ -708,9 +757,12 @@ fun AppFilterBottomSheet(
                         } else if (selectedTab == "Permit Type") {
                             val permitTypes = permitUiState.permitTypesList
                             if (permitTypes.isEmpty()) {
-                                item { EmptyScreenView("No Permit Type Found") }
+                                item { EmptyScreenView(stringResource(Res.string.no_permit_types_found), modifier = Modifier.fillMaxWidth()) }
                             } else {
-                                items(permitTypes.size) { index ->
+                                items(
+                                    count = permitTypes.size,
+                                    key = { index -> permitTypes[index].permitTypeId ?: index }
+                                ) { index ->
                                     val type = permitTypes[index]
                                     val isChecked = tempPermitTypes.any { it.permitTypeId == type.permitTypeId }
                                     Row(
@@ -755,8 +807,8 @@ fun AppFilterBottomSheet(
                             }
                         } else if (selectedTab == "Validity") {
                             val validityOptions = listOf(
-                                Pair("Valid", 1),
-                                Pair("Expired", 2)
+                                Pair(Res.string.valid, 1),
+                                Pair(Res.string.expired, 2)
                             )
                             item {
                                 validityOptions.forEach { option ->
@@ -771,7 +823,7 @@ fun AppFilterBottomSheet(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = option.first,
+                                            text = stringResource(option.first),
                                             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )
@@ -820,13 +872,15 @@ fun AppFilterBottomSheet(
                             )
                         )
                     },
-                    modifier = Modifier.weight(1f).height(48.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
                 ) {
                     Text(
                         text = stringResource(Res.string.applyFilter),
                         color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         style = textStyle(size = 14.sp, weight = FontWeight.SemiBold)
                     )
                 }

@@ -226,7 +226,7 @@ fun CreateObservationScreen(
                 AppMultilineTextField(
                     value = description.value,
                     onValueChange = { description.value = it },
-                    title = stringResource(Res.string.description1),
+                    title = stringResource(Res.string.description),
                     placeholder = stringResource(Res.string.enterDescription),
                     isVoiceEnabled = true,
                     onAudioUrlProcessed = { viewModel.onAudioUrlProcessed(it) }
@@ -295,8 +295,8 @@ fun CreateObservationScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Observation created successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.observation_created_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showSuccessDialog.value = false
                     onBackClicked()
@@ -308,8 +308,8 @@ fun CreateObservationScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Observation Draft Saved successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.observation_draft_saved_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showDraftSuccessDialog.value = false
                     onBackClicked()

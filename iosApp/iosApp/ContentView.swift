@@ -36,13 +36,31 @@ struct ContentView: View {
                     ModernDrawsanaWrapper(
                         image: image,
                         onDone: { finalImg in
-                            editorState.flow = nil
-                            if let data = finalImg.jpegData(compressionQuality: 0.9) {
-                                editorState.completionHandler?(KotlinByteArray.from(data: data))
-                            } else {
-                                editorState.completionHandler?(nil)
+                            DispatchQueue.global(qos: .userInitiated).async {
+                                // Downscale to 1920 max if needed to speed up encoding and memory
+                                let targetImg: UIImage
+                                let maxDim: CGFloat = 1920
+                                let currentMax = max(finalImg.size.width, finalImg.size.height)
+                                if currentMax > maxDim {
+                                    let scale = maxDim / currentMax
+                                    let newSize = CGSize(width: finalImg.size.width * scale, height: finalImg.size.height * scale)
+                                    UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+                                    finalImg.draw(in: CGRect(origin: .zero, size: newSize))
+                                    targetImg = UIGraphicsGetImageFromCurrentImageContext() ?? finalImg
+                                    UIGraphicsEndImageContext()
+                                } else {
+                                    targetImg = finalImg
+                                }
+
+                                let data = targetImg.jpegData(compressionQuality: 0.8)
+                                let kotlinBytes = data.map { KotlinByteArray.from(data: $0) }
+
+                                DispatchQueue.main.async {
+                                    editorState.flow = nil
+                                    editorState.completionHandler?(kotlinBytes)
+                                    editorState.completionHandler = nil
+                                }
                             }
-                            editorState.completionHandler = nil
                         },
                         onCancel: {
                             editorState.flow = nil

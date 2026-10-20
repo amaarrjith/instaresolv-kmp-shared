@@ -2,6 +2,7 @@ package org.example.project.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.ui.components.AnswerBadge
 import org.example.project.utilites.ToastHost
 import kotlin.time.Clock
 
@@ -56,7 +59,9 @@ fun PreTaskDetailScreen(
     var showSharePopup by remember { mutableStateOf(false) }
     val textSharer = org.example.project.utilites.rememberTextSharer()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val coroutineScope = rememberCoroutineScope()
     val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
+    val downloadingPreTaskReportMsg = stringResource(Res.string.downloading_pre_task_report)
 
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -65,9 +70,9 @@ fun PreTaskDetailScreen(
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "PreTask_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("PreTask", preTaskId)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Pre-Task Report")
+                viewModel.setPdfToastMessage(downloadingPreTaskReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -77,6 +82,16 @@ fun PreTaskDetailScreen(
 
     LaunchedEffect(preTaskId) {
         viewModel.loadPreTaskDetail(preTaskId)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is PreTaskDetailUiState.Success) {
+            val successState = uiState as PreTaskDetailUiState.Success
+            val hasTranslation = !successState.data.translatedNotes.isNullOrBlank()
+            if (hasTranslation) {
+                isTranslationDone = true
+            }
+        }
     }
 
     Scaffold(
@@ -215,40 +230,41 @@ fun PreTaskDetailScreen(
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))
-
-                            // Facility / Project
-                            Text(
-                                text = stringResource(Res.string.facilityProject),
-                                style = textStyle(12.sp, FontWeight.Normal),
-                                color = AppColors.TextGray
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                WebImageView(
-                                    imageUrl = data.facilities?.groupImage ?: "",
-                                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp))
+                            if (data.facilities != null) {
+                                // Facility / Project
+                                Text(
+                                    text = stringResource(Res.string.facilityProject),
+                                    style = textStyle(12.sp, FontWeight.Normal),
+                                    color = AppColors.TextGray
                                 )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
-                                    Text(
-                                        text = data.facilities?.groupName ?: "N/A",
-                                        style = textStyle(14.sp, FontWeight.SemiBold),
-                                        color = AppColors.Black
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    WebImageView(
+                                        imageUrl = data.facilities?.groupImage ?: "",
+                                        modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp))
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .background(
-                                                AppColors.TextGray.copy(alpha = 0.5f),
-                                                RoundedCornerShape(12.dp)
-                                            )
-                                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                                    ) {
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
                                         Text(
-                                            text = data.facilities?.groupCode ?: "",
-                                            style = textStyle(10.sp, FontWeight.Medium),
-                                            color = Color.White
+                                            text = data.facilities?.groupName ?: "N/A",
+                                            style = textStyle(14.sp, FontWeight.SemiBold),
+                                            color = AppColors.Black
                                         )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    AppColors.TextGray.copy(alpha = 0.5f),
+                                                    RoundedCornerShape(12.dp)
+                                                )
+                                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = data.facilities?.groupCode ?: "",
+                                                style = textStyle(10.sp, FontWeight.Medium),
+                                                color = Color.White
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -458,11 +474,24 @@ fun PreTaskDetailScreen(
                                 )
                             }
 
-                            // AI Translated Notes
+                            // Notes
                             if (!data.notes.isNullOrBlank() || !data.translatedNotes.isNullOrBlank()) {
                                 Text(
-                                    text = if (isTranslationDone && !data.translatedNotes.isNullOrBlank()) {
-                                        buildAnnotatedString {
+                                    text = stringResource(Res.string.stepByStepAccountOnTodaysTask),
+                                    style = textStyle(12.sp, FontWeight.Normal),
+                                    color = AppColors.TextGray
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = data.notes?.takeIf { it.isNotBlank() } ?: "-",
+                                    style = textStyle(13.sp, FontWeight.Normal),
+                                    color = AppColors.Black
+                                )
+
+                                if (isTranslationDone && !data.translatedNotes.isNullOrBlank()) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = buildAnnotatedString {
                                             append(stringResource(Res.string.stepByStepAccountOnTodaysTask))
                                             withStyle(
                                                 SpanStyle(
@@ -472,64 +501,19 @@ fun PreTaskDetailScreen(
                                             ) {
                                                 append(" (${stringResource(Res.string.aiTranslated)})")
                                             }
-                                        }
-                                    } else {
-                                        buildAnnotatedString { append(stringResource(Res.string.stepByStepAccountOnTodaysTask)) }
-                                    },
-                                    style = textStyle(12.sp, FontWeight.Normal),
-                                    color = AppColors.TextGray
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = (if (isTranslationDone && !data.translatedNotes.isNullOrBlank()) data.translatedNotes else data.notes)
-                                        ?: "",
-                                    style = textStyle(13.sp, FontWeight.Normal),
-                                    color = if (isTranslationDone && !data.translatedNotes.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                // Audio mock
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(Color(0xFFFFF2EC), RoundedCornerShape(24.dp))
-                                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                        modifier = Modifier.size(32.dp)
-                                            .background(AppColors.Primary, CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("▶", color = Color.White, fontSize = 16.sp)
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    // Audio visualizer mock
-                                    Row(
-                                        modifier = Modifier.weight(1f),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceEvenly
-                                    ) {
-                                        repeat(15) { index ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .width(2.dp)
-                                                    .height(if (index % 2 == 0) 12.dp else 24.dp)
-                                                    .background(
-                                                        AppColors.Primary.copy(alpha = 0.6f),
-                                                        RoundedCornerShape(1.dp)
-                                                    )
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = stringResource(Res.string.txt_000),
-                                        style = textStyle(12.sp, FontWeight.Medium),
+                                        },
+                                        style = textStyle(12.sp, FontWeight.Normal),
                                         color = AppColors.TextGray
                                     )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = data.translatedNotes,
+                                        style = textStyle(13.sp, FontWeight.Normal),
+                                        color = AppColors.SkyBlue
+                                    )
                                 }
+
+                                Spacer(modifier = Modifier.height(16.dp))
 
                                 HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 16.dp),
@@ -541,59 +525,112 @@ fun PreTaskDetailScreen(
                             if (data.attendees?.isNotEmpty() == true) {
                                 val attendeesList = data.attendees ?: emptyList()
                                 Text(
-                                    text = "ATTENDEES (${attendeesList.size})",
+                                    text = stringResource(Res.string.attendees_count, attendeesList.size),
                                     style = textStyle(12.sp, FontWeight.Bold),
                                     color = AppColors.BlackText
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                // Table Header
-                                Row(
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(
-                                            Color(0xFFF9F9FB),
-                                            RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-                                        )
-                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                        .border(1.dp, Color(0xFFE5E5E5), RoundedCornerShape(8.dp))
+                                        .background(Color.White, RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(8.dp))
                                 ) {
-                                    Text(
-                                        "Employee Code",
-                                        style = textStyle(12.sp, FontWeight.Medium),
-                                        color = AppColors.TextGray,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        "Name",
-                                        style = textStyle(12.sp, FontWeight.Medium),
-                                        color = AppColors.TextGray,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-
-                                attendeesList.forEachIndexed { index, attendee ->
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(
-                                                if (index % 2 == 0) Color.White else Color(
-                                                    0xFFF9F9FB
-                                                )
-                                            )
-                                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                                            .horizontalScroll(rememberScrollState())
                                     ) {
-                                        Text(
-                                            attendee.employeeCode ?: "-",
-                                            style = textStyle(12.sp, FontWeight.Normal),
-                                            color = AppColors.Black,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            attendee.employeeName ?: "-",
-                                            style = textStyle(12.sp, FontWeight.Normal),
-                                            color = AppColors.Black,
-                                            modifier = Modifier.weight(1f)
-                                        )
+                                        Column {
+                                            // Header Row
+                                            Row(
+                                                modifier = Modifier
+                                                    .background(Color(0xFFF5F5F5))
+                                                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                                            ) {
+                                                Text(
+                                                    stringResource(Res.string.employee_and_id),
+                                                    modifier = Modifier.width(200.dp),
+                                                    style = textStyle(
+                                                        size = 12.sp,
+                                                        weight = FontWeight.Medium
+                                                    ),
+                                                    color = AppColors.TextGray
+                                                )
+                                                Text(
+                                                    stringResource(Res.string.companyName),
+                                                    modifier = Modifier.width(150.dp),
+                                                    style = textStyle(
+                                                        size = 12.sp,
+                                                        weight = FontWeight.Medium
+                                                    ),
+                                                    color = AppColors.TextGray
+                                                )
+                                                Text(
+                                                    stringResource(Res.string.profession),
+                                                    modifier = Modifier.width(150.dp),
+                                                    style = textStyle(
+                                                        size = 12.sp,
+                                                        weight = FontWeight.Medium
+                                                    ),
+                                                    color = AppColors.TextGray
+                                                )
+                                            }
+
+                                            // Data Rows
+                                            attendeesList.forEachIndexed { index, attendee ->
+                                                Row(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Column(modifier = Modifier.width(200.dp)) {
+                                                        Text(
+                                                            attendee.employeeName ?: "",
+                                                            style = textStyle(
+                                                                size = 13.sp,
+                                                                weight = FontWeight.SemiBold
+                                                            ),
+                                                            color = AppColors.Black
+                                                        )
+                                                        Text(
+                                                            attendee.employeeCode ?: "",
+                                                            style = textStyle(
+                                                                size = 11.sp,
+                                                                weight = FontWeight.Normal
+                                                            ),
+                                                            color = AppColors.TextGray
+                                                        )
+                                                    }
+                                                    Text(
+                                                        attendee.companyName ?: "",
+                                                        modifier = Modifier.width(150.dp),
+                                                        style = textStyle(
+                                                            size = 13.sp,
+                                                            weight = FontWeight.Normal
+                                                        ),
+                                                        color = AppColors.Black
+                                                    )
+                                                    Text(
+                                                        attendee.profession ?: "",
+                                                        modifier = Modifier.width(150.dp),
+                                                        style = textStyle(
+                                                            size = 13.sp,
+                                                            weight = FontWeight.Normal
+                                                        ),
+                                                        color = AppColors.Black
+                                                    )
+                                                }
+                                                if (index < attendeesList.lastIndex) {
+                                                    HorizontalDivider(
+                                                        color = Color(0xFFF5F5F5),
+                                                        modifier = Modifier.padding(horizontal = 16.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                 }
 
@@ -653,12 +690,15 @@ fun PreTaskDetailScreen(
 
     if (showSharePopup) {
         val detail = (uiState as? PreTaskDetailUiState.Success)?.data
+        val preTaskBriefingText = stringResource(Res.string.preTaskBriefing)
         org.example.project.ui.components.SharePopupDialog(
             onDismiss = { showSharePopup = false },
             onTxtClick = {
                 detail?.let {
-                    val text = org.example.project.utilites.DetailTextFormatter.formatPreTask(it)
-                    textSharer.shareText(text, it.taskTitle ?: "Pre-Task Details")
+                    coroutineScope.launch {
+                        val text = org.example.project.utilites.DetailTextFormatter.formatPreTask(it)
+                        textSharer.shareText(text, it.taskTitle ?: preTaskBriefingText)
+                    }
                 }
             },
             onPdfClick = {
@@ -669,33 +709,3 @@ fun PreTaskDetailScreen(
     }
 }
 
-@Composable
-private fun AnswerBadge(selectedAnswer: Int) {
-    // Yes = 1, No = 2, NA = 3
-    when (selectedAnswer) {
-        1 -> {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("✓", style = textStyle(14.sp, FontWeight.SemiBold), color = AppColors.Primary)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Yes", style = textStyle(12.sp, FontWeight.SemiBold), color = AppColors.Primary)
-            }
-        }
-        2 -> {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("✕", style = textStyle(14.sp, FontWeight.SemiBold), color = AppColors.Black)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("No", style = textStyle(12.sp, FontWeight.SemiBold), color = AppColors.Black)
-            }
-        }
-        3 -> {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("⊘", style = textStyle(14.sp, FontWeight.SemiBold), color = AppColors.TextGray)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Not Applicable", style = textStyle(12.sp, FontWeight.Medium), color = AppColors.TextGray)
-            }
-        }
-        else -> {
-            Text("-", style = textStyle(12.sp, FontWeight.Medium), color = AppColors.TextGray)
-        }
-    }
-}

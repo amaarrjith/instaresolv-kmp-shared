@@ -30,6 +30,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,12 +73,14 @@ fun PermitDraftListScreen(
 ) {
     val viewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    var isDraftRefreshing by remember { mutableStateOf(false) }
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val draftToastMessage by viewModel.draftToastMessage.collectAsState()
-    val successMessage = "Permit drafts deleted successfully."
+    val successMessage = stringResource(Res.string.permit_drafts_deleted_success)
 
     LaunchedEffect(Unit) {
         viewModel.loadDrafts()
@@ -92,7 +98,7 @@ fun PermitDraftListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "PERMIT DRAFTS",
+                    text = stringResource(Res.string.permit_drafts_title),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -159,54 +165,75 @@ fun PermitDraftListScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 22.dp)
         ) {
-            if (uiState.drafts.isEmpty()) {
-                EmptyScreenView(
-                    message = "No drafts found",
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    items(uiState.drafts.size) { index ->
-                        val draft = uiState.drafts[index]
-                        val project = draft.projectJson?.let {
-                            try {
-                                Json.decodeFromString<Project>(it)
-                            } catch(e: Exception) { null }
+            AppPullToRefreshBox(
+                isRefreshing = isDraftRefreshing,
+                onRefresh = {
+                    isDraftRefreshing = true
+                    viewModel.loadDrafts()
+                    coroutineScope.launch {
+                        delay(500)
+                        isDraftRefreshing = false
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (uiState.drafts.isEmpty()) {
+                    EmptyScreenView(
+                        message = stringResource(Res.string.no_drafts_found),
+                    )
+                } else {
+                    val parsedDrafts = remember(uiState.drafts) {
+                        uiState.drafts.map { draft ->
+                            val project = draft.projectJson?.let {
+                                try {
+                                    Json.decodeFromString<Project>(it)
+                                } catch(e: Exception) { null }
+                            }
+                            val permitType = draft.permitTypeJson?.let {
+                                try {
+                                    Json.decodeFromString<PermitTypeItem>(it)
+                                } catch(e: Exception) { null }
+                            }
+                            Triple(draft, project, permitType)
                         }
-                        val permitType = draft.permitTypeJson?.let {
-                            try {
-                                Json.decodeFromString<PermitTypeItem>(it)
-                            } catch(e: Exception) { null }
-                        }
+                    }
 
-                        PermitDraftListItem(
-                            draft = draft,
-                            project = project,
-                            permitType = permitType,
-                            isSelectionMode = isDeleteOptionEnabled,
-                            isSelected = selectedItemsId.contains(draft.id.toInt()),
-                            onSelectionChange = { checked ->
-                                selectedItemsId = if (checked) {
-                                    selectedItemsId + draft.id.toInt()
-                                } else {
-                                    selectedItemsId - draft.id.toInt()
-                                }
-                            },
-                            onClick = { 
-                                if (isDeleteOptionEnabled) {
-                                    val checked = !selectedItemsId.contains(draft.id.toInt())
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        items(
+                            count = parsedDrafts.size,
+                            key = { index -> parsedDrafts[index].first.id }
+                        ) { index ->
+                            val (draft, project, permitType) = parsedDrafts[index]
+                            PermitDraftListItem(
+                                draft = draft,
+                                project = project,
+                                permitType = permitType,
+                                isSelectionMode = isDeleteOptionEnabled,
+                                isSelected = selectedItemsId.contains(draft.id.toInt()),
+                                onSelectionChange = { checked ->
                                     selectedItemsId = if (checked) {
                                         selectedItemsId + draft.id.toInt()
                                     } else {
                                         selectedItemsId - draft.id.toInt()
                                     }
-                                } else {
-                                    onDraftClicked(draft.id)
+                                },
+                                onClick = { 
+                                    if (isDeleteOptionEnabled) {
+                                        val checked = !selectedItemsId.contains(draft.id.toInt())
+                                        selectedItemsId = if (checked) {
+                                            selectedItemsId + draft.id.toInt()
+                                        } else {
+                                            selectedItemsId - draft.id.toInt()
+                                        }
+                                    } else {
+                                        onDraftClicked(draft.id)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -214,7 +241,7 @@ fun PermitDraftListScreen(
             AppExitDialog(
                 visible = showDeleteDialog,
                 title = stringResource(Res.string.delete),
-                description = "Are you sure you want to delete the selected permit drafts?",
+                description = stringResource(Res.string.delete_permit_drafts_confirm),
                 primaryButtonText = stringResource(Res.string.yes),
                 secondaryButtonText = stringResource(Res.string.no),
                 onConfirm = {
@@ -304,7 +331,7 @@ fun PermitDraftListItem(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "DRAFT",
+                            text = stringResource(Res.string.draft_tag),
                             style = textStyle(size = 9.sp, weight = FontWeight.Bold),
                             color = Color.White,
                             textAlign = TextAlign.Center
@@ -332,9 +359,9 @@ fun PermitDraftListItem(
                             try {
                                 formatTimestamp(draft.permitDateMillis, "dd MMM yyyy")
                             } catch (e: Exception) {
-                                "Date not set"
+                                stringResource(Res.string.date_not_set)
                             }
-                        } else "Date not set"
+                        } else stringResource(Res.string.date_not_set)
 
                         Text(
                             text = formattedDate,
@@ -347,7 +374,7 @@ fun PermitDraftListItem(
 
                     val isValidDateTime = draft.createdAt != null && (draft.createdAt.contains("T") || draft.createdAt.contains(" "))
                     val timeAgoText = if (isValidDateTime) {
-                        timeAgo(draft.createdAt!!, isUtc = true)
+                        timeAgo(draft.createdAt.orEmpty(), isUtc = true)
                     } else {
                         ""
                     }

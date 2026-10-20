@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -159,8 +162,9 @@ fun CreateInspectionScreen(
                         )
                         AppPrimaryButton(
                             title = stringResource(Res.string.save),
+                            isLoading = uiState.isCreating,
                             onClick = {
-                                viewModel.saveInspection(isDraft = false, onSuccess = { showSuccessDialog.value = true })
+                                viewModel.saveInspection(onSuccess = { showSuccessDialog.value = true })
                             },
                             modifier = Modifier.weight(1f),
                             fillMaxWidth = false,
@@ -236,7 +240,7 @@ fun CreateInspectionScreen(
                     onValueChange = { viewModel.onLocationChanged(it) },
                     title = stringResource(Res.string.location),
                     placeholder = stringResource(Res.string.downtownDubaiUae),
-                    isMandatory = true
+                    isMandatory = false
                 )
 
                 // Date
@@ -352,9 +356,18 @@ fun CreateInspectionScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         uiState.questions.forEach { question ->
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
                                 Text(
-                                    text = question.title,
-                                    style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
+                                    text = buildAnnotatedString {
+                                        append(question.title)
+                                        withStyle(SpanStyle(color = Color.Red)) {
+                                            append(" *")
+                                        }
+                                    },
+                                    style = textStyle(
+                                        size = 12.sp,
+                                        weight = FontWeight.SemiBold
+                                    ),
                                     color = AppColors.Black
                                 )
                                 Row(
@@ -511,8 +524,8 @@ fun CreateInspectionScreen(
             AppStatusDialog(
                 visible = showSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Inspection created successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.inspection_created_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showSuccessDialog.value = false
                     onBackClicked()
@@ -524,8 +537,8 @@ fun CreateInspectionScreen(
             AppStatusDialog(
                 visible = true,
                 title = stringResource(Res.string.success),
-                description = "Inspection draft saved successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.inspection_draft_saved_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showDraftSuccessDialog.value = false
                     onBackClicked()
@@ -536,9 +549,9 @@ fun CreateInspectionScreen(
         if (uiState.isDraftOutdated) {
             AppErrorDialog(
                 visible = showOutDatedDraftPopUp.value,
-                title = "Alert",
-                description = "Inspection template has been updated. Please recreate the draft to publish.",
-                buttonText = "OK",
+                title = stringResource(Res.string.warning),
+                description = stringResource(Res.string.inspection_template_updated_recreate),
+                buttonText = stringResource(Res.string.ok),
                 onDismiss = {
                     showOutDatedDraftPopUp.value = false
                 }

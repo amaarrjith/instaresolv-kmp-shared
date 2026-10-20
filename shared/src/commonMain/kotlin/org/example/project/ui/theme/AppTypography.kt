@@ -33,39 +33,56 @@ import instaresolv.shared.generated.resources.plus_jakarta_sans_semibold
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 
-@Composable
-fun interFontFamily(): FontFamily = FontFamily(
-    Font(Res.font.inter_regular, FontWeight.Normal),
-    Font(Res.font.inter_medium, FontWeight.Medium),
-    Font(Res.font.inter_semibold, FontWeight.SemiBold),
-    Font(Res.font.inter_bold, FontWeight.Bold)
-)
+private var cachedInterFontFamily: FontFamily? = null
+private var cachedNotoNaskhFontFamily: FontFamily? = null
+private var cachedPoppinsFontFamily: FontFamily? = null
+private var cachedPlusJakartaSansFontFamily: FontFamily? = null
 
 @Composable
-fun notoNaskhFontFamily(): FontFamily = FontFamily(
-    Font(Res.font.noto_naskh_arabic_regular, FontWeight.Normal),
-    Font(Res.font.noto_naskh_arabic_medium, FontWeight.Medium),
-    Font(Res.font.noto_naskh_arabic_semibold, FontWeight.SemiBold),
-    Font(Res.font.noto_naskh_arabic_bold, FontWeight.Bold)
-)
+fun interFontFamily(): FontFamily {
+    cachedInterFontFamily?.let { return it }
+    return FontFamily(
+        Font(Res.font.inter_regular, FontWeight.Normal),
+        Font(Res.font.inter_medium, FontWeight.Medium),
+        Font(Res.font.inter_semibold, FontWeight.SemiBold),
+        Font(Res.font.inter_bold, FontWeight.Bold)
+    ).also { cachedInterFontFamily = it }
+}
 
 @Composable
-fun poppinsFontFamily(): FontFamily = FontFamily(
-    Font(Res.font.poppins_regular, FontWeight.Normal),
-    Font(Res.font.poppins_italic, FontWeight.Normal, FontStyle.Italic),
-    Font(Res.font.poppins_medium, FontWeight.Medium),
-    Font(Res.font.poppins_semibold, FontWeight.SemiBold),
-    Font(Res.font.poppins_bold, FontWeight.Bold)
-)
+fun notoNaskhFontFamily(): FontFamily {
+    cachedNotoNaskhFontFamily?.let { return it }
+    return FontFamily(
+        Font(Res.font.noto_naskh_arabic_regular, FontWeight.Normal),
+        Font(Res.font.noto_naskh_arabic_medium, FontWeight.Medium),
+        Font(Res.font.noto_naskh_arabic_semibold, FontWeight.SemiBold),
+        Font(Res.font.noto_naskh_arabic_bold, FontWeight.Bold)
+    ).also { cachedNotoNaskhFontFamily = it }
+}
 
 @Composable
-fun plusJakartaSansFontFamily(): FontFamily = FontFamily(
-    Font(Res.font.plus_jakarta_sans_regular, FontWeight.Normal),
-    Font(Res.font.plus_jakarta_sans_italic, FontWeight.Normal, FontStyle.Italic),
-    Font(Res.font.plus_jakarta_sans_medium, FontWeight.Medium),
-    Font(Res.font.plus_jakarta_sans_semibold, FontWeight.SemiBold),
-    Font(Res.font.plus_jakarta_sans_bold, FontWeight.Bold)
-)
+fun poppinsFontFamily(): FontFamily {
+    cachedPoppinsFontFamily?.let { return it }
+    return FontFamily(
+        Font(Res.font.poppins_regular, FontWeight.Normal),
+        Font(Res.font.poppins_italic, FontWeight.Normal, FontStyle.Italic),
+        Font(Res.font.poppins_medium, FontWeight.Medium),
+        Font(Res.font.poppins_semibold, FontWeight.SemiBold),
+        Font(Res.font.poppins_bold, FontWeight.Bold)
+    ).also { cachedPoppinsFontFamily = it }
+}
+
+@Composable
+fun plusJakartaSansFontFamily(): FontFamily {
+    cachedPlusJakartaSansFontFamily?.let { return it }
+    return FontFamily(
+        Font(Res.font.plus_jakarta_sans_regular, FontWeight.Normal),
+        Font(Res.font.plus_jakarta_sans_italic, FontWeight.Normal, FontStyle.Italic),
+        Font(Res.font.plus_jakarta_sans_medium, FontWeight.Medium),
+        Font(Res.font.plus_jakarta_sans_semibold, FontWeight.SemiBold),
+        Font(Res.font.plus_jakarta_sans_bold, FontWeight.Bold)
+    ).also { cachedPlusJakartaSansFontFamily = it }
+}
 
 @Composable
 fun textStyle(

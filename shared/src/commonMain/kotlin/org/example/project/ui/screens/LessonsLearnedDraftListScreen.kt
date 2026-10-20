@@ -30,6 +30,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,12 +70,14 @@ fun LessonsLearnedDraftListScreen(
 ) {
     val viewModel: LessonsLearnedListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    var isDraftRefreshing by remember { mutableStateOf(false) }
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val draftToastMessage by viewModel.draftToastMessage.collectAsState()
-    val successMessage = "Lessons learned drafts deleted successfully."
+    val successMessage = stringResource(Res.string.lessons_learned_drafts_deleted_success)
 
     LaunchedEffect(Unit) {
         viewModel.loadDrafts()
@@ -89,7 +95,7 @@ fun LessonsLearnedDraftListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "LESSONS LEARNED DRAFTS",
+                    text = stringResource(Res.string.lessons_learned_drafts_title),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -156,55 +162,76 @@ fun LessonsLearnedDraftListScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 22.dp)
         ) {
-            if (uiState.drafts.isEmpty()) {
-                EmptyScreenView(
-                    message = "No drafts found",
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    items(uiState.drafts.size) { index ->
-                        val draft = uiState.drafts[index]
-                        val project = draft.projectJson?.let {
-                            try {
-                                Json.decodeFromString<Project>(it)
-                            } catch(e: Exception) { null }
+            AppPullToRefreshBox(
+                isRefreshing = isDraftRefreshing,
+                onRefresh = {
+                    isDraftRefreshing = true
+                    viewModel.loadDrafts()
+                    coroutineScope.launch {
+                        delay(500)
+                        isDraftRefreshing = false
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (uiState.drafts.isEmpty()) {
+                    EmptyScreenView(
+                        message = stringResource(Res.string.no_drafts_found),
+                    )
+                } else {
+                    val parsedDrafts = remember(uiState.drafts) {
+                        uiState.drafts.map { draft ->
+                            val project = draft.projectJson?.let {
+                                try {
+                                    Json.decodeFromString<Project>(it)
+                                } catch(e: Exception) { null }
+                            }
+                            val localImages = draft.imagesJson?.let {
+                                try {
+                                    Json.decodeFromString<List<ObservationImage>>(it)
+                                } catch(e: Exception) { null }
+                            }
+                            val firstImageUrl = localImages?.firstOrNull { it.imageUrl?.isNotBlank() == true }?.imageUrl
+                            Triple(draft, project, firstImageUrl)
                         }
-                        val localImages = draft.imagesJson?.let {
-                            try {
-                                Json.decodeFromString<List<ObservationImage>>(it)
-                            } catch(e: Exception) { null }
-                        }
-                        val firstImageUrl = localImages?.firstOrNull { it.imageUrl?.isNotBlank() == true }?.imageUrl
+                    }
 
-                        LessonsLearnedDraftListItem(
-                            draft = draft,
-                            project = project,
-                            imageUrl = firstImageUrl,
-                            isSelectionMode = isDeleteOptionEnabled,
-                            isSelected = selectedItemsId.contains(draft.id.toInt()),
-                            onSelectionChange = { checked ->
-                                selectedItemsId = if (checked) {
-                                    selectedItemsId + draft.id.toInt()
-                                } else {
-                                    selectedItemsId - draft.id.toInt()
-                                }
-                            },
-                            onClick = { 
-                                if (isDeleteOptionEnabled) {
-                                    val checked = !selectedItemsId.contains(draft.id.toInt())
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        items(
+                            count = parsedDrafts.size,
+                            key = { index -> parsedDrafts[index].first.id }
+                        ) { index ->
+                            val (draft, project, firstImageUrl) = parsedDrafts[index]
+                            LessonsLearnedDraftListItem(
+                                draft = draft,
+                                project = project,
+                                imageUrl = firstImageUrl,
+                                isSelectionMode = isDeleteOptionEnabled,
+                                isSelected = selectedItemsId.contains(draft.id.toInt()),
+                                onSelectionChange = { checked ->
                                     selectedItemsId = if (checked) {
                                         selectedItemsId + draft.id.toInt()
                                     } else {
                                         selectedItemsId - draft.id.toInt()
                                     }
-                                } else {
-                                    onDraftClicked(draft.id)
+                                },
+                                onClick = { 
+                                    if (isDeleteOptionEnabled) {
+                                        val checked = !selectedItemsId.contains(draft.id.toInt())
+                                        selectedItemsId = if (checked) {
+                                            selectedItemsId + draft.id.toInt()
+                                        } else {
+                                            selectedItemsId - draft.id.toInt()
+                                        }
+                                    } else {
+                                        onDraftClicked(draft.id)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -212,7 +239,7 @@ fun LessonsLearnedDraftListScreen(
             AppExitDialog(
                 visible = showDeleteDialog,
                 title = stringResource(Res.string.delete),
-                description = "Are you sure you want to delete the selected lessons learned drafts?",
+                description = stringResource(Res.string.delete_lessons_learned_drafts_confirm),
                 primaryButtonText = stringResource(Res.string.yes),
                 secondaryButtonText = stringResource(Res.string.no),
                 onConfirm = {
@@ -302,7 +329,7 @@ fun LessonsLearnedDraftListItem(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "DRAFT",
+                            text = stringResource(Res.string.draft_tag),
                             style = textStyle(size = 9.sp, weight = FontWeight.Bold),
                             color = Color.White,
                             textAlign = TextAlign.Center
@@ -336,7 +363,7 @@ fun LessonsLearnedDraftListItem(
                             } catch (e: Exception) {
                                 it
                             }
-                        } ?: "Date not set"
+                        } ?: stringResource(Res.string.date_not_set)
 
                         Text(
                             text = formattedDate,
@@ -349,7 +376,7 @@ fun LessonsLearnedDraftListItem(
 
                     val isValidDateTime = draft.createdAt != null && (draft.createdAt.contains("T") || draft.createdAt.contains(" "))
                     val timeAgoText = if (isValidDateTime) {
-                        timeAgo(draft.createdAt!!)
+                        timeAgo(draft.createdAt.orEmpty())
                     } else {
                         ""
                     }

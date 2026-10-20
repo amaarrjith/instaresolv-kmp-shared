@@ -25,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -116,6 +117,7 @@ fun HomeScreenContentView(
     val fileDownloader = rememberFileDownloader()
     val actionsLoading by vm.isActionLoading.collectAsState()
     val pdfModuleType by vm.pdfModuleType.collectAsState()
+    val pdfItemId by vm.pdfItemId.collectAsState()
     var actionErrorMessage: String? by remember { mutableStateOf(null) }
     var isRoleUpdated by remember { mutableStateOf(false) }
     val isSubContractor = remember(vm.user?.userRole, viewModel.user?.userRole) {
@@ -127,7 +129,7 @@ fun HomeScreenContentView(
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "${pdfModuleType}_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName(pdfModuleType, pdfItemId)
                 fileDownloader.downloadFile(url, fileName)
                 vm.setPdfToastMessage(downloadingMsg)
             } catch (e: Exception) {
@@ -309,7 +311,7 @@ fun HeaderView(
             if(isSubContractor) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "(Sub-Contractor)",
+                    text = stringResource(Res.string.sub_contractor_tag),
                     style = textStyle(
                         size = 12.sp,
                         weight = FontWeight.Normal
@@ -393,7 +395,7 @@ fun PendingActionsCardView(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 21.dp, vertical = 21.dp)
                 .height(127.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -609,7 +611,7 @@ fun AssignedToMeCard(
                     )
                     Column() {
                         val status = PermitStatus.fromValue(contents.permit.status)
-                        val statusTitle = status?.title ?: "UNKNOWN"
+                        val statusTitle = if (status != null) stringResource(status.stringRes) else stringResource(Res.string.unknown)
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
@@ -658,7 +660,7 @@ fun AssignedToMeCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Permit Code :",
+                                stringResource(Res.string.permit_code_label),
                                 style = textStyle(
                                     11.sp,
                                     FontWeight.Medium
@@ -868,9 +870,9 @@ fun AssignedToMeCard(
         actionSuccessMessage?.let { msg ->
             AppStatusDialog(
                 visible = true,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = msg,
-                buttonText = "OK",
+                buttonText = stringResource(Res.string.ok),
                 onDismiss = {
                     actionSuccessMessage = null
                     onRefreshList()
@@ -881,9 +883,9 @@ fun AssignedToMeCard(
         justification?.let { msg ->
             AppStatusDialog(
                 visible = true,
-                title = "Justification",
+                title = stringResource(Res.string.justification),
                 description = msg,
-                buttonText = "OK",
+                buttonText = stringResource(Res.string.ok),
                 icon = Res.drawable.ic_justification,
                 onDismiss = {
                     justification = null

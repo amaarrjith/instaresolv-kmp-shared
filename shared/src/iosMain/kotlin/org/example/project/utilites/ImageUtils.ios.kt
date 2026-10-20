@@ -163,3 +163,75 @@ actual fun drawAnnotationsOnImage(
         imageBytes
     }
 }
+
+actual fun compressImage(
+    imageBytes: ByteArray,
+    maxBytes: Long,
+    targetBytes: Long
+): ByteArray {
+    if (imageBytes.size <= targetBytes) {
+        return imageBytes
+    }
+
+    return try {
+        val skiaImage = Image.makeFromEncoded(imageBytes)
+        val origW = skiaImage.width
+        val origH = skiaImage.height
+        if (origW <= 0 || origH <= 0) {
+            skiaImage.close()
+            return imageBytes
+        }
+
+        val maxDimension = 1920
+        var scale = 1f
+        val maxDim = maxOf(origW, origH)
+        if (maxDim > maxDimension) {
+            scale = maxDimension.toFloat() / maxDim
+        }
+
+        var targetW = (origW * scale).toInt().coerceAtLeast(1)
+        var targetH = (origH * scale).toInt().coerceAtLeast(1)
+
+        fun renderAndEncode(w: Int, h: Int, q: Int): ByteArray? {
+            val surface = Surface.makeRasterN32Premul(w, h)
+            surface.canvas.drawImageRect(
+                skiaImage,
+                Rect.makeWH(origW.toFloat(), origH.toFloat()),
+                Rect.makeWH(w.toFloat(), h.toFloat())
+            )
+            val snapshot = surface.makeImageSnapshot()
+            val data = snapshot.encodeToData(EncodedImageFormat.JPEG, q)?.bytes
+            snapshot.close()
+            surface.close()
+            return data
+        }
+
+        var quality = 85
+        var resultBytes = renderAndEncode(targetW, targetH, quality) ?: imageBytes
+
+        // Iteratively lower quality towards targetBytes (aiming for 500KB - 1MB)
+        while (resultBytes.size > targetBytes && quality > 40) {
+            quality -= 10
+            val next = renderAndEncode(targetW, targetH, quality)
+            if (next != null) {
+                resultBytes = next
+            } else break
+        }
+
+        // If still exceeding maxBytes (2MB ceiling), downscale dimensions
+        while (resultBytes.size > maxBytes && (targetW > 600 || targetH > 600)) {
+            targetW = (targetW * 0.75f).toInt().coerceAtLeast(1)
+            targetH = (targetH * 0.75f).toInt().coerceAtLeast(1)
+            val next = renderAndEncode(targetW, targetH, quality.coerceAtLeast(40))
+            if (next != null) {
+                resultBytes = next
+            } else break
+        }
+
+        skiaImage.close()
+        resultBytes
+    } catch (e: Exception) {
+        println("compressImage error on iOS: ${e.message}")
+        imageBytes
+    }
+}

@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 import org.example.project.data.model.ContactMessageRequest
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.network.NetworkResult
+import org.jetbrains.compose.resources.getString
+import instaresolv.shared.generated.resources.*
 
 data class ContactUsUiState(
     val isLoading: Boolean = false,
@@ -34,7 +36,9 @@ class ContactUsViewModel(
 
     fun sendMessage(name: String, email: String, message: String) {
         if (name.isBlank() || email.isBlank() || message.isBlank()) {
-            _uiState.update { it.copy(error = "Please fill all fields") }
+            viewModelScope.launch {
+                _uiState.update { it.copy(error = getString(Res.string.error_fill_all_fields)) }
+            }
             return
         }
         
@@ -47,11 +51,11 @@ class ContactUsViewModel(
                     if (result.data.isSuccess == true) {
                         _uiState.update { it.copy(isLoading = false, isSuccess = true) }
                     } else {
-                        _uiState.update { it.copy(isLoading = false, error = result.data.statusMessage ?: "Failed to send message") }
+                        _uiState.update { it.copy(isLoading = false, error = result.data.statusMessage ?: getString(Res.string.failed_to_send_message)) }
                     }
                 }
                 is NetworkResult.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = result.message ?: "Network error") }
+                    _uiState.update { it.copy(isLoading = false, error = result.message ?: getString(Res.string.network_error)) }
                 }
             }
         }
@@ -66,7 +70,7 @@ class ContactUsViewModel(
                     _uiState.update { it.copy(isLoading = false, email = result.data.email, address = result.data.address, phone = result.data.phone) }
                 }
                 is NetworkResult.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = result.message ?: "Network error") }
+                    _uiState.update { it.copy(isLoading = false, error = result.message ?: getString(Res.string.network_error)) }
                 }
             }
         }

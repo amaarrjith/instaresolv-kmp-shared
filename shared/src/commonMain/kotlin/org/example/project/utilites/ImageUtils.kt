@@ -27,3 +27,9 @@ expect fun drawAnnotationsOnImage(
     imageBytes: ByteArray,
     strokes: List<DrawStrokeData>
 ): ByteArray?
+
+expect fun compressImage(
+    imageBytes: ByteArray,
+    maxBytes: Long = 2L * 1024 * 1024,
+    targetBytes: Long = 1024L * 1024
+): ByteArray

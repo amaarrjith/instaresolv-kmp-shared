@@ -38,4 +38,10 @@ class ToolBoxTalkDraftRepository(private val database: AppDatabase) {
     suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deleteToolBoxTalkDraft(id)
     }
+
+    suspend fun deleteDrafts(ids: List<Long>) = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.transaction {
+            ids.forEach { database.appDatabaseQueries.deleteToolBoxTalkDraft(it) }
+        }
+    }
 }

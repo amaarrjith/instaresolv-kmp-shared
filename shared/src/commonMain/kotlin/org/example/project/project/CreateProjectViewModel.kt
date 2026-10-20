@@ -10,6 +10,8 @@ import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 
 import org.example.project.domain.repository.AuthRepository
+import org.jetbrains.compose.resources.getString
+import instaresolv.shared.generated.resources.*
 
 class CreateProjectViewModel(
     private val projectRepository: ProjectRepository,
@@ -31,11 +33,11 @@ class CreateProjectViewModel(
         description: String,
         groupImage: String
     ) {
-        if (groupName.isEmpty()) {
-            _uiState.value = CreateProjectUiState.Error("Please Provide Project Name")
-            return
-        }
         viewModelScope.launch {
+            if (groupName.isEmpty()) {
+                _uiState.value = CreateProjectUiState.Error(getString(Res.string.error_provide_project_name))
+                return@launch
+            }
             _uiState.value = CreateProjectUiState.isLoading
             val response = projectRepository.createProject(
                 groupCode = groupCode,

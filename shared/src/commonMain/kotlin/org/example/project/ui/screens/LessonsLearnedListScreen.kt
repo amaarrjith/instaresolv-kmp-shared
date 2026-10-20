@@ -86,6 +86,8 @@ fun LessonsLearnedListScreen(
     val exportUrl by viewModel.exportUrl.collectAsState()
     val exportToastMessage by viewModel.exportToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val downloadingLessonsLearnedReportMsg = stringResource(Res.string.downloading_lessons_learned_report)
+    val exportFailedMsg = stringResource(Res.string.export_failed)
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -97,11 +99,11 @@ fun LessonsLearnedListScreen(
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
-                val fileName = "Lessons_Learned_Report_${kotlin.time.Clock.System.now().toEpochMilliseconds()}.csv"
+                val fileName = org.example.project.utilites.getExcelReportFileName("Lessons Learned", url)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setExportToastMessage("Downloading Lessons Learned Report")
+                viewModel.setExportToastMessage(downloadingLessonsLearnedReportMsg)
             } catch (e: Exception) {
-                viewModel.setExportToastMessage(e.message ?: "Export failed")
+                viewModel.setExportToastMessage(e.message ?: exportFailedMsg)
             }
             viewModel.clearExportUrl()
         }
@@ -131,13 +133,16 @@ fun LessonsLearnedListScreen(
                 )
                 Text(
                     text = stringResource(Res.string.lessons).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = { onCreateClicked() })
@@ -316,7 +321,8 @@ fun LessonLearnedItem(
         ) {
             Box {
                 WebImageView(
-                    imageUrl = (lesson.images?.firstOrNull()?.image ?: ""), // using first image if available
+                    imageUrl = (lesson.images?.firstOrNull()?.image ?: ""),
+                    placeHolder = Res.drawable.ic_lesson_placeholder,// using first image if available
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -347,7 +353,7 @@ fun LessonLearnedItem(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    text = lesson.title ?: "Untitled Observation",
+                    text = lesson.title ?: stringResource(Res.string.untitled),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2
@@ -388,36 +394,38 @@ fun LessonLearnedItem(
                         color = Color.DarkGray
                     )
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    WebImageView(
-                        imageUrl = lesson.facilities?.groupImage
-                            ?: "", // dummy image
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier.weight(1f, fill = false)
+                if (lesson.facilities != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        WebImageView(
+                            imageUrl = lesson.facilities?.groupImage
+                                ?: "", // dummy image
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier.weight(1f, fill = false)
+                        ) {
+                            Text(
+                                text = lesson.facilities?.groupName ?: "",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                                color = AppColors.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = lesson.facilities?.groupName ?: "",
+                            text = lesson.facilities?.groupCode ?: "",
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
                             style = textStyle(size = 11.sp, weight = FontWeight.Medium),
                             color = AppColors.Black
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = lesson.facilities?.groupCode ?: "",
-                        maxLines = 1,
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
                 }
             }
         }

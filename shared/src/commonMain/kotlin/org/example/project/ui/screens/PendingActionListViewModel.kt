@@ -43,6 +43,12 @@ class PendingActionListViewModel(
     private val _pdfUrl = MutableStateFlow<String?>(null)
     val pdfUrl: StateFlow<String?> = _pdfUrl
 
+    private val _pdfModuleType = MutableStateFlow("Permit")
+    val pdfModuleType: StateFlow<String> = _pdfModuleType
+
+    private val _pdfItemId = MutableStateFlow<Int?>(null)
+    val pdfItemId: StateFlow<Int?> = _pdfItemId
+
     private val _pdfToastMessage = MutableStateFlow<String?>(null)
     val pdfToastMessage: StateFlow<String?> = _pdfToastMessage
 
@@ -52,6 +58,8 @@ class PendingActionListViewModel(
 
     fun generatePermitPDF(permitId: Int) {
         viewModelScope.launch {
+            _pdfModuleType.value = "Permit"
+            _pdfItemId.value = permitId
             _isGeneratingPdf.value = true
             val request = org.example.project.data.model.GeneratePermitPdfRequest(permitId = permitId)
             when (val result = permitRepository.generatePermitPdf(request)) {
@@ -87,6 +95,7 @@ class PendingActionListViewModel(
 
     fun clearPdfUrl() {
         _pdfUrl.value = null
+        _pdfItemId.value = null
     }
 
     private val _groupUsers = MutableStateFlow<List<org.example.project.data.model.GroupUser>>(emptyList())
@@ -97,6 +106,8 @@ class PendingActionListViewModel(
 
     fun generateObservationPdf(observationId: Int) {
         viewModelScope.launch {
+            _pdfModuleType.value = "Observation"
+            _pdfItemId.value = observationId
             _isGeneratingPdf.value = true
             val request = org.example.project.data.model.GenerateObservationPdfRequest(observationId = observationId)
             when (val result = observationRepository.generatePdf(request)) {

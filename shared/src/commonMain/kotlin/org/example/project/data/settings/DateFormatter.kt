@@ -18,6 +18,17 @@ import instaresolv.shared.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
+private val dateFormatCache = mutableMapOf<String, DateTimeFormat<LocalDate>>()
+private val dateTimeFormatCache = mutableMapOf<String, DateTimeFormat<LocalDateTime>>()
+
+private fun getCachedDateFormat(pattern: String): DateTimeFormat<LocalDate> {
+    return dateFormatCache[pattern] ?: buildDateFormat(pattern).also { dateFormatCache[pattern] = it }
+}
+
+private fun getCachedDateTimeFormat(pattern: String): DateTimeFormat<LocalDateTime> {
+    return dateTimeFormatCache[pattern] ?: buildDateTimeFormat(pattern).also { dateTimeFormatCache[pattern] = it }
+}
+
 /**
  * Parses [input] using [inputPattern] and re-formats it as [outputPattern].
  * Supports: yyyy, MMMM (full month name), MMM (short month name),
@@ -27,23 +38,32 @@ fun formatDate(input: String, inputPattern: String, outputPattern: String): Stri
     if (input.isBlank()) return input
     val needsTime = inputPattern.hasTimeTokens() || outputPattern.hasTimeTokens()
 
+    val isIsoInstant = input.contains("T") && (input.endsWith("Z") || input.contains("+"))
+    if (isIsoInstant) {
+        try {
+            val instant = Instant.parse(input)
+            val timeZone = TimeZone.currentSystemDefault()
+            val localDateTime = instant.toLocalDateTime(timeZone)
+            return if (needsTime) {
+                localDateTime.format(getCachedDateTimeFormat(outputPattern))
+            } else {
+                localDateTime.date.format(getCachedDateFormat(outputPattern))
+            }
+        } catch (_: Exception) {
+            // fallback below
+        }
+    }
+
     return try {
-        val instant = Instant.parse(input)
-        val timeZone = TimeZone.currentSystemDefault()
-        val localDateTime = instant.toLocalDateTime(timeZone)
         if (needsTime) {
-            localDateTime.format(buildDateTimeFormat(outputPattern))
+            val dateTime = LocalDateTime.parse(input, getCachedDateTimeFormat(inputPattern))
+            dateTime.format(getCachedDateTimeFormat(outputPattern))
         } else {
-            localDateTime.date.format(buildDateFormat(outputPattern))
+            val date = LocalDate.parse(input, getCachedDateFormat(inputPattern))
+            date.format(getCachedDateFormat(outputPattern))
         }
     } catch (e: Exception) {
-        if (needsTime) {
-            val dateTime = LocalDateTime.parse(input, buildDateTimeFormat(inputPattern))
-            dateTime.format(buildDateTimeFormat(outputPattern))
-        } else {
-            val date = LocalDate.parse(input, buildDateFormat(inputPattern))
-            date.format(buildDateFormat(outputPattern))
-        }
+        input
     }
 }
 
@@ -90,18 +110,29 @@ fun timeAgo(
 
     val systemTimeZone = TimeZone.currentSystemDefault()
 
-    val past = try {
-        // For ISO-8601 strings like "2026-07-10T12:30:00Z"
-        Instant.parse(input)
-    } catch (_: Exception) {
-        val dateTime = LocalDateTime.parse(
-            input,
-            buildDateTimeFormat(inputPattern)
-        )
-
-        dateTime.toInstant(
-            if (isUtc) TimeZone.UTC else systemTimeZone
-        )
+    val isIso = input.contains("T") && (input.endsWith("Z") || input.contains("+"))
+    val past = if (isIso) {
+        try {
+            Instant.parse(input)
+        } catch (_: Exception) {
+            try {
+                val dateTime = LocalDateTime.parse(input, getCachedDateTimeFormat(inputPattern))
+                dateTime.toInstant(if (isUtc) TimeZone.UTC else systemTimeZone)
+            } catch (_: Exception) {
+                return ""
+            }
+        }
+    } else {
+        try {
+            val dateTime = LocalDateTime.parse(input, getCachedDateTimeFormat(inputPattern))
+            dateTime.toInstant(if (isUtc) TimeZone.UTC else systemTimeZone)
+        } catch (_: Exception) {
+            try {
+                Instant.parse(input)
+            } catch (_: Exception) {
+                return ""
+            }
+        }
     }
 
     val now = Clock.System.now()
@@ -131,6 +162,54 @@ private fun pluralizeTimeAgo(value: Int, singleRes: StringResource, pluralRes: S
     }
 }
 
+private val timeFormatWithSeconds = LocalTime.Format {
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+}
+
+private val timeFormatWithoutSeconds = LocalTime.Format {
+    hour()
+    char(':')
+    minute()
+}
+
+private val time12HourFormat = LocalTime.Format {
+    amPmHour()
+    char(':')
+    minute()
+    char(' ')
+    amPmMarker("AM", "PM")
+}
+
+private val dateTimeStandardInputFormat = LocalDateTime.Format {
+    year()
+    char('-')
+    monthNumber()
+    char('-')
+    dayOfMonth()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+}
+
+private val dateTimeStandardOutputFormat = LocalDateTime.Format {
+    dayOfMonth()
+    char('-')
+    monthNumber()
+    char('-')
+    year()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+}
+
 fun utcToLocal(
     date: String,
     inputFormat: String,
@@ -140,101 +219,28 @@ fun utcToLocal(
     return try {
         when {
             inputFormat == "HH:mm:ss" && outputFormat == "HH:mm" -> {
-
-                val input = LocalTime.parse(
-                    date,
-                    LocalTime.Format {
-                        hour()
-                        char(':')
-                        minute()
-                        char(':')
-                        second()
-                    }
-                )
-
-                // Use today's UTC date
-                val today = Clock.System.now()
-                    .toLocalDateTime(TimeZone.UTC)
-                    .date
-
-                // Create UTC LocalDateTime
+                val input = LocalTime.parse(date, timeFormatWithSeconds)
+                val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date
                 val utcDateTime = LocalDateTime(today, input)
-
-                // Convert UTC -> Local timezone
                 val instant = utcDateTime.toInstant(TimeZone.UTC)
                 val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-
-                LocalTime.Format {
-                    hour()
-                    char(':')
-                    minute()
-                }.format(localDateTime.time)
+                timeFormatWithoutSeconds.format(localDateTime.time)
             }
 
             inputFormat == "HH:mm:ss" && outputFormat == "hh:mm a" -> {
-
-                val input = LocalTime.parse(
-                    date,
-                    LocalTime.Format {
-                        hour()
-                        char(':')
-                        minute()
-                        char(':')
-                        second()
-                    }
-                )
-
-                val today = Clock.System.now()
-                    .toLocalDateTime(TimeZone.UTC)
-                    .date
-
+                val input = LocalTime.parse(date, timeFormatWithSeconds)
+                val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date
                 val utcDateTime = LocalDateTime(today, input)
                 val instant = utcDateTime.toInstant(TimeZone.UTC)
                 val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-
-                LocalTime.Format {
-                    amPmHour()
-                    char(':')
-                    minute()
-                    char(' ')
-                    amPmMarker("AM", "PM")
-                }.format(localDateTime.time)
+                time12HourFormat.format(localDateTime.time)
             }
 
-            inputFormat == "yyyy-MM-dd HH:mm:ss" &&
-                    outputFormat == "dd-MM-yyyy HH:mm" -> {
-
-                val localDateTime = LocalDateTime.parse(
-                    date,
-                    LocalDateTime.Format {
-                        year()
-                        char('-')
-                        monthNumber()
-                        char('-')
-                        dayOfMonth()
-                        char(' ')
-                        hour()
-                        char(':')
-                        minute()
-                        char(':')
-                        second()
-                    }
-                )
-
+            inputFormat == "yyyy-MM-dd HH:mm:ss" && outputFormat == "dd-MM-yyyy HH:mm" -> {
+                val localDateTime = LocalDateTime.parse(date, dateTimeStandardInputFormat)
                 val instant = localDateTime.toInstant(TimeZone.UTC)
                 val converted = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-
-                LocalDateTime.Format {
-                    dayOfMonth()
-                    char('-')
-                    monthNumber()
-                    char('-')
-                    year()
-                    char(' ')
-                    hour()
-                    char(':')
-                    minute()
-                }.format(converted)
+                dateTimeStandardOutputFormat.format(converted)
             }
 
             else -> date
@@ -242,4 +248,23 @@ fun utcToLocal(
     } catch (e: Exception) {
         date
     }
+}
+
+fun parseTimeToMinutes(timeStr: String): Int {
+    if (timeStr.isBlank()) return 0
+    val parts = timeStr.trim().split(Regex("[:\\s]+"))
+    if (parts.size >= 3 && (parts.last().equals("AM", ignoreCase = true) || parts.last().equals("PM", ignoreCase = true))) {
+        val h = parts[0].toIntOrNull() ?: 0
+        val m = parts[1].toIntOrNull() ?: 0
+        val ampm = parts.last().uppercase()
+        var hour24 = h
+        if (ampm == "PM" && h < 12) hour24 += 12
+        if (ampm == "AM" && h == 12) hour24 = 0
+        return hour24 * 60 + m
+    } else if (parts.size >= 2) {
+        val h = parts[0].toIntOrNull() ?: 0
+        val m = parts[1].toIntOrNull() ?: 0
+        return h * 60 + m
+    }
+    return 0
 }

@@ -9,6 +9,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        #if DEBUG
+        AppConfig.shared.environment = .development
+        #else
+        AppConfig.shared.environment = .production
+        #endif
         KoinInitializer.shared.initialize()
         
         NotificationCenter.default.addObserver(

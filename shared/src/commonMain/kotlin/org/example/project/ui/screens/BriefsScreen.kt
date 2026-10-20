@@ -179,7 +179,7 @@ fun BriefOverviewCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(113.dp)
+            .height(125.dp)
             .dropShadow(
                 shape = RoundedCornerShape(16.dp),
                 shadow = Shadow(

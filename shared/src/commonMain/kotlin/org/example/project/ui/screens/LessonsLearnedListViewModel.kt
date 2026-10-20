@@ -195,19 +195,15 @@ class LessonsLearnedListViewModel(
 
     fun loadDrafts() {
         viewModelScope.launch {
-            val user = authPreferences.getLoggedInUser()
-            if (user?.userId != null) {
-                val list = lessonLearnedDraftRepository.getAllDrafts(user.userId!!)
-                _uiState.update { it.copy(drafts = list) }
-            }
+            val userId = authPreferences.getLoggedInUser()?.userId ?: return@launch
+            val list = lessonLearnedDraftRepository.getAllDrafts(userId)
+            _uiState.update { it.copy(drafts = list) }
         }
     }
 
     fun deleteDrafts(ids: List<Long>, successMessage: String) {
         viewModelScope.launch {
-            ids.forEach { id ->
-                lessonLearnedDraftRepository.deleteDraft(id)
-            }
+            lessonLearnedDraftRepository.deleteDrafts(ids)
             draftToastMessage.value = successMessage
             loadDrafts()
         }

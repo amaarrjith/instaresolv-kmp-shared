@@ -81,11 +81,12 @@ actual fun rememberNativeImageEditorLauncher(
                     )
                     val options = UCrop.Options().apply {
                         setCompressionFormat(Bitmap.CompressFormat.JPEG)
-                        setCompressionQuality(90)
+                        setCompressionQuality(80)
                         setFreeStyleCropEnabled(true)
                     }
                     val intent = UCrop.of(editedUri, destinationUri)
                         .withOptions(options)
+                        .withMaxResultSize(1920, 1920)
                         .getIntent(context)
                     cropLauncher.launch(intent)
                 }

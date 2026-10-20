@@ -46,6 +46,8 @@ import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.example.project.utilites.cropImage
 import org.example.project.utilites.toImageBitmap
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 enum class CropAspectRatio(val label: String, val ratioValue: Float?) {
     FREE("Free", null),
@@ -101,14 +103,14 @@ fun AppImageCropDialog(
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(
-                            text = "Cancel",
+                            text = stringResource(Res.string.cancel),
                             style = textStyle(size = 16.sp, weight = FontWeight.Medium),
                             color = Color.White
                         )
                     }
 
                     Text(
-                        text = "Crop Image",
+                        text = stringResource(Res.string.crop_image),
                         style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                         color = Color.White
                     )
@@ -135,7 +137,7 @@ fun AppImageCropDialog(
                             )
                         } else {
                             Text(
-                                text = "Done",
+                                text = stringResource(Res.string.done),
                                 style = textStyle(size = 16.sp, weight = FontWeight.Bold),
                                 color = AppColors.Primary
                             )
@@ -329,7 +331,7 @@ fun AppImageCropDialog(
                                     .padding(horizontal = 14.dp, vertical = 8.dp)
                             ) {
                                 Text(
-                                    text = ratioOption.label,
+                                    text = if (ratioOption == CropAspectRatio.FREE) stringResource(Res.string.free) else ratioOption.label,
                                     style = textStyle(size = 13.sp, weight = if (isSelected) FontWeight.Bold else FontWeight.Medium),
                                     color = if (isSelected) Color.White else Color.LightGray
                                 )
@@ -352,7 +354,7 @@ fun AppImageCropDialog(
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                         ) {
                             Text(
-                                text = "↺ Rotate",
+                                text = "↺ " + stringResource(Res.string.rotate),
                                 style = textStyle(size = 13.sp, weight = FontWeight.Medium),
                                 color = Color.White
                             )
@@ -374,7 +376,7 @@ fun AppImageCropDialog(
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                         ) {
                             Text(
-                                text = "Reset",
+                                text = stringResource(Res.string.reset),
                                 style = textStyle(size = 13.sp, weight = FontWeight.Medium),
                                 color = Color.White
                             )

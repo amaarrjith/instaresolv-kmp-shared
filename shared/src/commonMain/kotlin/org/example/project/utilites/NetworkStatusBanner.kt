@@ -28,7 +28,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import instaresolv.shared.generated.resources.Res
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 enum class BannerStatus {
     Hidden,
@@ -150,7 +151,7 @@ fun NetworkStatusBanner(
                 Spacer(modifier = Modifier.padding(end = 8.dp))
                 
                 Text(
-                    text = "Your device is offline.",
+                    text = stringResource(Res.string.network_offline_banner),
                     style = textStyle(
                         size = 13.sp,
                         weight = FontWeight.Medium

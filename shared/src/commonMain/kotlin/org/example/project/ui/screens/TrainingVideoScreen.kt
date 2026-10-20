@@ -60,7 +60,7 @@ fun TrainingVideoScreen(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_left),
-                    contentDescription = "Back",
+                    contentDescription = stringResource(Res.string.back),
                     tint = Color.White
                 )
             }
@@ -77,7 +77,7 @@ fun TrainingVideoScreen(
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_left),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.back),
                         tint = Color.Black // Assuming ErrorRetryView has white background
                     )
                 }
@@ -204,7 +204,7 @@ fun VideoPlayerContainer(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = videoError ?: "Playback Error",
+                    text = videoError ?: stringResource(Res.string.playback_error),
                     style = textStyle(size = 14.sp, weight = FontWeight.Bold, color = Color.Red),
                     modifier = Modifier.padding(16.dp)
                 )

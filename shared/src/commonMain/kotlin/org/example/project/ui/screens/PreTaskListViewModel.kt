@@ -188,19 +188,15 @@ class PreTaskListViewModel(
 
     fun loadDrafts() {
         viewModelScope.launch {
-            val user = authPreferences.getLoggedInUser()
-            if (user?.userId != null) {
-                val list = preTaskDraftRepository.getAllDrafts(user.userId!!)
-                _uiState.update { it.copy(drafts = list) }
-            }
+            val userId = authPreferences.getLoggedInUser()?.userId ?: return@launch
+            val list = preTaskDraftRepository.getAllDrafts(userId)
+            _uiState.update { it.copy(drafts = list) }
         }
     }
 
     fun deleteDrafts(ids: List<Long>, successMessage: String) {
         viewModelScope.launch {
-            ids.forEach { id ->
-                preTaskDraftRepository.deleteDraft(id)
-            }
+            preTaskDraftRepository.deleteDrafts(ids)
             draftToastMessage.value = successMessage
             loadDrafts()
         }

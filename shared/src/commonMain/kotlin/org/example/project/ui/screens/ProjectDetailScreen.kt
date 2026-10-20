@@ -113,6 +113,10 @@ fun ProjectDetailScreen(
     val errorMessage = remember { mutableStateOf<String?>(null) }
     val designationTypes = viewModel.designations
     val fileDownloader = rememberFileDownloader()
+    val projectUpdatedSuccessText = stringResource(Res.string.projectUpdatedSuccessfully)
+    val downloadingTrainingDetailsText = stringResource(Res.string.downloading_training_details)
+    val failedToExportTrainingDetailsText = stringResource(Res.string.failed_to_export_training_details)
+    val trainingDetailsNotAvailableText = stringResource(Res.string.training_details_file_not_available)
     LaunchedEffect(Unit) {
         viewModel.getProjectDetails(
             groupId = groupId,
@@ -125,7 +129,7 @@ fun ProjectDetailScreen(
                 groupId = groupId,
                 groupCode = groupCode
             )
-            successToastMessage.value = "Project Updated Successfully"
+            successToastMessage.value = projectUpdatedSuccessText
             onProjectUpdatedConsumed()
         }
     }
@@ -227,12 +231,12 @@ fun ProjectDetailScreen(
                                         ?.takeIf { it.isNotBlank() } ?: "Project"
                                     val fileName = "${safeName}_Training_Details_${Clock.System.now().toEpochMilliseconds()}.$ext"
                                     fileDownloader.downloadFile(url, fileName)
-                                    successToastMessage.value = "Downloading training details..."
+                                    successToastMessage.value = downloadingTrainingDetailsText
                                 } catch (e: Exception) {
-                                    errorMessage.value = e.message ?: "Failed to export training details"
+                                    errorMessage.value = e.message ?: failedToExportTrainingDetailsText
                                 }
                             } else {
-                                errorMessage.value = "Training details file is not available"
+                                errorMessage.value = trainingDetailsNotAvailableText
                             }
                         }
                     )
@@ -266,7 +270,7 @@ fun ProjectDetailScreen(
                 AppSuccessDialog(
                     visible = true,
                     title = stringResource(Res.string.success),
-                    description = "Member(s) invited successfully!",
+                    description = stringResource(Res.string.members_invited_success),
                     onDismiss = {
                         viewModel.clearInviteStatus()
                     }
@@ -350,6 +354,7 @@ fun  ProjectDetailScreenContent(
     ) {
         WebImageView(
             imageUrl = project.groupImage,
+            placeHolder = Res.drawable.ic_project_placeholder,
             modifier = Modifier.fillMaxWidth()
                 .height(220.dp)
         )
@@ -523,10 +528,10 @@ fun  ProjectDetailScreenContent(
     if (showLeaveProjectDialog.value != null) {
         AppExitDialog(
             title = stringResource(Res.string.removeUser),
-            description =  if (showLeaveProjectDialog.value?.userId == loggedInUserId) {
-                "Are you sure you want to leave this project ?"
+            description = if (showLeaveProjectDialog.value?.userId == loggedInUserId) {
+                stringResource(Res.string.confirm_leave_project)
             } else {
-                "Are you sure you want to remove this user ?"
+                stringResource(Res.string.confirm_remove_user)
             },
             primaryButtonText = stringResource(Res.string.yes),
             secondaryButtonText = stringResource(Res.string.no),
@@ -703,7 +708,8 @@ fun ProjectMembersScreen(
 ) {
     if (members.isEmpty()) {
         EmptyScreenView(
-            message = stringResource(Res.string.noMembersFound)
+            message = stringResource(Res.string.noMembersFound),
+            modifier = Modifier.fillMaxWidth()
         )
     } else {
         Column {
@@ -882,7 +888,7 @@ fun ProjectMembersItemRow(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "Training",
+                        text = stringResource(Res.string.training),
                         style = textStyle(size = 11.sp, weight = FontWeight.SemiBold),
                         color = AppColors.Primary
                     )
@@ -906,7 +912,7 @@ fun ProjectMembersItemRow(
                         onClick = onChangeRoleClick,
                         modifier = Modifier.weight(1f)
                     )
-                    val leaveText = if (member.userId == loggedInUserId) "Exit Project" else "Remove User"
+                    val leaveText = if (member.userId == loggedInUserId) stringResource(Res.string.exitProject) else stringResource(Res.string.removeUser)
                     MemberActionButton(
                         title = leaveText,
                         color = AppColors.Primary,
@@ -1023,6 +1029,10 @@ fun InviteMemberBottomSheet(
     val emailList = remember { mutableStateListOf<String>() }
     val currentEmail = remember { mutableStateOf("") }
     val errorMessage = remember { mutableStateOf<String?>(null) }
+    val errorEnterEmail = stringResource(Res.string.error_enter_email)
+    val errorEnterValidEmail = stringResource(Res.string.error_enter_valid_email)
+    val errorEmailAlreadyAdded = stringResource(Res.string.error_email_already_added)
+    val errorAddAtLeastOneEmail = stringResource(Res.string.error_add_at_least_one_email)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1119,15 +1129,15 @@ fun InviteMemberBottomSheet(
 
                                 when {
                                     email.isBlank() -> {
-                                        errorMessage.value = "Please enter an email address"
+                                        errorMessage.value = errorEnterEmail
                                     }
 
                                     !email.contains("@") -> {
-                                        errorMessage.value = "Please enter a valid email address"
+                                        errorMessage.value = errorEnterValidEmail
                                     }
 
                                     emailList.contains(email) -> {
-                                        errorMessage.value = "This email has already been added"
+                                        errorMessage.value = errorEmailAlreadyAdded
                                     }
 
                                     else -> {
@@ -1165,7 +1175,7 @@ fun InviteMemberBottomSheet(
                         }
 
                         if (emailsToInvite.isEmpty()) {
-                            errorMessage.value = "Please add at least one email address"
+                            errorMessage.value = errorAddAtLeastOneEmail
                             return@AppPrimaryButton
                         }
 
@@ -1308,7 +1318,7 @@ fun ChangeRoleBottomSheet(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Text(
-                text = "Change Role for ${member.name}",
+                text = stringResource(Res.string.change_role_for, member.name),
                 style = textStyle(size = 18.sp, weight = FontWeight.Bold)
             )
 
@@ -1324,7 +1334,7 @@ fun ChangeRoleBottomSheet(
                             selectedColor = AppColors.Primary
                         )
                     )
-                    Text("Admin", style = textStyle(size = 14.sp, weight = FontWeight.Medium))
+                    Text(stringResource(Res.string.admin), style = textStyle(size = 14.sp, weight = FontWeight.Medium))
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1335,7 +1345,7 @@ fun ChangeRoleBottomSheet(
                             selectedColor = AppColors.Primary
                         )
                     )
-                    Text("Participant", style = textStyle(size = 14.sp, weight = FontWeight.Medium))
+                    Text(stringResource(Res.string.participant), style = textStyle(size = 14.sp, weight = FontWeight.Medium))
                 }
             }
 
@@ -1381,7 +1391,7 @@ fun ChangeDesignationBottomSheet(
                 .fillMaxWidth()
                 .padding(bottom = 40.dp, start = 22.dp, end = 22.dp)
         ) {
-            Text("Change Designation for ${member.name}", style = textStyle(size = 18.sp, weight = FontWeight.Bold))
+            Text(stringResource(Res.string.change_designation_for, member.name), style = textStyle(size = 18.sp, weight = FontWeight.Bold))
             Spacer(modifier = Modifier.height(20.dp))
             
             designationTypes.forEach { type ->
@@ -1445,6 +1455,8 @@ fun TransferAdminBottomSheet(
     val password = remember { mutableStateOf("") }
     val expanded = remember { mutableStateOf(false) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
+    val errorSelectMember = stringResource(Res.string.selectAMember)
+    val errorEnterPassword = stringResource(Res.string.error_enter_password)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1574,10 +1586,10 @@ fun TransferAdminBottomSheet(
                     onClick = {
                         when {
                             selectedMember.value == null -> {
-                                errorMessage.value = "Please select a member"
+                                errorMessage.value = errorSelectMember
                             }
                             password.value.isBlank() -> {
-                                errorMessage.value = "Please enter your password"
+                                errorMessage.value = errorEnterPassword
                             }
                             else -> {
                                 onSubmit(password.value, selectedMember.value!!.userId)

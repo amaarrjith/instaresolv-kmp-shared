@@ -31,7 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.Modifier
@@ -41,20 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.assignedToMe
-import instaresolv.shared.generated.resources.assignedTrainings
-import instaresolv.shared.generated.resources.changeDesignation
-import instaresolv.shared.generated.resources.changeRole
-import instaresolv.shared.generated.resources.ic_add_training
-import instaresolv.shared.generated.resources.ic_completed
-import instaresolv.shared.generated.resources.ic_email
-import instaresolv.shared.generated.resources.ic_not_completed
-import instaresolv.shared.generated.resources.ic_search
-import instaresolv.shared.generated.resources.notifications
-import instaresolv.shared.generated.resources.ic_play
-import instaresolv.shared.generated.resources.ic_checkbox_on
-import instaresolv.shared.generated.resources.ic_checkbox_off
+import instaresolv.shared.generated.resources.*
 import org.example.project.colors.AppColors
 import org.example.project.data.model.AllTrainingData
 import org.example.project.data.model.DesignationTypeResponse
@@ -198,14 +185,14 @@ fun AssignedTrainingsView(
                             onRetryClick = { viewModel.loadTrainings(isRefresh = true) }
                         )
                     } else {
-                        PullToRefreshBox(
+                        AppPullToRefreshBox(
                             isRefreshing = uiState.isLoading,
                             onRefresh = { viewModel.loadTrainings(isRefresh = true) },
                             modifier = Modifier.fillMaxSize()
                         ) {
                             if (uiState.trainings.isEmpty()) {
                                 EmptyScreenView(
-                                    message = "No trainings found."
+                                    message = stringResource(Res.string.noTrainingsFound)
                                 )
                             } else {
                                 LazyColumn(
@@ -266,7 +253,7 @@ fun AssignedTrainingsView(
 
             AppSuccessDialog(
                 visible = !uiState.assignSuccessMessage.isNullOrBlank(),
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = uiState.assignSuccessMessage ?: "",
                 onDismiss = { viewModel.clearMessages() }
             )
@@ -581,7 +568,7 @@ fun AddTrainingModal(
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Select Training Video",
+                    text = stringResource(Res.string.select_training_video),
                     style = textStyle(size = 16.sp, weight = FontWeight.Bold, color = AppColors.Black),
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -592,7 +579,7 @@ fun AddTrainingModal(
                     }
                 } else if (trainings.isEmpty()) {
                     Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                        Text("No trainings available", style = textStyle(size = 14.sp, color = AppColors.DarkGray))
+                        Text(stringResource(Res.string.no_trainings_available), style = textStyle(size = 14.sp, color = AppColors.DarkGray))
                     }
                 } else {
                     LazyColumn(
@@ -704,7 +691,7 @@ fun AddTrainingModal(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AppPrimaryButton(
-                        title = "Submit",
+                        title = stringResource(Res.string.submit),
                         isLoading = isAssigning,
                         onClick = onSubmit,
                         modifier = Modifier.fillMaxWidth()

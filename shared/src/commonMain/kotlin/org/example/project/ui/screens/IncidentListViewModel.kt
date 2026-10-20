@@ -211,19 +211,15 @@ class IncidentListViewModel(
 
     fun loadDrafts() {
         viewModelScope.launch {
-            val user = authPreferences.getLoggedInUser()
-            if (user?.userId != null) {
-                val list = incidentDraftRepository.getAllDrafts(user.userId!!)
-                _uiState.update { it.copy(drafts = list) }
-            }
+            val userId = authPreferences.getLoggedInUser()?.userId ?: return@launch
+            val list = incidentDraftRepository.getAllDrafts(userId)
+            _uiState.update { it.copy(drafts = list) }
         }
     }
 
     fun deleteDrafts(ids: List<Long>, successMessage: String) {
         viewModelScope.launch {
-            ids.forEach { id ->
-                incidentDraftRepository.deleteDraft(id)
-            }
+            incidentDraftRepository.deleteDrafts(ids)
             draftToastMessage.value = successMessage
             loadDrafts()
         }

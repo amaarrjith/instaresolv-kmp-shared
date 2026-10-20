@@ -25,6 +25,8 @@ import kotlinx.coroutines.launch
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.example.project.utilites.toByteArray
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun AppSignaturePadDialog(
@@ -43,7 +45,7 @@ fun AppSignaturePadDialog(
         containerColor = Color.White,
         title = {
             Text(
-                text = "Draw Signature",
+                text = stringResource(Res.string.drawSignature),
                 style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                 color = AppColors.Primary
             )
@@ -115,7 +117,7 @@ fun AppSignaturePadDialog(
                     recomposeTrigger++
                 }) {
                     Text(
-                        text = "Clear",
+                        text = stringResource(Res.string.clear),
                         style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                         color = Color.Red
                     )
@@ -137,7 +139,7 @@ fun AppSignaturePadDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
             ) {
                 Text(
-                    text = "Save",
+                    text = stringResource(Res.string.save),
                     color = Color.White,
                     style = textStyle(size = 14.sp, weight = FontWeight.Bold)
                 )
@@ -146,7 +148,7 @@ fun AppSignaturePadDialog(
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
                 Text(
-                    text = "Cancel",
+                    text = stringResource(Res.string.cancel),
                     style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                     color = Color.Gray
                 )

@@ -62,6 +62,8 @@ fun ToolBoxTalkListScreen(
     val exportUrl by viewModel.exportUrl.collectAsState()
     val exportToastMessage by viewModel.exportToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val downloadingToolboxTalkReportMsg = stringResource(Res.string.downloading_toolbox_talk_report)
+    val exportFailedMsg = stringResource(Res.string.export_failed)
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -73,11 +75,11 @@ fun ToolBoxTalkListScreen(
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
-                val fileName = "Toolbox_Talk_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                val fileName = org.example.project.utilites.getExcelReportFileName("Toolbox Talk", url)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setExportToastMessage("Downloading Toolbox Talk Report")
+                viewModel.setExportToastMessage(downloadingToolboxTalkReportMsg)
             } catch (e: Exception) {
-                viewModel.setExportToastMessage(e.message ?: "Export failed")
+                viewModel.setExportToastMessage(e.message ?: exportFailedMsg)
             }
             viewModel.clearExportUrl()
         }
@@ -105,13 +107,16 @@ fun ToolBoxTalkListScreen(
                 NavigationBackIcon(onBackClicked)
                 Text(
                     text = stringResource(Res.string.toolboxTalks).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = { onCreateClicked() })
@@ -293,7 +298,8 @@ fun ToolBoxTalkListItem(
         ) {
             Box {
                 WebImageView(
-                    imageUrl = (item.images?.firstOrNull()?.image ?: "").toString(),
+                    imageUrl = (item.images?.firstOrNull()?.image ?: ""),
+                    placeHolder = Res.drawable.ic_talks_placeholder,
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -324,7 +330,7 @@ fun ToolBoxTalkListItem(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    text = item.topic ?: "Untitled Toolbox Talk",
+                    text = item.topic ?: stringResource(Res.string.untitled_toolbox_talk),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2

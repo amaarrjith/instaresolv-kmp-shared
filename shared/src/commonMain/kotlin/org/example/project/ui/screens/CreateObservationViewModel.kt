@@ -14,6 +14,8 @@ import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.repository.ObservationDraftRepository
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.getString
+import instaresolv.shared.generated.resources.*
 
 data class ObservationImage(
     val imageUrl: String? = null,
@@ -128,7 +130,7 @@ class CreateObservationViewModel(
                 is NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoadingUsers = false,
-                        error = result.message ?: "Failed to fetch users"
+                        error = result.message ?: getString(Res.string.failed_to_fetch_users)
                     )
                 }
             }
@@ -144,29 +146,29 @@ class CreateObservationViewModel(
         onSuccess: () -> Unit
     ) {
         val state = _uiState.value
-        if (isDraft) {
-            val hasValue = title.isNotBlank() ||
-                           location.isNotBlank() ||
-                           description.isNotBlank() ||
-                           state.selectedProject != null ||
-                           state.observationImages.any { !it.imageUrl.isNullOrBlank() } ||
-                           !state.audioUrl.isNullOrBlank() ||
-                           state.selectedResponsiblePerson != null ||
-                           state.selectedNotifyPerson != null ||
-                           state.manualResponsibleName.isNotBlank() ||
-                           state.manualResponsibleEmail.isNotBlank()
-            if (!hasValue) {
-                _uiState.value = state.copy(error = "At least one field must have a value to save as draft")
-                return
-            }
-        } else {
-            if (title.isBlank()) {
-                _uiState.value = state.copy(error = "Title is required")
-                return
-            }
-        }
-
         viewModelScope.launch {
+            if (isDraft) {
+                val hasValue = title.isNotBlank() ||
+                               location.isNotBlank() ||
+                               description.isNotBlank() ||
+                               state.selectedProject != null ||
+                               state.observationImages.any { !it.imageUrl.isNullOrBlank() } ||
+                               !state.audioUrl.isNullOrBlank() ||
+                               state.selectedResponsiblePerson != null ||
+                               state.selectedNotifyPerson != null ||
+                               state.manualResponsibleName.isNotBlank() ||
+                               state.manualResponsibleEmail.isNotBlank()
+                if (!hasValue) {
+                    _uiState.value = state.copy(error = getString(Res.string.error_draft_at_least_one_field))
+                    return@launch
+                }
+            } else {
+                if (title.isBlank()) {
+                    _uiState.value = state.copy(error = getString(Res.string.error_title_required))
+                    return@launch
+                }
+            }
+
             _uiState.value = state.copy(isLoading = true, error = null)
 
             val imageRequests = state.observationImages.mapIndexed { index, img ->
@@ -213,7 +215,7 @@ class CreateObservationViewModel(
                 } catch (e: Exception) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to save draft"
+                        error = e.message ?: getString(Res.string.error_failed_to_save_draft)
                     )
                 }
                 return@launch
@@ -252,7 +254,7 @@ class CreateObservationViewModel(
                     is NetworkResult.Error -> {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            error = result.message ?: "Failed to save observation"
+                            error = result.message ?: getString(Res.string.failed_to_save_observation)
                         )
                     }
                 }

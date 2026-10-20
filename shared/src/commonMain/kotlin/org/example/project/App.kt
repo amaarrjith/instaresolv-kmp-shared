@@ -36,9 +36,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalFocusManager
 import org.example.project.network.NetworkMonitor
 import org.example.project.utilites.NetworkStatusBanner
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.ImageLoader
+import coil3.memory.MemoryCache
+import coil3.request.crossfade
 
 @Composable
 fun App() {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
+                    .build()
+            }
+            .crossfade(true)
+            .build()
+    }
+
     val globalSettingsViewModel: GlobalSettingsViewModel = koinInject()
     val networkMonitor: NetworkMonitor = koinInject()
     val currentLanguage by globalSettingsViewModel.currentLanguage.collectAsState()

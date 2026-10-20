@@ -57,8 +57,8 @@ android {
         applicationId = "com.instaresolve.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 12
+        versionName = "2.0"
     }
     buildFeatures {
         buildConfig = true

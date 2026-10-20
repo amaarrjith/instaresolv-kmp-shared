@@ -299,8 +299,9 @@ fun CreateIncidentScreen(
                     }
 
                     val isTodaySelected = remember(uiState.incidentDateMillis) {
-                        if (uiState.incidentDateMillis != null) {
-                            val selectedDate = Instant.fromEpochMilliseconds(uiState.incidentDateMillis!!)
+                        val millis = uiState.incidentDateMillis
+                        if (millis != null) {
+                            val selectedDate = Instant.fromEpochMilliseconds(millis)
                                 .toLocalDateTime(TimeZone.UTC).date
                             val todayDate = Clock.System.now()
                                 .toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -361,7 +362,7 @@ fun CreateIncidentScreen(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = type.title.uppercase(),
+                                text = stringResource(type.stringRes).uppercase(),
                                 style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                                 color = AppColors.Black
                             )
@@ -439,7 +440,7 @@ fun CreateIncidentScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             horizontalAlignment = Alignment.Start
                         ) {
-                            Text("Employee Details", style = textStyle(size = 12.sp, weight = FontWeight.SemiBold), color = AppColors.Black)
+                            Text(stringResource(Res.string.employee_details), style = textStyle(size = 12.sp, weight = FontWeight.SemiBold), color = AppColors.Black)
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -461,7 +462,7 @@ fun CreateIncidentScreen(
                                                 .padding(horizontal = 16.dp, vertical = 12.dp)
                                         ) {
                                             Text(
-                                                "Employee & ID",
+                                                stringResource(Res.string.employee_and_id),
                                                 modifier = Modifier.width(200.dp),
                                                 style = textStyle(
                                                     size = 12.sp,
@@ -470,7 +471,7 @@ fun CreateIncidentScreen(
                                                 color = AppColors.TextGray
                                             )
                                             Text(
-                                                "Company Name",
+                                                stringResource(Res.string.companyName),
                                                 modifier = Modifier.width(150.dp),
                                                 style = textStyle(
                                                     size = 12.sp,
@@ -479,7 +480,7 @@ fun CreateIncidentScreen(
                                                 color = AppColors.TextGray
                                             )
                                             Text(
-                                                "Profession",
+                                                stringResource(Res.string.profession),
                                                 modifier = Modifier.width(150.dp),
                                                 style = textStyle(
                                                     size = 12.sp,
@@ -488,7 +489,7 @@ fun CreateIncidentScreen(
                                                 color = AppColors.TextGray
                                             )
                                             Text(
-                                                "Action",
+                                                stringResource(Res.string.action),
                                                 modifier = Modifier.width(60.dp),
                                                 style = textStyle(
                                                     size = 12.sp,
@@ -650,8 +651,8 @@ fun CreateIncidentScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Incident created successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.incident_created_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showSuccessDialog.value = false
                     onBackClicked()
@@ -663,8 +664,8 @@ fun CreateIncidentScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showDraftSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Incident Draft Saved Successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.incident_draft_saved_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showDraftSuccessDialog.value = false
                     onBackClicked()

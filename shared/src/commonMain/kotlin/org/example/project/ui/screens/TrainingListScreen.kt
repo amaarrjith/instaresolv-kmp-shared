@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -95,7 +95,7 @@ fun TrainingListScreen(
                     onRetryClick = { viewModel.loadTrainings(isRefresh = true) }
                 )
             } else {
-                PullToRefreshBox(
+                AppPullToRefreshBox(
                     isRefreshing = uiState.isLoading,
                     onRefresh = { viewModel.loadTrainings(isRefresh = true) },
                     modifier = Modifier.fillMaxSize()
@@ -110,9 +110,12 @@ fun TrainingListScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             contentPadding = PaddingValues(top = 10.dp, bottom = 24.dp)
                         ) {
-                            items(uiState.trainings.size) { index ->
-                                if (index >= uiState.trainings.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
-                                    LaunchedEffect(key1 = index) {
+                            items(
+                                count = uiState.trainings.size,
+                                key = { index -> uiState.trainings[index].id }
+                            ) { index ->
+                                if (index >= (uiState.trainings.size - 4).coerceAtLeast(0) && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
+                                    LaunchedEffect(key1 = uiState.trainings.size) {
                                         viewModel.loadTrainings(isRefresh = false)
                                     }
                                 }
@@ -211,11 +214,11 @@ fun TrainingListItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val (badgeText, badgeBg, badgeTextColor) = when (training.status) {
-                    0 -> Triple("NOT STARTED", Color(0xFF2E6AC6), Color.White)
-                    1 -> Triple("STARTED", Color(0xFFF57C00), Color.White)
-                    2 -> Triple("FINISHED TRAINING", Color(0xFF00A82B), Color.White)
-                    3 -> Triple("PASSED", Color(0xFF00A82B), Color.White)
-                    else -> Triple("COMPLETED", Color(0xFF00A82B), Color.White)
+                    0 -> Triple(stringResource(Res.string.training_status_not_started).uppercase(), Color(0xFF2E6AC6), Color.White)
+                    1 -> Triple(stringResource(Res.string.training_status_in_progress).uppercase(), Color(0xFFF57C00), Color.White)
+                    2 -> Triple(stringResource(Res.string.training_status_finished).uppercase(), Color(0xFF00A82B), Color.White)
+                    3 -> Triple(stringResource(Res.string.training_status_passed).uppercase(), Color(0xFF00A82B), Color.White)
+                    else -> Triple(stringResource(Res.string.completed).uppercase(), Color(0xFF00A82B), Color.White)
                 }
 
                 Box(
@@ -293,13 +296,13 @@ fun TrainingListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                TrainingChip(if (training.isScorm) {"Scorm Content"} else {"Training Video"})
+                TrainingChip(if (training.isScorm) stringResource(Res.string.scorm_content) else stringResource(Res.string.trainingVideo))
 
                 if (training.hasQuiz) {
-                    TrainingChip("Quiz")
+                    TrainingChip(stringResource(Res.string.quiz))
                 }
 
-                TrainingChip("Certificate")
+                TrainingChip(stringResource(Res.string.certificate))
             }
         }
     }

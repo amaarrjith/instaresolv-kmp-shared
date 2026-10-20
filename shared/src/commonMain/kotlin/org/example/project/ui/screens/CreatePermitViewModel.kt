@@ -28,6 +28,8 @@ import kotlin.time.Clock
 import org.example.project.data.model.CompanyType
 import org.example.project.data.model.GroupUser
 import org.example.project.data.repository.PermitDraftRepository
+import org.jetbrains.compose.resources.getString
+import instaresolv.shared.generated.resources.*
 
 data class CreatePermitUiState(
     val isLoading: Boolean = false,
@@ -238,53 +240,53 @@ class CreatePermitViewModel(
         val project = currentState.selectedProject
         val user = currentState.selectedUser
         val permitDate = currentState.permitDateMillis
-        when {
-            currentState.selectedProject == null -> {
-                _uiState.update { it.copy(submitError = "Please select a project") }
-                return
-            }
-
-            isSubContractor && currentState.contractorName.isBlank() -> {
-                _uiState.update { it.copy(submitError = "Please enter contractor name") }
-                return
-            }
-
-            currentState.selectedUser == null -> {
-                _uiState.update { it.copy(submitError = "Please select an authorized person") }
-                return
-            }
-
-            currentState.permitDateMillis == null -> {
-                _uiState.update { it.copy(submitError = "Please select a permit date") }
-                return
-            }
-
-            currentState.startTime.isBlank() -> {
-                _uiState.update { it.copy(submitError = "Please select a start time") }
-                return
-            }
-
-            currentState.endTime.isBlank() -> {
-                _uiState.update { it.copy(submitError = "Please select an end time") }
-                return
-            }
-
-            currentState.generalConditions.any {
-                currentState.generalConditionAnswers[it.id].isNullOrBlank()
-            } -> {
-                _uiState.update {
-                    it.copy(submitError = "Please answer all general conditions")
-                }
-                return
-            }
-
-            currentState.signatureUrl.isNullOrBlank() -> {
-                _uiState.update { it.copy(submitError = "Please add your signature") }
-                return
-            }
-        }
-
         viewModelScope.launch {
+            when {
+                currentState.selectedProject == null -> {
+                    _uiState.update { it.copy(submitError = getString(Res.string.error_select_project)) }
+                    return@launch
+                }
+
+                isSubContractor && currentState.contractorName.isBlank() -> {
+                    _uiState.update { it.copy(submitError = getString(Res.string.error_enter_contractor_name)) }
+                    return@launch
+                }
+
+                currentState.selectedUser == null -> {
+                    _uiState.update { it.copy(submitError = getString(Res.string.error_select_authorized_person)) }
+                    return@launch
+                }
+
+                currentState.permitDateMillis == null -> {
+                    _uiState.update { it.copy(submitError = getString(Res.string.error_select_permit_date)) }
+                    return@launch
+                }
+
+                currentState.startTime.isBlank() -> {
+                    _uiState.update { it.copy(submitError = getString(Res.string.error_select_start_time)) }
+                    return@launch
+                }
+
+                currentState.endTime.isBlank() -> {
+                    _uiState.update { it.copy(submitError = getString(Res.string.error_select_end_time)) }
+                    return@launch
+                }
+
+                currentState.generalConditions.any {
+                    currentState.generalConditionAnswers[it.id].isNullOrBlank()
+                } -> {
+                    _uiState.update {
+                        it.copy(submitError = getString(Res.string.error_answer_general_conditions))
+                    }
+                    return@launch
+                }
+
+                currentState.signatureUrl.isNullOrBlank() -> {
+                    _uiState.update { it.copy(submitError = getString(Res.string.please_add_your_signature)) }
+                    return@launch
+                }
+            }
+
             _uiState.update { it.copy(isSubmitting = true, submitError = null, submitSuccess = false) }
             val request = PermitValiditySubmitRequest(
                 permitTypeId = currentState.permitTypeId,
@@ -359,7 +361,9 @@ class CreatePermitViewModel(
                        !state.signatureUrl.isNullOrBlank()
 
         if (!hasValue) {
-            _uiState.update { it.copy(submitError = "At least one field must have a value to save as draft") }
+            viewModelScope.launch {
+                _uiState.update { it.copy(submitError = getString(Res.string.error_draft_at_least_one_field)) }
+            }
             return
         }
 

@@ -48,14 +48,17 @@ import org.example.project.ui.components.imagepicker.AppImagePicker
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+import kotlin.math.roundToInt
+
 @Composable
-fun AppImageCreateBox(
+fun AppImageCreateBox   (
     imageUrl: String?,
     isAIDescriptionEnabled: Boolean = false,
     description: String,
     onDescriptionChange: (String) -> Unit,
     onImageUploaded: (String) -> Unit,
     onRemoveImageClick: () -> Unit,
+    onImageSizesCalculated: ((originalMb: Double, editedMb: Double, uploadingMb: Double) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val showPicker = remember { mutableStateOf(false) }
@@ -64,9 +67,33 @@ fun AppImageCreateBox(
     val isAIDescriptionLoading = remember { mutableStateOf(false) }
     var finalBytesToUpload by remember { mutableStateOf<ByteArray?>(null) }
 
+    var originalSizeMb by remember { mutableStateOf<Double?>(null) }
+    var editedSizeMb by remember { mutableStateOf<Double?>(null) }
+    var uploadingSizeMb by remember { mutableStateOf<Double?>(null) }
+
     val nativeEditorLauncher = rememberNativeImageEditorLauncher { editedBytes ->
         if (editedBytes != null) {
-            finalBytesToUpload = editedBytes
+            isUploading.value = true
+            val editedMb = editedBytes.size.toDouble() / (1024.0 * 1024.0)
+            editedSizeMb = editedMb
+
+            // Compress to guarantee max 2 MB (aiming for 500 KB - 1 MB)
+            val compressedBytes = org.example.project.utilites.compressImage(editedBytes)
+            val uploadMb = compressedBytes.size.toDouble() / (1024.0 * 1024.0)
+            uploadingSizeMb = uploadMb
+
+            val origMb = originalSizeMb ?: editedMb
+            val origFormatted = (origMb * 100.0).roundToInt() / 100.0
+            val editedFormatted = (editedMb * 100.0).roundToInt() / 100.0
+            val uploadFormatted = (uploadMb * 100.0).roundToInt() / 100.0
+
+            println("📸 [AppImageCreateBox] Original Image Size : $origFormatted MB (${(origMb * 1024 * 1024).toInt()} bytes)")
+            println("✂️ [AppImageCreateBox] Edited Image Size   : $editedFormatted MB (${editedBytes.size} bytes)")
+            println("🚀 [AppImageCreateBox] Uploading Image Size: $uploadFormatted MB (${compressedBytes.size} bytes)")
+
+            onImageSizesCalculated?.invoke(origMb, editedMb, uploadMb)
+
+            finalBytesToUpload = compressedBytes
         }
     }
 
@@ -83,6 +110,8 @@ fun AppImageCreateBox(
             onDescriptionChange(newDesc)
         },
         onImagePicked = { bytes ->
+            val origMb = bytes.size.toDouble() / (1024.0 * 1024.0)
+            originalSizeMb = origMb
             nativeEditorLauncher.launch(bytes)
         },
         onImageUploaded = { url ->

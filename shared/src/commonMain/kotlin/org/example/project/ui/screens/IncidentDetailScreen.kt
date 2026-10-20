@@ -38,6 +38,7 @@ import org.example.project.data.model.IncidentDetailResponse
 import org.example.project.data.settings.formatDate
 import org.example.project.typography.textStyle
 import org.example.project.ui.IncidentType
+import org.example.project.ui.components.AnswerBadge
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.WebImageView
@@ -47,7 +48,9 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -66,19 +69,23 @@ fun IncidentDetailScreen(
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
+    val downloadingIncidentReportMsg = stringResource(Res.string.downloading_incident_report)
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val textSharer = org.example.project.utilites.rememberTextSharer()
+    val coroutineScope = rememberCoroutineScope()
+
+    var isTranslationDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Incident_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("Incident", incidentId)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Incident Report")
+                viewModel.setPdfToastMessage(downloadingIncidentReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -88,6 +95,17 @@ fun IncidentDetailScreen(
 
     LaunchedEffect(incidentId) {
         viewModel.loadIncidentDetail(incidentId)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is IncidentDetailUiState.Success) {
+            val successState = uiState as IncidentDetailUiState.Success
+            val hasTranslation = !successState.detail.translatedDescription.isNullOrBlank() ||
+                !successState.detail.translatedCorrections.isNullOrBlank()
+            if (hasTranslation) {
+                isTranslationDone = true
+            }
+        }
     }
 
     Scaffold(
@@ -155,7 +173,17 @@ fun IncidentDetailScreen(
                     IncidentDetailContent(
                         detail = state.detail,
                         onImageClick = { previewImageUrl = it },
-                        onNoTranslation = { infoMessage = noTranslationText }
+                        isTranslationDone = isTranslationDone,
+                        onTranslate = {
+                            val hasTranslation = !state.detail.translatedDescription.isNullOrBlank() ||
+                                    !state.detail.translatedCorrections.isNullOrBlank() ||
+                                    state.detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                            if (hasTranslation) {
+                                isTranslationDone = !isTranslationDone
+                            } else {
+                                infoMessage = noTranslationText
+                            }
+                        }
                     )
                 }
             }
@@ -178,12 +206,15 @@ fun IncidentDetailScreen(
         
         if (showSharePopup) {
             val detail = (uiState as? IncidentDetailUiState.Success)?.detail
+            val incidentsText = stringResource(Res.string.incidents)
             org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
                 onTxtClick = {
                     detail?.let {
-                        val text = org.example.project.utilites.DetailTextFormatter.formatIncident(it)
-                        textSharer.shareText(text, "Incident Details #${it.id}")
+                        coroutineScope.launch {
+                            val text = org.example.project.utilites.DetailTextFormatter.formatIncident(it)
+                            textSharer.shareText(text, "$incidentsText #${it.id}")
+                        }
                     }
                 },
                 onPdfClick = { viewModel.generatePdf(incidentId) }
@@ -207,9 +238,9 @@ fun IncidentDetailScreen(
 fun IncidentDetailContent(
     detail: IncidentDetailResponse,
     onImageClick: (String) -> Unit,
-    onNoTranslation: () -> Unit
+    isTranslationDone: Boolean,
+    onTranslate: () -> Unit
 ) {
-    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
@@ -242,7 +273,7 @@ fun IncidentDetailContent(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = IncidentType.getTitlesFromIds(detail.incidentType), // No dedicated title in Incident API, using type
+                    text = IncidentType.getLocalizedTitlesFromIds(detail.incidentType), // No dedicated title in Incident API, using type
                     style = textStyle(size = 16.sp, weight = FontWeight.Bold),
                     color = AppColors.Black
                 )
@@ -252,16 +283,7 @@ fun IncidentDetailContent(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
-                    .clickable {
-                        val hasTranslation = !detail.translatedDescription.isNullOrBlank() ||
-                                !detail.translatedCorrections.isNullOrBlank() ||
-                                detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
-                        if (hasTranslation) {
-                            isTranslationDone = !isTranslationDone
-                        } else {
-                            onNoTranslation()
-                        }
-                    },
+                    .clickable { onTranslate() },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -389,7 +411,7 @@ fun IncidentDetailContent(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = detail.incidentLocation ?: "-",
+                text = detail.incidentLocation?.takeIf { (it.isNotEmpty()) } ?: "-",
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
@@ -405,7 +427,7 @@ fun IncidentDetailContent(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = IncidentType.getTitlesFromIds(detail.incidentType),
+                text = IncidentType.getLocalizedTitlesFromIds(detail.incidentType),
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
@@ -422,17 +444,23 @@ fun IncidentDetailContent(
             )
             Spacer(Modifier.height(16.dp))
 
-            Text(
-                text = stringResource(Res.string.areThereAnyInjuredPerson),
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = if (!detail.injuredEmployees.isNullOrEmpty()) "Yes" else "No",
-                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-                color = AppColors.Black
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(Res.string.areThereAnyInjuredPerson),
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(16.dp))
+                AnswerBadge(
+                    isYes = !detail.injuredEmployees.isNullOrEmpty(),
+                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold)
+                )
+            }
 
             if (!detail.injuredEmployees.isNullOrEmpty()) {
                 Spacer(Modifier.height(16.dp))
@@ -457,7 +485,7 @@ fun IncidentDetailContent(
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
                             ) {
                                 Text(
-                                    "Employee & ID",
+                                    stringResource(Res.string.employee_and_id),
                                     modifier = Modifier.width(200.dp),
                                     style = textStyle(
                                         size = 12.sp,
@@ -466,7 +494,7 @@ fun IncidentDetailContent(
                                     color = AppColors.TextGray
                                 )
                                 Text(
-                                    "Company Name",
+                                    stringResource(Res.string.companyName),
                                     modifier = Modifier.width(150.dp),
                                     style = textStyle(
                                         size = 12.sp,
@@ -475,7 +503,7 @@ fun IncidentDetailContent(
                                     color = AppColors.TextGray
                                 )
                                 Text(
-                                    "Profession",
+                                    stringResource(Res.string.profession),
                                     modifier = Modifier.width(150.dp),
                                     style = textStyle(
                                         size = 12.sp,
@@ -545,8 +573,21 @@ fun IncidentDetailContent(
 
             // Description
             Text(
-                text = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) {
-                    buildAnnotatedString {
+                text = stringResource(Res.string.description),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = detail.description?.takeIf { it.isNotBlank() } ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.Black
+            )
+
+            if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) {
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    text = buildAnnotatedString {
                         append(stringResource(Res.string.description))
                         withStyle(
                             SpanStyle(
@@ -556,27 +597,37 @@ fun IncidentDetailContent(
                         ) {
                             append(" (${stringResource(Res.string.aiTranslated)})")
                         }
-                    }
-                } else {
-                    buildAnnotatedString { append(stringResource(Res.string.description)) }
-                },
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = (if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) detail.translatedDescription else detail.description)
-                    ?.takeIf { it.isNotBlank() } ?: "-",
-                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-                color = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
-            )
+                    },
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = detail.translatedDescription,
+                    style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                    color = AppColors.SkyBlue
+                )
+            }
 
             Spacer(Modifier.height(24.dp))
 
             // Immediate Corrections
             Text(
-                text = if (isTranslationDone && !detail.translatedCorrections.isNullOrBlank()) {
-                    buildAnnotatedString {
+                text = stringResource(Res.string.immediateCorrections),
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = detail.corrections?.takeIf { it.isNotBlank() } ?: "-",
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.Black
+            )
+
+            if (isTranslationDone && !detail.translatedCorrections.isNullOrBlank()) {
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    text = buildAnnotatedString {
                         append(stringResource(Res.string.immediateCorrections))
                         withStyle(
                             SpanStyle(
@@ -586,20 +637,17 @@ fun IncidentDetailContent(
                         ) {
                             append(" (${stringResource(Res.string.aiTranslated)})")
                         }
-                    }
-                } else {
-                    buildAnnotatedString { append(stringResource(Res.string.immediateCorrections)) }
-                },
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = (if (isTranslationDone && !detail.translatedCorrections.isNullOrBlank()) detail.translatedCorrections else detail.corrections)
-                    ?.takeIf { it.isNotBlank() } ?: "-",
-                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-                color = if (isTranslationDone && !detail.translatedCorrections.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
-            )
+                    },
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = detail.translatedCorrections,
+                    style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                    color = AppColors.SkyBlue
+                )
+            }
 
             Spacer(Modifier.height(24.dp))
 

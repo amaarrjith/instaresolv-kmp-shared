@@ -19,7 +19,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,7 @@ import kotlin.time.Clock
 import org.example.project.colors.AppColors
 import org.example.project.data.model.InspectionDetailResponse
 import org.example.project.typography.textStyle
+import org.example.project.ui.components.AnswerBadge
 import org.example.project.ui.components.AppLoader
 import org.example.project.ui.components.UploadedImagesSection
 import org.example.project.ui.components.WebImageView
@@ -49,6 +52,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.data.settings.formatDate
 import org.example.project.utilites.ToastHost
 
 @Composable
@@ -62,19 +66,23 @@ fun InspectionDetailScreen(
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
     val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
+    val downloadingInspectionReportMsg = stringResource(Res.string.downloading_inspection_report)
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val textSharer = org.example.project.utilites.rememberTextSharer()
+    val coroutineScope = rememberCoroutineScope()
+
+    var isTranslationDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Inspection_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("Inspection", inspectionId)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Inspection Report")
+                viewModel.setPdfToastMessage(downloadingInspectionReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -84,6 +92,17 @@ fun InspectionDetailScreen(
 
     LaunchedEffect(inspectionId) {
         viewModel.loadInspectionDetail(inspectionId)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is InspectionDetailUiState.Success) {
+            val successState = uiState as InspectionDetailUiState.Success
+            val hasTranslation = !successState.detail.translatedDescription.isNullOrBlank() ||
+                !successState.detail.translatedNotes.isNullOrBlank()
+            if (hasTranslation) {
+                isTranslationDone = true
+            }
+        }
     }
 
     Scaffold(
@@ -161,7 +180,17 @@ fun InspectionDetailScreen(
                         InspectionDetailContent(
                             detail = state.detail,
                             onImageClick = { previewImageUrl = it },
-                            onNoTranslation = { infoMessage = noTranslationText }
+                            isTranslationDone = isTranslationDone,
+                            onTranslate = {
+                                val hasTranslation = !state.detail.translatedDescription.isNullOrBlank() ||
+                                    !state.detail.translatedNotes.isNullOrBlank() ||
+                                    state.detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                                if (hasTranslation) {
+                                    isTranslationDone = !isTranslationDone
+                                } else {
+                                    infoMessage = noTranslationText
+                                }
+                            }
                         )
                     }
                 }
@@ -183,12 +212,15 @@ fun InspectionDetailScreen(
         
         if (showSharePopup) {
             val detail = (uiState as? InspectionDetailUiState.Success)?.detail
+            val inspectionsText = stringResource(Res.string.inspections)
             org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
                 onTxtClick = {
                     detail?.let {
-                        val text = org.example.project.utilites.DetailTextFormatter.formatInspection(it)
-                        textSharer.shareText(text, "Inspection Details #${it.id}")
+                        coroutineScope.launch {
+                            val text = org.example.project.utilites.DetailTextFormatter.formatInspection(it)
+                            textSharer.shareText(text, "$inspectionsText #${it.id}")
+                        }
                     }
                 },
                 onPdfClick = { viewModel.generatePdf(inspectionId) }
@@ -212,9 +244,9 @@ fun InspectionDetailScreen(
 fun InspectionDetailContent(
     detail: InspectionDetailResponse,
     onImageClick: (String) -> Unit,
-    onNoTranslation: () -> Unit
+    isTranslationDone: Boolean,
+    onTranslate: () -> Unit
 ) {
-    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
@@ -244,16 +276,7 @@ fun InspectionDetailContent(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
-                    .clickable {
-                        val hasTranslation = !detail.translatedDescription.isNullOrBlank() ||
-                            !detail.translatedNotes.isNullOrBlank() ||
-                            detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
-                        if (hasTranslation) {
-                            isTranslationDone = !isTranslationDone
-                        } else {
-                            onNoTranslation()
-                        }
-                    },
+                    .clickable { onTranslate() },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -343,7 +366,7 @@ fun InspectionDetailContent(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = detail.location ?: "-",
+                text = detail.location?.takeIf { it.isNotBlank() } ?: "-",
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
@@ -358,11 +381,10 @@ fun InspectionDetailContent(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = detail.inspectionDate?.takeIf { it.isNotBlank() } ?: "-",
+                text = formatDate(detail.inspectionDate ?: "","dd-MM-yyyy", "dd MMM yyyy"),
                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                 color = AppColors.Black
             )
-
             Spacer(Modifier.height(24.dp))
 
             // Description
@@ -380,7 +402,7 @@ fun InspectionDetailContent(
                 color = AppColors.Black
             )
 
-            if (isTranslationDone) {
+            if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) {
                 Spacer(Modifier.height(24.dp))
                 Text(
                     text = buildAnnotatedString {
@@ -460,22 +482,21 @@ fun InspectionDetailContent(
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     detail.staticEquipment.forEach { question ->
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
                                 text = question.title ?: "",
                                 style = textStyle(size = 13.sp, weight = FontWeight.SemiBold),
-                                color = AppColors.Black
+                                color = AppColors.Black,
+                                modifier = Modifier.weight(1f)
                             )
-                            val answerText = when (question.selectedValue) {
-                                1 -> "YES"
-                                2 -> "NO"
-                                3 -> "NA"
-                                else -> "-"
-                            }
-                            Text(
-                                text = answerText,
-                                style = textStyle(size = 13.sp, weight = FontWeight.Medium),
-                                color = AppColors.Primary
+                            Spacer(modifier = Modifier.width(16.dp))
+                            AnswerBadge(
+                                selectedAnswer = question.selectedValue,
+                                style = textStyle(size = 13.sp, weight = FontWeight.Medium)
                             )
                         }
                     }
@@ -501,7 +522,7 @@ fun InspectionDetailContent(
                 color = AppColors.Black
             )
 
-            if (isTranslationDone) {
+            if (isTranslationDone && !detail.translatedNotes.isNullOrBlank()) {
                 Spacer(Modifier.height(24.dp))
                 Text(
                     text = buildAnnotatedString {

@@ -30,7 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import org.example.project.utilites.AppPullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -133,24 +133,39 @@ fun ProjectListScreen(
                         )
                     }
                     is ProjectListUiState.Success -> {
-                        if ((uiState.value as ProjectListUiState.Success).projectList.isEmpty()) {
-                            EmptyScreenView(
-                                message = stringResource(Res.string.noProjectsFound)
-                            )
-                        } else {
-                            ProjectListScreenView(
-                                uiState = uiState.value as ProjectListUiState.Success,
-                                onRefresh = {
-                                    viewModel.getProjects(
-                                        searchKey = searchQuery,
-                                        isRefresh = true
-                                    )
-                                },
-                                isRefreshing = isRefreshing,
-                                onClickProject = { project ->
-                                    onProjectClicked(project)
+                        val projects = (uiState.value as ProjectListUiState.Success).projectList
+                        AppPullToRefreshBox(
+                            isRefreshing = isRefreshing,
+                            onRefresh = {
+                                viewModel.getProjects(
+                                    searchKey = searchQuery,
+                                    isRefresh = true
+                                )
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            if (projects.isEmpty()) {
+                                EmptyScreenView(
+                                    message = stringResource(Res.string.noProjectsFound)
+                                )
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(
+                                        count = projects.size,
+                                        key = { index -> projects[index].groupId }
+                                    ) { item ->
+                                        ProjectListCard(
+                                            project = projects[item],
+                                            onClick = { project ->
+                                                onProjectClicked(project)
+                                            }
+                                        )
+                                        HorizontalDivider()
+                                    }
                                 }
-                            )
+                            }
                         }
                     }
                     else -> {}
@@ -237,7 +252,7 @@ fun ProjectListScreenView(
     isRefreshing: Boolean = false,
     onClickProject: (Project) -> Unit
 ) {
-    PullToRefreshBox(
+    AppPullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             onRefresh()
@@ -390,6 +405,7 @@ fun ProjectListCard(
     ) {
         WebImageView(
             imageUrl = project.groupImage,
+            placeHolder = Res.drawable.ic_project_placeholder,
             modifier = Modifier
                 .size(69.dp)
                 .clip(RoundedCornerShape(10.dp))

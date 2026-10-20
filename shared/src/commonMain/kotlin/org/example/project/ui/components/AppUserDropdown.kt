@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.sp
 import org.example.project.data.model.GroupUser
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +75,7 @@ fun AppUserDropdown(
                 if (selectedUser != null) {
                     WebImageView(
                         imageUrl = selectedUser.image,
+                        showPlaceholderBorder = true,
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
@@ -121,7 +124,7 @@ fun AppUserDropdown(
                     DropdownMenuItem(
                         text = {
                             Text(
-                                "No Users Found",
+                                stringResource(Res.string.no_users_found),
                                 style = textStyle(
                                     size = 14.sp,
                                     weight = FontWeight.Medium
@@ -132,7 +135,14 @@ fun AppUserDropdown(
                     )
                 } else {
                     users.forEach { user ->
+                        val isSelected = user == selectedUser
                         DropdownMenuItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (isSelected) AppColors.Primary.copy(0.2f)
+                                    else Color.Transparent
+                                ),
                             text = { 
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically

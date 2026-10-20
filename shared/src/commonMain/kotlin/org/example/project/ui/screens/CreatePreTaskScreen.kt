@@ -42,6 +42,11 @@ import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import org.example.project.data.settings.parseTimeToMinutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +61,21 @@ fun CreatePreTaskScreen(
     val showExitPopup = remember { mutableStateOf(false) }
     val showDraftSuccessDialog = remember { mutableStateOf(false) }
     val showOutDatedDraftPopUp = remember { mutableStateOf(false) }
+    val selectDateError = stringResource(Res.string.selectDate)
+    val selectStartTimeError = stringResource(Res.string.error_select_start_time)
+    val endTimeGreaterError = stringResource(Res.string.error_end_time_greater)
+    val enterQuestionError = stringResource(Res.string.error_enter_question)
+    val selectAnswerError = stringResource(Res.string.error_select_answer)
+
+    val isToday = remember(uiState.dateMillis) {
+        uiState.dateMillis?.let { millis ->
+            val selectedDate = Instant.fromEpochMilliseconds(millis)
+                .toLocalDateTime(TimeZone.UTC).date
+            val today = Clock.System.now()
+                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+            selectedDate == today
+        } ?: false
+    }
 
     LaunchedEffect(isFromDraft, draftId) {
         viewModel.initialize(isFromDraft, draftId)
@@ -132,7 +152,7 @@ fun CreatePreTaskScreen(
                                 val questionsJson = Json.encodeToString(uiState.questions)
                                 val questionAnswersJson = Json.encodeToString(uiState.questionAnswers)
                                 val customQuestionsJson = Json.encodeToString(uiState.customQuestions)
-                                val attendeesJson = Json.encodeToString(uiState.attendees)
+                                val attendeesJson = Json.encodeToString(uiState.attendees.filter { it.employeeCode.isNotBlank() || it.employeeName.isNotBlank() })
                                 val evidencesJson = Json.encodeToString(uiState.evidences)
                                 val selectedNotifyPersonJson = uiState.selectedNotifyPerson?.let { Json.encodeToString(it) }
 
@@ -193,8 +213,7 @@ fun CreatePreTaskScreen(
                     AppProjectDropdown(
                         title = stringResource(Res.string.facilityProject),
                         selectedProject = uiState.selectedProject,
-                        onProjectSelected = viewModel::onProjectSelected,
-                        isMandatory = true
+                        onProjectSelected = viewModel::onProjectSelected
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -218,7 +237,7 @@ fun CreatePreTaskScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = buildAnnotatedString {
-                            append("Date ")
+                            append("${stringResource(Res.string.date)} ")
                             withStyle(SpanStyle(color = Color.Red)) { append("*") }
                         },
                         style = textStyle(12.sp, FontWeight.SemiBold)
@@ -227,7 +246,8 @@ fun CreatePreTaskScreen(
                     AppDatePicker(
                         text = stringResource(Res.string.selectDate),
                         selectedDateMillis = uiState.dateMillis,
-                        onDateSelected = { if (it != null) viewModel.onDateSelected(it) }
+                        onDateSelected = { if (it != null) viewModel.onDateSelected(it) },
+                        restrictFutureDates = true
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -235,32 +255,68 @@ fun CreatePreTaskScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = buildAnnotatedString {
-                                    append("Start Time ")
+                                    append("${stringResource(Res.string.startTime)} ")
                                     withStyle(SpanStyle(color = Color.Red)) { append("*") }
                                 },
                                 style = textStyle(12.sp, FontWeight.SemiBold)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            AppTimePicker(
-                                text = stringResource(Res.string.txt_0000),
-                                selectedTime = uiState.startTime,
-                                onTimeSelected = viewModel::onStartTimeChanged
-                            )
+                            Box {
+                                AppTimePicker(
+                                    text = stringResource(Res.string.txt_0000),
+                                    selectedTime = uiState.startTime,
+                                    onTimeSelected = viewModel::onStartTimeChanged,
+                                    enabled = uiState.dateMillis != null,
+                                    restrictFutureTime = isToday
+                                )
+                                if (uiState.dateMillis == null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .clickable { viewModel.setError(selectDateError) }
+                                    )
+                                }
+                            }
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = buildAnnotatedString {
-                                    append("End Time ")
+                                    append("${stringResource(Res.string.endTime)} ")
                                     withStyle(SpanStyle(color = Color.Red)) { append("*") }
                                 },
                                 style = textStyle(12.sp, FontWeight.SemiBold)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            AppTimePicker(
-                                text = stringResource(Res.string.txt_0000),
-                                selectedTime = uiState.endTime,
-                                onTimeSelected = viewModel::onEndTimeChanged
-                            )
+                            Box {
+                                AppTimePicker(
+                                    text = stringResource(Res.string.txt_0000),
+                                    selectedTime = uiState.endTime,
+                                    onTimeSelected = { endTime ->
+                                        if (uiState.startTime.isNotBlank() && parseTimeToMinutes(endTime) <= parseTimeToMinutes(uiState.startTime)) {
+                                            viewModel.setError(endTimeGreaterError)
+                                        } else {
+                                            viewModel.onEndTimeChanged(endTime)
+                                        }
+                                    },
+                                    enabled = uiState.dateMillis != null && uiState.startTime.isNotBlank(),
+                                    restrictFutureTime = isToday,
+                                    minTime = uiState.startTime,
+                                    minTimeErrorMessage = endTimeGreaterError
+                                )
+                                if (uiState.dateMillis == null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .clickable { viewModel.setError(selectDateError) }
+                                    )
+                                } else if (uiState.startTime.isBlank()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .clickable { viewModel.setError(selectStartTimeError) }
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -284,7 +340,7 @@ fun CreatePreTaskScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         AppUserDropdown(
                             title = stringResource(Res.string.sendNotificationTo),
-                            selectedUser = null,
+                            selectedUser = uiState.selectedNotifyPerson,
                             onUserSelected = { user ->
                                 viewModel.onNotifyPersonSelected(user)
                             },
@@ -333,24 +389,63 @@ fun CreatePreTaskScreen(
                         color = Color(0xFF1E5BB2)
                     )
                     uiState.customQuestions.forEach { customQ ->
-                        Column(modifier = Modifier.padding(bottom = 5.dp)) {
-                            AppTextField(
-                                value = customQ.title,
-                                onValueChange = { viewModel.updateCustomQuestionTitle(customQ.id, it) },
-                                title = "",
-                                placeholder = stringResource(Res.string.enterQuestion)
-                            )
+                        Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    AppTextField(
+                                        value = customQ.title,
+                                        onValueChange = { viewModel.updateCustomQuestionTitle(customQ.id, it) },
+                                        title = "",
+                                        placeholder = stringResource(Res.string.enterQuestion)
+                                    )
+                                }
+                                if (uiState.customQuestions.size > 1) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    IconButton(
+                                        onClick = { viewModel.removeCustomQuestion(customQ.id) },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Image(
+                                            painter = painterResource(Res.drawable.ic_trash),
+                                            contentDescription = stringResource(Res.string.delete),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            }
                             Spacer(modifier = Modifier.height(12.dp))
                             AnswerRadioGroup(
                                 selectedAnswer = customQ.answer,
-                                onAnswerSelected = { viewModel.updateCustomQuestionAnswer(customQ.id, it) }
+                                onAnswerSelected = { answer ->
+                                    if (customQ.title.isBlank()) {
+                                        viewModel.setError(enterQuestionError)
+                                    } else {
+                                        viewModel.updateCustomQuestionAnswer(customQ.id, answer)
+                                    }
+                                }
                             )
                         }
                     }
                     
                     Row(
                         modifier = Modifier
-                            .clickable { viewModel.addCustomQuestion() }
+                            .clickable {
+                                val incompleteQ = uiState.customQuestions.find { it.title.isBlank() || it.answer.isBlank() }
+                                when {
+                                    incompleteQ != null && incompleteQ.title.isBlank() -> {
+                                        viewModel.setError(enterQuestionError)
+                                    }
+                                    incompleteQ != null && incompleteQ.answer.isBlank() -> {
+                                        viewModel.setError(selectAnswerError)
+                                    }
+                                    else -> {
+                                        viewModel.addCustomQuestion()
+                                    }
+                                }
+                            }
                             .padding(vertical = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -403,10 +498,10 @@ fun CreatePreTaskScreen(
                                             .background(Color(0xFFF5F5F5))
                                             .padding(horizontal = 16.dp, vertical = 12.dp)
                                     ) {
-                                        Text("Employee & ID", modifier = Modifier.width(200.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                                        Text("Company Name", modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                                        Text("Profession", modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                                        Text("Action", modifier = Modifier.width(60.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                        Text(stringResource(Res.string.employee_and_id), modifier = Modifier.width(200.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                        Text(stringResource(Res.string.companyName), modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                        Text(stringResource(Res.string.profession), modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                        Text(stringResource(Res.string.action), modifier = Modifier.width(60.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
                                     }
 
                                     // Data Rows
@@ -530,8 +625,8 @@ fun CreatePreTaskScreen(
         AppStatusDialog(
             visible = true,
             title = stringResource(Res.string.success),
-            description = "PreTask Briefing Created Successfully.",
-            buttonText = "OK",
+            description = stringResource(Res.string.pre_task_created_success),
+            buttonText = stringResource(Res.string.close),
             onDismiss = {
                 viewModel.clearSuccess()
                 onBackClicked()
@@ -543,8 +638,8 @@ fun CreatePreTaskScreen(
         AppStatusDialog(
             visible = true,
             title = stringResource(Res.string.success),
-            description = "PreTask Briefing draft saved successfully.",
-            buttonText = "OK",
+            description = stringResource(Res.string.pre_task_draft_saved_success),
+            buttonText = stringResource(Res.string.close),
             onDismiss = {
                 showDraftSuccessDialog.value = false
                 onBackClicked()
@@ -555,9 +650,9 @@ fun CreatePreTaskScreen(
     if (uiState.isDraftOutdated) {
         AppErrorDialog(
             visible = showOutDatedDraftPopUp.value,
-            title = "Alert",
-            description = "Questions have been updated. Please recreate the draft to publish.",
-            buttonText = "OK",
+            title = stringResource(Res.string.warning),
+            description = stringResource(Res.string.questions_updated_recreate_draft),
+            buttonText = stringResource(Res.string.close),
             onDismiss = {
                 showOutDatedDraftPopUp.value = false
             }
@@ -622,20 +717,24 @@ fun AnswerRadioGroup(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        val options = listOf("Yes", "No", "Not Applicable")
-        options.forEach { option ->
+        val options = listOf(
+            "Yes" to stringResource(Res.string.yes),
+            "No" to stringResource(Res.string.no),
+            "Not Applicable" to stringResource(Res.string.na)
+        )
+        options.forEach { (optionKey, label) ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { onAnswerSelected(option) }
+                modifier = Modifier.clickable { onAnswerSelected(optionKey) }
             ) {
                 Image(
-                    painter = painterResource(if (selectedAnswer == option) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
-                    contentDescription = option,
+                    painter = painterResource(if (selectedAnswer == optionKey) Res.drawable.ic_checkbox_on else Res.drawable.ic_checkbox_off),
+                    contentDescription = label,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = option.uppercase(),
+                    text = label.uppercase(),
                     style = textStyle(12.sp, FontWeight.Medium),
                     color = AppColors.Black
                 )

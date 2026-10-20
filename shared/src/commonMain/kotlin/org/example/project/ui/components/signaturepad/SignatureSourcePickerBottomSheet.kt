@@ -24,10 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.ic_edit
-import instaresolv.shared.generated.resources.ic_gallery
+import instaresolv.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.Image
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
@@ -51,7 +50,7 @@ fun SignatureSourcePickerBottomSheet(
                     .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
                 Text(
-                    text = "Add Signature",
+                    text = stringResource(Res.string.addSignature),
                     style = textStyle(
                         size = 18.sp,
                         weight = FontWeight.Bold
@@ -78,13 +77,13 @@ fun SignatureSourcePickerBottomSheet(
                         ) {
                             Image(
                                 painter = painterResource(Res.drawable.ic_edit),
-                                contentDescription = "Draw",
+                                contentDescription = stringResource(Res.string.draw),
                                 modifier = Modifier.size(28.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Draw",
+                            text = stringResource(Res.string.draw),
                             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                             color = AppColors.BlackText
                         )
@@ -105,13 +104,13 @@ fun SignatureSourcePickerBottomSheet(
                         ) {
                             Image(
                                 painter = painterResource(Res.drawable.ic_gallery),
-                                contentDescription = "Upload",
+                                contentDescription = stringResource(Res.string.upload),
                                 modifier = Modifier.size(28.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Upload",
+                            text = stringResource(Res.string.upload),
                             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                             color = AppColors.BlackText
                         )

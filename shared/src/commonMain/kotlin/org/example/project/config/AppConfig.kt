@@ -11,17 +11,17 @@ enum class AppEnvironment(
     DEVELOPMENT(
         baseUrl = "https://instaresolv-dev.zoondia.org/api/",
         isLoggingEnabled = true,
-        appStoreId = "6478951234"
+        appStoreId = ""
     ),
     STAGING(
         baseUrl = "https://instaresolv-staging.zoondia.org/api/",
         isLoggingEnabled = true,
-        appStoreId = "6478951234"
+        appStoreId = ""
     ),
     PRODUCTION(
-        baseUrl = "https://instaresolv.zoondia.org/api/",
+        baseUrl = "https://instaresolv.com/api/",
         isLoggingEnabled = false,
-        appStoreId = "6478951234" // Replace with real production App Store ID when assigned by Apple
+        appStoreId = "6761991644" // Replace with real production App Store ID when assigned by Apple
     );
 }
 
@@ -46,4 +46,13 @@ object AppConfig {
 
     val isProduction: Boolean
         get() = environment == AppEnvironment.PRODUCTION
+}
+
+/**
+ * Utility logger that automatically suppresses output in Production.
+ */
+fun appLog(message: Any?) {
+    if (AppConfig.isLoggingEnabled) {
+        println(message)
+    }
 }

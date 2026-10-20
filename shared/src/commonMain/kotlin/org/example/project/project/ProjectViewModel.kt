@@ -9,6 +9,8 @@ import org.example.project.data.model.Project
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
+import org.jetbrains.compose.resources.getString
+import instaresolv.shared.generated.resources.*
 
 class ProjectViewModel(
     private val projectRepository: ProjectRepository,
@@ -61,7 +63,9 @@ class ProjectViewModel(
 
     fun requestProjectAccess(part1: String, part2: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         if (part1.isBlank() || part2.isBlank()) {
-            onError("Please enter the complete project code")
+            viewModelScope.launch {
+                onError(getString(Res.string.error_enter_complete_project_code))
+            }
             return
         }
         viewModelScope.launch {
@@ -86,7 +90,9 @@ class ProjectViewModel(
 
     fun viewProject(part1: String, part2: String, onSuccess: (Project?) -> Unit, onError: (String) -> Unit) {
         if (part1.isBlank() || part2.isBlank()) {
-            onError("Please enter the complete project code")
+            viewModelScope.launch {
+                onError(getString(Res.string.error_enter_complete_project_code))
+            }
             return
         }
         viewModelScope.launch {

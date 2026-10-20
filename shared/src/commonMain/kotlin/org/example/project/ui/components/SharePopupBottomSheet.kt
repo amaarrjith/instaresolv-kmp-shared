@@ -83,7 +83,7 @@ fun SharePopupDialog(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = stringResource(Res.string.txt),
+                            text = "TXT",
                             style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                             color = Color(0xFF2962FF)
                         )
@@ -116,7 +116,7 @@ fun SharePopupDialog(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = stringResource(Res.string.pdf),
+                            text = "PDF",
                             style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                             color = Color(0xFFD32F2F)
                         )

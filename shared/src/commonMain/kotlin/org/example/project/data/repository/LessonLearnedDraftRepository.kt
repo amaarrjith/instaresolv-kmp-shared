@@ -34,4 +34,10 @@ class LessonLearnedDraftRepository(private val database: AppDatabase) {
     suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deleteLessonLearnedDraft(id)
     }
+
+    suspend fun deleteDrafts(ids: List<Long>) = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.transaction {
+            ids.forEach { database.appDatabaseQueries.deleteLessonLearnedDraft(it) }
+        }
+    }
 }

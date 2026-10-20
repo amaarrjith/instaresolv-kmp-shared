@@ -1,6 +1,8 @@
 package org.example.project.data.model
 
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.StringResource
+import instaresolv.shared.generated.resources.*
 
 @Serializable
 enum class PermitStatus(val value: Int, val title: String, val colorHex: Long) {
@@ -9,14 +11,31 @@ enum class PermitStatus(val value: Int, val title: String, val colorHex: Long) {
     SUSPENDED(4, "Suspended", 0xFFE5A93C),
     EXPIRED(5, "Expired", 0xFF757575),
     CLOSED(6, "Closed", 0xFF2E6AC6),
-    PENDING_ALNASR_AUTHORIZATION(8, "Pending InstaResolv Authorization", 0xFFE5A93C),
-    PENDING_ALNASR_CLOSURE(9, "Pending InstaResolv Closure", 0xFFE5A93C),
-    PENDING_SUBCONTRACTOR_AUTHORIZATION(10, "Pending SubContractor Authorization", 0xFFE5A93C),
-    PENDING_SUBCONTRACTOR_CLOSURE(11, "Pending SubContractor Closure", 0xFFE5A93C),
-    PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED(12, "Pending InstaResolv Authorization & Expired", 0xFF757575),
-    PENDING_ALNASR_CLOSURE_AND_EXPIRED(13, "Pending InstaResolv Closure & Expired", 0xFF757575),
-    PENDING_SUBCONTRACTOR_AUTHORIZATION_AND_EXPIRED(14, "Pending SubContractor Authorization & Expired", 0xFF757575),
-    PENDING_SUBCONTRACTOR_CLOSURE_AND_EXPIRED(15, "Pending SubContractor Closure & Expired", 0xFF757575);
+    PENDING_ALNASR_AUTHORIZATION(8, "Pending IR Authorization", 0xFFE5A93C),
+    PENDING_ALNASR_CLOSURE(9, "Pending IR Closure", 0xFFE5A93C),
+    PENDING_SUBCONTRACTOR_AUTHORIZATION(10, "Pending SC Authorization", 0xFFE5A93C),
+    PENDING_SUBCONTRACTOR_CLOSURE(11, "Pending SC Closure", 0xFFE5A93C),
+    PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED(12, "Pending IR Authorization & Expired", 0xFF757575),
+    PENDING_ALNASR_CLOSURE_AND_EXPIRED(13, "Pending IR Closure & Expired", 0xFF757575),
+    PENDING_SUBCONTRACTOR_AUTHORIZATION_AND_EXPIRED(14, "Pending SC Authorization & Expired", 0xFF757575),
+    PENDING_SUBCONTRACTOR_CLOSURE_AND_EXPIRED(15, "Pending SC Closure & Expired", 0xFF757575);
+
+    val stringRes: StringResource
+        get() = when (this) {
+            OPEN -> Res.string.open
+            CANCELLED -> Res.string.cancelled
+            SUSPENDED -> Res.string.suspended
+            EXPIRED -> Res.string.expired
+            CLOSED -> Res.string.closed
+            PENDING_ALNASR_AUTHORIZATION -> Res.string.pending_ir_authorization
+            PENDING_ALNASR_CLOSURE -> Res.string.pending_ir_closure
+            PENDING_SUBCONTRACTOR_AUTHORIZATION -> Res.string.pending_sc_authorization
+            PENDING_SUBCONTRACTOR_CLOSURE -> Res.string.pending_sc_closure
+            PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED -> Res.string.pending_ir_authorization_and_expired
+            PENDING_ALNASR_CLOSURE_AND_EXPIRED -> Res.string.pending_ir_closure_and_expired
+            PENDING_SUBCONTRACTOR_AUTHORIZATION_AND_EXPIRED -> Res.string.pending_sc_authorization_and_expired
+            PENDING_SUBCONTRACTOR_CLOSURE_AND_EXPIRED -> Res.string.pending_sc_closure_and_expired
+        }
 
     companion object {
         fun fromValue(value: Int): PermitStatus? {

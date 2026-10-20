@@ -59,6 +59,8 @@ import org.example.project.ui.components.AppLoader
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 import org.koin.compose.koinInject
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
@@ -406,7 +408,7 @@ fun CreateProjectScreenContent(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    "Project Info",
+                    stringResource(Res.string.project_info),
                     style = textStyle(
                         13.sp,
                         FontWeight.Normal

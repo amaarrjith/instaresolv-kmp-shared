@@ -18,6 +18,8 @@ import org.example.project.data.model.FilterContentData
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.repository.PermitDraftRepository
 import org.example.project.data.settings.AuthPreferences
+import org.jetbrains.compose.resources.getString
+import instaresolv.shared.generated.resources.*
 
 data class PermitToWorkListState(
     val isPullDown: Boolean = false,
@@ -238,7 +240,7 @@ class PermitToWorkListViewModel(
                 when (val result = repository.generatePermitExcel(request)) {
                     is NetworkResult.Success -> {
                         val url = result.data.excelUrl?.takeIf { it.isNotBlank() }
-                        _uiState.update { it.copy(isExporting = false, exportSuccessMessage = "Downloading Permit Report", exportDownloadUrl = url) }
+                        _uiState.update { it.copy(isExporting = false, exportSuccessMessage = getString(Res.string.downloading_permit_report), exportDownloadUrl = url) }
                     }
                     is NetworkResult.Error -> {
                         _uiState.update { it.copy(isExporting = false, exportError = result.message ?: "Failed to generate Excel") }
@@ -268,19 +270,15 @@ class PermitToWorkListViewModel(
 
     fun loadDrafts() {
         viewModelScope.launch {
-            val user = authPreferences.getLoggedInUser()
-            if (user?.userId != null) {
-                val list = permitDraftRepository.getAllDrafts(user.userId!!)
-                _uiState.update { it.copy(drafts = list) }
-            }
+            val userId = authPreferences.getLoggedInUser()?.userId ?: return@launch
+            val list = permitDraftRepository.getAllDrafts(userId)
+            _uiState.update { it.copy(drafts = list) }
         }
     }
 
     fun deleteDrafts(ids: List<Long>, successMessage: String) {
         viewModelScope.launch {
-            ids.forEach { id ->
-                permitDraftRepository.deleteDraft(id)
-            }
+            permitDraftRepository.deleteDrafts(ids)
             draftToastMessage.value = successMessage
             loadDrafts()
         }

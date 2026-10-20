@@ -38,11 +38,13 @@ import androidx.navigation.NavController
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_calendar
 import instaresolv.shared.generated.resources.notifications
+import instaresolv.shared.generated.resources.*
 import org.example.project.colors.AppColors
 import org.example.project.data.model.NotificationListModel
 import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
 import org.example.project.navigation.Screens
+import org.example.project.utilites.AppPullToRefreshBox
 import org.example.project.notifications.NotificationUiState
 import org.example.project.notifications.NotificationsViewModel
 import org.example.project.typography.textStyle
@@ -98,6 +100,7 @@ fun NotificationListScreen(
 ) {
     val viewModel: NotificationsViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
     var selectedPopupNotification by remember { mutableStateOf<NotificationListModel?>(null) }
 
@@ -136,26 +139,35 @@ fun NotificationListScreen(
                 }
                 is NotificationUiState.Success -> {
                     val notifications = (uiState.value as NotificationUiState.Success).response.notifications
-                    if (notifications.isEmpty()) {
-                        EmptyScreenView(
-                            message = "You have no notifications yet"
-                        )
-                    } else {
-                        LazyColumn {
-                            items(notifications.size) { index ->
-                                val notification = notifications[index]
-                                NotificationListRow(
-                                    notification = notification,
-                                    onClick = {
-                                        if (isObservationNotification(notification.type) && notification.contentId > 0) {
-                                            selectedObservationId = notification.contentId
-                                        } else if (isPopupNotification(notification.type)) {
-                                            selectedPopupNotification = notification
-                                        } else {
-                                            onNotificationClick?.invoke(notification)
+                    AppPullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = { viewModel.getNotifications(isRefresh = true) },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        if (notifications.isEmpty()) {
+                            EmptyScreenView(
+                                message = stringResource(Res.string.no_notifications_yet)
+                            )
+                        } else {
+                            LazyColumn {
+                                items(
+                                    count = notifications.size,
+                                    key = { index -> notifications[index].id }
+                                ) { index ->
+                                    val notification = notifications[index]
+                                    NotificationListRow(
+                                        notification = notification,
+                                        onClick = {
+                                            if (isObservationNotification(notification.type) && notification.contentId > 0) {
+                                                selectedObservationId = notification.contentId
+                                            } else if (isPopupNotification(notification.type)) {
+                                                selectedPopupNotification = notification
+                                            } else {
+                                                onNotificationClick?.invoke(notification)
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -195,7 +207,7 @@ fun NotificationListScreen(
                 ProjectRequestPopUpView(
                     visible = true,
                     notification = it,
-                    buttonText = "Close",
+                    buttonText = stringResource(Res.string.close),
                     onDismiss = { selectedPopupNotification = null }
                 )
             }
@@ -209,9 +221,11 @@ fun NotificationListRow(
     onClick: () -> Unit = {}
 ) {
     val dateString = notification.date ?: ""
-    val cleanDate = if (dateString.contains("T")) {
-        dateString.substringBefore(".").replace("T", " ").replace("Z", "")
-    } else dateString
+    val cleanDate = remember(dateString) {
+        if (dateString.contains("T")) {
+            dateString.substringBefore(".").replace("T", " ").replace("Z", "")
+        } else dateString
+    }
 
     Box(
         modifier = Modifier

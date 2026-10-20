@@ -65,12 +65,15 @@ fun TrainingDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     val fileDownloader = rememberFileDownloader()
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val failedToDownloadCertMessage = stringResource(Res.string.failed_to_download_certificate)
+    val failedToDownloadLessonMessage = stringResource(Res.string.failed_to_download_lesson_material)
 
     Scaffold(
         containerColor = Color.White,
         topBar = {
             Row(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .statusBarsPadding()
                     .padding(vertical = 10.dp)
                     .padding(end = 22.dp),
@@ -156,12 +159,17 @@ fun TrainingDetailScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                val (badgeText, badgeBg, badgeTextColor) = when (data.status) {
-                                    0 -> Triple("NOT STARTED", Color(0xFF2E6AC6), Color.White)
-                                    1 -> Triple("STARTED", Color(0xFFF57C00), Color.White)
-                                    2 -> Triple("FINISHED TRAINING", Color(0xFF00A82B), Color.White)
-                                    3 -> Triple("PASSED", Color(0xFF00A82B), Color.White)
-                                    else -> Triple("COMPLETED", Color(0xFF00A82B), Color.White)
+                                val badgeText = when (data.status) {
+                                    0 -> stringResource(Res.string.training_status_not_started).uppercase()
+                                    1 -> stringResource(Res.string.training_status_in_progress).uppercase()
+                                    2 -> stringResource(Res.string.training_status_finished).uppercase()
+                                    3 -> stringResource(Res.string.training_status_passed).uppercase()
+                                    else -> stringResource(Res.string.completed).uppercase()
+                                }
+                                val (badgeBg, badgeTextColor) = when (data.status) {
+                                    0 -> Pair(Color(0xFF2E6AC6), Color.White)
+                                    1 -> Pair(Color(0xFFF57C00), Color.White)
+                                    else -> Pair(Color(0xFF00A82B), Color.White)
                                 }
 
                                 Box(
@@ -210,7 +218,7 @@ fun TrainingDetailScreen(
                                     if (isLongDescription) {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            text = if (isExpanded) "Read Less" else "Read More",
+                                            text = if (isExpanded) stringResource(Res.string.read_less) else stringResource(Res.string.read_more),
                                             style = textStyle(size = 13.sp, weight = FontWeight.Bold, color = Color(0xFFD42027)),
                                             modifier = Modifier.clickable { isExpanded = !isExpanded }
                                         )
@@ -235,7 +243,7 @@ fun TrainingDetailScreen(
                                             val fileName = "Certificate_${Clock.System.now().toEpochMilliseconds()}.pdf"
                                             fileDownloader.downloadFile(data.certificateUrl, fileName)
                                         } catch (e: Exception) {
-                                            errorMessage = e.message ?: "Failed to download certificate"
+                                            errorMessage = e.message ?: failedToDownloadCertMessage
                                         }
                                     }
                                 )
@@ -250,7 +258,7 @@ fun TrainingDetailScreen(
                                             val fileName = "Lesson_Material_${Clock.System.now().toEpochMilliseconds()}.pdf"
                                             fileDownloader.downloadFile(materialUrl, fileName)
                                         } catch (e: Exception) {
-                                            errorMessage = e.message ?: "Failed to download lesson material"
+                                            errorMessage = e.message ?: failedToDownloadLessonMessage
                                         }
                                     }
                                 )
@@ -267,7 +275,7 @@ fun TrainingDetailScreen(
                                             val fileName = "Certificate_${Clock.System.now().toEpochMilliseconds()}.pdf"
                                             fileDownloader.downloadFile(certUrl, fileName)
                                         } catch (e: Exception) {
-                                            errorMessage = e.message ?: "Failed to download certificate"
+                                            errorMessage = e.message ?: failedToDownloadCertMessage
                                         }
                                     },
                                     isScormFile = !data.scormFileUrl.isNullOrEmpty()
@@ -316,7 +324,7 @@ fun QuizSectionCard(
                         style = textStyle(size = 15.sp, weight = FontWeight.Bold, color = AppColors.Black)
                     )
                     Text(
-                        text = if (isQuizEnabled) "Quiz section is unlocked" else "Watch Full video to unlock quiz section",
+                        text = if (isQuizEnabled) stringResource(Res.string.quiz_section_unlocked) else stringResource(Res.string.watch_full_video_to_unlock_quiz),
                         style = textStyle(size = 12.sp, weight = FontWeight.Normal, color = AppColors.DarkGray)
                     )
                 }
@@ -382,7 +390,7 @@ fun CertificateSectionCard(
                         style = textStyle(size = 15.sp, weight = FontWeight.Bold, color = AppColors.Black)
                     )
                     Text(
-                        text = "Training completed. Download your certificate now",
+                        text = stringResource(Res.string.training_completed_download_certificate),
                         style = textStyle(size = 12.sp, weight = FontWeight.Normal, color = AppColors.DarkGray)
                     )
                 }
@@ -508,19 +516,19 @@ fun TrainingProgressSection(
                                 }
                                 drawPath(path, color = Color.White, style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
                             }
-                            Text("Finished", style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color(0xFF00A82B)))
+                            Text(stringResource(Res.string.training_status_finished), style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color(0xFF00A82B)))
                         }
                     }
                     1 -> {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Box(modifier = Modifier.size(8.dp).background(Color(0xFFF57C00), CircleShape))
-                            Text("In Progress", style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color(0xFFF57C00)))
+                            Text(stringResource(Res.string.training_status_in_progress), style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color(0xFFF57C00)))
                         }
                     }
                     else -> {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Box(modifier = Modifier.size(8.dp).background(Color.Gray, CircleShape))
-                            Text("Not Started", style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color.Gray))
+                            Text(stringResource(Res.string.training_status_not_started), style = textStyle(size = 12.sp, weight = FontWeight.Medium, color = Color.Gray))
                         }
                     }
                 }
@@ -565,7 +573,7 @@ fun TrainingProgressSection(
                                     )
                                 }
                                 Text(
-                                    "Passed",
+                                    stringResource(Res.string.training_status_passed),
                                     style = textStyle(
                                         size = 12.sp,
                                         weight = FontWeight.Medium,
@@ -598,7 +606,7 @@ fun TrainingProgressSection(
                                     )
                                 }
                                 Text(
-                                    "Failed",
+                                    stringResource(Res.string.training_status_failed),
                                     style = textStyle(
                                         size = 12.sp,
                                         weight = FontWeight.Medium,
@@ -610,7 +618,7 @@ fun TrainingProgressSection(
 
                         else -> {
                             Text(
-                                "NA",
+                                stringResource(Res.string.na),
                                 style = textStyle(
                                     size = 12.sp,
                                     weight = FontWeight.Medium,

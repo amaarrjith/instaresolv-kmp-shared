@@ -18,7 +18,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,14 +69,18 @@ fun LessonsLearnedDetailScreen(
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val textSharer = org.example.project.utilites.rememberTextSharer()
+    val coroutineScope = rememberCoroutineScope()
     var showSharePopup by remember { mutableStateOf(false) }
+    val downloadingLessonsLearnedReportMsg = stringResource(Res.string.downloading_lessons_learned_report)
+
+    var isTranslationDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Lesson_Learned_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("Lessons Learned", id)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Lesson Learned Report")
+                viewModel.setPdfToastMessage(downloadingLessonsLearnedReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -84,6 +90,16 @@ fun LessonsLearnedDetailScreen(
 
     LaunchedEffect(id) {
         viewModel.loadLessonLearnedDetail(id)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is LessonsLearnedDetailUiState.Success) {
+            val successState = uiState as LessonsLearnedDetailUiState.Success
+            val hasTranslation = !successState.data.translatedDescription.isNullOrBlank()
+            if (hasTranslation) {
+                isTranslationDone = true
+            }
+        }
     }
 
     Scaffold(
@@ -149,7 +165,16 @@ fun LessonsLearnedDetailScreen(
                     LessonsLearnedDetailContent(
                         data = state.data,
                         onImageClick = { previewImageUrl = it },
-                        onNoTranslation = { infoMessage = noTranslationText }
+                        isTranslationDone = isTranslationDone,
+                        onTranslate = {
+                            val hasTranslation = !state.data.translatedDescription.isNullOrBlank() ||
+                                state.data.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                            if (hasTranslation) {
+                                isTranslationDone = !isTranslationDone
+                            } else {
+                                infoMessage = noTranslationText
+                            }
+                        }
                     )
                 }
             }
@@ -182,12 +207,15 @@ fun LessonsLearnedDetailScreen(
         
         if (showSharePopup) {
             val detail = (uiState as? LessonsLearnedDetailUiState.Success)?.data
+            val lessonLearnedText = stringResource(Res.string.lessonLearned)
             org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
                 onTxtClick = {
                     detail?.let {
-                        val text = org.example.project.utilites.DetailTextFormatter.formatLessonLearned(it)
-                        textSharer.shareText(text, it.title ?: "Lesson Learned Details")
+                        coroutineScope.launch {
+                            val text = org.example.project.utilites.DetailTextFormatter.formatLessonLearned(it)
+                            textSharer.shareText(text, it.title ?: lessonLearnedText)
+                        }
                     }
                 },
                 onPdfClick = { viewModel.generatePdf(id) }
@@ -200,9 +228,9 @@ fun LessonsLearnedDetailScreen(
 fun LessonsLearnedDetailContent(
     data: LessonLearnedDetailResponseData,
     onImageClick: (String) -> Unit,
-    onNoTranslation: () -> Unit
+    isTranslationDone: Boolean,
+    onTranslate: () -> Unit
 ) {
-    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
@@ -245,15 +273,7 @@ fun LessonsLearnedDetailContent(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
-                    .clickable {
-                        val hasTranslation = !data.translatedDescription.isNullOrBlank() ||
-                            data.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
-                        if (hasTranslation) {
-                            isTranslationDone = !isTranslationDone
-                        } else {
-                            onNoTranslation()
-                        }
-                    },
+                    .clickable { onTranslate() },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -361,26 +381,36 @@ fun LessonsLearnedDetailContent(
 
         // Description
         Text(
-            text = if (isTranslationDone && !data.translatedDescription.isNullOrBlank()) {
-                buildAnnotatedString {
-                    append(stringResource(Res.string.description))
-                    withStyle(SpanStyle(color = AppColors.SkyBlue, fontWeight = FontWeight.Medium)) {
-                        append(" (${stringResource(Res.string.aiTranslated)})")
-                    }
-                }
-            } else {
-                buildAnnotatedString { append(stringResource(Res.string.description)) }
-            },
+            text = stringResource(Res.string.description),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = (if (isTranslationDone && !data.translatedDescription.isNullOrBlank()) data.translatedDescription else data.description)
-                ?.takeIf { it.isNotBlank() } ?: "-",
+            text = data.description?.takeIf { it.isNotBlank() } ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = if (isTranslationDone && !data.translatedDescription.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
+            color = AppColors.Black
         )
+
+        if (isTranslationDone && !data.translatedDescription.isNullOrBlank()) {
+            Spacer(Modifier.height(24.dp))
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(Res.string.description))
+                    withStyle(SpanStyle(color = AppColors.SkyBlue, fontWeight = FontWeight.Medium)) {
+                        append(" (${stringResource(Res.string.aiTranslated)})")
+                    }
+                },
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = data.translatedDescription,
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.SkyBlue
+            )
+        }
 
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(color = Color(0xFFF0F0F5))

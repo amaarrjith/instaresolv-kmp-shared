@@ -256,19 +256,15 @@ class AuditInspectionListViewModel(
 
     fun loadDrafts() {
         viewModelScope.launch {
-            val user = authPreferences.getLoggedInUser()
-            if (user?.userId != null) {
-                val list = inspectionDraftRepository.getAllDrafts(user.userId!!)
-                _uiState.update { it.copy(drafts = list) }
-            }
+            val userId = authPreferences.getLoggedInUser()?.userId ?: return@launch
+            val list = inspectionDraftRepository.getAllDrafts(userId)
+            _uiState.update { it.copy(drafts = list) }
         }
     }
 
     fun deleteDrafts(ids: List<Long>, successMessage: String) {
         viewModelScope.launch {
-            ids.forEach { id ->
-                inspectionDraftRepository.deleteDraft(id)
-            }
+            inspectionDraftRepository.deleteDrafts(ids)
             draftToastMessage.value = successMessage
             loadDrafts()
         }

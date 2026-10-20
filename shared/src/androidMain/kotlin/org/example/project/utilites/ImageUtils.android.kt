@@ -127,3 +127,79 @@ actual fun drawAnnotationsOnImage(
         imageBytes
     }
 }
+
+actual fun compressImage(
+    imageBytes: ByteArray,
+    maxBytes: Long,
+    targetBytes: Long
+): ByteArray {
+    if (imageBytes.size <= targetBytes) {
+        return imageBytes
+    }
+
+    return try {
+        val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, boundsOptions)
+        val origW = boundsOptions.outWidth
+        val origH = boundsOptions.outHeight
+
+        if (origW <= 0 || origH <= 0) return imageBytes
+
+        val maxDimension = 1920
+        var sampleSize = 1
+        while ((origW / sampleSize) > maxDimension * 2 || (origH / sampleSize) > maxDimension * 2) {
+            sampleSize *= 2
+        }
+
+        val decodeOptions = BitmapFactory.Options().apply {
+            inSampleSize = sampleSize
+        }
+        var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, decodeOptions) ?: return imageBytes
+
+        val maxDim = maxOf(bitmap.width, bitmap.height)
+        if (maxDim > maxDimension) {
+            val scale = maxDimension.toFloat() / maxDim
+            val targetW = (bitmap.width * scale).toInt().coerceAtLeast(1)
+            val targetH = (bitmap.height * scale).toInt().coerceAtLeast(1)
+            val scaled = Bitmap.createScaledBitmap(bitmap, targetW, targetH, true)
+            if (scaled != bitmap) {
+                bitmap.recycle()
+                bitmap = scaled
+            }
+        }
+
+        var quality = 85
+        var stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+        var resultBytes = stream.toByteArray()
+
+        // Iteratively lower quality towards targetBytes (aiming for 500KB - 1MB)
+        while (resultBytes.size > targetBytes && quality > 40) {
+            quality -= 10
+            stream.reset()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+            resultBytes = stream.toByteArray()
+        }
+
+        // If still exceeding maxBytes (2MB ceiling), downscale further
+        while (resultBytes.size > maxBytes && (bitmap.width > 600 || bitmap.height > 600)) {
+            val scale = 0.75f
+            val targetW = (bitmap.width * scale).toInt().coerceAtLeast(1)
+            val targetH = (bitmap.height * scale).toInt().coerceAtLeast(1)
+            val scaled = Bitmap.createScaledBitmap(bitmap, targetW, targetH, true)
+            if (scaled != bitmap) {
+                bitmap.recycle()
+                bitmap = scaled
+            }
+            stream.reset()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality.coerceAtLeast(40), stream)
+            resultBytes = stream.toByteArray()
+        }
+
+        bitmap.recycle()
+        resultBytes
+    } catch (e: Exception) {
+        println("compressImage error on Android: ${e.message}")
+        imageBytes
+    }
+}

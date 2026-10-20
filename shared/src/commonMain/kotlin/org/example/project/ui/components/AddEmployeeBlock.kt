@@ -49,6 +49,7 @@ fun AddEmployeeBlock(
     var employeeName by remember { mutableStateOf("") }
     var companyName by remember { mutableStateOf("") }
     var profession by remember { mutableStateOf("") }
+    val mandatoryFieldsError = stringResource(Res.string.please_fill_mandatory_fields)
 
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -141,12 +142,12 @@ fun AddEmployeeBlock(
                                 )
                             } else if (uiState.isLoading && uiState.employees.isEmpty()) {
                                 DropdownMenuItem(
-                                    text = { Text("Loading...", style = textStyle(size = 14.sp)) },
+                                    text = { Text(stringResource(Res.string.loading), style = textStyle(size = 14.sp)) },
                                     onClick = {}
                                 )
                             } else if (!uiState.isLoading && uiState.employees.isEmpty() && uiState.searchKey.isNotEmpty()) {
                                 DropdownMenuItem(
-                                    text = { Text("No employees found", style = textStyle(size = 14.sp)) },
+                                    text = { Text(stringResource(Res.string.noEmployeesFound), style = textStyle(size = 14.sp)) },
                                     onClick = {}
                                 )
                             } else {
@@ -212,7 +213,7 @@ fun AddEmployeeBlock(
                         title = stringResource(Res.string.addEmployee),
                         onClick = {
                             if (employeeCode.isBlank() || employeeName.isBlank() ) {
-                                onError("Please Fill Mandatory Fields")
+                                onError(mandatoryFieldsError)
                             } else {
                                 onAddEmployee(
                                     InjuredEmployee(

@@ -55,9 +55,17 @@ import org.example.project.utilites.ToastType
 import org.example.project.ui.components.WebImageView
 import org.example.project.data.settings.formatDate
 import org.example.project.data.settings.timeAgo
+import org.example.project.utilites.AppPullToRefreshBox
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.example.project.ui.IncidentType
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import kotlin.time.Instant
 
 @Composable
 fun IncidentDraftListScreen(
@@ -68,10 +76,12 @@ fun IncidentDraftListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var isDraftRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val draftToastMessage by viewModel.draftToastMessage.collectAsState()
-    val successMessage = "Incident drafts deleted successfully."
+    val successMessage = stringResource(Res.string.incident_drafts_deleted_success)
 
     LaunchedEffect(Unit) {
         viewModel.loadDrafts()
@@ -89,7 +99,7 @@ fun IncidentDraftListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "INCIDENT DRAFTS",
+                    text = stringResource(Res.string.incident_drafts_title),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -156,56 +166,76 @@ fun IncidentDraftListScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 22.dp)
         ) {
-            if (uiState.drafts.isEmpty()) {
-                EmptyScreenView(
-                    message = "No drafts found",
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 25.dp),
-                ) {
-                    items(uiState.drafts.size) { index ->
-                        val draft = uiState.drafts[index]
-                        val project = draft.projectJson?.let {
-                            try {
-                                Json.decodeFromString<Project>(it)
-                            } catch(e: Exception) { null }
+            AppPullToRefreshBox(
+                isRefreshing = isDraftRefreshing,
+                onRefresh = {
+                    isDraftRefreshing = true
+                    viewModel.loadDrafts()
+                    coroutineScope.launch {
+                        delay(500)
+                        isDraftRefreshing = false
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (uiState.drafts.isEmpty()) {
+                    EmptyScreenView(
+                        message = stringResource(Res.string.no_drafts_found),
+                    )
+                } else {
+                    val parsedDrafts = remember(uiState.drafts) {
+                        uiState.drafts.map { draft ->
+                            val project = draft.projectJson?.let {
+                                try {
+                                    Json.decodeFromString<Project>(it)
+                                } catch(e: Exception) { null }
+                            }
+                            val localImages = draft.imagesJson?.let {
+                                try {
+                                    Json.decodeFromString<List<IncidentImage>>(it)
+                                } catch(e: Exception) { null }
+                            }
+                            val firstImageUrl = localImages?.firstOrNull { it.imageUrl?.isNotBlank() == true }?.imageUrl
+                            Triple(draft, project, firstImageUrl)
                         }
-                        val localImages = draft.imagesJson?.let {
-                            try {
-                                Json.decodeFromString<List<IncidentImage>>(it)
-                            } catch(e: Exception) { null }
-                        }
-                        val firstImageUrl = localImages?.firstOrNull { it.imageUrl?.isNotBlank() == true }?.imageUrl
+                    }
 
-                        IncidentDraftListItem(
-                            draft = draft,
-                            project = project,
-                            imageUrl = firstImageUrl,
-                            isSelectionMode = isDeleteOptionEnabled,
-                            isSelected = selectedItemsId.contains(draft.id.toInt()),
-                            onSelectionChange = { checked ->
-                                selectedItemsId = if (checked) {
-                                    selectedItemsId + draft.id.toInt()
-                                } else {
-                                    selectedItemsId - draft.id.toInt()
-                                }
-                            },
-                            onClick = { 
-                                if (isDeleteOptionEnabled) {
-                                    val checked = !selectedItemsId.contains(draft.id.toInt())
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        items(
+                            count = parsedDrafts.size,
+                            key = { index -> parsedDrafts[index].first.id }
+                        ) { index ->
+                            val (draft, project, firstImageUrl) = parsedDrafts[index]
+                            IncidentDraftListItem(
+                                draft = draft,
+                                project = project,
+                                imageUrl = firstImageUrl,
+                                isSelectionMode = isDeleteOptionEnabled,
+                                isSelected = selectedItemsId.contains(draft.id.toInt()),
+                                onSelectionChange = { checked ->
                                     selectedItemsId = if (checked) {
                                         selectedItemsId + draft.id.toInt()
                                     } else {
                                         selectedItemsId - draft.id.toInt()
                                     }
-                                } else {
-                                    onDraftClicked(draft.id)
+                                },
+                                onClick = { 
+                                    if (isDeleteOptionEnabled) {
+                                        val checked = !selectedItemsId.contains(draft.id.toInt())
+                                        selectedItemsId = if (checked) {
+                                            selectedItemsId + draft.id.toInt()
+                                        } else {
+                                            selectedItemsId - draft.id.toInt()
+                                        }
+                                    } else {
+                                        onDraftClicked(draft.id)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -213,7 +243,7 @@ fun IncidentDraftListScreen(
             AppExitDialog(
                 visible = showDeleteDialog,
                 title = stringResource(Res.string.delete),
-                description = "Are you sure you want to delete the selected incident drafts?",
+                description = stringResource(Res.string.delete_incident_drafts_confirm),
                 primaryButtonText = stringResource(Res.string.yes),
                 secondaryButtonText = stringResource(Res.string.no),
                 onConfirm = {
@@ -303,7 +333,7 @@ fun IncidentDraftListItem(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "DRAFT",
+                            text = stringResource(Res.string.draft_tag),
                             style = textStyle(size = 9.sp, weight = FontWeight.Bold),
                             color = Color.White,
                             textAlign = TextAlign.Center
@@ -327,17 +357,21 @@ fun IncidentDraftListItem(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        val formattedDate = draft.createdAt?.takeIf { it.isNotBlank() }?.let {
-                            try {
-                                formatDate(
-                                    it,
-                                    inputPattern = "yyyy-MM-dd HH:mm:ss",
-                                    outputPattern = "dd MMM yyyy"
-                                )
-                            } catch (e: Exception) {
-                                it
-                            }
-                        } ?: "Date not set"
+                        val formattedDate = draft.incidentDateMillis
+                            ?.takeIf { it > 0L }
+                            ?.let { millis ->
+                                try {
+                                    val date = Instant.fromEpochMilliseconds(millis)
+                                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                                        .date
+
+                                    "${date.day.toString().padStart(2, '0')} " +
+                                            "${date.month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3)} " +
+                                            date.year
+                                } catch (e: Exception) {
+                                    stringResource(Res.string.date_not_set)
+                                }
+                            } ?: stringResource(Res.string.date_not_set)
 
                         Text(
                             text = formattedDate,
@@ -350,7 +384,7 @@ fun IncidentDraftListItem(
 
                     val isValidDateTime = draft.createdAt != null && (draft.createdAt.contains("T") || draft.createdAt.contains(" "))
                     val timeAgoText = if (isValidDateTime) {
-                        timeAgo(draft.createdAt!!)
+                        timeAgo(draft.createdAt.orEmpty())
                     } else {
                         ""
                     }
@@ -361,11 +395,19 @@ fun IncidentDraftListItem(
                     )
                 }
 
+                val incidentTypes = draft.incidentTypesJson?.let {
+                    try {
+                        Json.decodeFromString<List<Int>>(it)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                } ?: emptyList()
                 Text(
-                    text = draft.description.takeIf { !it.isNullOrBlank() } ?: "Incident Draft",
+                    text = IncidentType.getLocalizedTitlesFromIds(incidentTypes),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
-                    maxLines = 2
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 
                 if (project != null) {

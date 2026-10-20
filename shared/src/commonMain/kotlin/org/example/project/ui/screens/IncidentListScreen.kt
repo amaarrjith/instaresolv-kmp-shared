@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -81,6 +82,7 @@ fun IncidentListScreen(
     var selectedIncidentId by remember { mutableStateOf<Int?>(null) }
     val exportUrl by viewModel.exportUrl.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val downloadingIncidentReportMsg = stringResource(Res.string.downloading_incident_report)
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -92,10 +94,9 @@ fun IncidentListScreen(
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
-                // Generate a name from url or date
-                val fileName = "Incident_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                val fileName = org.example.project.utilites.getExcelReportFileName("Incident", url)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setExportToastMessage("Downloading Incident Report")
+                viewModel.setExportToastMessage(downloadingIncidentReportMsg)
             } catch (e: Exception) {
                 uiState.errorExcel = e.message
             }
@@ -125,13 +126,16 @@ fun IncidentListScreen(
                 NavigationBackIcon(onBackClicked)
                 Text(
                     text = stringResource(Res.string.incidents).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = {onCreateClicked()})
@@ -249,8 +253,8 @@ fun IncidentListScreen(
                                     key = { index -> uiState.incidents[index].id }
                                 ) { index ->
                                     val incident = uiState.incidents[index]
-                                    if (index >= uiState.incidents.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
-                                        LaunchedEffect(key1 = index) {
+                                    if (index >= (uiState.incidents.size - 4).coerceAtLeast(0) && !uiState.isLoading && !uiState.isPaginating && !uiState.isLastPage) {
+                                        LaunchedEffect(key1 = uiState.incidents.size) {
                                             viewModel.loadIncidents(isRefresh = false)
                                         }
                                     }
@@ -319,6 +323,7 @@ fun IncidentListItem(
             Box {
                 WebImageView(
                     imageUrl = incident.images?.firstOrNull()?.image ?: "",
+                    placeHolder = Res.drawable.ic_incidents_placeholder,
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -334,7 +339,8 @@ fun IncidentListItem(
                     text = IncidentType.getTitlesFromIds(incident.incidentType),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
-                    maxLines = 3
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 
                 Row(

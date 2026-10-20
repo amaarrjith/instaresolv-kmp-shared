@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -78,6 +79,7 @@ fun ViolationListScreen(
     var selectedViolationId by remember { mutableStateOf<Int?>(null) }
     val exportUrl by viewModel.exportUrl.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val downloadingViolationReportMsg = stringResource(Res.string.downloading_violation_report)
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -89,9 +91,9 @@ fun ViolationListScreen(
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
-                val fileName = "Violation_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                val fileName = org.example.project.utilites.getExcelReportFileName("Violation", url)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setExportToastMessage("Downloading Violation Report")
+                viewModel.setExportToastMessage(downloadingViolationReportMsg)
             } catch(e: Exception) {
                 uiState.errorExcel = e.message
             }
@@ -121,13 +123,16 @@ fun ViolationListScreen(
                 NavigationBackIcon(onBackClicked)
                 Text(
                     text = stringResource(Res.string.violations).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = {onCreateClicked()})
@@ -315,6 +320,7 @@ fun ViolationListItem(
             Box {
                 WebImageView(
                     imageUrl = violation.images?.firstOrNull()?.image ?: "",
+                    placeHolder = Res.drawable.ic_violation_placeholder,
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -326,7 +332,10 @@ fun ViolationListItem(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    text = "Violation by ${violation.employeeName ?: "Unknown"}",
+                    text = stringResource(
+                        Res.string.violation_by_employee,
+                        violation.employeeName ?: "-"
+                    ),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 3

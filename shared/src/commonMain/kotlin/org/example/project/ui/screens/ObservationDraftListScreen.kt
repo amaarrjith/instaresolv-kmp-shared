@@ -45,6 +45,10 @@ import org.example.project.utilites.AppBorderButton
 import org.example.project.utilites.AppPrimaryButton
 import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
+import org.example.project.utilites.AppPullToRefreshBox
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -58,6 +62,8 @@ fun ObservationDraftListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var isDraftRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val draftToastMessage by viewModel.draftToastMessage.collectAsState()
@@ -149,63 +155,86 @@ fun ObservationDraftListScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 22.dp)
         ) {
-            if (uiState.drafts.isEmpty()) {
-                EmptyScreenView(
-                    message = "No drafts found",
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    items(uiState.drafts.size) { index ->
-                        val draft = uiState.drafts[index]
-                        val group = draft.groupJson?.let {
-                            try {
-                                Json.decodeFromString<ObservationGroup>(it)
-                            } catch(e: Exception) { null }
-                        } ?: ObservationGroup(groupName = "Draft", groupCode = "")
+            AppPullToRefreshBox(
+                isRefreshing = isDraftRefreshing,
+                onRefresh = {
+                    isDraftRefreshing = true
+                    viewModel.loadDrafts()
+                    coroutineScope.launch {
+                        delay(500)
+                        isDraftRefreshing = false
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (uiState.drafts.isEmpty()) {
+                    EmptyScreenView(
+                        message = stringResource(Res.string.no_drafts_found),
+                    )
+                } else {
+                    val defaultDraftTag = stringResource(Res.string.draft_tag)
+                    val parsedDrafts = remember(uiState.drafts, defaultDraftTag) {
+                        uiState.drafts.map { draft ->
+                            val group = draft.groupJson?.let {
+                                try {
+                                    Json.decodeFromString<ObservationGroup>(it)
+                                } catch(e: Exception) { null }
+                            } ?: ObservationGroup(groupName = defaultDraftTag, groupCode = "")
 
-                        val images = draft.imageDescriptionsJson.mapNotNull { 
-                            try {
-                                Json.decodeFromString<org.example.project.data.model.ImageDescriptionRequest>(it).image
-                            } catch(e: Exception) { null }
+                            val images = draft.imageDescriptionsJson.mapNotNull { 
+                                try {
+                                    Json.decodeFromString<org.example.project.data.model.ImageDescriptionRequest>(it).image
+                                } catch(e: Exception) { null }
+                            }
+
+                            val mappedItem = ObservationItem(
+                                observationId = draft.id.toInt(),
+                                observationTitle = draft.title,
+                                description = draft.description,
+                                date = draft.createdAt,
+                                status = -1, // Open
+                                group = group,
+                                images = images,
+                                totalImages = images.size
+                            )
+                            Pair(draft, mappedItem)
                         }
+                    }
 
-                        val mappedItem = ObservationItem(
-                            observationId = draft.id.toInt(),
-                            observationTitle = draft.title,
-                            description = draft.description,
-                            date = draft.createdAt,
-                            status = -1, // Open
-                            group = group,
-                            images = images,
-                            totalImages = images.size
-                        )
-                        ObservationListItem(
-                            observation = mappedItem,
-                            isSelectionMode = isDeleteOptionEnabled,
-                            isSelected = selectedItemsId.contains(draft.id.toInt()),
-                            onSelectionChange = { checked ->
-                                selectedItemsId = if (checked) {
-                                    selectedItemsId + draft.id.toInt()
-                                } else {
-                                    selectedItemsId - draft.id.toInt()
-                                }
-                            },
-                            onClick = { 
-                                if (isDeleteOptionEnabled) {
-                                    val checked = !selectedItemsId.contains(draft.id.toInt())
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        items(
+                            count = parsedDrafts.size,
+                            key = { index -> parsedDrafts[index].first.id }
+                        ) { index ->
+                            val (draft, mappedItem) = parsedDrafts[index]
+                            ObservationListItem(
+                                observation = mappedItem,
+                                isSelectionMode = isDeleteOptionEnabled,
+                                isSelected = selectedItemsId.contains(draft.id.toInt()),
+                                onSelectionChange = { checked ->
                                     selectedItemsId = if (checked) {
                                         selectedItemsId + draft.id.toInt()
                                     } else {
                                         selectedItemsId - draft.id.toInt()
                                     }
-                                } else {
-                                    onDraftClicked(draft.id)
+                                },
+                                onClick = { 
+                                    if (isDeleteOptionEnabled) {
+                                        val checked = !selectedItemsId.contains(draft.id.toInt())
+                                        selectedItemsId = if (checked) {
+                                            selectedItemsId + draft.id.toInt()
+                                        } else {
+                                            selectedItemsId - draft.id.toInt()
+                                        }
+                                    } else {
+                                        onDraftClicked(draft.id)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }

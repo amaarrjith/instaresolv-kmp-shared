@@ -69,7 +69,7 @@ fun PermitToWorkListScreen(
     LaunchedEffect(uiState.exportDownloadUrl) {
         uiState.exportDownloadUrl?.let { url ->
             try {
-                val fileName = "Permit_Report_${Clock.System.now().toEpochMilliseconds()}.xlsx"
+                val fileName = org.example.project.utilites.getExcelReportFileName("Permit", url)
                 fileDownloader.downloadFile(url, fileName)
             } catch (e: Exception) {
                 viewModel.showError(e.message ?: "Download failed")
@@ -98,13 +98,16 @@ fun PermitToWorkListScreen(
                 NavigationBackIcon(onBackClicked)
                 Text(
                     text = stringResource(Res.string.permitToWork).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = {
@@ -378,7 +381,8 @@ private fun PermitListItem(
         ) {
             Box {
                 WebImageView(
-                    imageUrl = permit.facilities?.groupImage ?: "",
+                    imageUrl = "",
+                    placeHolder = Res.drawable.ic_assigned_permit,
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -395,7 +399,7 @@ private fun PermitListItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     val status = PermitStatus.fromValue(permit.status)
-                    val statusTitle = status?.title ?: "UNKNOWN"
+                    val statusTitle = if (status != null) stringResource(status.stringRes) else stringResource(Res.string.unknown)
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))

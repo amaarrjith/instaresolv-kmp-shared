@@ -2,6 +2,9 @@ package org.example.project.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +20,8 @@ import org.example.project.data.settings.AuthPreferences
 import org.example.project.shared.db.AppDatabase
 
 data class CreateInspectionState(
+    val isCreating: Boolean = false,
+    val isDraftCreating: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val selectedProject: Project? = null,
@@ -91,58 +96,73 @@ class CreateInspectionViewModel(
         }
     }
 
+    private data class DraftLoadResult(
+        val questions: List<StaticEquipmentContent>,
+        val answers: Map<Int, String>,
+        val images: List<IncidentImage>,
+        val isOutdated: Boolean,
+        val project: Project?
+    )
+
     fun loadDraft(id: Long) {
         viewModelScope.launch {
             draftId = id
             val draft = inspectionDraftRepository.getDraftById(id) ?: return@launch
 
-            val draftQuestions = draft.questionsJson?.let {
-                try { Json.decodeFromString<List<StaticEquipmentContent>>(it) } catch (_: Exception) { emptyList() }
-            } ?: emptyList()
+            val result = withContext(Dispatchers.IO) {
+                val draftQuestions = draft.questionsJson?.let {
+                    try { Json.decodeFromString<List<StaticEquipmentContent>>(it) } catch (_: Exception) { emptyList() }
+                } ?: emptyList()
 
-            val draftAnswers = draft.answersJson?.let {
-                try { Json.decodeFromString<Map<Int, String>>(it) } catch (_: Exception) { emptyMap() }
-            } ?: emptyMap()
+                val draftAnswers = draft.answersJson?.let {
+                    try { Json.decodeFromString<Map<Int, String>>(it) } catch (_: Exception) { emptyMap() }
+                } ?: emptyMap()
 
-            val draftImages = draft.imagesJson?.let {
-                try { Json.decodeFromString<List<IncidentImage>>(it) } catch (_: Exception) { listOf(IncidentImage()) }
-            } ?: listOf(IncidentImage())
+                val draftImages = draft.imagesJson?.let {
+                    try { Json.decodeFromString<List<IncidentImage>>(it) } catch (_: Exception) { listOf(IncidentImage()) }
+                } ?: listOf(IncidentImage())
 
-            // Outdated check 1: Audit item type updated time
-            val typeId = draft.inspectionTypeId
-            val dbAuditItems = database.appDatabaseQueries.getAllAuditItems().executeAsList()
-            val dbAuditItem = dbAuditItems.find { it.auditItemId == typeId }
-            val isTypeOutdated = if (dbAuditItem != null) {
-                dbAuditItem.formUpdatedTime != draft.inspectionTypeUpdatedTime
-            } else {
-                // AuditItem missing from DB — could have been removed
-                draft.inspectionTypeUpdatedTime != null
+                val typeId = draft.inspectionTypeId
+                val dbAuditItems = database.appDatabaseQueries.getAllAuditItems().executeAsList()
+                val dbAuditItem = dbAuditItems.find { it.auditItemId == typeId }
+                val isTypeOutdated = if (dbAuditItem != null) {
+                    dbAuditItem.formUpdatedTime != draft.inspectionTypeUpdatedTime
+                } else {
+                    draft.inspectionTypeUpdatedTime != null
+                }
+
+                val dbContentCache = database.appDatabaseQueries.getInspectionContentCacheByType(typeId).executeAsOneOrNull()
+                val isVersionOutdated = if (dbContentCache != null) {
+                    dbContentCache.version != draft.inspectionContentVersion
+                } else {
+                    draft.inspectionContentVersion != null
+                }
+
+                val project = draft.projectJson?.let {
+                    try { Json.decodeFromString<Project>(it) } catch (_: Exception) { null }
+                }
+
+                DraftLoadResult(
+                    questions = draftQuestions,
+                    answers = draftAnswers,
+                    images = draftImages,
+                    isOutdated = isTypeOutdated || isVersionOutdated,
+                    project = project
+                )
             }
-
-            // Outdated check 2: Inspection content version
-            val dbContentCache = database.appDatabaseQueries.getInspectionContentCacheByType(typeId).executeAsOneOrNull()
-            val isVersionOutdated = if (dbContentCache != null) {
-                dbContentCache.version != draft.inspectionContentVersion
-            } else {
-                draft.inspectionContentVersion != null
-            }
-
-            val isOutdated = isTypeOutdated || isVersionOutdated
 
             _uiState.value = _uiState.value.copy(
-                selectedProject = draft.projectJson?.let {
-                    try { Json.decodeFromString<Project>(it) } catch (_: Exception) { null }
-                },
+                selectedProject = result.project,
                 inspectionTypeId = draft.inspectionTypeId.toInt(),
                 inspectionTypeName = draft.inspectionTypeName ?: "",
                 location = draft.location ?: "",
                 inspectionDateMillis = draft.inspectionDateMillis,
                 description = draft.description ?: "",
                 notes = draft.notes ?: "",
-                questions = draftQuestions,
-                answers = draftAnswers,
-                inspectionImages = draftImages,
-                isDraftOutdated = isOutdated
+                questions = result.questions,
+                answers = result.answers,
+                inspectionImages = result.images,
+                isDraftOutdated = result.isOutdated
             )
         }
     }
@@ -167,6 +187,7 @@ class CreateInspectionViewModel(
         }
 
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isDraftCreating = true)
             val currentUser = authPreferences.getLoggedInUser()
             val typeId = state.inspectionTypeId
 
@@ -207,6 +228,7 @@ class CreateInspectionViewModel(
                 userId = currentUser?.userId ?: -1
             )
             inspectionDraftRepository.saveDraft(request)
+            _uiState.value = _uiState.value.copy(isDraftCreating = false)
             onSuccess()
         }
     }
@@ -285,7 +307,7 @@ class CreateInspectionViewModel(
         }
     }
 
-    fun saveInspection(isDraft: Boolean, onSuccess: () -> Unit) {
+    fun saveInspection(onSuccess: () -> Unit) {
         val state = _uiState.value
         if (state.inspectionDateMillis == null) {
             _uiState.value = state.copy(error = "Date is required")
@@ -297,7 +319,7 @@ class CreateInspectionViewModel(
         }
         
         viewModelScope.launch {
-            _uiState.value = state.copy(isLoading = true, error = null)
+            _uiState.value = state.copy(isCreating = true, error = null)
             val staticEquipments = state.answers.map { (id, answer) ->
                 val selectedValue = when (answer) {
                     "Yes" -> 1
@@ -338,7 +360,7 @@ class CreateInspectionViewModel(
             val result = inspectionRepository.addInspection(request)
             when (result) {
                 is org.example.project.network.NetworkResult.Success -> {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
+                    _uiState.value = _uiState.value.copy(isCreating = false)
                     // Delete draft after successful publish if editing a draft
                     if (draftId != 0L) {
                         inspectionDraftRepository.deleteDraft(draftId)
@@ -347,7 +369,7 @@ class CreateInspectionViewModel(
                 }
                 is org.example.project.network.NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
+                        isCreating = false,
                         error = result.message ?: "Failed to save inspection"
                     )
                 }

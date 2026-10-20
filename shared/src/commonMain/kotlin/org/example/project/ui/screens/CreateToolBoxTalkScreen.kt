@@ -17,7 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import instaresolv.shared.generated.resources.Res
@@ -48,6 +51,11 @@ import instaresolv.shared.generated.resources.*
 import org.example.project.ui.components.AppExitPopup
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import org.example.project.data.settings.parseTimeToMinutes
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,6 +90,24 @@ fun CreateToolBoxTalkScreen(
 
     var showErrorToast by remember { mutableStateOf<String?>(null) }
     val showExitPopup = remember { mutableStateOf(false) }
+    val topicRequiredError = stringResource(Res.string.enter_field, stringResource(Res.string.topic))
+    val selectDateError = stringResource(Res.string.selectDate)
+    val selectStartTimeError = stringResource(Res.string.error_select_start_time)
+    val endTimeGreaterError = stringResource(Res.string.error_end_time_greater)
+    val cannotSelectFutureTimeError = stringResource(Res.string.error_cannot_select_future_time)
+    val atLeastOneDiscussionPointError = stringResource(Res.string.error_at_least_one_discussion_point)
+    val fillPreviousDiscussionPointsError = stringResource(Res.string.error_fill_previous_discussion_points)
+    val atLeastOneEmployeeError = stringResource(Res.string.error_at_least_one_employee)
+
+    val isToday = remember(selectedDateMillis) {
+        selectedDateMillis?.let { millis ->
+            val selectedDate = Instant.fromEpochMilliseconds(millis)
+                .toLocalDateTime(TimeZone.UTC).date
+            val today = Clock.System.now()
+                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+            selectedDate == today
+        } ?: false
+    }
 
     LaunchedEffect(isFromDraft, draftId) {
         if (isFromDraft && draftId != -1L) {
@@ -90,8 +116,37 @@ fun CreateToolBoxTalkScreen(
             if (draft != null) {
                 topic = draft.topic.orEmpty()
                 selectedDateMillis = draft.dateMillis
-                startTime = draft.startTime.orEmpty()
-                endTime = draft.endTime.orEmpty()
+
+                val isDraftToday = draft.dateMillis?.let { millis ->
+                    val selectedDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date
+                    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                    selectedDate == today
+                } ?: false
+
+                val currentMinutesNow = run {
+                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    now.hour * 60 + now.minute
+                }
+
+                val sanitizedStartTime = if (isDraftToday && !draft.startTime.isNullOrBlank() && parseTimeToMinutes(draft.startTime) > currentMinutesNow) {
+                    ""
+                } else {
+                    draft.startTime ?: ""
+                }
+
+                val sanitizedEndTime = if (
+                    sanitizedStartTime.isBlank() ||
+                    draft.endTime.isNullOrBlank() ||
+                    parseTimeToMinutes(draft.endTime) <= parseTimeToMinutes(sanitizedStartTime) ||
+                    (isDraftToday && parseTimeToMinutes(draft.endTime) > currentMinutesNow)
+                ) {
+                    ""
+                } else {
+                    draft.endTime ?: ""
+                }
+
+                startTime = sanitizedStartTime
+                endTime = sanitizedEndTime
                 facilitiesId = draft.facilitiesId?.toString()
 
                 val project = draft.projectJson?.let {
@@ -250,7 +305,41 @@ fun CreateToolBoxTalkScreen(
                         title = stringResource(Res.string.save),
                         onClick = {
                             if (topic.isBlank()) {
-                                showErrorToast = "Topic is required"
+                                showErrorToast = topicRequiredError
+                                return@AppPrimaryButton
+                            }
+                            if (selectedDateMillis == null) {
+                                showErrorToast = selectDateError
+                                return@AppPrimaryButton
+                            }
+                            if (startTime.isBlank()) {
+                                showErrorToast = selectStartTimeError
+                                return@AppPrimaryButton
+                            }
+                            if (endTime.isBlank()) {
+                                showErrorToast = endTimeGreaterError
+                                return@AppPrimaryButton
+                            }
+                            if (parseTimeToMinutes(endTime) <= parseTimeToMinutes(startTime)) {
+                                showErrorToast = endTimeGreaterError
+                                return@AppPrimaryButton
+                            }
+                            if (isToday) {
+                                val currentMinutes = run {
+                                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                                    now.hour * 60 + now.minute
+                                }
+                                if (parseTimeToMinutes(startTime) > currentMinutes || parseTimeToMinutes(endTime) > currentMinutes) {
+                                    showErrorToast = cannotSelectFutureTimeError
+                                    return@AppPrimaryButton
+                                }
+                            }
+                            if (discussionPoints.none { it.isNotBlank() }) {
+                                showErrorToast = atLeastOneDiscussionPointError
+                                return@AppPrimaryButton
+                            }
+                            if (attendees.isEmpty()) {
+                                showErrorToast = atLeastOneEmployeeError
                                 return@AppPrimaryButton
                             }
                             val imageRequests = images.filter { it.imageUrl?.isNotBlank() == true }.map {
@@ -284,11 +373,10 @@ fun CreateToolBoxTalkScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .imePadding()
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = 20.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = 20.dp).padding(horizontal = 22.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 AppProjectDropdown(
@@ -313,14 +401,21 @@ fun CreateToolBoxTalkScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = stringResource(Res.string.date1),
-                        style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
-                        color = AppColors.Black
+                        text = buildAnnotatedString {
+                            append("${stringResource(Res.string.date)} ")
+                            withStyle(SpanStyle(color = Color.Red)) { append("*") }
+                        },
+                        style = textStyle(12.sp, FontWeight.SemiBold)
                     )
                     AppDatePicker(
                         text = stringResource(Res.string.selectDate),
                         selectedDateMillis = selectedDateMillis,
-                        onDateSelected = { selectedDateMillis = it }
+                        onDateSelected = {
+                            selectedDateMillis = it
+                            startTime = ""
+                            endTime = ""
+                        },
+                        restrictFutureDates = true
                     )
                 }
 
@@ -333,15 +428,31 @@ fun CreateToolBoxTalkScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = stringResource(Res.string.startTime1),
-                            style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
-                            color = AppColors.Black
+                            text = buildAnnotatedString {
+                                append("${stringResource(Res.string.startTime)} ")
+                                withStyle(SpanStyle(color = Color.Red)) { append("*") }
+                            },
+                            style = textStyle(12.sp, FontWeight.SemiBold)
                         )
-                        AppTimePicker(
-                            text = stringResource(Res.string.txt_0000),
-                            selectedTime = startTime,
-                            onTimeSelected = { startTime = it }
-                        )
+                        Box {
+                            AppTimePicker(
+                                text = stringResource(Res.string.txt_0000),
+                                selectedTime = startTime,
+                                onTimeSelected = { time ->
+                                    endTime = ""
+                                    startTime = time
+                                },
+                                enabled = selectedDateMillis != null,
+                                restrictFutureTime = isToday
+                            )
+                            if (selectedDateMillis == null) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .clickable { showErrorToast = selectDateError }
+                                )
+                            }
+                        }
                     }
 
                     Column(
@@ -349,15 +460,42 @@ fun CreateToolBoxTalkScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = stringResource(Res.string.endTime1),
-                            style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
-                            color = AppColors.Black
+                            text = buildAnnotatedString {
+                                append("${stringResource(Res.string.endTime)} ")
+                                withStyle(SpanStyle(color = Color.Red)) { append("*") }
+                            },
+                            style = textStyle(12.sp, FontWeight.SemiBold)
                         )
-                        AppTimePicker(
-                            text = stringResource(Res.string.txt_0000),
-                            selectedTime = endTime,
-                            onTimeSelected = { endTime = it }
-                        )
+                        Box {
+                            AppTimePicker(
+                                text = stringResource(Res.string.txt_0000),
+                                selectedTime = endTime,
+                                onTimeSelected = { newEndTime ->
+                                    if (startTime.isNotBlank() && parseTimeToMinutes(newEndTime) <= parseTimeToMinutes(startTime)) {
+                                        showErrorToast = endTimeGreaterError
+                                    } else {
+                                        endTime = newEndTime
+                                    }
+                                },
+                                enabled = selectedDateMillis != null && startTime.isNotBlank(),
+                                restrictFutureTime = isToday,
+                                minTime = startTime,
+                                minTimeErrorMessage = endTimeGreaterError
+                            )
+                            if (selectedDateMillis == null) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .clickable { showErrorToast = selectDateError }
+                                )
+                            } else if (startTime.isBlank()) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .clickable { showErrorToast = selectStartTimeError }
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -374,7 +512,10 @@ fun CreateToolBoxTalkScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = stringResource(Res.string.discussionPoints),
+                        text = buildAnnotatedString {
+                            append("${stringResource(Res.string.discussionPoints)} ")
+                            withStyle(SpanStyle(color = Color.Red)) { append("*") }
+                        },
                         style = textStyle(size = 14.sp, weight = FontWeight.Bold),
                         color = AppColors.Black
                     )
@@ -383,13 +524,19 @@ fun CreateToolBoxTalkScreen(
                         AppTextField(
                             value = point,
                             onValueChange = { discussionPoints[index] = it },
-                            title = "Point ${index + 1}",
+                            title = stringResource(Res.string.point_index, index + 1),
                             placeholder = stringResource(Res.string.enterDiscussionPoint)
                         )
                     }
 
                     TextButton(
-                        onClick = { discussionPoints.add("") },
+                        onClick = {
+                            if (discussionPoints.any { it.isBlank() }) {
+                                showErrorToast = fillPreviousDiscussionPointsError
+                            } else {
+                                discussionPoints.add("")
+                            }
+                        },
                         modifier = Modifier.align(Alignment.Start)
                     ) {
                         Icon(
@@ -410,13 +557,17 @@ fun CreateToolBoxTalkScreen(
                     }
                 }
 
-                // Attendees List View
+                // Attendees Section
+                Text(
+                    text = buildAnnotatedString {
+                        append("${stringResource(Res.string.attendeesList)} ")
+                        withStyle(SpanStyle(color = Color.Red)) { append("*") }
+                    },
+                    style = textStyle(size = 14.sp, weight = FontWeight.Bold),
+                    color = AppColors.Black
+                )
+
                 if (attendees.isNotEmpty()) {
-                    Text(
-                        text = stringResource(Res.string.attendeesList),
-                        style = textStyle(size = 14.sp, weight = FontWeight.Bold),
-                        color = AppColors.Black
-                    )
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -435,10 +586,10 @@ fun CreateToolBoxTalkScreen(
                                         .background(Color(0xFFF5F5F5))
                                         .padding(horizontal = 16.dp, vertical = 12.dp)
                                 ) {
-                                    Text("Employee & ID", modifier = Modifier.width(200.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                                    Text("Company Name", modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                                    Text("Profession", modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
-                                    Text("Action", modifier = Modifier.width(60.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                    Text(stringResource(Res.string.employee_and_id), modifier = Modifier.width(200.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                    Text(stringResource(Res.string.companyName), modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                    Text(stringResource(Res.string.profession), modifier = Modifier.width(150.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
+                                    Text(stringResource(Res.string.action), modifier = Modifier.width(60.dp), style = textStyle(size = 12.sp, weight = FontWeight.Medium), color = AppColors.TextGray)
                                 }
 
                                 attendees.forEachIndexed { index, attendee ->
@@ -500,7 +651,7 @@ fun CreateToolBoxTalkScreen(
 
                     images.forEachIndexed { index, img ->
                         Text(
-                            text = "Upload Image ${index + 1}",
+                            text = stringResource(Res.string.upload_image_index, index + 1),
                             style = textStyle(size = 12.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
@@ -560,8 +711,8 @@ fun CreateToolBoxTalkScreen(
             AppStatusDialog(
                 visible = showSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Toolbox Talk created successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.toolbox_talk_created_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showSuccessDialog.value = false
                     onBackClicked()
@@ -572,8 +723,8 @@ fun CreateToolBoxTalkScreen(
             AppStatusDialog(
                 visible = showDraftSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Toolbox Talk Draft Saved successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.toolbox_talk_draft_saved_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showDraftSuccessDialog.value = false
                     onBackClicked()

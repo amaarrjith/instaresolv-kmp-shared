@@ -172,7 +172,7 @@ fun OTPVerificationScreen(
                     Spacer(modifier = Modifier.height(32.dp))
                     if (secondsLeft > 0) {
                         Text(
-                            text = "Resend OTP in $formattedTime",
+                            text = stringResource(Res.string.resend_otp_in, formattedTime),
                             textAlign = TextAlign.Center,
                             style = textStyle(
                                 size = 14.sp,

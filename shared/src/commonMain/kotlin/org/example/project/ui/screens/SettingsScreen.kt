@@ -68,6 +68,10 @@ fun SettingsScreen(
     var showLanguageSheet by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val appNotificationsEnabledMsg = stringResource(Res.string.app_notifications_enabled)
+    val appNotificationsDisabledMsg = stringResource(Res.string.app_notifications_disabled)
+    val emailNotificationsEnabledMsg = stringResource(Res.string.email_notifications_enabled)
+    val emailNotificationsDisabledMsg = stringResource(Res.string.email_notifications_disabled)
     
     Scaffold(
         containerColor = Color.White,
@@ -109,7 +113,7 @@ fun SettingsScreen(
                         isToggle = true, 
                         onCheckedChange = { 
                             isAppNotificationEnabled = it 
-                            toastMessage = if (it) "App Notifications Enabled" else "App Notifications Disabled"
+                            toastMessage = if (it) appNotificationsEnabledMsg else appNotificationsDisabledMsg
                         }
                     ) 
                 }
@@ -121,7 +125,7 @@ fun SettingsScreen(
                         isToggle = true, 
                         onCheckedChange = { 
                             isEmailNotificationEnabled = it 
-                            toastMessage = if (it) "Email Notifications Enabled" else "Email Notifications Disabled"
+                            toastMessage = if (it) emailNotificationsEnabledMsg else emailNotificationsDisabledMsg
                         }
                     ) 
                 }

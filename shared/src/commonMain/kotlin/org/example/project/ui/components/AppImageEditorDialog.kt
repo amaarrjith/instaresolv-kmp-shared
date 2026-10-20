@@ -52,6 +52,8 @@ import org.example.project.utilites.DrawStrokeData
 import org.example.project.utilites.NormalizedPoint
 import org.example.project.utilites.drawAnnotationsOnImage
 import org.example.project.utilites.toImageBitmap
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 data class UIStroke(
     val points: MutableList<NormalizedPoint>,
@@ -111,14 +113,14 @@ fun AppImageEditorDialog(
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(
-                            text = "Cancel",
+                            text = stringResource(Res.string.cancel),
                             style = textStyle(size = 16.sp, weight = FontWeight.Medium),
                             color = Color.White
                         )
                     }
 
                     Text(
-                        text = "Edit & Annotate",
+                        text = stringResource(Res.string.edit_and_annotate),
                         style = textStyle(size = 18.sp, weight = FontWeight.Bold),
                         color = Color.White
                     )
@@ -154,7 +156,7 @@ fun AppImageEditorDialog(
                             )
                         } else {
                             Text(
-                                text = "Done",
+                                text = stringResource(Res.string.done),
                                 style = textStyle(size = 16.sp, weight = FontWeight.Bold),
                                 color = AppColors.Primary
                             )
@@ -300,7 +302,7 @@ fun AppImageEditorDialog(
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "Thin",
+                                text = stringResource(Res.string.stroke_thin),
                                 style = textStyle(size = 13.sp, weight = FontWeight.Medium),
                                 color = Color.White
                             )
@@ -315,7 +317,7 @@ fun AppImageEditorDialog(
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "Medium",
+                                text = stringResource(Res.string.stroke_medium),
                                 style = textStyle(size = 13.sp, weight = FontWeight.Medium),
                                 color = Color.White
                             )
@@ -330,7 +332,7 @@ fun AppImageEditorDialog(
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "Thick",
+                                text = stringResource(Res.string.stroke_thick),
                                 style = textStyle(size = 13.sp, weight = FontWeight.Medium),
                                 color = Color.White
                             )
@@ -349,7 +351,7 @@ fun AppImageEditorDialog(
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "↩ Undo",
+                                text = "↩ " + stringResource(Res.string.undo),
                                 style = textStyle(size = 13.sp, weight = FontWeight.Medium),
                                 color = Color.White
                             )

@@ -41,4 +41,10 @@ class InspectionDraftRepository(private val database: AppDatabase) {
     suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deleteInspectionDraft(id)
     }
+
+    suspend fun deleteDrafts(ids: List<Long>) = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.transaction {
+            ids.forEach { database.appDatabaseQueries.deleteInspectionDraft(it) }
+        }
+    }
 }

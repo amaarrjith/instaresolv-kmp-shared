@@ -88,6 +88,7 @@ fun AuditInspectionListScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val exportUrl by viewModel.exportUrl.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val downloadingInspectionReportMsg = stringResource(Res.string.downloading_inspection_report)
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -99,10 +100,9 @@ fun AuditInspectionListScreen(
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
-                // Generate a name from url or date
-                val fileName = "Inspection_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                val fileName = org.example.project.utilites.getExcelReportFileName("Inspection", url)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setExportToastMessage("Downloading Inspection Report")
+                viewModel.setExportToastMessage(downloadingInspectionReportMsg)
             } catch (e: Exception) {
                 uiState.errorExcel = e.message
             }
@@ -132,13 +132,16 @@ fun AuditInspectionListScreen(
                 NavigationBackIcon(onBackClicked)
                 Text(
                     text = stringResource(Res.string.inspections).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = { showAddModal = true })
@@ -409,6 +412,7 @@ fun InspectionListItem(
             Box {
                 WebImageView(
                     imageUrl = inspection.images?.firstOrNull()?.image ?: "",
+                    placeHolder = Res.drawable.ic_inspections_placeholder,
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)

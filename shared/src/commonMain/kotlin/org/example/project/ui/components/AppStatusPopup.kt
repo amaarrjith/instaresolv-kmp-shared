@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -177,38 +178,92 @@ fun AppConfirmationDialog(
                     
                     Spacer(modifier = Modifier.height(32.dp))
                     
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        androidx.compose.material3.Button(
-                            onClick = onSecondaryClick,
-                            modifier = Modifier.weight(1f).heightIn(min = 50.dp),
-                            shape = RoundedCornerShape(25.dp),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = secondaryButtonColor
-                            )
+                    val shouldStack = secondaryButtonText.length > 13 || primaryButtonText.length > 13
+                    if (shouldStack) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = secondaryButtonText,
-                                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-                                color = Color.White
-                            )
+                            androidx.compose.material3.Button(
+                                onClick = onPrimaryClick,
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                shape = RoundedCornerShape(24.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = primaryButtonColor
+                                )
+                            ) {
+                                Text(
+                                    text = primaryButtonText,
+                                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White
+                                )
+                            }
+
+                            androidx.compose.material3.Button(
+                                onClick = onSecondaryClick,
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                shape = RoundedCornerShape(24.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = secondaryButtonColor
+                                )
+                            ) {
+                                Text(
+                                    text = secondaryButtonText,
+                                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White
+                                )
+                            }
                         }
-                        
-                        androidx.compose.material3.Button(
-                            onClick = onPrimaryClick,
-                            modifier = Modifier.weight(1f).heightIn(min = 50.dp),
-                            shape = RoundedCornerShape(25.dp),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = primaryButtonColor
-                            )
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text(
-                                text = primaryButtonText,
-                                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
-                                color = Color.White
-                            )
+                            androidx.compose.material3.Button(
+                                onClick = onSecondaryClick,
+                                modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                                shape = RoundedCornerShape(24.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = secondaryButtonColor
+                                )
+                            ) {
+                                Text(
+                                    text = secondaryButtonText,
+                                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White
+                                )
+                            }
+
+                            androidx.compose.material3.Button(
+                                onClick = onPrimaryClick,
+                                modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                                shape = RoundedCornerShape(24.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = primaryButtonColor
+                                )
+                            ) {
+                                Text(
+                                    text = primaryButtonText,
+                                    style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
                 }

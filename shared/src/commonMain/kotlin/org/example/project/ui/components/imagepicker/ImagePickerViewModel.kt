@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.network.NetworkResult
+import org.example.project.utilites.compressImage
 
 class ImagePickerViewModel(
     private val authRepository: AuthRepository
@@ -18,11 +19,12 @@ class ImagePickerViewModel(
     private var lastUploadedImageBytes: ByteArray? = null
 
     fun uploadImage(imageBytes: ByteArray, type: Int) {
-        lastUploadedImageBytes = imageBytes
+        val compressedBytes = compressImage(imageBytes)
+        lastUploadedImageBytes = compressedBytes
         viewModelScope.launch {
             _uiState.value = ImagePickerUiState.Uploading
             val response = authRepository.uploadImage(
-                imageBytes = imageBytes,
+                imageBytes = compressedBytes,
                 fileName = "picked_image.jpg",
                 type = type
             )

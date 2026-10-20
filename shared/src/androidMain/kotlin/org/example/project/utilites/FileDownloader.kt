@@ -1,3 +1,4 @@
+@file:JvmName("FileDownloaderAndroid")
 package org.example.project.utilites
 
 import android.app.DownloadManager

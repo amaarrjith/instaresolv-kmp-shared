@@ -210,11 +210,10 @@ fun CreateLessonsLearnedScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .imePadding()
-                .padding(horizontal = 22.dp)
                 .background(Color.White)
         ) {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = 20.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = 20.dp).padding(horizontal = 22.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 AppProjectDropdown(
@@ -254,7 +253,7 @@ fun CreateLessonsLearnedScreen(
                         horizontalAlignment = Alignment.Start
                     ) {
                         Text(
-                            text = "Upload Image ${index + 1}",
+                            text = stringResource(Res.string.upload_image_index, index + 1),
                             style = textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.SemiBold
@@ -320,8 +319,8 @@ fun CreateLessonsLearnedScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Lesson Learned created successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.lessons_learned_created_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showSuccessDialog.value = false
                     onBackClicked()
@@ -333,8 +332,8 @@ fun CreateLessonsLearnedScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDraftDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Lesson Learned Draft Saved Successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.lessons_learned_draft_saved_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showSuccessDraftDialog.value = false
                     onBackClicked()

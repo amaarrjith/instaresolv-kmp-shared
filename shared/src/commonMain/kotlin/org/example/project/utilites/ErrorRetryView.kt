@@ -38,6 +38,8 @@ import instaresolv.shared.generated.resources.ic_network_down
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 
 @Composable
 fun ErrorRetryView(
@@ -68,7 +70,7 @@ fun ErrorRetryView(
 
         Image(
             painter = painterResource(imageRes),
-            contentDescription = if (resolveIsNetwork) "No Network" else "Error",
+            contentDescription = if (resolveIsNetwork) stringResource(Res.string.no_network) else stringResource(Res.string.error),
             modifier = Modifier.wrapContentSize(),
             contentScale = ContentScale.Fit
         )
@@ -132,7 +134,7 @@ fun ErrorRetryView(
 @Preview
 fun ErrorRetryViewPreview() {
     ErrorRetryView(
-        errorMessage = "Something went wrong",
+        errorMessage = stringResource(Res.string.something_went_wrong),
         onRetryClick = {}
     )
 }

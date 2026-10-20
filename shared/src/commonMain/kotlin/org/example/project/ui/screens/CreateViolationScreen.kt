@@ -207,6 +207,7 @@ fun CreateViolationScreen(
                     AppDatePicker(
                         text = stringResource(Res.string.ddmmyyyy),
                         selectedDateMillis = uiState.violationDateMillis,
+                        restrictFutureDates = true,
                         onDateSelected = { timeMillis ->
                             if (timeMillis != null) {
                                 val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(timeMillis)
@@ -286,8 +287,8 @@ fun CreateViolationScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Violation created successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.violation_created_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showSuccessDialog.value = false
                     onBackClicked()
@@ -299,8 +300,8 @@ fun CreateViolationScreen(
             org.example.project.ui.components.AppStatusDialog(
                 visible = showDraftSuccessDialog.value,
                 title = stringResource(Res.string.success),
-                description = "Violation draft saved successfully",
-                buttonText = "OK",
+                description = stringResource(Res.string.violation_draft_saved_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     showDraftSuccessDialog.value = false
                     onBackClicked()

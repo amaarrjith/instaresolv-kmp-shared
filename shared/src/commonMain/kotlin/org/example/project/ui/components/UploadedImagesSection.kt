@@ -104,7 +104,7 @@ fun UploadedImagesSection(
                 )
                 Spacer(Modifier.height(12.dp))
             }
-            EmptyScreenView(message = emptyMessage)
+            EmptyScreenView(message = emptyMessage, modifier = Modifier.fillMaxWidth())
         }
     }
 }

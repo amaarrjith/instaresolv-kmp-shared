@@ -33,5 +33,11 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take project photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select photos for incident and observation reports.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires microphone access to record audio messages.</string>
 </dict>
 </plist>

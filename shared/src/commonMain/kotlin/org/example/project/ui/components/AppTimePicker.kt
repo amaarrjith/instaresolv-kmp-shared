@@ -37,8 +37,8 @@ import instaresolv.shared.generated.resources.Res
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.painterResource
-import instaresolv.shared.generated.resources.ic_calendar
-
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.utilites.ToastHost
@@ -55,7 +55,9 @@ fun AppTimePicker(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     restrictPastTime: Boolean = false,
-    restrictFutureTime: Boolean = false
+    restrictFutureTime: Boolean = false,
+    minTime: String? = null,
+    minTimeErrorMessage: String? = null
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
@@ -106,8 +108,11 @@ fun AppTimePicker(
                                 .padding(top = 16.dp),
                             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End
                         ) {
+                            val cannotSelectPastTimeMsg = stringResource(Res.string.error_cannot_select_past_time)
+                            val cannotSelectFutureTimeMsg = stringResource(Res.string.error_cannot_select_future_time)
+                            val defaultMinTimeMsg = stringResource(Res.string.error_end_time_greater)
                             TextButton(onClick = { showDialog = false }) {
-                                Text("Cancel")
+                                Text(stringResource(Res.string.cancel))
                             }
                             TextButton(onClick = {
                                 val hour = timePickerState.hour
@@ -121,14 +126,23 @@ fun AppTimePicker(
 
                                 if (restrictPastTime) {
                                     if (hour < currentHour || (hour == currentHour && minute < currentMinute)) {
-                                        toastMessage = "Cannot select a past time"
+                                        toastMessage = cannotSelectPastTimeMsg
                                         isValid = false
                                     }
                                 }
                                 
                                 if (isValid && restrictFutureTime) {
                                     if (hour > currentHour || (hour == currentHour && minute > currentMinute)) {
-                                        toastMessage = "Cannot select a future time"
+                                        toastMessage = cannotSelectFutureTimeMsg
+                                        isValid = false
+                                    }
+                                }
+
+                                if (isValid && !minTime.isNullOrBlank()) {
+                                    val selectedMinutes = hour * 60 + minute
+                                    val minMinutes = org.example.project.data.settings.parseTimeToMinutes(minTime)
+                                    if (selectedMinutes <= minMinutes) {
+                                        toastMessage = minTimeErrorMessage ?: defaultMinTimeMsg
                                         isValid = false
                                     }
                                 }
@@ -143,7 +157,7 @@ fun AppTimePicker(
                                     showDialog = false
                                 }
                             }) {
-                                Text("OK")
+                                Text(stringResource(Res.string.ok))
                             }
                         }
                     }

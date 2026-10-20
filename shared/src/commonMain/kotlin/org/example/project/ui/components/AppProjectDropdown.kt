@@ -17,9 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.project
-import instaresolv.shared.generated.resources.selectProject
+import instaresolv.shared.generated.resources.*
 import org.example.project.colors.AppColors
 import org.example.project.data.model.Project
 import org.example.project.typography.textStyle
@@ -91,6 +89,7 @@ fun AppProjectDropdown(
                 if (selectedProject != null) {
                     WebImageView(
                         imageUrl = selectedProject.groupImage ?: "",
+                        showPlaceholderBorder = true,
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
@@ -137,17 +136,24 @@ fun AppProjectDropdown(
             ) {
                 if (isLoading) {
                     DropdownMenuItem(
-                        text = { Text("Loading...") },
+                        text = { Text(stringResource(Res.string.loading)) },
                         onClick = { }
                     )
                 } else if (displayProjects.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text("No Projects Found") },
+                        text = { Text(stringResource(Res.string.noProjectsFound)) },
                         onClick = { }
                     )
                 } else {
                     displayProjects.forEach { project ->
+                        val isSelected = project == selectedProject
                         DropdownMenuItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (isSelected) AppColors.Primary.copy(0.2f)
+                                    else Color.Transparent
+                                ),
                             text = { 
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically

@@ -106,7 +106,7 @@ class ObservationListViewModel(
     fun deleteDrafts(ids: List<Long>, successMessage: String) {
         viewModelScope.launch {
             try {
-                ids.forEach { draftRepository.deleteDraft(it) }
+                draftRepository.deleteDrafts(ids)
                 loadDrafts()
                 _draftToastMessage.value = successMessage
             } catch (e: Exception) {

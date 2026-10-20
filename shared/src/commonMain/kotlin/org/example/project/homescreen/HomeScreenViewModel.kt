@@ -31,6 +31,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.model.InspectionContentsRequest
 import org.example.project.network.NetworkMonitor
 import org.example.project.project.ProjectListUiState
+import org.example.project.config.appLog
 
 class HomeScreenViewModel(
     private val authRepository: AuthRepository,
@@ -95,12 +96,16 @@ class HomeScreenViewModel(
     private val _pdfModuleType = MutableStateFlow("Observation")
     val pdfModuleType: StateFlow<String> = _pdfModuleType
 
+    private val _pdfItemId = MutableStateFlow<Int?>(null)
+    val pdfItemId: StateFlow<Int?> = _pdfItemId
+
     private val _groupUsers = MutableStateFlow<List<org.example.project.data.model.GroupUser>>(emptyList())
     val groupUsers: StateFlow<List<org.example.project.data.model.GroupUser>> = _groupUsers
 
     fun generatePermitPDF(permitId: Int) {
         viewModelScope.launch {
             _pdfModuleType.value = "Permit"
+            _pdfItemId.value = permitId
             _isGeneratingPdf.value = true
             val request = org.example.project.data.model.GeneratePermitPdfRequest(permitId = permitId)
             when (val result = permitRepository.generatePermitPdf(request)) {
@@ -124,6 +129,7 @@ class HomeScreenViewModel(
     fun generatePdf(observationId: Int) {
         viewModelScope.launch {
             _pdfModuleType.value = "Observation"
+            _pdfItemId.value = observationId
             _isGeneratingPdf.value = true
             val request = org.example.project.data.model.GenerateObservationPdfRequest(observationId = observationId)
             when (val result = observationRepository.generatePdf(request)) {
@@ -159,6 +165,7 @@ class HomeScreenViewModel(
 
     fun clearPdfUrl() {
         _pdfUrl.value = null
+        _pdfItemId.value = null
     }
 
     fun approveOrRejectPendingAction(pendingActionId: Int, action: Int, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
@@ -222,7 +229,7 @@ class HomeScreenViewModel(
     }
 
     fun fetchGroupUsers(groupId: Int, groupCode: String) {
-        println("Called fetchGroupUsers")
+        appLog("Called fetchGroupUsers")
         viewModelScope.launch {
             when (val result = projectRepository.getGroupUsers(groupId, groupCode)) {
                 is NetworkResult.Success -> {
@@ -302,7 +309,7 @@ class HomeScreenViewModel(
 
             if (isContentsEmpty) {
                 queries.clearAllPreTaskContents()
-                println("🗑️ Cleared all PreTaskContent records")
+                appLog("🗑️ Cleared all PreTaskContent records")
                 return@transaction
             }
 
@@ -323,17 +330,17 @@ class HomeScreenViewModel(
             for (id in deletedIdsFromAPI) {
                 if (existingById.containsKey(id)) {
                     queries.deletePreTaskContent(id)
-                    println("🗑️ Deleted local content ID (explicit API deletion): $id")
+                    appLog("🗑️ Deleted local content ID (explicit API deletion): $id")
                 }
             }
 
             val missingIds = existingById.keys - apiIds - deletedIdsFromAPI
             for (id in missingIds) {
                 queries.deletePreTaskContent(id)
-                println("🗑️ Deleted local content ID (missing in API): $id")
+                appLog("🗑️ Deleted local content ID (missing in API): $id")
             }
         }
-        println("✅ Pre-task contents synced (added/updated/deleted/missing handled).")
+        appLog("✅ Pre-task contents synced (added/updated/deleted/missing handled).")
     }
 
     private suspend fun savePreTaskQuestions(
@@ -347,7 +354,7 @@ class HomeScreenViewModel(
 
             if (isQuestionsEmpty) {
                 queries.clearAllPreTaskQuestions()
-                println("🗑️ Cleared all PreTaskQuestion records")
+                appLog("🗑️ Cleared all PreTaskQuestion records")
                 return@transaction
             }
 
@@ -369,17 +376,17 @@ class HomeScreenViewModel(
             for (id in deletedIdsFromAPI) {
                 if (existingById.containsKey(id)) {
                     queries.deletePreTaskQuestion(id)
-                    println("🗑️ Deleted local question ID (explicit API deletion): $id")
+                    appLog("🗑️ Deleted local question ID (explicit API deletion): $id")
                 }
             }
 
             val missingIds = existingById.keys - apiIds - deletedIdsFromAPI
             for (id in missingIds) {
                 queries.deletePreTaskQuestion(id)
-                println("🗑️ Deleted local question ID (missing in API): $id")
+                appLog("🗑️ Deleted local question ID (missing in API): $id")
             }
         }
-        println("✅ Pre-task questions synced (added/updated/deleted/missing handled).")
+        appLog("✅ Pre-task questions synced (added/updated/deleted/missing handled).")
     }
 
     private suspend fun getLatestContentsUpdatedTime(): String? = withContext(Dispatchers.IO) {
@@ -419,13 +426,13 @@ class HomeScreenViewModel(
                                 }
                             }
                         }
-                        println("✅ Audit items updated locally with latest data!")
+                        appLog("✅ Audit items updated locally with latest data!")
                     } else {
-                        println("Audit items are already up-to-date — no changes needed.")
+                        appLog("Audit items are already up-to-date — no changes needed.")
                     }
                 }
                 is NetworkResult.Error -> {
-                    println("Failed to fetch audit items: ${result.message}")
+                    appLog("Failed to fetch audit items: ${result.message}")
                 }
             }
         }
@@ -460,13 +467,13 @@ class HomeScreenViewModel(
                                 }
                             }
                         }
-                        println("✅ Inspection contents updated locally with latest data!")
+                        appLog("✅ Inspection contents updated locally with latest data!")
                     } else {
-                        println("No new inspection contents to update — already up-to-date.")
+                        appLog("No new inspection contents to update — already up-to-date.")
                     }
                 }
                 is NetworkResult.Error -> {
-                    println("Failed to fetch inspection contents: ${result.message}")
+                    appLog("Failed to fetch inspection contents: ${result.message}")
                 }
             }
         }

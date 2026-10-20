@@ -64,21 +64,30 @@ class LoginViewModel(
                 password
             )) {
                 is NetworkResult.Success -> {
-                    result.data.auth?.let { auth ->
+                    val auth = result.data.auth
+                    if (auth?.access.isNullOrBlank()) {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = result.data.message?.takeIf { msg -> msg.isNotBlank() }
+                                    ?: "Authentication failed: Missing access token"
+                            )
+                        }
+                    } else {
                         authPreferences.saveTokens(
-                            access = auth.access ?: "",
+                            access = auth.access,
                             refresh = auth.refresh ?: "",
                             expiry = auth.tokenExpiry ?: 0L
                         )
                         authPreferences.saveLoggedInUser(result.data.user)
                         authPreferences.saveLoggedInUserInfo(result.data.userDetails)
-                    }
-                    authPreferences.saveLoginStatus(true)
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isLoginSuccess = true
-                        )
+                        authPreferences.saveLoginStatus(true)
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isLoginSuccess = true
+                            )
+                        }
                     }
                 }
                 is NetworkResult.Error -> {

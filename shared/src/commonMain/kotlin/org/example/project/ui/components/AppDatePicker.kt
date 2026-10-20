@@ -125,12 +125,12 @@ fun AppDatePicker(
                     onDateSelected(datePickerState.selectedDateMillis)
                     showDialog = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(Res.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(Res.string.cancel))
                 }
             }
         ) {

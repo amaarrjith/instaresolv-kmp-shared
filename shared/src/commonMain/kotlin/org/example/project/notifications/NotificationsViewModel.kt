@@ -14,13 +14,25 @@ class NotificationsViewModel(
 ): ViewModel() {
     private val _uiState = MutableStateFlow<NotificationUiState>(NotificationUiState.Loading)
     val uiState = _uiState.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     init {
         getNotifications()
     }
-    fun getNotifications() {
+
+    fun getNotifications(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _uiState.value = NotificationUiState.Loading
+            if (isRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _uiState.value = NotificationUiState.Loading
+            }
             val response = authRepository.getNotificationList()
+            if (isRefresh) {
+                _isRefreshing.value = false
+            }
             when(response) {
                 is NetworkResult.Success -> {
                     _uiState.value = NotificationUiState.Success(response.data)

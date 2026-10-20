@@ -4,10 +4,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -32,12 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.text.style.TextAlign
 import instaresolv.shared.generated.resources.Res
 import instaresolv.shared.generated.resources.ic_calendar
 import instaresolv.shared.generated.resources.ic_filter
@@ -45,6 +48,7 @@ import instaresolv.shared.generated.resources.ic_arrow_left
 import org.example.project.utilites.rtlScale
 import instaresolv.shared.generated.resources.ic_permit_work
 import org.example.project.colors.AppColors
+import org.example.project.utilites.AppPullToRefreshBox
 import org.example.project.data.model.PendingActionItem
 import org.example.project.data.model.PendingActionStatusType
 import org.example.project.data.model.PermitPendingActionItem
@@ -58,7 +62,6 @@ import org.example.project.utilites.ErrorRetryView
 import org.example.project.utilites.NavigationBackIcon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
-import kotlin.time.Clock
 import org.example.project.utilites.ToastHost
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -98,20 +101,26 @@ fun PendingActionListScreen(
     
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
+    val pdfModuleType by viewModel.pdfModuleType.collectAsState()
+    val pdfItemId by viewModel.pdfItemId.collectAsState()
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val pdfErrorToastMessage by viewModel.pdfErrorToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val isActionLoading by viewModel.isActionLoading.collectAsState()
     var isSubContractor by remember { mutableStateOf(false) }
+    val downloadingPermitReportMsg = stringResource(Res.string.downloading_permit_report)
+    val failedDownloadPermitReportMsg = stringResource(Res.string.failed_to_download_permit_report)
+    val requestDeleteSuccess = stringResource(Res.string.request_to_delete_observation_success)
+    val requestChangeSuccess = stringResource(Res.string.request_to_change_responsible_person_success)
 
     androidx.compose.runtime.LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Permit_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName(pdfModuleType, pdfItemId)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Permit Report")
+                viewModel.setPdfToastMessage(downloadingPermitReportMsg)
             } catch (e: Exception) {
-                viewModel.setPdfErrorToastMessage("Failed to download Permit Report")
+                viewModel.setPdfErrorToastMessage(failedDownloadPermitReportMsg)
             }
             viewModel.clearPdfUrl()
         }
@@ -139,13 +148,16 @@ fun PendingActionListScreen(
                     )
                     Text(
                         text = stringResource(Res.string.pendingActions).uppercase(),
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         style = textStyle(
                             size = 14.sp,
                             weight = FontWeight.Bold
                         ),
                         color = AppColors.Black
                     )
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Image(
                         painter = painterResource(Res.drawable.ic_filter),
                         contentDescription = null,
@@ -168,6 +180,7 @@ fun PendingActionListScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
                         .padding(horizontal = 24.dp)
                         .padding(top = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
@@ -195,70 +208,76 @@ fun PendingActionListScreen(
                         .padding(top = 20.dp)
                 ) {
                     if (selectedTab == 0) {
-                        if (uiState.isLoading) {
+                        if (uiState.isLoading && uiState.pendingActions.isEmpty()) {
                             AppLoader()
-                        } else if (uiState.error != null) {
+                        } else if (uiState.error != null && uiState.pendingActions.isEmpty()) {
                             ErrorRetryView(
                                 errorMessage = uiState.error ?: "",
                                 modifier = Modifier.fillMaxSize(),
                                 onRetryClick = { viewModel.fetchPendingActions() }
                             )
-                        } else if (uiState.pendingActions.isEmpty()) {
-                            EmptyScreenView("No pending actions found.")
                         } else {
                             val filteredActions = if (selectedFilters.isEmpty()) {
                                 uiState.pendingActions
                             } else {
                                 uiState.pendingActions.filter { selectedFilters.contains(it.type) }
                             }
-                            
-                            if (filteredActions.isEmpty()) {
-                                EmptyScreenView("No pending actions found.")
-                            } else {
-                                LazyColumn(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.spacedBy(15.dp)
-                                ) {
-                                    items(filteredActions) { action ->
-                                        PendingActionListItem(
-                                            action = action,
-                                            onClick = { selectedActionForSheet = action }
-                                        )
+                            AppPullToRefreshBox(
+                                isRefreshing = uiState.isLoading,
+                                onRefresh = { viewModel.fetchPendingActions() },
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                if (filteredActions.isEmpty()) {
+                                    EmptyScreenView(stringResource(Res.string.no_pending_actions_found))
+                                } else {
+                                    LazyColumn(
+                                        modifier = Modifier.fillMaxSize(),
+                                        verticalArrangement = Arrangement.spacedBy(15.dp)
+                                    ) {
+                                        items(filteredActions) { action ->
+                                            PendingActionListItem(
+                                                action = action,
+                                                onClick = { selectedActionForSheet = action }
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     } else {
                         // Permit Actions
-                        if (uiState.isPermitLoading) {
+                        if (uiState.isPermitLoading && uiState.permitPendingActions.isEmpty()) {
                             AppLoader()
-                        } else if (uiState.permitError != null) {
+                        } else if (uiState.permitError != null && uiState.permitPendingActions.isEmpty()) {
                             ErrorRetryView(
                                 errorMessage = uiState.permitError ?: "",
                                 modifier = Modifier.fillMaxSize(),
                                 onRetryClick = { viewModel.fetchPermitPendingActions() }
                             )
-                        } else if (uiState.permitPendingActions.isEmpty()) {
-                            EmptyScreenView("No permit actions found.")
                         } else {
                             val filteredPermitActions = if (selectedPermitFilters.isEmpty()) {
                                 uiState.permitPendingActions
                             } else {
                                 uiState.permitPendingActions.filter { selectedPermitFilters.contains(it.status) }
                             }
-                            
-                            if (filteredPermitActions.isEmpty()) {
-                                EmptyScreenView("No permit actions found.")
-                            } else {
-                                LazyColumn(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.spacedBy(15.dp)
-                                ) {
-                                    items(filteredPermitActions) { item ->
-                                        PermitPendingActionItem(
-                                            item = item,
-                                            onClick = { selectedPermitForSheet = item }
-                                        )
+                            AppPullToRefreshBox(
+                                isRefreshing = uiState.isPermitLoading,
+                                onRefresh = { viewModel.fetchPermitPendingActions() },
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                if (filteredPermitActions.isEmpty()) {
+                                    EmptyScreenView(stringResource(Res.string.no_permit_actions_found))
+                                } else {
+                                    LazyColumn(
+                                        modifier = Modifier.fillMaxSize(),
+                                        verticalArrangement = Arrangement.spacedBy(15.dp)
+                                    ) {
+                                        items(filteredPermitActions) { item ->
+                                            PermitPendingActionItem(
+                                                item = item,
+                                                onClick = { selectedPermitForSheet = item }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -291,15 +310,15 @@ fun PendingActionListScreen(
                     
                     val filters = if (selectedTab == 0) {
                         listOf(
-                            PendingActionStatusType.OPEN_OBSERVATION to "Open Observation",
-                            PendingActionStatusType.REQUEST_TO_JOIN_GROUP to "Request to Join Group",
-                            PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE to "Observation Responsibility Change",
-                            PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION to "Request to Delete Observation",
-                            PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT to "Review Observation Closeout"
+                            PendingActionStatusType.OPEN_OBSERVATION to stringResource(Res.string.openObservation),
+                            PendingActionStatusType.REQUEST_TO_JOIN_GROUP to stringResource(Res.string.requestToJoinProject),
+                            PendingActionStatusType.OBSERVATION_RESPONSIBILITY_CHANGE to stringResource(Res.string.observationResponsibilityChange),
+                            PendingActionStatusType.REQUEST_TO_DELETE_OBSERVATION to stringResource(Res.string.requestToDeleteObservation),
+                            PendingActionStatusType.REVIEW_OBSERVATION_CLOSEOUT to stringResource(Res.string.reviewObservationCloseout)
                         )
                     } else {
                         org.example.project.data.model.PermitStatus.entries.map {
-                            it.value to it.title
+                            it.value to stringResource(it.stringRes)
                         }
                     }
                     
@@ -541,7 +560,7 @@ fun PendingActionListScreen(
                             justification = justification,
                             onSuccess = {
                                 showRequestDeleteSheet = false
-                                actionSuccessMessage = "Request to delete observation submitted successfully."
+                                actionSuccessMessage = requestDeleteSuccess
                                 viewModel.fetchPendingActions()
                             },
                             onError = { err -> actionErrorMessage = err }
@@ -570,7 +589,7 @@ fun PendingActionListScreen(
                             responsiblePerson = responsiblePersonId,
                             onSuccess = {
                                 showRequestResponsiblePersonSheet = false
-                                actionSuccessMessage = "Request to change responsible person submitted successfully."
+                                actionSuccessMessage = requestChangeSuccess
                                 viewModel.fetchPendingActions()
                             },
                             onError = { err -> actionErrorMessage = err }
@@ -583,9 +602,9 @@ fun PendingActionListScreen(
         justification?.let { msg ->
             AppStatusDialog(
                 visible = true,
-                title = "Justification",
+                title = stringResource(Res.string.justification),
                 description = msg,
-                buttonText = "OK",
+                buttonText = stringResource(Res.string.ok),
                 icon = Res.drawable.ic_justification,
                 onDismiss = {
                     justification = null
@@ -594,11 +613,11 @@ fun PendingActionListScreen(
         }
 
         actionSuccessMessage?.let { msg ->
-            org.example.project.ui.components.AppStatusDialog(
+            AppStatusDialog(
                 visible = true,
-                title = "Success",
+                title = stringResource(Res.string.success),
                 description = msg,
-                buttonText = "OK",
+                buttonText = stringResource(Res.string.ok),
                 onDismiss = { actionSuccessMessage = null }
             )
         }
@@ -679,11 +698,14 @@ fun PendingActionListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                StatusBadge(
-                    type = action.type,
-                    isEditable = isEditable
-                )
+                Box(modifier = Modifier.weight(1f, fill = false)) {
+                    StatusBadge(
+                        type = action.type,
+                        isEditable = isEditable
+                    )
+                }
 
+                Spacer(modifier = Modifier.width(8.dp))
                 Spacer(modifier = Modifier.weight(1f))
 
                 if (!action.date.isNullOrEmpty()) {
@@ -693,7 +715,8 @@ fun PendingActionListItem(
                             size = 12.sp,
                             weight = FontWeight.Normal
                         ),
-                        color = AppColors.Black
+                        color = AppColors.Black,
+                        maxLines = 1
                     )
                 }
             }
@@ -798,6 +821,8 @@ fun StatusBadge(type: Int, isEditable: Boolean) {
     ) {
         Text(
             text = text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             style = textStyle(
                 weight = FontWeight.Normal,
                 size = 12.sp,
@@ -849,14 +874,18 @@ fun PermitPendingActionItem(item: PermitPendingActionItem, onClick: () -> Unit =
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 item.status?.let { statusId ->
-                    PermitStatusBadge(statusId)
+                    Box(modifier = Modifier.weight(1f, fill = false)) {
+                        PermitStatusBadge(statusId)
+                    }
                 }
+                Spacer(modifier = Modifier.width(8.dp))
                 Spacer(modifier = Modifier.weight(1f))
                 if (!item.createdAt.isNullOrEmpty()) {
                     Text(
                         text = timeAgo(item.createdAt, isUtc = true),
                         style = textStyle(size = 12.sp, weight = FontWeight.Normal),
-                        color = AppColors.TextGray
+                        color = AppColors.TextGray,
+                        maxLines = 1
                     )
                 }
             }
@@ -931,9 +960,9 @@ fun PermitPendingActionItem(item: PermitPendingActionItem, onClick: () -> Unit =
 fun PermitStatusBadge(statusId: Int) {
     val permitStatus = PermitStatus.fromValue(statusId)
     val (bgColor, label) = if (permitStatus != null) {
-        Color(permitStatus.colorHex).copy(alpha = 0.15f) to permitStatus.title
+        Color(permitStatus.colorHex).copy(alpha = 0.15f) to stringResource(permitStatus.stringRes)
     } else {
-        Color(0xFFE5E5E5) to "Unknown"
+        Color(0xFFE5E5E5) to stringResource(Res.string.unknown)
     }
     val textColor = if (permitStatus != null) Color(permitStatus.colorHex) else AppColors.TextGray
 
@@ -944,6 +973,8 @@ fun PermitStatusBadge(statusId: Int) {
     ) {
         Text(
             text = label,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             style = textStyle(weight = FontWeight.Normal, size = 12.sp),
             color = textColor
         )

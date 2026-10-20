@@ -32,8 +32,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -117,16 +119,19 @@ fun ObservationDetailScreen(
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = rememberFileDownloader()
     val textSharer = rememberTextSharer()
+    val coroutineScope = rememberCoroutineScope()
     var showSharePopup by remember { mutableStateOf(false) }
+    val downloadingObservationReportMsg = stringResource(Res.string.downloading_observation_report)
+    val descriptionRequiredErrorMsg = stringResource(Res.string.description_required_error)
 
     var isDeleteObservationClicked by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Observation_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("Observation", observationId)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Observation Report")
+                viewModel.setPdfToastMessage(downloadingObservationReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -201,7 +206,7 @@ fun ObservationDetailScreen(
                                 title = stringResource(Res.string.close),
                                 onClick = {
                                     if (closeDescription.isBlank()) {
-                                        errorMessage = "Description is mandatory"
+                                        errorMessage = descriptionRequiredErrorMsg
                                     } else {
                                         viewModel.closeObservation(observationId, closeDescription, closeImages)
                                     }
@@ -330,12 +335,15 @@ fun ObservationDetailScreen(
         
         if (showSharePopup) {
             val detail = (uiState as? ObservationDetailUiState.Success)?.detail
+            val untitledText = stringResource(Res.string.untitled)
             SharePopupDialog(
                 onDismiss = { showSharePopup = false },
                 onTxtClick = {
                     detail?.let {
-                        val text = DetailTextFormatter.formatObservation(it)
-                        textSharer.shareText(text, it.observationTitle ?: "Observation Details")
+                        coroutineScope.launch {
+                            val text = DetailTextFormatter.formatObservation(it, observationId)
+                            textSharer.shareText(text, it.observationTitle ?: untitledText)
+                        }
                     }
                 },
                 onPdfClick = { viewModel.generatePdf(observationId) }
@@ -346,8 +354,8 @@ fun ObservationDetailScreen(
             AppStatusDialog(
                 visible = true,
                 title = stringResource(Res.string.success),
-                description = "Observation closed successfully.",
-                buttonText = "OK",
+                description = stringResource(Res.string.observation_closed_success),
+                buttonText = stringResource(Res.string.close),
                 onDismiss = {
                     onRefreshList()
                     showSuccessDialog = false
@@ -361,7 +369,7 @@ fun ObservationDetailScreen(
                 visible = true,
                 title = stringResource(Res.string.success),
                 description = msg,
-                buttonText = "OK",
+                buttonText = stringResource(Res.string.ok),
                 onDismiss = {
                     deleteSuccessMessage = null
                     onRefreshList()
@@ -436,7 +444,7 @@ fun ObservationDetailContent(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = detail.observationTitle ?: "Untitled",
+                    text = detail.observationTitle ?: stringResource(Res.string.untitled),
                     style = textStyle(size = 16.sp, weight = FontWeight.Bold),
                     color = AppColors.Black
                 )
@@ -987,7 +995,7 @@ fun CloseObservationForm(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Upload Image ${index + 1}",
+                    text = stringResource(Res.string.upload_image_index, index + 1),
                     style = textStyle(
                         size = 12.sp,
                         weight = FontWeight.SemiBold

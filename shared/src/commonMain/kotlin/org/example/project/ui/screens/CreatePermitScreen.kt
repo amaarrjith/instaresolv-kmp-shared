@@ -70,6 +70,9 @@ fun CreatePermitScreen(
     var localError by remember { mutableStateOf<String?>(null) }
     val showExitPopup = remember { mutableStateOf(false) }
     var draftSuccess by remember { mutableStateOf(false) }
+    val selectDateError = stringResource(Res.string.selectDate)
+    val selectStartTimeError = stringResource(Res.string.error_select_start_time)
+    val endTimeGreaterError = stringResource(Res.string.error_end_time_greater)
     val isToday = remember(uiState.permitDateMillis) {
         uiState.permitDateMillis?.let { millis ->
             val selectedDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -242,7 +245,7 @@ fun CreatePermitScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = buildAnnotatedString {
-                                    append("Start Time ")
+                                    append("${stringResource(Res.string.startTime)} ")
                                     withStyle(SpanStyle(color = Color.Red)) { append("*") }
                                 },
                                 style = textStyle(12.sp, FontWeight.SemiBold)
@@ -260,7 +263,7 @@ fun CreatePermitScreen(
                                     Box(
                                         modifier = Modifier
                                             .matchParentSize()
-                                            .clickable { localError = "Select Date" }
+                                            .clickable { localError = selectDateError }
                                     )
                                 }
                             }
@@ -268,7 +271,7 @@ fun CreatePermitScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = buildAnnotatedString {
-                                    append("End Time ")
+                                    append("${stringResource(Res.string.endTime)} ")
                                     withStyle(SpanStyle(color = Color.Red)) { append("*") }
                                 },
                                 style = textStyle(12.sp, FontWeight.SemiBold)
@@ -280,7 +283,7 @@ fun CreatePermitScreen(
                                     selectedTime = uiState.endTime,
                                     onTimeSelected = { endTime -> 
                                         if (uiState.startTime.isNotBlank() && parseTime(endTime) <= parseTime(uiState.startTime)) {
-                                            localError = "End time must be greater than start time"
+                                            localError = endTimeGreaterError
                                         } else {
                                             viewModel.updateEndTime(endTime)
                                         }
@@ -292,13 +295,13 @@ fun CreatePermitScreen(
                                     Box(
                                         modifier = Modifier
                                             .matchParentSize()
-                                            .clickable { localError = "Select Date" }
+                                            .clickable { localError = selectDateError }
                                     )
                                 } else if (uiState.startTime.isBlank()) {
                                     Box(
                                         modifier = Modifier
                                             .matchParentSize()
-                                            .clickable { localError = "Select start time" }
+                                            .clickable { localError = selectStartTimeError }
                                     )
                                 }
                             }
@@ -324,7 +327,7 @@ fun CreatePermitScreen(
                                     )
                                 },
                                 title = item.title ?: "",
-                                placeholder = "Enter ${item.title ?: ""}"
+                                placeholder = stringResource(Res.string.enter_field, item.title ?: "")
                             )
                         }
                     }
@@ -376,7 +379,7 @@ fun CreatePermitScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = buildAnnotatedString {
-                                        append("Time")
+                                        append(stringResource(Res.string.time))
                                     },
                                     style = textStyle(12.sp, FontWeight.SemiBold)
                                 )
@@ -391,7 +394,7 @@ fun CreatePermitScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = buildAnnotatedString {
-                                        append("Date")
+                                        append(stringResource(Res.string.date))
                                     },
                                     style = textStyle(12.sp, FontWeight.SemiBold)
                                 )
@@ -429,8 +432,8 @@ fun CreatePermitScreen(
                 org.example.project.ui.components.AppStatusDialog(
                     visible = uiState.submitSuccess,
                     title = stringResource(Res.string.success),
-                    description = uiState.successMessage ?: "Success",
-                    buttonText = "OK",
+                    description = uiState.successMessage ?: stringResource(Res.string.success),
+                    buttonText = stringResource(Res.string.ok),
                     onDismiss = {
                         uiState.submitSuccess = false
                         onBackClicked()
@@ -442,8 +445,8 @@ fun CreatePermitScreen(
                 org.example.project.ui.components.AppStatusDialog(
                     visible = draftSuccess,
                     title = stringResource(Res.string.success),
-                    description = "Permit Saved as Draft Successfully",
-                    buttonText = "OK",
+                    description = stringResource(Res.string.permit_draft_saved_success),
+                    buttonText = stringResource(Res.string.close),
                     onDismiss = {
                         draftSuccess = false
                         onBackClicked()

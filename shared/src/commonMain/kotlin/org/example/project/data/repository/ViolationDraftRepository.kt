@@ -60,4 +60,10 @@ class ViolationDraftRepository(private val database: AppDatabase) {
     suspend fun deleteDraft(id: Long) = withContext(Dispatchers.IO) {
         database.appDatabaseQueries.deleteViolationDraft(id)
     }
+
+    suspend fun deleteDrafts(ids: List<Long>) = withContext(Dispatchers.IO) {
+        database.appDatabaseQueries.transaction {
+            ids.forEach { database.appDatabaseQueries.deleteViolationDraft(it) }
+        }
+    }
 }

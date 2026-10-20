@@ -56,6 +56,7 @@ import org.koin.compose.koinInject
 
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextOverflow
 import org.example.project.data.model.Project
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
@@ -94,27 +95,42 @@ fun AppTabBar(
         CompanyType.fromInt(viewModel.user?.userRole) == CompanyType.SUB_CONTRACTOR
     }
 
-    val navItems = listOf(
-        TabBarItems(
-            stringResource(Res.string.home),
-            Res.drawable.ic_home_selected,
-            Res.drawable.ic_home_unselected
-        ),
-        TabBarItems(
-            stringResource(Res.string.project),
-            Res.drawable.ic_project_selected,
-            Res.drawable.ic_project_unselected
-        ),
-        TabBarItems(
-            stringResource(Res.string.briefs),
-            Res.drawable.ic_briefs_selected,
-            Res.drawable.ic_briefs_unselected
-        ),
-        TabBarItems(
-            stringResource(Res.string.settings),
-            Res.drawable.ic_settings_selected,
-            Res.drawable.ic_settings_unselected
+    val homeTitle = stringResource(Res.string.home)
+    val projectTitle = stringResource(Res.string.project)
+    val briefsTitle = stringResource(Res.string.briefs)
+    val settingsTitle = stringResource(Res.string.settings)
+
+    val navItems = remember(homeTitle, projectTitle, briefsTitle, settingsTitle) {
+        listOf(
+            TabBarItems(
+                homeTitle,
+                Res.drawable.ic_home_selected,
+                Res.drawable.ic_home_unselected
+            ),
+            TabBarItems(
+                projectTitle,
+                Res.drawable.ic_project_selected,
+                Res.drawable.ic_project_unselected
+            ),
+            TabBarItems(
+                briefsTitle,
+                Res.drawable.ic_briefs_selected,
+                Res.drawable.ic_briefs_unselected
+            ),
+            TabBarItems(
+                settingsTitle,
+                Res.drawable.ic_settings_selected,
+                Res.drawable.ic_settings_unselected
+            )
         )
+    }
+
+    val navBarItemColors = NavigationBarItemDefaults.colors(
+        indicatorColor = Color.Transparent,
+        selectedIconColor = Color.Transparent,
+        selectedTextColor = AppColors.Primary,
+        unselectedIconColor = Color.Transparent,
+        unselectedTextColor = AppColors.TextGray
     )
 
     Scaffold(
@@ -164,9 +180,11 @@ fun AppTabBar(
                         label = {
                             Text(
                                 text = item.title.uppercase(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 style = textStyle(
                                     size = 12.sp,
-                                    weight = FontWeight.SemiBold,
+                                    weight = FontWeight.SemiBold
                                 ),
                                 color = if (isSelected) {
                                     AppColors.Primary
@@ -175,13 +193,7 @@ fun AppTabBar(
                                 }
                             )
                         },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = Color.Transparent,
-                            selectedIconColor = Color.Transparent,
-                            selectedTextColor = AppColors.Primary,
-                            unselectedIconColor = Color.Transparent,
-                            unselectedTextColor = AppColors.TextGray
-                        )
+                        colors = navBarItemColors
                     )
                 }
             }

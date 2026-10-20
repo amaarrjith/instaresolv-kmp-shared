@@ -98,6 +98,7 @@ fun ObservationListScreen(
     var selectedObservationId by remember { mutableStateOf<Int?>(null) }
     val exportUrl by viewModel.exportUrl.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val downloadingObservationReportMsg = stringResource(Res.string.downloading_observation_report)
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -109,9 +110,9 @@ fun ObservationListScreen(
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
-                val fileName = "Observation_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                val fileName = org.example.project.utilites.getExcelReportFileName("Observation", url)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setExportToastMessage("Downloading Observation Report")
+                viewModel.setExportToastMessage(downloadingObservationReportMsg)
             } catch (e: Exception) {
                 viewModel.setErrorExcel(e.message)
             }
@@ -143,13 +144,16 @@ fun ObservationListScreen(
                 )
                 Text(
                     text = stringResource(Res.string.observations).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = {
                     onDraftClicked()
                 })
@@ -213,7 +217,7 @@ fun ObservationListScreen(
                     AppFilterBottomSheet(
                         appliedFilterState = uiState.appliedFilterState,
                         isFromObservation = true,
-                        moduleName = "Observations",
+                        moduleName = stringResource(Res.string.observations),
                         onApply = { state -> 
                             viewModel.applyFilters(state)
                             showFilterModal = false
@@ -270,8 +274,8 @@ fun ObservationListScreen(
                                     key = { index -> uiState.observations[index].observationId }
                                 ) { index ->
                                     val observation = uiState.observations[index]
-                                    if (index >= uiState.observations.size - 1 && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
-                                        LaunchedEffect(key1 = index) {
+                                    if (index >= (uiState.observations.size - 4).coerceAtLeast(0) && !uiState.isLoading && !uiState.isPaginating && !uiState.endReached) {
+                                        LaunchedEffect(key1 = uiState.observations.size) {
                                             viewModel.fetchObservations(isRefresh = false)
                                         }
                                     }
@@ -408,7 +412,8 @@ fun ObservationListItem(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 WebImageView(
-                    imageUrl = observation.images.firstOrNull() ?: "", // using first image if available
+                    imageUrl = observation.images.firstOrNull() ?: "",
+                    placeHolder = Res.drawable.ic_assigned_observation,// using first image if available
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -509,7 +514,7 @@ fun ObservationListItem(
                 }
                 // Title
                 Text(
-                    text = observation.observationTitle ?: "Untitled Observation",
+                    text = observation.observationTitle ?: stringResource(Res.string.untitled_observation),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2

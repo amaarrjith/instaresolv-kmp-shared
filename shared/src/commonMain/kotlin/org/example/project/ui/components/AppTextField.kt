@@ -201,23 +201,25 @@ fun AppSearchBar(
                 ).copy(color = AppColors.Black),
                 cursorBrush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary),
                 decorationBox = { innerTextField ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            innerTextField()
+                    if (value.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                innerTextField()
+                            }
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_toast_close),
+                                contentDescription = stringResource(Res.string.removeImage),
+                                tint = Color(0xFFFF4B4B),
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clickable {
+                                        onValueChange("")
+                                    }
+                            )
                         }
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_toast_close),
-                            contentDescription = stringResource(Res.string.removeImage),
-                            tint = Color(0xFFFF4B4B),
-                            modifier = Modifier
-                                .size(12.dp)
-                                .clickable {
-                                    onValueChange("")
-                                }
-                        )
                     }
                 }
             )

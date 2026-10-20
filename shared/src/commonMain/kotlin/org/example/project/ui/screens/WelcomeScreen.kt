@@ -197,7 +197,7 @@ fun WelcomeScreen(
                 
                 ColumnView(
                     title = stringResource(Res.string.resolve1),
-                    desc = "Take action and\nclose faster",
+                    desc = stringResource(Res.string.welcome_slide1_title),
                     icon = Res.drawable.ic_toast_success,
                     isActive = currentIndex == 1,
                     primaryColor = primaryColor,
@@ -214,7 +214,7 @@ fun WelcomeScreen(
                 
                 ColumnView(
                     title = stringResource(Res.string.comply),
-                    desc = "Ensure compliance\nwith ease",
+                    desc = stringResource(Res.string.welcome_slide2_title),
                     icon = Res.drawable.ic_audit_inspection,
                     isActive = currentIndex == 2,
                     primaryColor = primaryColor,
@@ -273,7 +273,7 @@ fun WelcomeScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_arrow_left),
-                            contentDescription = "Back",
+                            contentDescription = stringResource(Res.string.back),
                             tint = Color.Black,
                             modifier = Modifier.size(20.dp).rtlScale()
                         )

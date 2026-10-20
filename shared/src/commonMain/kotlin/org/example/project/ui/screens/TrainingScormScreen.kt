@@ -25,6 +25,8 @@ import kotlinx.coroutines.delay
 import org.example.project.ui.components.ScormWebViewContainer
 import org.example.project.utilites.LockScreenOrientation
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import instaresolv.shared.generated.resources.back
 
 @Composable
 fun TrainingScormScreen(
@@ -80,7 +82,7 @@ fun TrainingScormScreen(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_left),
-                    contentDescription = "Back",
+                    contentDescription = stringResource(Res.string.back),
                     tint = Color.White,
                     modifier = Modifier.size(24.dp)
                 )

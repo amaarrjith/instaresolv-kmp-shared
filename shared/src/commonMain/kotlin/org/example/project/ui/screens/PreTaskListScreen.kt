@@ -84,6 +84,7 @@ fun PreTaskListScreen(
     val exportUrl by viewModel.exportUrl.collectAsState()
     val exportToastMessage by viewModel.exportToastMessage.collectAsState()
     val fileDownloader = rememberFileDownloader()
+    val downloadingPreTaskReportMsg = stringResource(Res.string.downloading_pre_task_report)
 
     var errorToastMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
@@ -95,9 +96,9 @@ fun PreTaskListScreen(
     LaunchedEffect(exportUrl) {
         exportUrl?.let { url ->
             try {
-                val fileName = "PreTask_Report_${Clock.System.now().toEpochMilliseconds()}.csv"
+                val fileName = org.example.project.utilites.getExcelReportFileName("PreTask", url)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setExportToastMessage("Downloading Pre Task Report")
+                viewModel.setExportToastMessage(downloadingPreTaskReportMsg)
             } catch (e: Exception) {
                 viewModel.setErrorExcel(e.message)
             }
@@ -127,14 +128,16 @@ fun PreTaskListScreen(
                 NavigationBackIcon(onBackClicked)
                 Text(
                     text = stringResource(Res.string.briefing).uppercase(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
                     ),
                     color = AppColors.Black
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 DraftButton(onDraftClicked = onDraftClicked)
                 Spacer(modifier = Modifier.width(8.dp))
                 NewButton(onNewClicked = {onCreateClicked()})
@@ -315,6 +318,7 @@ fun PreTaskListItem(
             Box {
                 WebImageView(
                     imageUrl = preTask.images?.firstOrNull()?.image ?: "",
+                    placeHolder = Res.drawable.ic_pretask_placeholder,
                     modifier = Modifier
                         .width(70.dp)
                         .height(80.dp)
@@ -345,7 +349,7 @@ fun PreTaskListItem(
             ) {
 
                 Text(
-                    text = preTask.taskTitle ?: "Untitled Pre Task",
+                    text = preTask.taskTitle ?: stringResource(Res.string.untitled_pre_task),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2
@@ -390,37 +394,38 @@ fun PreTaskListItem(
                 }
 
                 // Title
-
-                // Facilities row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    WebImageView(
-                        imageUrl = preTask.facilities?.groupImage ?: "",
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier.weight(1f, fill = false)
+                if (preTask.facilities != null) {
+                    // Facilities row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        WebImageView(
+                            imageUrl = preTask.facilities.groupImage ?: "",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier.weight(1f, fill = false)
+                        ) {
+                            Text(
+                                text = preTask.facilities.groupName ?: "",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = textStyle(size = 11.sp, weight = FontWeight.Medium),
+                                color = AppColors.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = preTask.facilities?.groupName ?: "",
+                            text = preTask.facilities.groupCode ?: "",
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
                             style = textStyle(size = 11.sp, weight = FontWeight.Medium),
                             color = AppColors.Black
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = preTask.facilities?.groupCode ?: "",
-                        maxLines = 1,
-                        style = textStyle(size = 11.sp, weight = FontWeight.Medium),
-                        color = AppColors.Black
-                    )
                 }
             }
         }

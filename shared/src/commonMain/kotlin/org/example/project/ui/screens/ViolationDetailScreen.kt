@@ -18,7 +18,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,14 +69,18 @@ fun ViolationDetailScreen(
     val pdfToastMessage by viewModel.pdfToastMessage.collectAsState()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
     val textSharer = org.example.project.utilites.rememberTextSharer()
+    val coroutineScope = rememberCoroutineScope()
     var showSharePopup by remember { mutableStateOf(false) }
+    val downloadingViolationReportMsg = stringResource(Res.string.downloading_violation_report)
+
+    var isTranslationDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Violation_PDF_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("Violation", violationId)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Violation Report")
+                viewModel.setPdfToastMessage(downloadingViolationReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -84,6 +90,13 @@ fun ViolationDetailScreen(
 
     LaunchedEffect(violationId) {
         viewModel.loadViolationDetail(violationId)
+    }
+
+    LaunchedEffect(uiState) {
+        val detail = uiState.detail
+        if (detail != null && !detail.translatedDescription.isNullOrBlank()) {
+            isTranslationDone = true
+        }
     }
 
     Scaffold(
@@ -151,7 +164,17 @@ fun ViolationDetailScreen(
                     ViolationDetailContent(
                         detail = uiState.detail!!,
                         onImageClick = { previewImageUrl = it },
-                        onNoTranslation = { infoMessage = noTranslationText }
+                        isTranslationDone = isTranslationDone,
+                        onTranslate = {
+                            val detail = uiState.detail
+                            val hasTranslation = !detail?.translatedDescription.isNullOrBlank() ||
+                                detail?.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
+                            if (hasTranslation) {
+                                isTranslationDone = !isTranslationDone
+                            } else {
+                                infoMessage = noTranslationText
+                            }
+                        }
                     )
                 }
                 else -> {
@@ -187,12 +210,15 @@ fun ViolationDetailScreen(
         
         if (showSharePopup) {
             val detail = uiState.detail
+            val violationsText = stringResource(Res.string.violations)
             org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
                 onTxtClick = {
                     detail?.let {
-                        val text = org.example.project.utilites.DetailTextFormatter.formatViolation(it)
-                        textSharer.shareText(text, "Violation Details #${it.id}")
+                        coroutineScope.launch {
+                            val text = org.example.project.utilites.DetailTextFormatter.formatViolation(it)
+                            textSharer.shareText(text, "$violationsText #${it.id}")
+                        }
                     }
                 },
                 onPdfClick = { viewModel.generatePdf(violationId) }
@@ -205,9 +231,9 @@ fun ViolationDetailScreen(
 fun ViolationDetailContent(
     detail: ViolationData,
     onImageClick: (String) -> Unit,
-    onNoTranslation: () -> Unit
+    isTranslationDone: Boolean,
+    onTranslate: () -> Unit
 ) {
-    var isTranslationDone by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
@@ -240,7 +266,10 @@ fun ViolationDetailContent(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Violation by ${detail.employeeName ?: "Unknown"}",
+                    text = stringResource(
+                        Res.string.violation_by_employee,
+                        detail.employeeName ?: "-"
+                    ),
                     style = textStyle(size = 16.sp, weight = FontWeight.Bold),
                     color = AppColors.Black
                 )
@@ -250,15 +279,7 @@ fun ViolationDetailContent(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(if (isTranslationDone) AppColors.Primary else Color(0xFF8F9098))
-                    .clickable {
-                        val hasTranslation = !detail.translatedDescription.isNullOrBlank() ||
-                            detail.images?.any { !it.translatedImageDescription.isNullOrBlank() } == true
-                        if (hasTranslation) {
-                            isTranslationDone = !isTranslationDone
-                        } else {
-                            onNoTranslation()
-                        }
-                    },
+                    .clickable { onTranslate() },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -301,7 +322,7 @@ fun ViolationDetailContent(
                             .background(Color.Gray)
                     ) {
                         Text(
-                            text = detail.facilities?.groupCode ?: "",
+                            text = detail.facilities.groupCode ?: "",
                             modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
                             style = textStyle(
                                 size = 10.sp,
@@ -397,7 +418,7 @@ fun ViolationDetailContent(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = detail.location ?: "-",
+            text = detail.location?.takeIf { it.isNotEmpty() } ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
             color = AppColors.Black
         )
@@ -408,26 +429,36 @@ fun ViolationDetailContent(
 
         // Description
         Text(
-            text = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) {
-                buildAnnotatedString {
-                    append(stringResource(Res.string.description))
-                    withStyle(SpanStyle(color = AppColors.SkyBlue, fontWeight = FontWeight.Medium)) {
-                        append(" (${stringResource(Res.string.aiTranslated)})")
-                    }
-                }
-            } else {
-                buildAnnotatedString { append(stringResource(Res.string.description)) }
-            },
+            text = stringResource(Res.string.description),
             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
             color = AppColors.TextGray
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = (if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) detail.translatedDescription else detail.description)
-                ?.takeIf { it.isNotBlank() } ?: "-",
+            text = detail.description?.takeIf { it.isNotBlank() } ?: "-",
             style = textStyle(size = 14.sp, weight = FontWeight.Medium),
-            color = if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
+            color = AppColors.Black
         )
+
+        if (isTranslationDone && !detail.translatedDescription.isNullOrBlank()) {
+            Spacer(Modifier.height(24.dp))
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(Res.string.description))
+                    withStyle(SpanStyle(color = AppColors.SkyBlue, fontWeight = FontWeight.Medium)) {
+                        append(" (${stringResource(Res.string.aiTranslated)})")
+                    }
+                },
+                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                color = AppColors.TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = detail.translatedDescription,
+                style = textStyle(size = 14.sp, weight = FontWeight.Medium),
+                color = AppColors.SkyBlue
+            )
+        }
 
         Spacer(Modifier.height(24.dp))
 
@@ -436,7 +467,7 @@ fun ViolationDetailContent(
             images = detail.images,
             onImageClick = onImageClick,
             isTranslationDone = isTranslationDone,
-            emptyMessage = "No Images Uploaded"
+            emptyMessage = stringResource(Res.string.no_images_uploaded)
         )
         
         Spacer(Modifier.height(40.dp))

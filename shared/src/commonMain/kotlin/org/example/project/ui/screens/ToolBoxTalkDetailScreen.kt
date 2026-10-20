@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +58,9 @@ fun ToolBoxTalkDetailScreen(
     var showSharePopup by remember { mutableStateOf(false) }
     val textSharer = org.example.project.utilites.rememberTextSharer()
     val fileDownloader = org.example.project.utilites.rememberFileDownloader()
+    val coroutineScope = rememberCoroutineScope()
     val noTranslationText = stringResource(Res.string.noTranslationInfoAvailable)
+    val downloadingToolboxTalkReportMsg = stringResource(Res.string.downloading_toolbox_talk_report)
 
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
     val pdfUrl by viewModel.pdfUrl.collectAsState()
@@ -66,9 +69,9 @@ fun ToolBoxTalkDetailScreen(
     LaunchedEffect(pdfUrl) {
         pdfUrl?.let { url ->
             try {
-                val fileName = "Toolbox_Talk_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                val fileName = org.example.project.utilites.getPdfReportFileName("Toolbox Talk", id)
                 fileDownloader.downloadFile(url, fileName)
-                viewModel.setPdfToastMessage("Downloading Toolbox Talk Report")
+                viewModel.setPdfToastMessage(downloadingToolboxTalkReportMsg)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -78,6 +81,17 @@ fun ToolBoxTalkDetailScreen(
 
     LaunchedEffect(id) {
         viewModel.loadToolBoxTalkDetail(id)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is ToolBoxTalkDetailUiState.Success) {
+            val successState = uiState as ToolBoxTalkDetailUiState.Success
+            val hasTranslation = !successState.data.translatedTopic.isNullOrBlank() ||
+                successState.data.discussionPoints?.any { !it.translatedPoint.isNullOrBlank() } == true
+            if (hasTranslation) {
+                isTranslationDone = true
+            }
+        }
     }
 
     Scaffold(
@@ -204,8 +218,21 @@ fun ToolBoxTalkDetailScreen(
                         Column(modifier = Modifier.padding(horizontal = 22.dp)) {
                             // Topic
                             Text(
-                                text = if (isTranslationDone && !data.translatedTopic.isNullOrBlank()) {
-                                    buildAnnotatedString {
+                                text = stringResource(Res.string.topic),
+                                style = textStyle(12.sp, FontWeight.Normal),
+                                color = AppColors.TextGray
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = data.topic ?: "N/A",
+                                style = textStyle(16.sp, FontWeight.Bold),
+                                color = AppColors.Black
+                            )
+
+                            if (isTranslationDone && !data.translatedTopic.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = buildAnnotatedString {
                                         append(stringResource(Res.string.topic))
                                         withStyle(
                                             SpanStyle(
@@ -215,20 +242,17 @@ fun ToolBoxTalkDetailScreen(
                                         ) {
                                             append(" (${stringResource(Res.string.aiTranslated)})")
                                         }
-                                    }
-                                } else {
-                                    buildAnnotatedString { append(stringResource(Res.string.topic)) }
-                                },
-                                style = textStyle(12.sp, FontWeight.Normal),
-                                color = AppColors.TextGray
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = (if (isTranslationDone && !data.translatedTopic.isNullOrBlank()) data.translatedTopic else data.topic)
-                                    ?: "N/A",
-                                style = textStyle(16.sp, FontWeight.Bold),
-                                color = if (isTranslationDone && !data.translatedTopic.isNullOrBlank()) AppColors.SkyBlue else AppColors.Black
-                            )
+                                    },
+                                    style = textStyle(12.sp, FontWeight.Normal),
+                                    color = AppColors.TextGray
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = data.translatedTopic,
+                                    style = textStyle(16.sp, FontWeight.Bold),
+                                    color = AppColors.SkyBlue
+                                )
+                            }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
@@ -375,11 +399,21 @@ fun ToolBoxTalkDetailScreen(
                                             style = textStyle(12.sp, FontWeight.SemiBold),
                                             color = AppColors.Black
                                         )
-                                        Text(
-                                            text = dp.point ?: "",
-                                            style = textStyle(12.sp, FontWeight.Normal),
-                                            color = AppColors.Black
-                                        )
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = dp.point ?: "",
+                                                style = textStyle(12.sp, FontWeight.Normal),
+                                                color = AppColors.Black
+                                            )
+                                            if (isTranslationDone && !dp.translatedPoint.isNullOrBlank()) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = dp.translatedPoint,
+                                                    style = textStyle(12.sp, FontWeight.Medium),
+                                                    color = AppColors.SkyBlue
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                                 HorizontalDivider(
@@ -392,7 +426,7 @@ fun ToolBoxTalkDetailScreen(
                             if (!data.attendees.isNullOrEmpty()) {
                                 val attendeesList = data.attendees
                                 Text(
-                                    text = "ATTENDEES (${attendeesList.size})",
+                                    text = stringResource(Res.string.attendees_count, attendeesList.size),
                                     style = textStyle(12.sp, FontWeight.Bold),
                                     color = AppColors.BlackText
                                 )
@@ -418,25 +452,25 @@ fun ToolBoxTalkDetailScreen(
                                                     .padding(horizontal = 16.dp, vertical = 12.dp)
                                             ) {
                                                 Text(
-                                                    "Employee Code",
+                                                    stringResource(Res.string.employeeCode),
                                                     style = textStyle(12.sp, FontWeight.Medium),
                                                     color = AppColors.TextGray,
                                                     modifier = Modifier.width(120.dp)
                                                 )
                                                 Text(
-                                                    "Name",
+                                                    stringResource(Res.string.employeeName),
                                                     style = textStyle(12.sp, FontWeight.Medium),
                                                     color = AppColors.TextGray,
                                                     modifier = Modifier.width(180.dp)
                                                 )
                                                 Text(
-                                                    "Company",
+                                                    stringResource(Res.string.companyName),
                                                     style = textStyle(12.sp, FontWeight.Medium),
                                                     color = AppColors.TextGray,
                                                     modifier = Modifier.width(150.dp)
                                                 )
                                                 Text(
-                                                    "Profession",
+                                                    stringResource(Res.string.profession),
                                                     style = textStyle(12.sp, FontWeight.Medium),
                                                     color = AppColors.TextGray,
                                                     modifier = Modifier.width(150.dp)
@@ -544,12 +578,15 @@ fun ToolBoxTalkDetailScreen(
 
         if (showSharePopup) {
             val detail = (uiState as? ToolBoxTalkDetailUiState.Success)?.data
+            val toolboxTalksText = stringResource(Res.string.toolboxTalks)
             org.example.project.ui.components.SharePopupDialog(
                 onDismiss = { showSharePopup = false },
                 onTxtClick = {
                     detail?.let {
-                        val text = org.example.project.utilites.DetailTextFormatter.formatToolBoxTalk(it)
-                        textSharer.shareText(text, it.topic ?: "Toolbox Talk Details")
+                        coroutineScope.launch {
+                            val text = org.example.project.utilites.DetailTextFormatter.formatToolBoxTalk(it)
+                            textSharer.shareText(text, it.topic ?: toolboxTalksText)
+                        }
                     }
                 },
                 onPdfClick = {

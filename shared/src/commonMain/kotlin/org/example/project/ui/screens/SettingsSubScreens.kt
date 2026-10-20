@@ -45,11 +45,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.example.project.utilites.AppTextField
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.ic_arrow_left
-import instaresolv.shared.generated.resources.ic_app_logo
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.example.project.utilites.rtlScale
-import instaresolv.shared.generated.resources.ic_forget_password
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.example.project.settings.GeneralContentsViewModel
@@ -294,14 +292,17 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                val errorFillAllFields = stringResource(Res.string.error_fill_all_fields)
+                val errorPasswordsDoNotMatch = stringResource(Res.string.error_passwords_do_not_match)
+
                 AppPrimaryButton(
                     title = stringResource(Res.string.submit),
                     onClick = {
                         if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                            toastMessage = "Please fill all fields"
+                            toastMessage = errorFillAllFields
                             toastType = ToastType.Error
                         } else if (newPassword != confirmPassword) {
-                            toastMessage = "New passwords do not match"
+                            toastMessage = errorPasswordsDoNotMatch
                             toastType = ToastType.Error
                         } else {
                             viewModel.changePassword(oldPassword, newPassword)
@@ -525,7 +526,7 @@ fun ContactUsScreen(onBack: () -> Unit) {
             AppSuccessDialog(
                 visible = uiState.isSuccess,
                 title = stringResource(Res.string.success),
-                description = "Your message has been sent successfully.",
+                description = stringResource(Res.string.contact_message_sent_success),
                 onDismiss = {
                     viewModel.resetSuccess()
                     onBack()
@@ -575,12 +576,12 @@ fun AboutUsScreen(onBack: () -> Unit) {
 
 @Composable
 fun TermsOfUseScreen(onBack: () -> Unit) {
-    GenericSettingsScreen("Terms of Use", 1, showAppIcon = true) { onBack() }
+    GenericSettingsScreen(stringResource(Res.string.terms_and_conditions), 1, showAppIcon = true) { onBack() }
 }
 
 @Composable
 fun PrivacyPolicyScreen(onBack: () -> Unit) {
-    GenericSettingsScreen("Privacy Policy", 2, showAppIcon = true) { onBack() }
+    GenericSettingsScreen(stringResource(Res.string.privacy_policy), 2, showAppIcon = true) { onBack() }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -593,6 +594,8 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
     var otp by remember { mutableStateOf("") }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastType by remember { mutableStateOf(ToastType.Error) }
+    val errorEnterPassword = stringResource(Res.string.error_enter_password)
+    val errorEnterOtp = stringResource(Res.string.error_enter_otp)
 
     LaunchedEffect(uiState.error) {
         if (uiState.error != null) {
@@ -614,8 +617,8 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
         AppSuccessDialog(
             visible = true,
             title = stringResource(Res.string.success),
-            description = "Account deleted successfully.",
-            buttonText = "Close",
+            description = stringResource(Res.string.account_deleted_success),
+            buttonText = stringResource(Res.string.close),
             onDismiss = {
                 showSuccessDialog = false
                 onBack()
@@ -699,7 +702,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                                 if (password.isNotEmpty()) {
                                     viewModel.requestDelete(password)
                                 } else {
-                                    toastMessage = "Please enter your password"
+                                    toastMessage = errorEnterPassword
                                     toastType = ToastType.Error
                                 }
                             },
@@ -721,7 +724,7 @@ fun DeleteAccountScreen(onBack: () -> Unit) {
                                 if (otp.isNotEmpty()) {
                                     viewModel.verifyDelete(password, otp)
                                 } else {
-                                    toastMessage = "Please enter OTP"
+                                    toastMessage = errorEnterOtp
                                     toastType = ToastType.Error
                                 }
                             },

@@ -114,7 +114,7 @@ fun BulkEmployeeUploadSheet(
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     AppPrimaryButton(
-                        title = "Add Employees (${selectedEmployeeIds.size})",
+                        title = stringResource(Res.string.add_employees_count, selectedEmployeeIds.size),
                         onClick = onAddEmployees
                     )
                 }
@@ -156,7 +156,7 @@ fun EmployeeListItem(
         
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = employee.employeeName ?: "Unknown",
+                text = employee.employeeName ?: stringResource(Res.string.unknown),
                 style = textStyle(size = 14.sp, weight = FontWeight.Medium),
                 color = AppColors.Black
             )

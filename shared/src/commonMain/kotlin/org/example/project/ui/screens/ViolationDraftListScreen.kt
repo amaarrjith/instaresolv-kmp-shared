@@ -55,6 +55,10 @@ import org.example.project.utilites.NavigationBackIcon
 import org.example.project.utilites.ToastHost
 import org.example.project.utilites.ToastType
 import org.example.project.ui.components.WebImageView
+import org.example.project.utilites.AppPullToRefreshBox
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -68,10 +72,12 @@ fun ViolationDraftListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var isDeleteOptionEnabled by remember { mutableStateOf(false) }
     var selectedItemsId by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var isDraftRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val draftToastMessage by viewModel.draftToastMessage.collectAsState()
-    val successMessage = "Violation drafts deleted successfully."
+    val successMessage = stringResource(Res.string.violation_drafts_deleted_success)
 
     LaunchedEffect(Unit) {
         viewModel.loadDrafts()
@@ -89,7 +95,7 @@ fun ViolationDraftListScreen(
             ) {
                 NavigationBackIcon(onBackClicked)
                 Text(
-                    text = "VIOLATION DRAFTS",
+                    text = stringResource(Res.string.violation_drafts_title),
                     style = textStyle(
                         size = 14.sp,
                         weight = FontWeight.Bold
@@ -156,55 +162,75 @@ fun ViolationDraftListScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 22.dp)
         ) {
-            if (uiState.drafts.isEmpty()) {
-                EmptyScreenView(
-                    message = "No drafts found",
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    items(uiState.drafts.size) { index ->
-                        val draft = uiState.drafts[index]
-                        val project = draft.facilityJson?.let {
-                            try {
-                                Json.decodeFromString<Project>(it)
-                            } catch(e: Exception) { null }
+            AppPullToRefreshBox(
+                isRefreshing = isDraftRefreshing,
+                onRefresh = {
+                    isDraftRefreshing = true
+                    viewModel.loadDrafts()
+                    coroutineScope.launch {
+                        delay(500)
+                        isDraftRefreshing = false
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (uiState.drafts.isEmpty()) {
+                    EmptyScreenView(
+                        message = stringResource(Res.string.no_drafts_found),
+                    )
+                } else {
+                    val parsedDrafts = remember(uiState.drafts) {
+                        uiState.drafts.map { draft ->
+                            val project = draft.facilityJson?.let {
+                                try {
+                                    Json.decodeFromString<Project>(it)
+                                } catch(e: Exception) { null }
+                            }
+                            val images = draft.imagesJson.mapNotNull { 
+                                try {
+                                    Json.decodeFromString<LocalViolationImage>(it).imageUrl
+                                } catch(e: Exception) { null }
+                            }
+                            Triple(draft, project, images.firstOrNull())
                         }
+                    }
 
-                        val images = draft.imagesJson.mapNotNull { 
-                            try {
-                                Json.decodeFromString<LocalViolationImage>(it).imageUrl
-                            } catch(e: Exception) { null }
-                        }
-
-                        ViolationDraftListItem(
-                            draft = draft,
-                            project = project,
-                            imageUrl = images.firstOrNull(),
-                            isSelectionMode = isDeleteOptionEnabled,
-                            isSelected = selectedItemsId.contains(draft.id.toInt()),
-                            onSelectionChange = { checked ->
-                                selectedItemsId = if (checked) {
-                                    selectedItemsId + draft.id.toInt()
-                                } else {
-                                    selectedItemsId - draft.id.toInt()
-                                }
-                            },
-                            onClick = { 
-                                if (isDeleteOptionEnabled) {
-                                    val checked = !selectedItemsId.contains(draft.id.toInt())
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        items(
+                            count = parsedDrafts.size,
+                            key = { index -> parsedDrafts[index].first.id }
+                        ) { index ->
+                            val (draft, project, imageUrl) = parsedDrafts[index]
+                            ViolationDraftListItem(
+                                draft = draft,
+                                project = project,
+                                imageUrl = imageUrl,
+                                isSelectionMode = isDeleteOptionEnabled,
+                                isSelected = selectedItemsId.contains(draft.id.toInt()),
+                                onSelectionChange = { checked ->
                                     selectedItemsId = if (checked) {
                                         selectedItemsId + draft.id.toInt()
                                     } else {
                                         selectedItemsId - draft.id.toInt()
                                     }
-                                } else {
-                                    onDraftClicked(draft.id)
+                                },
+                                onClick = { 
+                                    if (isDeleteOptionEnabled) {
+                                        val checked = !selectedItemsId.contains(draft.id.toInt())
+                                        selectedItemsId = if (checked) {
+                                            selectedItemsId + draft.id.toInt()
+                                        } else {
+                                            selectedItemsId - draft.id.toInt()
+                                        }
+                                    } else {
+                                        onDraftClicked(draft.id)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -212,7 +238,7 @@ fun ViolationDraftListScreen(
             AppExitDialog(
                 visible = showDeleteDialog,
                 title = stringResource(Res.string.delete),
-                description = "Are you sure you want to delete the selected violation drafts?",
+                description = stringResource(Res.string.delete_violation_drafts_confirm),
                 primaryButtonText = stringResource(Res.string.yes),
                 secondaryButtonText = stringResource(Res.string.no),
                 onConfirm = {
@@ -292,7 +318,10 @@ fun ViolationDraftListItem(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    text = "Violation by ${draft.employeeName.takeIf { it.isNotBlank() } ?: "Unknown"}",
+                    text = stringResource(
+                        Res.string.violation_by_employee,
+                        draft.employeeName.takeIf { it.isNotBlank() } ?: "-"
+                    ),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 3
@@ -321,7 +350,7 @@ fun ViolationDraftListItem(
                                     inputPattern = "dd-MM-yyyy",
                                     outputPattern = "dd MMM yyyy"
                                 )
-                            } else "Date not set",
+                            } else stringResource(Res.string.date_not_set),
                             style = textStyle(size = 11.sp, weight = FontWeight.SemiBold),
                             color = AppColors.Black
                         )
