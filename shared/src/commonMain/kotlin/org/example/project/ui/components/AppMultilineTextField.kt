@@ -190,23 +190,37 @@ fun AppAudioPlayer(
     onDeleteAudio: () -> Unit = {}
 ) {
     val audioPlayer = rememberAudioPlayer()
-    var isPlaying by remember { mutableStateOf(false) }
-    var currentPosition by remember { mutableStateOf(0L) }
-    var duration by remember { mutableStateOf(0L) }
+    var isPlaying by remember(filePath) { mutableStateOf(false) }
+    var currentPosition by remember(filePath) { mutableStateOf(0L) }
+    var duration by remember(filePath) { mutableStateOf(0L) }
     var isUserDragging by remember { mutableStateOf(false) }
     var dragPosition by remember { mutableStateOf(0L) }
+    var isAudioPreparing by remember(filePath) { mutableStateOf(true) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
 
     LaunchedEffect(filePath) {
+        isAudioPreparing = true
+        duration = 0L
+        currentPosition = 0L
+        isPlaying = false
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
             audioPlayer.prepare(filePath)
         }
         var attempts = 0
-        while (duration <= 0L && attempts < 50) {
-            duration = audioPlayer.getDuration()
-            if (duration <= 0L) {
-                kotlinx.coroutines.delay(200)
+        while (attempts < 60) {
+            val d = audioPlayer.getDuration()
+            if (d > 0L) {
+                duration = d
+                isAudioPreparing = false
+                break
             }
+            kotlinx.coroutines.delay(100)
             attempts++
+        }
+        // Fallback if metadata duration cannot be retrieved after 6 seconds
+        if (duration <= 0L) {
+            duration = audioPlayer.getDuration().coerceAtLeast(0L)
+            isAudioPreparing = false
         }
     }
 
@@ -233,7 +247,7 @@ fun AppAudioPlayer(
     }
 
     val formatTime = { timeMs: Long ->
-        val totalSeconds = timeMs / 1000
+        val totalSeconds = (timeMs / 1000).coerceAtLeast(0L)
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
@@ -262,117 +276,181 @@ fun AppAudioPlayer(
                 }
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0XFFFEF3EC), shape = RoundedCornerShape(30.dp))
-                .padding(horizontal = 12.dp)
-                .padding(vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
+
+        if (isAudioPreparing) {
+            Row(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(AppColors.Primary, shape = CircleShape)
-                    .clickable {
-                        if (isPlaying) {
-                            audioPlayer.pause()
-                            isPlaying = false
-                        } else {
-                            audioPlayer.play(filePath)
-                            isPlaying = true
-                        }
-                    },
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .background(Color(0XFFFEF3EC), shape = RoundedCornerShape(30.dp))
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isPlaying) {
-                    Row(
-                        modifier = Modifier.size(14.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight(0.9f)
-                                .width(3.dp)
-                                .background(Color.White, RoundedCornerShape(1.dp))
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight(0.9f)
-                                .width(3.dp)
-                                .background(Color.White, RoundedCornerShape(1.dp))
-                        )
-                    }
-                } else {
-                    Canvas(modifier = Modifier.size(16.dp)) {
-                        val path = Path().apply {
-                            val w = size.width
-                            val h = size.height
-                            moveTo(w * 0.2f, h * 0.1f)
-                            lineTo(w * 0.8f, h * 0.5f)
-                            lineTo(w * 0.2f, h * 0.9f)
-                            close()
-                        }
-                        drawPath(path, color = Color.White)
-                    }
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    color = AppColors.Primary,
+                    strokeWidth = 2.dp
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = stringResource(Res.string.loading),
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray,
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.weight(1f)
+                )
+                if (isDelete) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_trash_player),
+                        contentDescription = stringResource(Res.string.delete),
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                showDeleteConfirmation = true
+                            }
+                    )
                 }
             }
-
-            Spacer(Modifier.width(8.dp))
-
-            Text(
-                text = formatTime(if (isUserDragging) dragPosition else currentPosition),
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray,
-                modifier = Modifier.width(36.dp)
-            )
-
-            androidx.compose.material3.Slider(
-                value = if (duration > 0) {
-                    if (isUserDragging) dragPosition.toFloat() / duration.toFloat()
-                    else currentPosition.toFloat() / duration.toFloat()
-                } else 0f,
-                onValueChange = { value ->
-                    isUserDragging = true
-                    dragPosition = (value * duration).toLong()
-                },
-                onValueChangeFinished = {
-                    audioPlayer.seekTo(dragPosition)
-                    currentPosition = dragPosition
-                    isUserDragging = false
-                },
-                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-                colors = androidx.compose.material3.SliderDefaults.colors(
-                    thumbColor = AppColors.Primary,
-                    activeTrackColor = AppColors.Primary,
-                    inactiveTrackColor = Color.LightGray
-                )
-            )
-
-            Text(
-                text = formatTime(duration),
-                style = textStyle(size = 12.sp, weight = FontWeight.Medium),
-                color = AppColors.TextGray,
-                modifier = Modifier.width(36.dp),
-                textAlign = TextAlign.End
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            if (isDelete) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_trash_player),
-                    contentDescription = stringResource(Res.string.delete),
-                    modifier = Modifier.size(32.dp)
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0XFFFEF3EC), shape = RoundedCornerShape(30.dp))
+                    .padding(horizontal = 12.dp)
+                    .padding(vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(AppColors.Primary, shape = CircleShape)
                         .clickable {
-                            audioPlayer.stop()
-                            onDeleteAudio()
+                            if (isPlaying) {
+                                audioPlayer.pause()
+                                isPlaying = false
+                            } else {
+                                audioPlayer.play(filePath)
+                                isPlaying = true
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isPlaying) {
+                        Row(
+                            modifier = Modifier.size(14.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight(0.9f)
+                                    .width(3.dp)
+                                    .background(Color.White, RoundedCornerShape(1.dp))
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight(0.9f)
+                                    .width(3.dp)
+                                    .background(Color.White, RoundedCornerShape(1.dp))
+                            )
                         }
+                    } else {
+                        Canvas(modifier = Modifier.size(16.dp)) {
+                            val path = Path().apply {
+                                val w = size.width
+                                val h = size.height
+                                moveTo(w * 0.2f, h * 0.1f)
+                                lineTo(w * 0.8f, h * 0.5f)
+                                lineTo(w * 0.2f, h * 0.9f)
+                                close()
+                            }
+                            drawPath(path, color = Color.White)
+                        }
+                    }
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                Text(
+                    text = formatTime(if (isUserDragging) dragPosition else currentPosition),
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray,
+                    modifier = Modifier.width(44.dp),
+                    maxLines = 1,
+                    softWrap = false
                 )
+
+                androidx.compose.material3.Slider(
+                    value = if (duration > 0) {
+                        if (isUserDragging) (dragPosition.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
+                        else (currentPosition.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
+                    } else 0f,
+                    onValueChange = { value ->
+                        isUserDragging = true
+                        dragPosition = (value * duration).toLong()
+                    },
+                    onValueChangeFinished = {
+                        audioPlayer.seekTo(dragPosition)
+                        currentPosition = dragPosition
+                        isUserDragging = false
+                    },
+                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                    colors = androidx.compose.material3.SliderDefaults.colors(
+                        thumbColor = AppColors.Primary,
+                        activeTrackColor = AppColors.Primary,
+                        inactiveTrackColor = Color.LightGray
+                    )
+                )
+
+                Text(
+                    text = formatTime(duration),
+                    style = textStyle(size = 12.sp, weight = FontWeight.Medium),
+                    color = AppColors.TextGray,
+                    modifier = Modifier.width(44.dp),
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    softWrap = false
+                )
+
+                Spacer(Modifier.width(8.dp))
+
+                if (isDelete) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_trash_player),
+                        contentDescription = stringResource(Res.string.delete),
+                        modifier = Modifier.size(32.dp)
+                            .clickable {
+                                if (isPlaying) {
+                                    audioPlayer.pause()
+                                    isPlaying = false
+                                }
+                                showDeleteConfirmation = true
+                            }
+                    )
+                }
             }
+        }
+
+        if (showDeleteConfirmation) {
+            AppConfirmationDialog(
+                visible = true,
+                title = stringResource(Res.string.delete),
+                description = stringResource(Res.string.delete_audio_confirm),
+                icon = Res.drawable.ic_toast_alert,
+                primaryButtonText = stringResource(Res.string.delete),
+                primaryButtonColor = Color(0xFFD32F2F),
+                onPrimaryClick = {
+                    showDeleteConfirmation = false
+                    audioPlayer.stop()
+                    onDeleteAudio()
+                },
+                secondaryButtonText = stringResource(Res.string.cancel),
+                secondaryButtonColor = Color(0xFF3366CC),
+                onSecondaryClick = { showDeleteConfirmation = false },
+                onDismiss = { showDeleteConfirmation = false }
+            )
         }
     }
 }
@@ -484,7 +562,7 @@ fun RecordAudioContentView(onDismiss: () -> Unit, onDone: (String) -> Unit) {
                 )
             ) {
                 Text(
-                    text = if (isRecording) "Recording..." else "Hold To Record",
+                    text = if (isRecording) stringResource(Res.string.recording) else stringResource(Res.string.hold_to_record),
                     textAlign = TextAlign.Center,
                     style = textStyle(
                         size = 16.sp,

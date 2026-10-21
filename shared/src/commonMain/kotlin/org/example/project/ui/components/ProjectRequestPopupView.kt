@@ -33,10 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.close
-import instaresolv.shared.generated.resources.ic_rejected
-import instaresolv.shared.generated.resources.ic_sucess_logo
+import instaresolv.shared.generated.resources.*
 import org.example.project.colors.AppColors
 import org.example.project.data.model.NotificationListModel
 import org.example.project.data.model.Project
@@ -53,7 +50,7 @@ import org.koin.compose.koinInject
 fun ProjectRequestPopUpView(
     visible: Boolean,
     notification: NotificationListModel,
-    buttonText: String = "Okay",
+    buttonText: String = stringResource(Res.string.ok),
     icon: DrawableResource = Res.drawable.ic_rejected,
     viewModel: ProjectViewModel = koinInject(),
     onDismiss: () -> Unit
@@ -91,7 +88,7 @@ fun ProjectRequestPopUpView(
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = notification.title ?: "Rejected",
+                        text = notification.title ?: stringResource(Res.string.rejected),
                         style = textStyle(size = 20.sp, weight = FontWeight.Bold),
                         color = Color.Black,
                         textAlign = TextAlign.Center

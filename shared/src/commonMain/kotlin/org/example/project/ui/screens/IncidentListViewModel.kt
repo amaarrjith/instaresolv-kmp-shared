@@ -15,6 +15,8 @@ import org.example.project.domain.repository.IncidentRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
 import org.example.project.data.model.AppFilterState
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class IncidentListState(
     val isPullDown: Boolean = false,
@@ -147,7 +149,7 @@ class IncidentListViewModel(
                             isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            error = result.message ?: "Failed to load incidents"
+                            error = result.message ?: getString(Res.string.error_failed_to_load_incidents)
                         )
                     }
                 }
@@ -188,7 +190,7 @@ class IncidentListViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
-                    _exportToastMessage.value = result.message ?: "Export failed"
+                    _exportToastMessage.value = result.message ?: getString(Res.string.export_failed)
                 }
             }
             _isExporting.value = false

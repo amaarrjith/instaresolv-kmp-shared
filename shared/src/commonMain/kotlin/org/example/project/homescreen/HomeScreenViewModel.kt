@@ -32,6 +32,8 @@ import org.example.project.data.model.InspectionContentsRequest
 import org.example.project.network.NetworkMonitor
 import org.example.project.project.ProjectListUiState
 import org.example.project.config.appLog
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 class HomeScreenViewModel(
     private val authRepository: AuthRepository,
@@ -115,12 +117,12 @@ class HomeScreenViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data.statusMessage ?: "Failed to generate Permit PDF"
+                        _pdfToastMessage.value = result.data.statusMessage ?: getString(Res.string.error_failed_to_generate_permit_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfErrorToastMessage.value = result.message ?: "Failed to generate Permit PDF"
+                    _pdfErrorToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_permit_pdf)
                 }
             }
         }
@@ -139,12 +141,12 @@ class HomeScreenViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data.statusMessage ?: "Failed to generate PDF"
+                        _pdfToastMessage.value = result.data.statusMessage ?: getString(Res.string.error_failed_to_generate_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfErrorToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfErrorToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
         }
@@ -180,7 +182,7 @@ class HomeScreenViewModel(
                 }
                 is NetworkResult.Error -> {
                     _isActionLoading.value = false
-                    onError(response.message ?: "Failed to approve or reject")
+                    onError(response.message ?: getString(Res.string.error_failed_to_approve_or_reject))
                 }
             }
         }
@@ -196,12 +198,12 @@ class HomeScreenViewModel(
                     if (response.data.isSuccess == true) {
                         onSuccess()
                     } else {
-                        onError(response.data.statusMessage ?: "Failed to submit request")
+                        onError(response.data.statusMessage ?: getString(Res.string.error_failed_to_submit_request))
                     }
                 }
                 is NetworkResult.Error -> {
                     _isActionLoading.value = false
-                    onError(response.message ?: "Failed to submit request")
+                    onError(response.message ?: getString(Res.string.error_failed_to_submit_request))
                 }
             }
         }
@@ -217,12 +219,12 @@ class HomeScreenViewModel(
                     if (response.data.isSuccess == true) {
                         onSuccess()
                     } else {
-                        onError(response.data.statusMessage ?: "Failed to submit request")
+                        onError(response.data.statusMessage ?: getString(Res.string.error_failed_to_submit_request))
                     }
                 }
                 is NetworkResult.Error -> {
                     _isActionLoading.value = false
-                    onError(response.message ?: "Failed to submit request")
+                    onError(response.message ?: getString(Res.string.error_failed_to_submit_request))
                 }
             }
         }

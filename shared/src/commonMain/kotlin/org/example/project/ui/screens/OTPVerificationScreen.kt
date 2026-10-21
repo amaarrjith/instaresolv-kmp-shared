@@ -181,6 +181,7 @@ fun OTPVerificationScreen(
                             color = Color(0xFF8F9098)
                         )
                     } else {
+                        val defaultSuccessMsg = stringResource(Res.string.otp_sent_successfully)
                         Text(
                             text = stringResource(Res.string.resendCode),
                             textAlign = TextAlign.Center,
@@ -188,9 +189,11 @@ fun OTPVerificationScreen(
                                 size = 14.sp,
                                 weight = FontWeight.SemiBold
                             ),
-                            color = AppColors.Primary,
-                            modifier = Modifier.clickable {
-                                secondsLeft = 300
+                            color = if (uiState.value.isResending) Color(0xFF8F9098) else AppColors.Primary,
+                            modifier = Modifier.clickable(enabled = !uiState.value.isResending) {
+                                viewModel.resendOTP(defaultSuccessMessage = defaultSuccessMsg) {
+                                    secondsLeft = 300
+                                }
                             }
                         )
                     }
@@ -211,6 +214,14 @@ fun OTPVerificationScreen(
                 message = uiState.value.errorMessage.orEmpty(),
             ) {
                 viewModel.clearError()
+            }
+
+            ToastHost(
+                visible = uiState.value.successMessage != null,
+                type = ToastType.Success,
+                message = uiState.value.successMessage.orEmpty(),
+            ) {
+                viewModel.clearSuccessMessage()
             }
         }
     }

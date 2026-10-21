@@ -8,6 +8,8 @@ import kotlinx.coroutines.launch
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.network.NetworkResult
 import org.example.project.utilites.compressImage
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 class ImagePickerViewModel(
     private val authRepository: AuthRepository
@@ -33,11 +35,11 @@ class ImagePickerViewModel(
                     response.data.imageUrl?.let { url ->
                         _uiState.value = ImagePickerUiState.Success(url)
                     } ?: run {
-                        _uiState.value = ImagePickerUiState.Error("Failed to get image URL")
+                        _uiState.value = ImagePickerUiState.Error(getString(Res.string.error_failed_to_get_image_url))
                     }
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = ImagePickerUiState.Error(response.message ?: "Unknown Error")
+                    _uiState.value = ImagePickerUiState.Error(response.message ?: getString(Res.string.unknown_error))
                 }
             }
         }

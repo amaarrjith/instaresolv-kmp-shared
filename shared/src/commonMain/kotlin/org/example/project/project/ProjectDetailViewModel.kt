@@ -8,6 +8,8 @@ import kotlinx.coroutines.launch
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 class ProjectDetailViewModel(
     private val projectRepository: ProjectRepository,
@@ -164,10 +166,10 @@ class ProjectDetailViewModel(
             when(response) {
                 is NetworkResult.Success -> {
                     if (response.data.isSuccess == true) {
-                        onSuccess(response.data.statusMessage ?: "Success")
+                        onSuccess(response.data.statusMessage ?: getString(Res.string.success))
                         getProjectDetails(groupId, groupCode)
                     } else {
-                        onError(response.data.statusMessage ?: "Failed to change designation")
+                        onError(response.data.statusMessage ?: getString(Res.string.error_failed_to_change_designation))
                     }
                 }
                 is NetworkResult.Error -> {

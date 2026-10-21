@@ -27,6 +27,7 @@ import org.example.project.utilites.LockScreenOrientation
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.back
+import org.example.project.utilites.rtlScale
 
 @Composable
 fun TrainingScormScreen(
@@ -84,7 +85,9 @@ fun TrainingScormScreen(
                     painter = painterResource(Res.drawable.ic_arrow_left),
                     contentDescription = stringResource(Res.string.back),
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier
+                        .size(24.dp)
+                        .rtlScale()
                 )
             }
         }

@@ -1593,31 +1593,31 @@ fun AuthorizerViewerSection(
 
     // Action Details (Cancellations, Suspensions, Reactivations)
     if (data.permitCancellationDetails != null) {
-        ActionDetailSection("Cancellation Details", listOf(data.permitCancellationDetails), onImageClick)
+        ActionDetailSection(stringResource(Res.string.cancellation_details), listOf(data.permitCancellationDetails), onImageClick)
     }
 
     if (!data.permitCancelledUsers.isNullOrEmpty()) {
         val user = data.permitCancelledUsers.lastOrNull()
         if (user != null) {
-            PermitActionUserCard(user, "Cancelled User")
+            PermitActionUserCard(user, stringResource(Res.string.cancelled_user))
         }
     }
 
     if (!data.permitSuspensionDetails.isNullOrEmpty()) {
-        ActionDetailSection("Suspension Details", data.permitSuspensionDetails, onImageClick)
+        ActionDetailSection(stringResource(Res.string.suspension_details), data.permitSuspensionDetails, onImageClick)
     }
 
     if (data.permitStatus == 4 && !data.permitSuspendedUsers.isNullOrEmpty()) {
         val user = data.permitSuspendedUsers.lastOrNull()
         if (user != null) {
-            PermitActionUserCard(user, "Suspended User")
+            PermitActionUserCard(user, stringResource(Res.string.suspended_user))
         }
     }
 
     if (data.permitStatus != 4 && data.permitStatus != 3) {
         if (!data.permitReactivationDetails.isNullOrEmpty()) {
             val lastDetail = data.permitReactivationDetails.last()
-            ActionDetailSection("Reactivation Details", listOf(lastDetail), onImageClick)
+            ActionDetailSection(stringResource(Res.string.reactivation_details), listOf(lastDetail), onImageClick)
         }
     }
 
@@ -1783,7 +1783,7 @@ fun RequestForPermitClosureSection(
         Spacer(modifier = Modifier.width(2.dp))
         Text(
             text = buildAnnotatedString {
-                append("I verify the work has been completed and all required controls were implemented")
+                append(stringResource(Res.string.verify_work_completed_checkbox))
                 withStyle(
                     style = SpanStyle(color = Color.Red)
                 ) {

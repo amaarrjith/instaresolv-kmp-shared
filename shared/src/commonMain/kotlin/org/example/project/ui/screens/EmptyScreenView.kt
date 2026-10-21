@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,7 +88,8 @@ private fun EmptyScreenContent(message: String) {
                 weight = FontWeight.Normal,
                 fontStyle = FontStyle.Italic
             ),
-            color = AppColors.TextGray
+            color = AppColors.TextGray,
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.padding(top = 14.dp))
     }

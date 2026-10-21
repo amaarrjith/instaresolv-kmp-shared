@@ -148,15 +148,26 @@ fun AssignedTrainingsView(
                             .size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Image(
-                        painter = painterResource(Res.drawable.ic_add_training),
-                        contentDescription = null,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.clickable {
                             viewModel.setAddTrainingModalVisible(true)
                         }
-                            .width(78.dp)
-                            .height(20.dp)
-                    )
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.ic_add_training_icon),
+                            contentDescription = null,
+                        )
+                        Text(
+                            text = stringResource(Res.string.training),
+                            style = textStyle(
+                                size = 13.sp,
+                                weight = FontWeight.SemiBold
+                            ),
+                            color = AppColors.Primary
+                        )
+                    }
                 }
 
                 if (isSearchVisible) {
@@ -423,11 +434,11 @@ fun AssignedTrainingListItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val (badgeText, badgeBg, badgeTextColor) = when (training.status) {
-                    0 -> Triple("NOT STARTED", Color(0xFF2E6AC6), Color.White)
-                    1 -> Triple("IN PROGRESS", Color(0xFFF57C00), Color.White)
-                    2 -> Triple("FINISHED TRAINING", Color(0xFF00A82B), Color.White)
-                    3 -> Triple("PASSED", Color(0xFF00A82B), Color.White)
-                    else -> Triple("COMPLETED", Color(0xFF00A82B), Color.White)
+                    0 -> Triple(stringResource(Res.string.training_status_not_started).uppercase(), Color(0xFF2E6AC6), Color.White)
+                    1 -> Triple(stringResource(Res.string.training_status_in_progress).uppercase(), Color(0xFFF57C00), Color.White)
+                    2 -> Triple(stringResource(Res.string.training_status_finished).uppercase(), Color(0xFF00A82B), Color.White)
+                    3 -> Triple(stringResource(Res.string.training_status_passed).uppercase(), Color(0xFF00A82B), Color.White)
+                    else -> Triple(stringResource(Res.string.completed).uppercase(), Color(0xFF00A82B), Color.White)
                 }
 
                 Box(
@@ -508,37 +519,39 @@ fun AssignedTrainingListItem(
 
             // Checkboxes Row
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                StatusCheckItem("Video", training.isVideoPlayed)
-                StatusCheckItem("Quiz", training.isQuizAttended)
-                StatusCheckItem("Certificate", training.isCertificateAvailable)
+                StatusCheckItem(stringResource(Res.string.video), training.isVideoPlayed)
+                StatusCheckItem(stringResource(Res.string.quiz), training.isQuizAttended)
+                StatusCheckItem(stringResource(Res.string.certificate), training.isCertificateAvailable)
             }
         }
     }
 }
 
 @Composable
-fun StatusCheckItem(label: String, isCompleted: Boolean) {
+fun StatusCheckItem(
+    label: String,
+    isCompleted: Boolean,
+    modifier: Modifier = Modifier
+) {
     Row(
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        if(isCompleted) {
-            Image(
-                painter = painterResource(Res.drawable.ic_completed),
-                contentDescription = null
-            )
-        } else {
-            Image(
-                painter = painterResource(Res.drawable.ic_not_completed),
-                contentDescription = null
-            )
-        }
+        Image(
+            painter = painterResource(if (isCompleted) Res.drawable.ic_completed else Res.drawable.ic_not_completed),
+            contentDescription = null,
+            modifier = Modifier.size(12.dp)
+        )
         Text(
             text = label,
-            style = textStyle(size = 10.sp, weight = FontWeight.Medium, color = AppColors.DarkGray)
+            style = textStyle(size = 9.sp, weight = FontWeight.Medium, color = AppColors.DarkGray),
+            maxLines = 1,
+            softWrap = false
         )
     }
 }

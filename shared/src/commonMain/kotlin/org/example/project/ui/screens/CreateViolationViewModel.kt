@@ -25,6 +25,8 @@ import org.example.project.domain.repository.ViolationRepository
 import org.example.project.network.NetworkResult
 import org.example.project.ui.components.imagepicker.ImagePickerUiState
 import kotlin.random.Random
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class CreateViolationUiState(
     val isLoading: Boolean = false,
@@ -126,40 +128,40 @@ class CreateViolationViewModel(
     fun saveViolation(isDraft: Boolean, onSuccess: () -> Unit) {
         val state = _uiState.value
         
-        if (!isDraft) {
-            if (state.employeeName.isBlank()) {
-                _uiState.update { it.copy(error = "Employee Name is required") }
-                return
-            }
-            if (state.employeeId.isBlank()) {
-                _uiState.update { it.copy(error = "Employee ID is required") }
-                return
-            }
-            if (state.violationDate.isBlank()) {
-                _uiState.update { it.copy(error = "Violation Date is required") }
-                return
-            }
-        }
-        
-        val request = CreateViolationRequest(
-            facilitiesId = state.selectedProject?.groupId?.toString(),
-            employeeName = state.employeeName,
-            employeeId = state.employeeId,
-            violationDate = state.violationDate,
-            location = state.location.takeIf { it.isNotBlank() },
-            description = state.description.takeIf { it.isNotBlank() },
-            images = state.images.filter { !it.imageUrl.isNullOrEmpty() }.map {
-                ImageDescriptionRequest(
-                    image = it.imageUrl ?: "",
-                    description = it.description,
-                    isAiGeneratedDescription = false
-                )
-            },
-            reportedBy = user?.name ?: "",
-            saveAsDraft = isDraft
-        )
-        _uiState.update { it.copy(isLoading = true, error = null, success = false) }
         viewModelScope.launch {
+            if (!isDraft) {
+                if (state.employeeName.isBlank()) {
+                    _uiState.update { it.copy(error = getString(Res.string.error_employee_name_required)) }
+                    return@launch
+                }
+                if (state.employeeId.isBlank()) {
+                    _uiState.update { it.copy(error = getString(Res.string.error_employee_id_required)) }
+                    return@launch
+                }
+                if (state.violationDate.isBlank()) {
+                    _uiState.update { it.copy(error = getString(Res.string.error_violation_date_required)) }
+                    return@launch
+                }
+            }
+            
+            val request = CreateViolationRequest(
+                facilitiesId = state.selectedProject?.groupId?.toString(),
+                employeeName = state.employeeName,
+                employeeId = state.employeeId,
+                violationDate = state.violationDate,
+                location = state.location.takeIf { it.isNotBlank() },
+                description = state.description.takeIf { it.isNotBlank() },
+                images = state.images.filter { !it.imageUrl.isNullOrEmpty() }.map {
+                    ImageDescriptionRequest(
+                        image = it.imageUrl ?: "",
+                        description = it.description,
+                        isAiGeneratedDescription = false
+                    )
+                },
+                reportedBy = user?.name ?: "",
+                saveAsDraft = isDraft
+            )
+            _uiState.update { it.copy(isLoading = true, error = null, success = false) }
             when (val result = repository.createViolation(request)) {
                 is NetworkResult.Success -> {
                     val data = result.data
@@ -173,7 +175,7 @@ class CreateViolationViewModel(
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                error = data.statusMessage ?: "Failed to create violation"
+                                error = data.statusMessage ?: getString(Res.string.error_failed_to_create_violation)
                             )
                         }
                     }
@@ -201,7 +203,9 @@ class CreateViolationViewModel(
                        state.images.any { !it.imageUrl.isNullOrBlank() }
         
         if (!hasValue) {
-            _uiState.update { it.copy(error = "At least one field must have a value to save as draft") }
+            viewModelScope.launch {
+                _uiState.update { it.copy(error = getString(Res.string.error_draft_at_least_one_field)) }
+            }
             return
         }
 

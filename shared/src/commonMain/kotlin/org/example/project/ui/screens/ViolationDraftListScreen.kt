@@ -191,7 +191,7 @@ fun ViolationDraftListScreen(
                                     Json.decodeFromString<LocalViolationImage>(it).imageUrl
                                 } catch(e: Exception) { null }
                             }
-                            Triple(draft, project, images.firstOrNull())
+                            ParsedViolationDraft(draft, project, images.firstOrNull(), images.size)
                         }
                     }
 
@@ -201,32 +201,33 @@ fun ViolationDraftListScreen(
                     ) {
                         items(
                             count = parsedDrafts.size,
-                            key = { index -> parsedDrafts[index].first.id }
+                            key = { index -> parsedDrafts[index].draft.id }
                         ) { index ->
-                            val (draft, project, imageUrl) = parsedDrafts[index]
+                            val item = parsedDrafts[index]
                             ViolationDraftListItem(
-                                draft = draft,
-                                project = project,
-                                imageUrl = imageUrl,
+                                draft = item.draft,
+                                project = item.project,
+                                imageUrl = item.imageUrl,
+                                imageCount = item.imageCount,
                                 isSelectionMode = isDeleteOptionEnabled,
-                                isSelected = selectedItemsId.contains(draft.id.toInt()),
+                                isSelected = selectedItemsId.contains(item.draft.id.toInt()),
                                 onSelectionChange = { checked ->
                                     selectedItemsId = if (checked) {
-                                        selectedItemsId + draft.id.toInt()
+                                        selectedItemsId + item.draft.id.toInt()
                                     } else {
-                                        selectedItemsId - draft.id.toInt()
+                                        selectedItemsId - item.draft.id.toInt()
                                     }
                                 },
                                 onClick = { 
                                     if (isDeleteOptionEnabled) {
-                                        val checked = !selectedItemsId.contains(draft.id.toInt())
+                                        val checked = !selectedItemsId.contains(item.draft.id.toInt())
                                         selectedItemsId = if (checked) {
-                                            selectedItemsId + draft.id.toInt()
+                                            selectedItemsId + item.draft.id.toInt()
                                         } else {
-                                            selectedItemsId - draft.id.toInt()
+                                            selectedItemsId - item.draft.id.toInt()
                                         }
                                     } else {
-                                        onDraftClicked(draft.id)
+                                        onDraftClicked(item.draft.id)
                                     }
                                 }
                             )
@@ -265,11 +266,19 @@ fun ViolationDraftListScreen(
     }
 }
 
+private data class ParsedViolationDraft(
+    val draft: ViolationDraft,
+    val project: Project?,
+    val imageUrl: String?,
+    val imageCount: Int
+)
+
 @Composable
 fun ViolationDraftListItem(
     draft: ViolationDraft,
     project: Project?,
     imageUrl: String?,
+    imageCount: Int = 0,
     isSelectionMode: Boolean,
     isSelected: Boolean,
     onSelectionChange: (Boolean) -> Unit,
@@ -310,6 +319,22 @@ fun ViolationDraftListItem(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
+                    }
+                }
+                if (imageCount > 1) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(4.dp)
+                            .size(22.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "+${imageCount - 1}",
+                            style = textStyle(size = 10.sp, weight = FontWeight.Bold),
+                            color = Color.White
+                        )
                     }
                 }
             }

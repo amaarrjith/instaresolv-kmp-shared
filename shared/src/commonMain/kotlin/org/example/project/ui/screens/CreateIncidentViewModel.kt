@@ -25,6 +25,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.settings.formatDate
 import kotlinx.serialization.Serializable
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 @Serializable
 data class IncidentImage(
@@ -103,7 +105,7 @@ class CreateIncidentViewModel(
                 is NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoadingUsers = false,
-                        error = result.message ?: "Failed to fetch users"
+                        error = result.message ?: getString(Res.string.failed_to_fetch_users)
                     )
                 }
             }
@@ -264,102 +266,100 @@ class CreateIncidentViewModel(
         onSuccess: () -> Unit
     ) {
         val state = _uiState.value
-        if (state.incidentDateMillis == null) {
-            _uiState.value = state.copy(error = "Incident Date is required")
-            return
-        }
-        if (state.incidentTime.isBlank()) {
-            _uiState.value = state.copy(error = "Incident Time is required")
-            return
-        }
-        if (state.incidentTypes.isEmpty()) {
-            _uiState.value = state.copy(error = "At least one Incident Type is required")
-            return
-        }
-        if (state.hasInjuredPerson == null) {
-            _uiState.value = state.copy(error = "Injured Person Details is required")
-            return
-        }
+        viewModelScope.launch {
+            if (state.incidentDateMillis == null) {
+                _uiState.value = state.copy(error = getString(Res.string.error_incident_date_required))
+                return@launch
+            }
+            if (state.incidentTime.isBlank()) {
+                _uiState.value = state.copy(error = getString(Res.string.error_incident_time_required))
+                return@launch
+            }
+            if (state.incidentTypes.isEmpty()) {
+                _uiState.value = state.copy(error = getString(Res.string.error_incident_type_required))
+                return@launch
+            }
+            if (state.hasInjuredPerson == null) {
+                _uiState.value = state.copy(error = getString(Res.string.error_injured_person_details_required))
+                return@launch
+            }
 
-        if (state.hasInjuredPerson == true && state.injuredEmployees.isEmpty()) {
-            _uiState.value = state.copy(error = "Injured Person Details is required")
-            return
-        }
+            if (state.hasInjuredPerson == true && state.injuredEmployees.isEmpty()) {
+                _uiState.value = state.copy(error = getString(Res.string.error_injured_person_details_required))
+                return@launch
+            }
 
-        val incidentTime = try {
-            val cleanTime = state.incidentTime.replace(" : ", ":")
-            val parts = cleanTime.split(":", " ")
-            if (parts.size >= 3) {
-                var h = parts[0].toInt()
-                val m = parts[1]
-                val amPm = parts[2]
-                if (amPm.equals("PM", ignoreCase = true) && h < 12) h += 12
-                if (amPm.equals("AM", ignoreCase = true) && h == 12) h = 0
-                "${h.toString().padStart(2, '0')}:$m:00"
-            } else {
+            val incidentTime = try {
+                val cleanTime = state.incidentTime.replace(" : ", ":")
+                val parts = cleanTime.split(":", " ")
+                if (parts.size >= 3) {
+                    var h = parts[0].toInt()
+                    val m = parts[1]
+                    val amPm = parts[2]
+                    if (amPm.equals("PM", ignoreCase = true) && h < 12) h += 12
+                    if (amPm.equals("AM", ignoreCase = true) && h == 12) h = 0
+                    "${h.toString().padStart(2, '0')}:$m:00"
+                } else {
+                    state.incidentTime
+                }
+            } catch (e: Exception) {
                 state.incidentTime
             }
-        } catch (e: Exception) {
-            state.incidentTime
-        }
 
-        val dateInstantStr = state.incidentDateMillis?.let {
-            kotlinx.datetime.Instant.fromEpochMilliseconds(it).toString()
-        } ?: ""
+            val dateInstantStr = state.incidentDateMillis?.let {
+                kotlinx.datetime.Instant.fromEpochMilliseconds(it).toString()
+            } ?: ""
 
-        val dateOnlyStr = if (dateInstantStr.isNotEmpty()) {
-            formatDate(
-                dateInstantStr,
-                inputPattern = "",
-                outputPattern = "yyyy-MM-dd"
-            )
-        } else ""
-
-        val incidentDate = if (dateOnlyStr.isNotEmpty() && incidentTime.isNotEmpty()) {
-            "$dateOnlyStr $incidentTime"
-        } else ""
-
-        val formattedCreatedAt = formatDate(
-            kotlin.time.Clock.System.now().toString(),
-            inputPattern = "",
-            outputPattern = "yyyy-MM-dd HH:mm:ss"
-        )
-
-
-
-        val request = AddIncidentRequest(
-            corrections = state.immediateCorrections,
-            facilitiesId = state.selectedProject?.groupId?.toString() ?: "",
-            incidentType = state.incidentTypes,
-            injuredEmployees = state.injuredEmployees.map {
-                InjuredEmployeeRequest(
-                    profession = it.profession ?: "",
-                    id = -1,
-                    employeeName = it.employeeName ?: "",
-                    companyName = it.companyName ?: "",
-                    employeeCode = it.employeeCode ?: ""
+            val dateOnlyStr = if (dateInstantStr.isNotEmpty()) {
+                formatDate(
+                    dateInstantStr,
+                    inputPattern = "",
+                    outputPattern = "yyyy-MM-dd"
                 )
-            },
-            incidentTime = incidentTime,
-            createdAt = formattedCreatedAt,
-            incidentLocation = state.location,
-            reportedBy = state.reportedByName,
-            incidentDate = incidentDate,
-            saveAsDraft = isDraft,
-            images = state.incidentImages.mapNotNull {
-                if (it.imageUrl != null) {
-                    ImageDescriptionRequest(
-                        isAiGeneratedDescription = false,
-                        image = it.imageUrl,
-                        description = it.description,
-                        imageCount = 1
-                    )
-                } else null
-            },
-            description = state.description
-        )
+            } else ""
 
-        viewModelScope.launch {
+            val incidentDate = if (dateOnlyStr.isNotEmpty() && incidentTime.isNotEmpty()) {
+                "$dateOnlyStr $incidentTime"
+            } else ""
+
+            val formattedCreatedAt = formatDate(
+                kotlin.time.Clock.System.now().toString(),
+                inputPattern = "",
+                outputPattern = "yyyy-MM-dd HH:mm:ss"
+            )
+
+            val request = AddIncidentRequest(
+                corrections = state.immediateCorrections,
+                facilitiesId = state.selectedProject?.groupId?.toString() ?: "",
+                incidentType = state.incidentTypes,
+                injuredEmployees = state.injuredEmployees.map {
+                    InjuredEmployeeRequest(
+                        profession = it.profession ?: "",
+                        id = -1,
+                        employeeName = it.employeeName ?: "",
+                        companyName = it.companyName ?: "",
+                        employeeCode = it.employeeCode ?: ""
+                    )
+                },
+                incidentTime = incidentTime,
+                createdAt = formattedCreatedAt,
+                incidentLocation = state.location,
+                reportedBy = state.reportedByName,
+                incidentDate = incidentDate,
+                saveAsDraft = isDraft,
+                images = state.incidentImages.mapNotNull {
+                    if (it.imageUrl != null) {
+                        ImageDescriptionRequest(
+                            isAiGeneratedDescription = false,
+                            image = it.imageUrl,
+                            description = it.description,
+                            imageCount = 1
+                        )
+                    } else null
+                },
+                description = state.description
+            )
+
             _uiState.update { it.copy(isLoading = true, error = null) }
             val result = incidentRepository.addIncident(request)
             
@@ -372,7 +372,7 @@ class CreateIncidentViewModel(
                     onSuccess()
                 }
                 is NetworkResult.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = result.message ?: "Failed to publish incident") }
+                    _uiState.update { it.copy(isLoading = false, error = result.message ?: getString(Res.string.error_failed_to_publish_incident)) }
                 }
             }
         }
@@ -500,7 +500,9 @@ class CreateIncidentViewModel(
             (incidentTypesJson.isBlank() || incidentTypesJson == "[]") && hasInjuredPerson == null && 
             (injuredEmployeesJson.isBlank() || injuredEmployeesJson == "[]") && 
             description.isBlank() && corrections.isBlank() && (imagesJson.isBlank() || imagesJson == "[]")) {
-            _uiState.update { it.copy(error = "At least one value is needed to save as draft") }
+            viewModelScope.launch {
+                _uiState.update { it.copy(error = getString(Res.string.error_draft_at_least_one_field)) }
+            }
             return
         }
 

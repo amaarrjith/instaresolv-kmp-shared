@@ -13,6 +13,8 @@ import org.example.project.data.settings.AuthPreferences
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.domain.validation.LoginValidator
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 class LoginViewModel(
     private val repository: AuthRepository,
@@ -70,7 +72,7 @@ class LoginViewModel(
                             it.copy(
                                 isLoading = false,
                                 errorMessage = result.data.message?.takeIf { msg -> msg.isNotBlank() }
-                                    ?: "Authentication failed: Missing access token"
+                                    ?: getString(Res.string.error_auth_missing_token)
                             )
                         }
                     } else {

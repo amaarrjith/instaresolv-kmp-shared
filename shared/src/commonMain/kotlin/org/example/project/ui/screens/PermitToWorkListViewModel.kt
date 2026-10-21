@@ -146,7 +146,7 @@ class PermitToWorkListViewModel(
                             isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            error = result.message ?: "Failed to fetch permits"
+                            error = result.message ?: getString(Res.string.error_failed_to_fetch_permits)
                         )
                     }
                 }
@@ -192,7 +192,7 @@ class PermitToWorkListViewModel(
                     _uiState.update { state ->
                         state.copy(
                             isTypesLoading = false,
-                            typesError = result.message ?: "Failed to load permit types"
+                            typesError = result.message ?: getString(Res.string.error_failed_to_load_permit_types)
                         )
                     }
                 }
@@ -243,11 +243,11 @@ class PermitToWorkListViewModel(
                         _uiState.update { it.copy(isExporting = false, exportSuccessMessage = getString(Res.string.downloading_permit_report), exportDownloadUrl = url) }
                     }
                     is NetworkResult.Error -> {
-                        _uiState.update { it.copy(isExporting = false, exportError = result.message ?: "Failed to generate Excel") }
+                        _uiState.update { it.copy(isExporting = false, exportError = result.message ?: getString(Res.string.error_failed_to_generate_excel)) }
                     }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isExporting = false, exportError = e.message ?: "An unexpected error occurred") }
+                _uiState.update { it.copy(isExporting = false, exportError = e.message ?: getString(Res.string.error_unexpected_error)) }
             }
         }
     }

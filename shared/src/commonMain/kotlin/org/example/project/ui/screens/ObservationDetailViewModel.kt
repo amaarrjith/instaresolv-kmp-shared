@@ -13,6 +13,8 @@ import org.example.project.data.model.TranslateAudioRequest
 import org.example.project.domain.repository.AudioRepository
 import org.example.project.domain.repository.ObservationRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class ObservationDetailUiState {
     object Idle : ObservationDetailUiState()
@@ -68,7 +70,7 @@ class ObservationDetailViewModel(
                     _uiState.value = ObservationDetailUiState.Success(response)
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = ObservationDetailUiState.Error(result.message ?: "Failed to load observation details")
+                    _uiState.value = ObservationDetailUiState.Error(result.message ?: getString(Res.string.error_failed_to_load_observation_details))
                 }
             }
         }
@@ -99,7 +101,7 @@ class ObservationDetailViewModel(
                     _closeUiState.value = CloseObservationState.Success
                 }
                 is NetworkResult.Error -> {
-                    _closeUiState.value = CloseObservationState.Error(result.message ?: "Failed to close observation")
+                    _closeUiState.value = CloseObservationState.Error(result.message ?: getString(Res.string.error_failed_to_close_observation))
                 }
             }
         }
@@ -116,7 +118,7 @@ class ObservationDetailViewModel(
                             _uiState.update { currentState ->
                                 if (currentState is ObservationDetailUiState.Success) {
                                     if (response.data.audioUrl.isNullOrEmpty()) {
-                                        infoMessage("No translation needed")
+                                        infoMessage(getString(Res.string.no_translation_needed))
                                     }
                                     currentState.copy(
                                         translatedAudioUrl = response.data.audioUrl,
@@ -157,12 +159,12 @@ class ObservationDetailViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                        _pdfToastMessage.value = result.data?.statusMessage ?: getString(Res.string.error_failed_to_generate_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
         }
@@ -190,11 +192,11 @@ class ObservationDetailViewModel(
             val request = DeleteObservationRequest(observationId = id)
             when (val result = observationRepository.deleteObservation(request)) {
                 is NetworkResult.Success -> {
-                    val message = result.data.statusMessage?.takeIf { it.isNotBlank() } ?: "Successfully deleted"
+                    val message = result.data.statusMessage?.takeIf { it.isNotBlank() } ?: getString(Res.string.success_deleted)
                     _deleteUiState.value = DeleteObservationState.Success(message)
                 }
                 is NetworkResult.Error -> {
-                    val message = result.message.takeIf { it.isNotBlank() } ?: "Failed to delete observation"
+                    val message = result.message.takeIf { it.isNotBlank() } ?: getString(Res.string.error_failed_to_delete_observation)
                     _deleteUiState.value = DeleteObservationState.Error(message)
                 }
             }

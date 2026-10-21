@@ -54,6 +54,8 @@ fun PermitToWorkListScreen(
     onItemClicked: (Int) -> Unit = {},
     onDraftClicked: () -> Unit = {}
 ) {
+    val downloadFailedMsg: String = stringResource(Res.string.download_failed)
+    val permitPermissionDeniedMsg: String = stringResource(Res.string.permit_create_permission_denied)
     val viewModel: PermitToWorkListViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
     var showFilterModal by remember { mutableStateOf(false) }
@@ -72,7 +74,7 @@ fun PermitToWorkListScreen(
                 val fileName = org.example.project.utilites.getExcelReportFileName("Permit", url)
                 fileDownloader.downloadFile(url, fileName)
             } catch (e: Exception) {
-                viewModel.showError(e.message ?: "Download failed")
+                viewModel.showError(e.message ?: downloadFailedMsg)
             }
             viewModel.clearExportDownloadUrl()
         }
@@ -115,7 +117,7 @@ fun PermitToWorkListScreen(
                         viewModel.fetchPermitTypes()
                         showAddModal = true
                     } else {
-                        viewModel.showError("You don't have permission to create a new permit. Only Requestors can perform this action.")
+                        viewModel.showError(permitPermissionDeniedMsg)
                     }
                 })
             }
@@ -455,7 +457,7 @@ private fun PermitListItem(
 
                 // Permit Code / Type
                 Text(
-                    text = "${permit.permitType?.title ?: "Permit"} - ${permit.permitCode ?: ""}",
+                    text = "${permit.permitType?.title ?: stringResource(Res.string.permit_default)} - ${permit.permitCode ?: ""}",
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2

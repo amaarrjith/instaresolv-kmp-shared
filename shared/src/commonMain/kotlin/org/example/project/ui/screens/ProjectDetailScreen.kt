@@ -229,7 +229,7 @@ fun ProjectDetailScreen(
                                     val safeName = project?.groupName
                                         ?.replace(Regex("[^a-zA-Z0-9_-]"), "_")
                                         ?.takeIf { it.isNotBlank() } ?: "Project"
-                                    val fileName = "${safeName}_Training_Details_${Clock.System.now().toEpochMilliseconds()}.$ext"
+                                    val fileName = "$safeName - Training Matrix.$ext"
                                     fileDownloader.downloadFile(url, fileName)
                                     successToastMessage.value = downloadingTrainingDetailsText
                                 } catch (e: Exception) {
@@ -1207,6 +1207,7 @@ fun DeleteProjectBottomSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val password = remember { mutableStateOf("") }
     val errorMessage = remember { mutableStateOf<String?>(null) }
+    val errorEnterPassword = stringResource(Res.string.error_enter_password)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1264,7 +1265,7 @@ fun DeleteProjectBottomSheet(
                                 }
                             }
                         } else {
-                            errorMessage.value = "Please enter your password"
+                            errorMessage.value = errorEnterPassword
                         }
                     },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 50.dp),

@@ -3,8 +3,10 @@ package org.example.project.utilites
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
+import android.media.ExifInterface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -40,6 +42,64 @@ private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int,
     return inSampleSize
 }
 
+fun getExifOrientation(filePath: String): Int {
+    return try {
+        ExifInterface(filePath).getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )
+    } catch (e: Exception) {
+        ExifInterface.ORIENTATION_NORMAL
+    }
+}
+
+fun getExifOrientation(bytes: ByteArray): Int {
+    return try {
+        ExifInterface(bytes.inputStream()).getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )
+    } catch (e: Exception) {
+        ExifInterface.ORIENTATION_NORMAL
+    }
+}
+
+fun rotateBitmapByOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
+    if (orientation == ExifInterface.ORIENTATION_NORMAL ||
+        orientation == ExifInterface.ORIENTATION_UNDEFINED
+    ) {
+        return bitmap
+    }
+    val matrix = Matrix()
+    when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+        ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+        ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+        ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+        ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+        ExifInterface.ORIENTATION_TRANSPOSE -> {
+            matrix.postRotate(90f)
+            matrix.postScale(-1f, 1f)
+        }
+        ExifInterface.ORIENTATION_TRANSVERSE -> {
+            matrix.postRotate(270f)
+            matrix.postScale(-1f, 1f)
+        }
+        else -> return bitmap
+    }
+    return try {
+        val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        if (rotated != bitmap) {
+            bitmap.recycle()
+        }
+        rotated
+    } catch (e: OutOfMemoryError) {
+        bitmap
+    } catch (e: Exception) {
+        bitmap
+    }
+}
+
 private fun decodeSampledBitmapFromByteArray(data: ByteArray, reqWidth: Int = 2048, reqHeight: Int = 2048): Bitmap? {
     val options = BitmapFactory.Options().apply {
         inJustDecodeBounds = true
@@ -47,7 +107,9 @@ private fun decodeSampledBitmapFromByteArray(data: ByteArray, reqWidth: Int = 20
     BitmapFactory.decodeByteArray(data, 0, data.size, options)
     options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
     options.inJustDecodeBounds = false
-    return BitmapFactory.decodeByteArray(data, 0, data.size, options)
+    val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size, options) ?: return null
+    val orientation = getExifOrientation(data)
+    return rotateBitmapByOrientation(bitmap, orientation)
 }
 
 actual fun ByteArray.toImageBitmap(): ImageBitmap? {
@@ -154,7 +216,9 @@ actual fun compressImage(
         val decodeOptions = BitmapFactory.Options().apply {
             inSampleSize = sampleSize
         }
-        var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, decodeOptions) ?: return imageBytes
+        val decoded = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, decodeOptions) ?: return imageBytes
+        val orientation = getExifOrientation(imageBytes)
+        var bitmap = rotateBitmapByOrientation(decoded, orientation)
 
         val maxDim = maxOf(bitmap.width, bitmap.height)
         if (maxDim > maxDimension) {

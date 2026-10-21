@@ -1,27 +1,30 @@
 package org.example.project.domain.validation
 
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
+
 class RegisterValidator {
-    fun validateFullName(fullName: String): String? {
-        if (fullName.isBlank()) return "Full name is required"
+    suspend fun validateFullName(fullName: String): String? {
+        if (fullName.isBlank()) return getString(Res.string.error_full_name_required)
         return null
     }
-    fun validateEmail(email: String): String? {
-        if (email.isBlank()) return "Email is required"
-        if (!email.contains("@")) return "Invalid email"
+    suspend fun validateEmail(email: String): String? {
+        if (email.isBlank()) return getString(Res.string.error_email_required)
+        if (!email.contains("@")) return getString(Res.string.error_invalid_email)
         return null
     }
-    fun validatePassword(password: String): String? {
-        if (password.isBlank()) return "Password is required"
-        if (password.length < 8) return "Password must be at least 8 characters"
+    suspend fun validatePassword(password: String): String? {
+        if (password.isBlank()) return getString(Res.string.error_password_required)
+        if (password.length < 8) return getString(Res.string.error_password_at_least_8_characters)
         return null
     }
-    fun validateConfirmPassword(password: String, confirmPassword: String): String? {
-        if (confirmPassword.isBlank()) return "Confirm password is required"
-        if (password != confirmPassword) return "Passwords do not match"
+    suspend fun validateConfirmPassword(password: String, confirmPassword: String): String? {
+        if (confirmPassword.isBlank()) return getString(Res.string.error_confirm_password_required)
+        if (password != confirmPassword) return getString(Res.string.passwords_do_not_match)
         return null
     }
-    fun validateTermsAndConditions(isAccepted: Boolean): String? {
-        if (!isAccepted) return "Please accept the terms and conditions"
+    suspend fun validateTermsAndConditions(isAccepted: Boolean): String? {
+        if (!isAccepted) return getString(Res.string.error_accept_terms)
         return null
     }
 }

@@ -25,6 +25,7 @@ fun RequestDeleteObservationView(
 ) {
     var justification by remember { mutableStateOf("") }
     var errorMesssage by remember { mutableStateOf("") }
+    val descriptionRequiredError = stringResource(Res.string.description_required_error)
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
 
     Column(
@@ -100,7 +101,7 @@ fun RequestDeleteObservationView(
             Button(
                 onClick = {
                     if (justification.isEmpty()) {
-                        errorMesssage = "Description is required."
+                        errorMesssage = descriptionRequiredError
                         return@Button
                     }
                     onContinueClicked(justification)

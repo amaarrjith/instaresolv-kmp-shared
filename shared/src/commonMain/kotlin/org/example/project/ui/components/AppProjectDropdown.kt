@@ -168,7 +168,7 @@ fun AppProjectDropdown(
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = project.groupName ?: "Unknown",
+                                            text = project.groupName ?: stringResource(Res.string.unknown),
                                             style = textStyle(size = 15.sp, weight = FontWeight.Medium),
                                             color = AppColors.Black
                                         )

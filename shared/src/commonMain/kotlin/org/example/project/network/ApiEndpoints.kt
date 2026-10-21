@@ -6,6 +6,7 @@ object ApiEndpoints {
     const val DESIGNATION_TYPES = "user/designation-types"
     const val REGISTER = "user/registration"
     const val VERIFY_OTP = "user/email-verify"
+    const val RESEND_OTP = "email/resend-code"
     const val USER_CHECKOUT = "generic/user-check"
     const val PROJECT_LIST = "v3/group/list"
     const val REFRESH_TOKEN = "token/refresh"

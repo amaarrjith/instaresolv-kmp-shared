@@ -472,6 +472,8 @@ fun AssignedToMeCard(
     var showRequestResponsiblePersonSheet by remember { mutableStateOf(false) }
     val groupUsers by viewModel.groupUsers.collectAsState()
     var actionSuccessMessage by remember { mutableStateOf<String?>(null) }
+    val deleteObservationSuccessMsg = stringResource(Res.string.request_to_delete_observation_success)
+    val changeResponsibleSuccessMsg = stringResource(Res.string.request_to_change_responsible_person_success)
     assignedToMe?.let { contents ->
         Box(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -825,7 +827,7 @@ fun AssignedToMeCard(
                             justification = justification,
                             onSuccess = {
                                 showRequestDeleteSheet = false
-                                actionSuccessMessage = "Request to delete observation submitted successfully."
+                                actionSuccessMessage = deleteObservationSuccessMsg
                             },
                             onError = { err ->
                                 showRequestDeleteSheet = false
@@ -855,7 +857,7 @@ fun AssignedToMeCard(
                             responsiblePerson = responsiblePersonId,
                             onSuccess = {
                                 showRequestResponsiblePersonSheet = false
-                                actionSuccessMessage = "Request to change responsible person submitted successfully."
+                                actionSuccessMessage = changeResponsibleSuccessMsg
                             },
                             onError = { err ->
                                 showRequestResponsiblePersonSheet = false
@@ -1055,12 +1057,13 @@ fun ActionOverviewCard(
     onClick: (ActionOverview) -> Unit,
     showToast: (String) -> Unit
 ) {
+    val accessRestrictedMsg = stringResource(Res.string.access_restricted_to_subcontractors)
     Box(
         modifier = Modifier
             .alpha(if (disabled) 0.5f else 1f)
             .clickable() {
                 if (disabled) {
-                    showToast("Access restricted to subcontractors.")
+                    showToast(accessRestrictedMsg)
                 } else {
                     onClick(action)
                 }

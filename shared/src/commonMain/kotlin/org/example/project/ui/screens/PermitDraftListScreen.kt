@@ -386,7 +386,7 @@ fun PermitDraftListItem(
                 }
 
                 Text(
-                    text = permitType?.permitTypeTitle ?: "Permit",
+                    text = permitType?.permitTypeTitle ?: stringResource(Res.string.permit_default),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2

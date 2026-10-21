@@ -1,5 +1,6 @@
 package org.example.project.utilites
 
+import androidx.compose.runtime.Composable
 import platform.Foundation.NSUserDefaults
 
 actual fun setAppLocale(languageTag: String) {
@@ -11,4 +12,10 @@ actual fun setAppLocale(languageTag: String) {
     NSUserDefaults.standardUserDefaults.setObject(listOf(iosLocale), "AppleLanguages")
     NSUserDefaults.standardUserDefaults.synchronize()
 }
+
+@Composable
+actual fun ProvideAppLocale(languageTag: String, content: @Composable () -> Unit) {
+    content()
+}
+
 

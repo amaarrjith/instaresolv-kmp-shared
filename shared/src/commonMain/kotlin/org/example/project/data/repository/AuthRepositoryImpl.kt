@@ -15,6 +15,8 @@ import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
+import org.example.project.data.model.ResendOTPRequest
+import org.example.project.data.model.ResendOTPResponse
 import org.example.project.data.model.ProjectAccessRequest
 import org.example.project.data.model.ProjectAccessResponse
 import org.example.project.data.model.RegisterRequest
@@ -90,6 +92,18 @@ class AuthRepositoryImpl(
                 tempUserId = tempUserId,
                 email = email,
                 otp = otp
+            )
+        )
+    }
+
+    override suspend fun resendOTP(
+        tempUserId: Int,
+        email: String
+    ): NetworkResult<ResendOTPResponse> {
+        return apiService.resendOTP(
+            ResendOTPRequest(
+                tempUserId = tempUserId,
+                email = email
             )
         )
     }

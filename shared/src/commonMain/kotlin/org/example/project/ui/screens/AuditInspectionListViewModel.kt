@@ -18,6 +18,8 @@ import org.example.project.data.model.FilterContentData
 import org.example.project.data.repository.InspectionDraftRepository
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.shared.db.InspectionDraft
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class AuditInspectionListState(
     val isPullDown: Boolean = false,
@@ -100,7 +102,7 @@ class AuditInspectionListViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
-                    _exportToastMessage.value = result.message ?: "Export failed"
+                    _exportToastMessage.value = result.message ?: getString(Res.string.export_failed)
                 }
             }
             _isExporting.value = false
@@ -131,7 +133,7 @@ class AuditInspectionListViewModel(
                     _uiState.update { 
                         it.copy(
                             isAuditItemsLoading = false,
-                            auditItemsError = result.message ?: "Failed to fetch audit items"
+                            auditItemsError = result.message ?: getString(Res.string.error_failed_to_fetch_audit_items)
                         )
                     }
                 }
@@ -226,7 +228,7 @@ class AuditInspectionListViewModel(
                             isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            error = result.message ?: "Failed to fetch inspections"
+                            error = result.message ?: getString(Res.string.error_failed_to_fetch_inspections)
                         ) 
                     }
                 }

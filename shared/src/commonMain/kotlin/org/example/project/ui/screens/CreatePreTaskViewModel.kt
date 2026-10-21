@@ -30,9 +30,8 @@ import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 import kotlinx.serialization.Serializable
 import org.example.project.data.settings.parseTimeToMinutes
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.error_end_time_greater
-import instaresolv.shared.generated.resources.error_cannot_select_future_time
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 import instaresolv.shared.generated.resources.error_enter_question
 import instaresolv.shared.generated.resources.error_select_answer
 
@@ -166,7 +165,7 @@ class CreatePreTaskViewModel(
                     _uiState.update { 
                         it.copy(
                             isLoading = false,
-                            error = result.message ?: "Failed to load topics"
+                            error = result.message ?: getString(Res.string.error_failed_to_load_topics)
                         )
                     }
                 }
@@ -455,38 +454,30 @@ class CreatePreTaskViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isPublishing = true, error = null) }
             if (state.taskTitle.isBlank()) {
-                _uiState.update { it.copy(isPublishing = false, error = "Task Title is required") }
+                _uiState.update { it.copy(isPublishing = false, error = getString(Res.string.error_task_title_required)) }
                 return@launch
             }
             if (state.dateMillis == null) {
-                _uiState.update { it.copy(isPublishing = false, error = "Date is required") }
+                _uiState.update { it.copy(isPublishing = false, error = getString(Res.string.error_date_required)) }
                 return@launch
             }
 
             val incompleteCustomQ = state.customQuestions.find { it.title.isNotBlank() && it.answer.isBlank() }
             if (incompleteCustomQ != null) {
-                val errorMsg = try {
-                    org.jetbrains.compose.resources.getString(Res.string.error_select_answer)
-                } catch (_: Exception) {
-                    "Please select an answer"
-                }
+                val errorMsg = getString(Res.string.error_select_answer)
                 _uiState.update { it.copy(isPublishing = false, error = errorMsg) }
                 return@launch
             }
             if (state.startTime.isBlank()) {
-                _uiState.update { it.copy(isPublishing = false, error = "Start Time is required") }
+                _uiState.update { it.copy(isPublishing = false, error = getString(Res.string.error_start_time_required)) }
                 return@launch
             }
             if (state.endTime.isBlank()) {
-                _uiState.update { it.copy(isPublishing = false, error = "End Time is required") }
+                _uiState.update { it.copy(isPublishing = false, error = getString(Res.string.error_end_time_required)) }
                 return@launch
             }
             if (parseTimeToMinutes(state.endTime) <= parseTimeToMinutes(state.startTime)) {
-                val errorMsg = try {
-                    org.jetbrains.compose.resources.getString(Res.string.error_end_time_greater)
-                } catch (_: Exception) {
-                    "End time must be greater than start time"
-                }
+                val errorMsg = getString(Res.string.error_end_time_greater)
                 _uiState.update { it.copy(isPublishing = false, error = errorMsg) }
                 return@launch
             }
@@ -503,11 +494,7 @@ class CreatePreTaskViewModel(
                     now.hour * 60 + now.minute
                 }
                 if (parseTimeToMinutes(state.startTime) > currentMinutes || parseTimeToMinutes(state.endTime) > currentMinutes) {
-                    val errorMsg = try {
-                        org.jetbrains.compose.resources.getString(Res.string.error_cannot_select_future_time)
-                    } catch (_: Exception) {
-                        "Cannot select a future time"
-                    }
+                    val errorMsg = getString(Res.string.error_cannot_select_future_time)
                     _uiState.update { it.copy(isPublishing = false, error = errorMsg) }
                     return@launch
                 }
@@ -579,7 +566,7 @@ class CreatePreTaskViewModel(
 
             mappedQuestions.forEach { question ->
                 if (question.selectedAnswer == 0) {
-                    _uiState.update { it.copy(isPublishing = false, error = "All Questions must be answered") }
+                    _uiState.update { it.copy(isPublishing = false, error = getString(Res.string.error_all_questions_must_be_answered)) }
                     return@launch
                 }
             }
@@ -611,7 +598,7 @@ class CreatePreTaskViewModel(
                     _uiState.update { it.copy(isPublishing = false, publishSuccess = true) }
                 }
                 is NetworkResult.Error -> {
-                    _uiState.update { it.copy(isPublishing = false, error = result.message ?: "Failed to create PreTask") }
+                    _uiState.update { it.copy(isPublishing = false, error = result.message ?: getString(Res.string.error_failed_to_create_pretask)) }
                 }
             }
         }
@@ -660,13 +647,16 @@ class CreatePreTaskViewModel(
         if (facilitiesId == null && dateMillis == null && startTime.isBlank() && endTime.isBlank() &&
             taskTitle.isBlank() && msraReference.isBlank() && permitReference.isBlank() &&
             stepByStepAccount.isBlank()) {
-            _uiState.update { it.copy(error = "At least one value is needed to save as draft") }
+            viewModelScope.launch {
+                _uiState.update { it.copy(error = getString(Res.string.error_draft_at_least_one_field)) }
+            }
             return
         }
 
         if (startTime.isNotBlank() && endTime.isNotBlank() && parseTimeToMinutes(endTime) <= parseTimeToMinutes(startTime)) {
-            val errorMsg = "End time must be greater than start time"
-            _uiState.update { it.copy(error = errorMsg) }
+            viewModelScope.launch {
+                _uiState.update { it.copy(error = getString(Res.string.error_end_time_greater)) }
+            }
             return
         }
 
@@ -683,7 +673,9 @@ class CreatePreTaskViewModel(
             }
             if ((startTime.isNotBlank() && parseTimeToMinutes(startTime) > currentMinutes) ||
                 (endTime.isNotBlank() && parseTimeToMinutes(endTime) > currentMinutes)) {
-                _uiState.update { it.copy(error = "Cannot select a future time") }
+                viewModelScope.launch {
+                    _uiState.update { it.copy(error = getString(Res.string.error_cannot_select_future_time)) }
+                }
                 return
             }
         }

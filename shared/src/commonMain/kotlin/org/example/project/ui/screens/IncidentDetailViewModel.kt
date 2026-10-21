@@ -9,6 +9,8 @@ import org.example.project.data.model.IncidentDetailRequest
 import org.example.project.data.model.IncidentDetailResponse
 import org.example.project.domain.repository.IncidentRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class IncidentDetailUiState {
     object Idle : IncidentDetailUiState()
@@ -43,11 +45,11 @@ class IncidentDetailViewModel(
                     if (response != null) {
                         _uiState.value = IncidentDetailUiState.Success(response)
                     } else {
-                        _uiState.value = IncidentDetailUiState.Error("Invalid response")
+                        _uiState.value = IncidentDetailUiState.Error(getString(Res.string.error_invalid_response))
                     }
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = IncidentDetailUiState.Error(result.message ?: "Failed to load incident details")
+                    _uiState.value = IncidentDetailUiState.Error(result.message ?: getString(Res.string.error_failed_to_load_incident_details))
                 }
             }
         }
@@ -64,12 +66,12 @@ class IncidentDetailViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                        _pdfToastMessage.value = result.data?.statusMessage ?: getString(Res.string.error_failed_to_generate_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
         }

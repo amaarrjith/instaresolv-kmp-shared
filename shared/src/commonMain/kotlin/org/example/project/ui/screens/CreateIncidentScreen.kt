@@ -598,7 +598,7 @@ fun CreateIncidentScreen(
                         horizontalAlignment = Alignment.Start
                     ) {
                         Text(
-                            text = if (index == 0) "Upload Image" else "Upload Image ${index + 1}",
+                            text = stringResource(Res.string.uploadImage_key, index + 1),
                             style = textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.SemiBold

@@ -16,6 +16,8 @@ import org.example.project.network.NetworkResult
 import kotlin.time.Clock
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.TimeZone
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class CreateLessonLearnedUiState {
     object Idle : CreateLessonLearnedUiState()
@@ -82,7 +84,9 @@ class CreateLessonLearnedViewModel(
         onSuccess: () -> Unit
     ) {
         if (facilitiesId == null && title.isBlank() && description.isBlank() && (imagesJson.isBlank() || imagesJson == "[]")) {
-            _uiState.value = CreateLessonLearnedUiState.Error("At least one field must have a value to save as draft")
+            viewModelScope.launch {
+                _uiState.value = CreateLessonLearnedUiState.Error(getString(Res.string.error_draft_at_least_one_field))
+            }
             return
         }
 

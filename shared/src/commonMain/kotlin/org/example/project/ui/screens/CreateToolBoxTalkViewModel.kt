@@ -21,11 +21,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.project.data.model.ToolBoxAttendeeRequest
 import org.example.project.data.settings.parseTimeToMinutes
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.error_cannot_select_future_time
-import instaresolv.shared.generated.resources.error_end_time_greater
-import instaresolv.shared.generated.resources.error_at_least_one_discussion_point
-import instaresolv.shared.generated.resources.error_at_least_one_employee
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class CreateToolBoxTalkUiState {
     object Idle : CreateToolBoxTalkUiState()
@@ -132,7 +129,7 @@ class CreateToolBoxTalkViewModel(
                 }
                 is NetworkResult.Error -> {
                     _isBulkLoading.value = false
-                    _uiState.value = CreateToolBoxTalkUiState.Error(result.message ?: "Failed to fetch employees")
+                    _uiState.value = CreateToolBoxTalkUiState.Error(result.message ?: getString(Res.string.error_failed_to_fetch_employees))
                 }
             }
         }
@@ -163,20 +160,15 @@ class CreateToolBoxTalkViewModel(
     ) {
         viewModelScope.launch {
             if (selectedDateMillis == null) {
-                _uiState.value = CreateToolBoxTalkUiState.Error("Date is required")
+                _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_date_required))
                 return@launch
             }
             if (startTimeStr.isBlank() || endTimeStr.isBlank()) {
-                _uiState.value = CreateToolBoxTalkUiState.Error("Start and End Times are required")
+                _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_start_end_times_required))
                 return@launch
             }
             if (parseTimeToMinutes(endTimeStr) <= parseTimeToMinutes(startTimeStr)) {
-                val errorMsg = try {
-                    org.jetbrains.compose.resources.getString(Res.string.error_end_time_greater)
-                } catch (_: Exception) {
-                    "End time must be greater than start time"
-                }
-                _uiState.value = CreateToolBoxTalkUiState.Error(errorMsg)
+                _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_end_time_greater))
                 return@launch
             }
 
@@ -192,38 +184,23 @@ class CreateToolBoxTalkViewModel(
                     now.hour * 60 + now.minute
                 }
                 if (parseTimeToMinutes(startTimeStr) > currentMinutes || parseTimeToMinutes(endTimeStr) > currentMinutes) {
-                    val errorMsg = try {
-                        org.jetbrains.compose.resources.getString(Res.string.error_cannot_select_future_time)
-                    } catch (_: Exception) {
-                        "Cannot select a future time"
-                    }
-                    _uiState.value = CreateToolBoxTalkUiState.Error(errorMsg)
+                    _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_cannot_select_future_time))
                     return@launch
                 }
             }
             if (topic.isBlank()) {
-                _uiState.value = CreateToolBoxTalkUiState.Error("Topic is required")
+                _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_topic_required))
                 return@launch
             }
 
             val validDiscussionPoints = discussionPoints.filter { it.isNotBlank() }
             if (validDiscussionPoints.isEmpty()) {
-                val errorMsg = try {
-                    org.jetbrains.compose.resources.getString(Res.string.error_at_least_one_discussion_point)
-                } catch (_: Exception) {
-                    "At least one discussion point is required"
-                }
-                _uiState.value = CreateToolBoxTalkUiState.Error(errorMsg)
+                _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_at_least_one_discussion_point))
                 return@launch
             }
 
             if (attendees.isEmpty()) {
-                val errorMsg = try {
-                    org.jetbrains.compose.resources.getString(Res.string.error_at_least_one_employee)
-                } catch (_: Exception) {
-                    "Please add at least one employee"
-                }
-                _uiState.value = CreateToolBoxTalkUiState.Error(errorMsg)
+                _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_at_least_one_employee))
                 return@launch
             }
 
@@ -328,7 +305,9 @@ class CreateToolBoxTalkViewModel(
         if (facilitiesId == null && dateMillis == null && startTime.isBlank() && endTime.isBlank() && 
             topic.isBlank() && (discussionPointsJson.isBlank() || discussionPointsJson == "[]" || discussionPointsJson == "[\"\",\"\",\"\",\"\"]") && 
             (attendeesJson.isBlank() || attendeesJson == "[]") && (imagesJson.isBlank() || imagesJson == "[]")) {
-            _uiState.value = CreateToolBoxTalkUiState.Error("At least one value is needed to save as draft")
+            viewModelScope.launch {
+                _uiState.value = CreateToolBoxTalkUiState.Error(getString(Res.string.error_draft_at_least_one_field))
+            }
             return
         }
 

@@ -16,6 +16,8 @@ import org.example.project.data.model.AssignedTrainingData
 import org.example.project.data.model.AssignedTrainingRequest
 import org.example.project.domain.repository.TrainingRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class AssignedTrainingsUiState(
     val trainings: List<AssignedTrainingData> = emptyList(),
@@ -197,7 +199,7 @@ class AssignedTrainingsViewModel(
                 is NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isAssigning = false,
-                        assignSuccessMessage = result.data.statusMessage.ifBlank { "Training Video Successfully Assigned" },
+                        assignSuccessMessage = result.data.statusMessage.ifBlank { getString(Res.string.training_video_assigned_successfully) },
                         isAddTrainingModalVisible = false
                     )
                     loadTrainings(isRefresh = true) // Refresh assigned list

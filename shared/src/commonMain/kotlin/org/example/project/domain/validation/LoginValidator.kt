@@ -1,18 +1,19 @@
 package org.example.project.domain.validation
 
-import androidx.compose.runtime.Composable
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 class LoginValidator {
 
-    fun validateEmail(email: String): String? {
-        if (email.isBlank()) return "Email is required"
-        if (!email.contains("@")) return "Invalid email"
+    suspend fun validateEmail(email: String): String? {
+        if (email.isBlank()) return getString(Res.string.error_email_required)
+        if (!email.contains("@")) return getString(Res.string.error_invalid_email)
         return null
     }
 
-    fun validatePassword(password: String): String? {
-        if (password.isBlank()) return "Password is required"
-        if (password.length < 8) return "Minimum 8 characters"
+    suspend fun validatePassword(password: String): String? {
+        if (password.isBlank()) return getString(Res.string.error_password_required)
+        if (password.length < 8) return getString(Res.string.error_minimum_8_characters)
         return null
     }
 }

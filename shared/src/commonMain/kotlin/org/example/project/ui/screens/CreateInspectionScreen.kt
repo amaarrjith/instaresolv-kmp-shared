@@ -123,7 +123,7 @@ fun CreateInspectionScreen(
                 ) {
                     if (uiState.isDraftOutdated) {
                         Text(
-                            text = "Draft is outdated as questions have been updated",
+                            text = stringResource(Res.string.draft_outdated_questions_updated),
                             color = Color.Red,
                             style = textStyle(size = 12.sp, weight = FontWeight.Medium),
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -459,7 +459,7 @@ fun CreateInspectionScreen(
                         horizontalAlignment = Alignment.Start
                     ) {
                         Text(
-                            text = if (index == 0) "Upload Image" else "Upload Image ${index + 1}",
+                            text = stringResource(Res.string.uploadImage_key, index + 1),
                             style = textStyle(
                                 size = 12.sp,
                                 weight = FontWeight.SemiBold

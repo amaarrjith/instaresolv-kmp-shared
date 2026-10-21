@@ -15,6 +15,8 @@ import org.example.project.data.model.ObservationRequest
 import org.example.project.domain.repository.ObservationRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.FilterContentData
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class ObservationListState(
     val isPullDown: Boolean = false,
@@ -110,7 +112,7 @@ class ObservationListViewModel(
                 loadDrafts()
                 _draftToastMessage.value = successMessage
             } catch (e: Exception) {
-                _draftToastMessage.value = e.message ?: "Failed to delete drafts"
+                _draftToastMessage.value = e.message ?: getString(Res.string.error_failed_to_delete_drafts)
             }
         }
     }
@@ -178,7 +180,7 @@ class ObservationListViewModel(
                             isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            error = result.message ?: "Failed to fetch observations"
+                            error = result.message ?: getString(Res.string.error_failed_to_fetch_observations)
                         ) 
                     }
                 }
@@ -225,7 +227,7 @@ class ObservationListViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
-                    _exportToastMessage.value = result.message ?: "Export failed"
+                    _exportToastMessage.value = result.message ?: getString(Res.string.export_failed)
                 }
             }
             _isExporting.value = false

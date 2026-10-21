@@ -11,6 +11,8 @@ import org.example.project.data.model.ViolationData
 import org.example.project.data.model.ViolationDetailRequest
 import org.example.project.domain.repository.ViolationRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class ViolationDetailState(
     val isLoading: Boolean = false,
@@ -53,7 +55,7 @@ class ViolationDetailViewModel(
                         _uiState.update { 
                             it.copy(
                                 isLoading = false,
-                                error = "Failed to load violation details"
+                                error = getString(Res.string.error_failed_to_load_violation_details)
                             )
                         }
                     }
@@ -62,7 +64,7 @@ class ViolationDetailViewModel(
                     _uiState.update { 
                         it.copy(
                             isLoading = false,
-                            error = result.message ?: "Failed to load violation details"
+                            error = result.message ?: getString(Res.string.error_failed_to_load_violation_details)
                         )
                     }
                 }
@@ -81,12 +83,12 @@ class ViolationDetailViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                        _pdfToastMessage.value = result.data?.statusMessage ?: getString(Res.string.error_failed_to_generate_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
         }

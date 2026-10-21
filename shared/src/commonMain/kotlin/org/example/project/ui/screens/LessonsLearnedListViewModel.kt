@@ -17,6 +17,8 @@ import org.example.project.network.NetworkResult
 import org.example.project.data.model.AppFilterState
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.data.repository.LessonLearnedDraftRepository
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class LessonsLearnedListState(
     val isPullDown: Boolean = false,
@@ -175,7 +177,7 @@ class LessonsLearnedListViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
-                    _exportToastMessage.value = result.message ?: "Export failed"
+                    _exportToastMessage.value = result.message ?: getString(Res.string.export_failed)
                 }
             }
             _isExporting.value = false

@@ -11,6 +11,8 @@ import org.example.project.data.model.InspectionDetailRequest
 import org.example.project.data.model.InspectionDetailResponse
 import org.example.project.domain.repository.InspectionRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class InspectionDetailUiState {
     data object Idle : InspectionDetailUiState()
@@ -46,11 +48,11 @@ class InspectionDetailViewModel(
                     if (result.data != null) {
                         _uiState.value = InspectionDetailUiState.Success(result.data)
                     } else {
-                        _uiState.value = InspectionDetailUiState.Error("Details not found")
+                        _uiState.value = InspectionDetailUiState.Error(getString(Res.string.error_details_not_found))
                     }
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = InspectionDetailUiState.Error(result.message ?: "Failed to load details")
+                    _uiState.value = InspectionDetailUiState.Error(result.message ?: getString(Res.string.error_failed_to_load_details))
                 }
             }
         }
@@ -67,12 +69,12 @@ class InspectionDetailViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                        _pdfToastMessage.value = result.data?.statusMessage ?: getString(Res.string.error_failed_to_generate_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
         }

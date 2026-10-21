@@ -656,7 +656,7 @@ fun IncidentDetailContent(
                 images = detail.images,
                 onImageClick = onImageClick,
                 isTranslationDone = isTranslationDone,
-                emptyMessage = "No Images Uploaded"
+                emptyMessage = stringResource(Res.string.noImagesUploaded)
             )
 
             Spacer(Modifier.height(40.dp))

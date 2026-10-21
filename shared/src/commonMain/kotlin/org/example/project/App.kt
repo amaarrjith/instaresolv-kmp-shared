@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.example.project.ui.navigation.AppNavigation
 import org.example.project.utilites.setAppLocale
+import org.example.project.utilites.ProvideAppLocale
 import org.example.project.ui.viewmodel.GlobalSettingsViewModel
 import org.koin.compose.koinInject
 import androidx.compose.foundation.layout.Box
@@ -71,54 +72,56 @@ fun App() {
         setAppLocale(currentLanguage.code)
     }
 
-    CompositionLocalProvider(
-        LocalLayoutDirection provides layoutDirection
-    ) {
-        key(currentLanguage) {
-        MaterialTheme {
-            val focusManager = LocalFocusManager.current
-            var isBannerVisible by remember { mutableStateOf(false) }
+    ProvideAppLocale(currentLanguage.code) {
+        CompositionLocalProvider(
+            LocalLayoutDirection provides layoutDirection
+        ) {
+            key(currentLanguage) {
+            MaterialTheme {
+                val focusManager = LocalFocusManager.current
+                var isBannerVisible by remember { mutableStateOf(false) }
 
-            // Smooth animations for corner radius and background color
-            val animatedCornerRadius by animateDpAsState(
-                targetValue = if (isBannerVisible) 24.dp else 0.dp
-            )
-            val animatedBgColor by animateColorAsState(
-                targetValue = if (isBannerVisible) Color.Black else Color.White
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(animatedBgColor)
-                    .pointerInput(Unit) {
-                        detectTapGestures {
-                            focusManager.clearFocus()
-                        }
-                    }
-            ) {
-                NetworkStatusBanner(
-                    isNetworkConnected = isNetworkConnected,
-                    onVisibilityChanged = { isBannerVisible = it },
-                    modifier = Modifier.fillMaxWidth()
+                // Smooth animations for corner radius and background color
+                val animatedCornerRadius by animateDpAsState(
+                    targetValue = if (isBannerVisible) 24.dp else 0.dp
+                )
+                val animatedBgColor by animateColorAsState(
+                    targetValue = if (isBannerVisible) Color.Black else Color.White
                 )
 
-                // Main app navigation content container
-                Box(
+                Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = animatedCornerRadius,
-                                topEnd = animatedCornerRadius
-                            )
-                        )
-                        .background(Color.White)
+                        .fillMaxSize()
+                        .background(animatedBgColor)
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                focusManager.clearFocus()
+                            }
+                        }
                 ) {
-                    AppNavigation()
+                    NetworkStatusBanner(
+                        isNetworkConnected = isNetworkConnected,
+                        onVisibilityChanged = { isBannerVisible = it },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Main app navigation content container
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = animatedCornerRadius,
+                                    topEnd = animatedCornerRadius
+                                )
+                            )
+                            .background(Color.White)
+                    ) {
+                        AppNavigation()
+                    }
                 }
-            }
+                }
             }
         }
     }

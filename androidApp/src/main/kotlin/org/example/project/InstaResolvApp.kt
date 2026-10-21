@@ -26,5 +26,11 @@ class InstaResolvApp : Application() {
             }
             androidContext(this@InstaResolvApp)
         }
+
+        try {
+            val appPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AppPreferences>()
+            val langCode = appPreferences.getLanguage()
+            org.example.project.utilites.setAppLocale(langCode)
+        } catch (_: Exception) {}
     }
 }

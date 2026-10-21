@@ -292,11 +292,12 @@ fun TrainingListItem(
 
             // Action / Content Chips Row
             Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                TrainingChip(if (training.isScorm) stringResource(Res.string.scorm_content) else stringResource(Res.string.trainingVideo))
+                TrainingChip(if (training.isScorm) stringResource(Res.string.scorm_content) else stringResource(Res.string.video))
 
                 if (training.hasQuiz) {
                     TrainingChip(stringResource(Res.string.quiz))
@@ -309,15 +310,20 @@ fun TrainingListItem(
 }
 
 @Composable
-fun TrainingChip(text: String) {
+fun TrainingChip(
+    text: String,
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = Modifier
-            .border(BorderStroke(1.dp, Color(0xFFE5E5E5)), shape = RoundedCornerShape(10.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+        modifier = modifier
+            .border(BorderStroke(1.dp, Color(0xFFE5E5E5)), shape = RoundedCornerShape(8.dp))
+            .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
         Text(
             text = text,
-            style = textStyle(size = 10.sp, weight = FontWeight.Medium, color = AppColors.DarkGray)
+            style = textStyle(size = 9.sp, weight = FontWeight.Medium, color = AppColors.DarkGray),
+            maxLines = 1,
+            softWrap = false
         )
     }
 }

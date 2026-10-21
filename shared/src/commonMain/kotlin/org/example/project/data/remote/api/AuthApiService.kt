@@ -22,6 +22,8 @@ import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPRequest
 import org.example.project.data.model.OTPResponse
+import org.example.project.data.model.ResendOTPRequest
+import org.example.project.data.model.ResendOTPResponse
 import org.example.project.data.model.ProjectAccessRequest
 import org.example.project.data.model.ProjectAccessResponse
 import org.example.project.data.model.PendingActionRequest
@@ -78,6 +80,10 @@ interface AuthApiService {
     suspend fun verifyOTP(
         request: OTPRequest
     ): NetworkResult<OTPResponse>
+
+    suspend fun resendOTP(
+        request: ResendOTPRequest
+    ): NetworkResult<ResendOTPResponse>
 
     suspend fun userCheckOut(
         request: UserCheckoutRequest

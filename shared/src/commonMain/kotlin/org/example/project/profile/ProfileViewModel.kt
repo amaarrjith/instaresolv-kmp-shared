@@ -12,6 +12,8 @@ import org.example.project.domain.repository.AuthRepository
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
 import org.example.project.manager.AppManager
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 class ProfileViewModel(
     private val preferences: AuthPreferences,
@@ -48,7 +50,7 @@ class ProfileViewModel(
             when(response) {
                 is NetworkResult.Success -> {
                     _uiState.value = ProfileUiState.Success(
-                        successMessage = "Profile Updated Successfully"
+                        successMessage = getString(Res.string.profile_updated_successfully)
                     )
                     val updatedUser = user?.copy(
                         name = response.data.name,

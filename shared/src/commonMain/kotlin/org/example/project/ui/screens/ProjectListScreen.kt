@@ -87,6 +87,7 @@ fun ProjectListScreen(
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastType by remember { mutableStateOf(ToastType.Success) }
     var viewedProject by remember { mutableStateOf<Project?>(null) }
+    val projectRequestSuccessMsg = stringResource(Res.string.project_request_success)
     val isAppAdmin = UserType.fromInt(viewModel.loggedInUser?.userType ?: -1) == UserType.APP_ADMIN
     Scaffold(
         containerColor = Color.White,
@@ -188,7 +189,7 @@ fun ProjectListScreen(
                         part2 = part2,
                         onSuccess = {
                             showRequestModal = false
-                            toastMessage = "Project Request Successful"
+                            toastMessage = projectRequestSuccessMsg
                             toastType = ToastType.Success
                         },
                         onError = { message ->
@@ -230,7 +231,7 @@ fun ProjectListScreen(
                         part2 = part2,
                         onSuccess = {
                             showViewProjectModal = false
-                            toastMessage = "Project Request Successful"
+                            toastMessage = projectRequestSuccessMsg
                             toastType = ToastType.Success
                         },
                         onError = { message ->

@@ -26,6 +26,8 @@ import org.example.project.ui.screens.AuthorizerFormSection
 import org.example.project.utilities.convertTo24HourFormat
 import org.example.project.utilities.formatTimestamp
 import kotlin.time.Clock
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class PermitDetailUiState {
     object Loading : PermitDetailUiState()
@@ -98,12 +100,12 @@ class PermitDetailViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data.statusMessage ?: "Failed to generate Permit PDF"
+                        _pdfToastMessage.value = result.data.statusMessage ?: getString(Res.string.error_failed_to_generate_permit_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfToastMessage.value = result.message ?: "Failed to generate Permit PDF"
+                    _pdfToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_permit_pdf)
                 }
             }
         }
@@ -204,11 +206,15 @@ class PermitDetailViewModel(
         val state = _uiState.value as? PermitDetailUiState.Success ?: return
 
         if (authorizerPersonId == 0) {
-            _uiState.value = state.copy(submitError = "Please select an authorizer person")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_select_authorizer_person))
+            }
             return
         }
         if (signature.isBlank()) {
-            _uiState.value = state.copy(submitError = "Please add your signature")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.please_add_your_signature))
+            }
             return
         }
 
@@ -253,11 +259,11 @@ class PermitDetailViewModel(
             isAuthorizing.value = false
             when (result) {
                 is NetworkResult.Success -> {
-                    submitSuccessMessage.value = result.data.statusMessage ?: "Subcontractor Authorization Done Successfully"
+                    submitSuccessMessage.value = result.data.statusMessage ?: getString(Res.string.success_subcontractor_authorization)
                     loadPermitDetail(permitId)
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = state.copy(submitError = result.message ?: "Failed to authorize permit")
+                    _uiState.value = state.copy(submitError = result.message ?: getString(Res.string.error_failed_to_authorize_permit))
                 }
             }
         }
@@ -278,15 +284,21 @@ class PermitDetailViewModel(
         val state = _uiState.value as? PermitDetailUiState.Success ?: return
 
         if (hsePersonId == 0) {
-            _uiState.value = state.copy(submitError = "Please select an HSE person")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_select_hse_person))
+            }
             return
         }
         if (msra.isBlank()) {
-            _uiState.value = state.copy(submitError = "Please enter MSRA number")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_enter_msra_number))
+            }
             return
         }
         if (signature.isBlank()) {
-            _uiState.value = state.copy(submitError = "Please add your signature")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.please_add_your_signature))
+            }
             return
         }
 
@@ -333,11 +345,11 @@ class PermitDetailViewModel(
             isAuthorizing.value = false
             when (result) {
                 is NetworkResult.Success -> {
-                    submitSuccessMessage.value = result.data.statusMessage ?: "Success"
+                    submitSuccessMessage.value = result.data.statusMessage ?: getString(Res.string.success)
                     loadPermitDetail(permitId)
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = state.copy(submitError = result.message ?: "Failed to authorize permit")
+                    _uiState.value = state.copy(submitError = result.message ?: getString(Res.string.error_failed_to_authorize_permit))
                 }
             }
         }
@@ -490,11 +502,15 @@ class PermitDetailViewModel(
         val state = _uiState.value as? PermitDetailUiState.Success ?: return
         
         if (!isWorkCompletedVerified) {
-            _uiState.value = state.copy(submitError = "Please verify work completed")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_verify_work_completed))
+            }
             return
         }
         if (signatureUrl.isNullOrBlank()) {
-            _uiState.value = state.copy(submitError = "Please provide a signature")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_provide_signature))
+            }
             return
         }
 
@@ -516,7 +532,7 @@ class PermitDetailViewModel(
 
             when (val result = repository.submitPermitClosureRequest(request)) {
                 is org.example.project.network.NetworkResult.Success -> {
-                    submitSuccessMessage.value = result.data.statusMessage ?: "Closure Request Submitted Successfully"
+                    submitSuccessMessage.value = result.data.statusMessage ?: getString(Res.string.success_closure_request_submitted)
                     loadPermitDetail(permitId)
                 }
                 is org.example.project.network.NetworkResult.Error -> {
@@ -546,7 +562,9 @@ class PermitDetailViewModel(
         val state = _uiState.value as? PermitDetailUiState.Success ?: return
 
         if (signatureUrl.isNullOrBlank()) {
-            _uiState.value = state.copy(submitError = "Please provide your signature")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_provide_signature))
+            }
             return
         }
 
@@ -565,7 +583,7 @@ class PermitDetailViewModel(
 
             when (val result = repository.submitPermitCertificateClosure(request)) {
                 is org.example.project.network.NetworkResult.Success -> {
-                    submitSuccessMessage.value = result.data.statusMessage ?: "Closure Done Successfully"
+                    submitSuccessMessage.value = result.data.statusMessage ?: getString(Res.string.success_closure_done)
                     loadPermitDetail(permitId)
                 }
                 is org.example.project.network.NetworkResult.Error -> {
@@ -605,11 +623,15 @@ class PermitDetailViewModel(
         val state = _uiState.value as? PermitDetailUiState.Success ?: return
 
         if (authorizer.isBlank()) {
-            _uiState.value = state.copy(submitError = "Please enter authorizer name")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_enter_authorizer_name))
+            }
             return
         }
         if (signatureUrl.isNullOrBlank()) {
-            _uiState.value = state.copy(submitError = "Please provide your signature")
+            viewModelScope.launch {
+                _uiState.value = state.copy(submitError = getString(Res.string.error_provide_signature))
+            }
             return
         }
 
@@ -661,11 +683,11 @@ class PermitDetailViewModel(
 
             when (val result = repository.submitPermitSubContractorClosure(request)) {
                 is org.example.project.network.NetworkResult.Success -> {
-                    submitSuccessMessage.value = result.data.statusMessage ?: "Subcontractor Closure Done Successfully"
+                    submitSuccessMessage.value = result.data.statusMessage ?: getString(Res.string.success_subcontractor_closure_done)
                     loadPermitDetail(permitId)
                 }
                 is org.example.project.network.NetworkResult.Error -> {
-                    _uiState.value = state.copy(submitError = result.message ?: "Failed to submit closure")
+                    _uiState.value = state.copy(submitError = result.message ?: getString(Res.string.error_failed_to_submit_closure))
                 }
             }
             isSubmittingSubContractorClosure.value = false
@@ -691,11 +713,11 @@ class PermitDetailViewModel(
             actionLoadingState.value = -1
             when (result) {
                 is NetworkResult.Success -> {
-                    val statusMsg = result.data.statusMessage ?: "Success"
+                    val statusMsg = result.data.statusMessage ?: getString(Res.string.success)
                     submitSuccessMessage.value = statusMsg
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = PermitDetailUiState.Error(result.message ?: "Failed to perform action")
+                    _uiState.value = PermitDetailUiState.Error(result.message ?: getString(Res.string.error_failed_to_perform_action))
                 }
             }
         }
@@ -711,11 +733,11 @@ class PermitDetailViewModel(
                         setValuesForForm(data)
                         _uiState.value = PermitDetailUiState.Success(data)
                     } else {
-                        _uiState.value = PermitDetailUiState.Error("Data is null")
+                        _uiState.value = PermitDetailUiState.Error(getString(Res.string.error_failed_to_load_details))
                     }
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = PermitDetailUiState.Error(result.message ?: "Failed to load details")
+                    _uiState.value = PermitDetailUiState.Error(result.message ?: getString(Res.string.error_failed_to_load_details))
                 }
             }
         }

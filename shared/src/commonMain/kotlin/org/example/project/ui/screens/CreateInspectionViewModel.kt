@@ -18,6 +18,8 @@ import org.example.project.data.model.StaticEquipmentContent
 import org.example.project.data.repository.InspectionDraftRepository
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.shared.db.AppDatabase
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class CreateInspectionState(
     val isCreating: Boolean = false,
@@ -89,7 +91,7 @@ class CreateInspectionViewModel(
                 is org.example.project.network.NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isFetchingQuestions = false,
-                        error = result.message ?: "Failed to fetch questions"
+                        error = result.message ?: getString(Res.string.error_failed_to_fetch_questions)
                     )
                 }
             }
@@ -182,7 +184,9 @@ class CreateInspectionViewModel(
     ) {
         val state = _uiState.value
         if (facilitiesId == null && inspectionDateMillis == null && location.isBlank() && description.isBlank() && notes.isBlank()) {
-            _uiState.value = state.copy(error = "At least one value is needed to save as draft")
+            viewModelScope.launch {
+                _uiState.value = state.copy(error = getString(Res.string.error_draft_at_least_one_field))
+            }
             return
         }
 
@@ -309,16 +313,16 @@ class CreateInspectionViewModel(
 
     fun saveInspection(onSuccess: () -> Unit) {
         val state = _uiState.value
-        if (state.inspectionDateMillis == null) {
-            _uiState.value = state.copy(error = "Date is required")
-            return
-        }
-        if (state.questions.isNotEmpty() && state.answers.size < state.questions.size) {
-            _uiState.value = state.copy(error = "Please answer all questions")
-            return
-        }
-        
         viewModelScope.launch {
+            if (state.inspectionDateMillis == null) {
+                _uiState.value = state.copy(error = getString(Res.string.error_date_required))
+                return@launch
+            }
+            if (state.questions.isNotEmpty() && state.answers.size < state.questions.size) {
+                _uiState.value = state.copy(error = getString(Res.string.error_answer_all_questions))
+                return@launch
+            }
+            
             _uiState.value = state.copy(isCreating = true, error = null)
             val staticEquipments = state.answers.map { (id, answer) ->
                 val selectedValue = when (answer) {
@@ -370,7 +374,7 @@ class CreateInspectionViewModel(
                 is org.example.project.network.NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isCreating = false,
-                        error = result.message ?: "Failed to save inspection"
+                        error = result.message ?: getString(Res.string.error_failed_to_save_inspection)
                     )
                 }
             }

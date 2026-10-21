@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.ExifInterface
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -57,6 +58,26 @@ actual fun rememberAppCameraLauncher(onResult: (ByteArray?) -> Unit): AppCameraL
         val file = currentPhotoFile
         if (success && file != null && file.exists() && file.length() > 0) {
             try {
+                // Read EXIF orientation before deleting or altering the captured photo file
+                var orientation = getExifOrientation(file.absolutePath)
+                if (orientation == ExifInterface.ORIENTATION_UNDEFINED ||
+                    orientation == ExifInterface.ORIENTATION_NORMAL
+                ) {
+                    val uri = currentPhotoUri
+                    if (uri != null) {
+                        try {
+                            context.contentResolver.openInputStream(uri)?.use { stream ->
+                                orientation = ExifInterface(stream).getAttributeInt(
+                                    ExifInterface.TAG_ORIENTATION,
+                                    ExifInterface.ORIENTATION_NORMAL
+                                )
+                            }
+                        } catch (e: Exception) {
+                            // ignore fallback error
+                        }
+                    }
+                }
+
                 // Downsample large camera photos to max 2048px to prevent OutOfMemoryError while maintaining crisp quality
                 val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 BitmapFactory.decodeFile(file.absolutePath, options)
@@ -68,8 +89,10 @@ actual fun rememberAppCameraLauncher(onResult: (ByteArray?) -> Unit): AppCameraL
                 val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
                 val bitmap = BitmapFactory.decodeFile(file.absolutePath, decodeOptions)
                 if (bitmap != null) {
+                    val orientedBitmap = rotateBitmapByOrientation(bitmap, orientation)
                     val stream = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+                    orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+                    orientedBitmap.recycle()
                     currentOnResult(stream.toByteArray())
                 } else {
                     currentOnResult(null)

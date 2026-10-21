@@ -32,6 +32,8 @@ import ja.burhanrashid52.photoeditor.ViewType
 import ja.burhanrashid52.photoeditor.shape.ShapeBuilder
 import ja.burhanrashid52.photoeditor.shape.ShapeType
 import org.example.project.shared.R
+import org.example.project.utilites.getExifOrientation
+import org.example.project.utilites.rotateBitmapByOrientation
 import java.io.File
 
 class EditorToolView @JvmOverloads constructor(
@@ -128,8 +130,10 @@ class EditorToolView @JvmOverloads constructor(
         photoEditor.clearAllViews()
         previewImage.source.setImageDrawable(null)
 
-        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-        if (bitmap != null) {
+        val decoded = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        if (decoded != null) {
+            val orientation = getExifOrientation(imageBytes)
+            val bitmap = rotateBitmapByOrientation(decoded, orientation)
             previewImage.source.setImageBitmap(bitmap)
             isImageReady = true
         }
@@ -147,8 +151,10 @@ class EditorToolView @JvmOverloads constructor(
         val cleanPath = imageUrl.removePrefix("file://")
         val localFile = File(cleanPath)
         if (localFile.exists()) {
-            val bitmap = BitmapFactory.decodeFile(localFile.absolutePath)
-            if (bitmap != null) {
+            val decoded = BitmapFactory.decodeFile(localFile.absolutePath)
+            if (decoded != null) {
+                val orientation = getExifOrientation(localFile.absolutePath)
+                val bitmap = rotateBitmapByOrientation(decoded, orientation)
                 previewImage.source.setImageBitmap(bitmap)
                 isImageReady = true
             }

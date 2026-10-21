@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class ChangePasswordUiState {
     object Idle : ChangePasswordUiState()
@@ -28,11 +30,11 @@ class ChangePasswordViewModel(
             when (val result = repository.changePassword(oldPassword, newPassword)) {
                 is NetworkResult.Success -> {
                     _uiState.value = ChangePasswordUiState.Success(
-                        result.data.statusMessage.takeIf { it?.isNotEmpty() == true } ?: "Password changed"
+                        result.data.statusMessage.takeIf { it?.isNotEmpty() == true } ?: getString(Res.string.password_changed_successfully)
                     )
                 }
                 is NetworkResult.Error -> {
-                    val msg = if (result.errorCode == 1002) "Incorrect old password" else result.message
+                    val msg = if (result.errorCode == 1002) getString(Res.string.error_incorrect_old_password) else result.message
                     _uiState.value = ChangePasswordUiState.Error(msg, result.errorCode)
                 }
             }

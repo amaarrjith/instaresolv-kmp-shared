@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applySavedLocale()
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge(
@@ -57,6 +58,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applySavedLocale()
+    }
+
+    private fun applySavedLocale() {
+        try {
+            val appPreferences = org.koin.mp.KoinPlatform.getKoin().get<org.example.project.data.settings.AppPreferences>()
+            val langCode = appPreferences.getLanguage()
+            org.example.project.utilites.setAppLocale(langCode)
+        } catch (_: Exception) {}
     }
 
     override fun onNewIntent(intent: android.content.Intent) {

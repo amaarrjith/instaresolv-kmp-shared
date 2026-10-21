@@ -84,8 +84,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.LaunchedEffect
 import org.example.project.data.model.ProjectDetail
-import org.jetbrains.compose.resources.stringResource
-import instaresolv.shared.generated.resources.*
 import kotlinx.coroutines.delay
 import org.example.project.ui.components.AppExitPopup
 import org.example.project.ui.components.AppMultilineTextField
@@ -300,7 +298,7 @@ fun CreateProjectScreenTopBar(
         )
         Spacer(modifier = Modifier.width(14.dp))
         Text(
-            text = (if (isEdit) "Edit Project" else "Create Project").uppercase(),
+            text = (if (isEdit) stringResource(Res.string.editProject) else stringResource(Res.string.createProject)).uppercase(),
             style = textStyle(
                 size = 14.sp,
                 weight = FontWeight.Bold
@@ -340,7 +338,7 @@ fun CreateProjectScreenBottomBar(
             modifier = Modifier.weight(1f)
         )
         AppPrimaryButton(
-            title = if (isEdit) "Update" else "Create",
+            title = if (isEdit) stringResource(Res.string.update) else stringResource(Res.string.create),
             onClick = {
                 onCreate()
             },
@@ -370,7 +368,7 @@ fun CreateProjectScreenContent(
             )
             Spacer(modifier = Modifier.height(25.dp))
             Text(
-                text = if (isEdit) "Project Updated Successfully!" else "Project Created Successfully!",
+                text = if (isEdit) stringResource(Res.string.projectUpdatedSuccessfully) else stringResource(Res.string.projectCreatedSuccessfully),
                 style = textStyle(size = 16.sp, weight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.height(24.dp))

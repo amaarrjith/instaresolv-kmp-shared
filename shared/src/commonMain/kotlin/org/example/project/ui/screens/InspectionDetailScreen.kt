@@ -266,7 +266,7 @@ fun InspectionDetailContent(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = detail.auditItem?.auditItemTitle ?: "Static Equipment Inspection",
+                    text = detail.auditItem?.auditItemTitle ?: "-",
                     style = textStyle(size = 16.sp, weight = FontWeight.Bold),
                     color = AppColors.Black
                 )

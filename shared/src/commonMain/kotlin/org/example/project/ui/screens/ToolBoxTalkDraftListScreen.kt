@@ -195,7 +195,8 @@ fun ToolBoxTalkDraftListScreen(
                                 } catch(e: Exception) { null }
                             }
                             val firstImageUrl = localImages?.firstOrNull { it.imageUrl?.isNotBlank() == true }?.imageUrl
-                            Triple(draft, project, firstImageUrl)
+                            val imageCount = localImages?.count { it.imageUrl?.isNotBlank() == true } ?: 0
+                            ParsedToolBoxTalkDraft(draft, project, firstImageUrl, imageCount)
                         }
                     }
 
@@ -205,32 +206,33 @@ fun ToolBoxTalkDraftListScreen(
                     ) {
                         items(
                             count = parsedDrafts.size,
-                            key = { index -> parsedDrafts[index].first.id }
+                            key = { index -> parsedDrafts[index].draft.id }
                         ) { index ->
-                            val (draft, project, firstImageUrl) = parsedDrafts[index]
+                            val item = parsedDrafts[index]
                             ToolBoxTalkDraftListItem(
-                                draft = draft,
-                                project = project,
-                                imageUrl = firstImageUrl,
+                                draft = item.draft,
+                                project = item.project,
+                                imageUrl = item.imageUrl,
+                                imageCount = item.imageCount,
                                 isSelectionMode = isDeleteOptionEnabled,
-                                isSelected = selectedItemsId.contains(draft.id.toInt()),
+                                isSelected = selectedItemsId.contains(item.draft.id.toInt()),
                                 onSelectionChange = { checked ->
                                     selectedItemsId = if (checked) {
-                                        selectedItemsId + draft.id.toInt()
+                                        selectedItemsId + item.draft.id.toInt()
                                     } else {
-                                        selectedItemsId - draft.id.toInt()
+                                        selectedItemsId - item.draft.id.toInt()
                                     }
                                 },
                                 onClick = { 
                                     if (isDeleteOptionEnabled) {
-                                        val checked = !selectedItemsId.contains(draft.id.toInt())
+                                        val checked = !selectedItemsId.contains(item.draft.id.toInt())
                                         selectedItemsId = if (checked) {
-                                            selectedItemsId + draft.id.toInt()
+                                            selectedItemsId + item.draft.id.toInt()
                                         } else {
-                                            selectedItemsId - draft.id.toInt()
+                                            selectedItemsId - item.draft.id.toInt()
                                         }
                                     } else {
-                                        onDraftClicked(draft.id)
+                                        onDraftClicked(item.draft.id)
                                     }
                                 }
                             )
@@ -269,11 +271,19 @@ fun ToolBoxTalkDraftListScreen(
     }
 }
 
+private data class ParsedToolBoxTalkDraft(
+    val draft: ToolBoxTalkDraft,
+    val project: Project?,
+    val imageUrl: String?,
+    val imageCount: Int
+)
+
 @Composable
 fun ToolBoxTalkDraftListItem(
     draft: ToolBoxTalkDraft,
     project: Project?,
     imageUrl: String?,
+    imageCount: Int = 0,
     isSelectionMode: Boolean,
     isSelected: Boolean,
     onSelectionChange: (Boolean) -> Unit,
@@ -314,6 +324,22 @@ fun ToolBoxTalkDraftListItem(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
+                    }
+                }
+                if (imageCount > 1) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(4.dp)
+                            .size(22.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "+${imageCount - 1}",
+                            style = textStyle(size = 10.sp, weight = FontWeight.Bold),
+                            color = Color.White
+                        )
                     }
                 }
             }
@@ -395,7 +421,7 @@ fun ToolBoxTalkDraftListItem(
                 }
 
                 Text(
-                    text = draft.topic.takeIf { !it.isNullOrBlank() } ?: "Toolbox Talk Draft",
+                    text = draft.topic.takeIf { !it.isNullOrBlank() } ?: stringResource(Res.string.toolbox_talk_draft_default),
                     style = textStyle(size = 15.sp, weight = FontWeight.Bold),
                     color = AppColors.Black,
                     maxLines = 2

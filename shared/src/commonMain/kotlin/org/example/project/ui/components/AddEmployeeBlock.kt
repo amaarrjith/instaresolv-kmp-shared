@@ -137,7 +137,7 @@ fun AddEmployeeBlock(
                         ) {
                             if (uiState.errorMessage != null) {
                                 DropdownMenuItem(
-                                    text = { Text(uiState.errorMessage ?: "Parsing error", style = textStyle(size = 14.sp), color = Color.Red) },
+                                    text = { Text(uiState.errorMessage ?: stringResource(Res.string.error_unexpected_error), style = textStyle(size = 14.sp), color = Color.Red) },
                                     onClick = {}
                                 )
                             } else if (uiState.isLoading && uiState.employees.isEmpty()) {
@@ -172,7 +172,7 @@ fun AddEmployeeBlock(
                                     DropdownMenuItem(
                                         text = { 
                                             Text(
-                                                if (uiState.isLoading) "Loading..." else "Load More", 
+                                                if (uiState.isLoading) stringResource(Res.string.loading) else stringResource(Res.string.load_more), 
                                                 style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
                                                 color = AppColors.Primary
                                             )

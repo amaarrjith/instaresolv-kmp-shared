@@ -11,6 +11,8 @@ import org.example.project.data.model.LessonLearnedDetailResponseData
 import org.example.project.data.model.GenerateLessonLearnedPdfRequest
 import org.example.project.domain.repository.LessonLearnedRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class LessonsLearnedDetailUiState {
     object Loading : LessonsLearnedDetailUiState()
@@ -57,11 +59,11 @@ class LessonsLearnedDetailViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = "PDF URL not found"
+                        _pdfToastMessage.value = getString(Res.string.error_pdf_url_not_found)
                     }
                 }
                 is NetworkResult.Error -> {
-                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
             _isGeneratingPdf.value = false

@@ -35,12 +35,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
-import instaresolv.shared.generated.resources.Res
-import instaresolv.shared.generated.resources.ic_eye_open
-import instaresolv.shared.generated.resources.ic_eye_closed
-import instaresolv.shared.generated.resources.ic_search
-import instaresolv.shared.generated.resources.ic_toast_close
-import instaresolv.shared.generated.resources.removeImage
+import instaresolv.shared.generated.resources.*
 import org.example.project.colors.AppColors
 import org.example.project.typography.textStyle
 import org.jetbrains.compose.resources.DrawableResource
@@ -158,7 +153,7 @@ fun AppTextField(
 fun AppSearchBar(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String = "Search...",
+    placeholder: String = stringResource(Res.string.search),
     modifier: Modifier = Modifier
 ) {
     androidx.compose.foundation.layout.Row(

@@ -10,6 +10,8 @@ import org.example.project.data.model.PreTaskDetailRequest
 import org.example.project.data.model.PreTaskDetailResponseData
 import org.example.project.domain.repository.PreTaskRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class PreTaskDetailUiState {
     object Loading : PreTaskDetailUiState()
@@ -58,12 +60,12 @@ class PreTaskDetailViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                        _pdfToastMessage.value = result.data?.statusMessage ?: getString(Res.string.error_failed_to_generate_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
         }

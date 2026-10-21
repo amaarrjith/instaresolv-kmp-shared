@@ -82,7 +82,46 @@ class OTPVerificationViewModel(
         }
     }
 
+    fun resendOTP(
+        defaultSuccessMessage: String = "OTP sent successfully",
+        onSuccess: (() -> Unit)? = null
+    ) {
+        if (_uiState.value.isResending) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isResending = true, errorMessage = null) }
+            val result = repository.resendOTP(
+                tempUserId = tempUserId,
+                email = email
+            )
+            when (result) {
+                is NetworkResult.Success -> {
+                    val msg = result.data.statusMessage?.takeIf { it.isNotBlank() } ?: defaultSuccessMessage
+                    _uiState.update {
+                        it.copy(
+                            isResending = false,
+                            successMessage = msg,
+                            errorMessage = null
+                        )
+                    }
+                    onSuccess?.invoke()
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isResending = false,
+                            errorMessage = result.message
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    fun clearSuccessMessage() {
+        _uiState.update { it.copy(successMessage = null) }
     }
 }

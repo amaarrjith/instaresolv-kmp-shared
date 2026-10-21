@@ -34,7 +34,7 @@ class CreateProjectViewModel(
         groupImage: String
     ) {
         viewModelScope.launch {
-            if (groupName.isEmpty()) {
+            if (groupName.trim().isEmpty()) {
                 _uiState.value = CreateProjectUiState.Error(getString(Res.string.error_provide_project_name))
                 return@launch
             }

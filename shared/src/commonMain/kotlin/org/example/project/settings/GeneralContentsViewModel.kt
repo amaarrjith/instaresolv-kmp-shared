@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.example.project.domain.repository.AuthRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 sealed class GeneralContentsUiState {
     object Idle : GeneralContentsUiState()
@@ -32,7 +34,7 @@ class GeneralContentsViewModel(
                     _uiState.value = GeneralContentsUiState.Success(content)
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = GeneralContentsUiState.Error(result.message ?: "Unknown Error")
+                    _uiState.value = GeneralContentsUiState.Error(result.message ?: getString(Res.string.unknown_error))
                 }
             }
         }

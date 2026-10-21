@@ -1,13 +1,16 @@
 package org.example.project.domain.validation
 
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
+
 class OTPValidator {
 
-    fun validateOTP(otp: String): String? {
+    suspend fun validateOTP(otp: String): String? {
         if (otp.length != 4) {
-            return "OTP must be 4 characters long"
+            return getString(Res.string.error_otp_4_characters)
         }
         if (!otp.all { it.isDigit() }) {
-            return "OTP must contain only digits"
+            return getString(Res.string.error_otp_only_digits)
         }
         return null
     }

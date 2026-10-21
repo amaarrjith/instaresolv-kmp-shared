@@ -18,6 +18,8 @@ import org.example.project.data.model.FilterContentData
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.data.repository.PreTaskDraftRepository
 import org.example.project.shared.db.PreTaskDraft
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class PreTaskListState(
     val isPullDown: Boolean = false,
@@ -160,7 +162,7 @@ class PreTaskListViewModel(
                             isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            error = result.message ?: "Failed to fetch pre tasks"
+                            error = result.message ?: getString(Res.string.error_failed_to_fetch_pre_tasks)
                         ) 
                     }
                 }
@@ -230,7 +232,7 @@ class PreTaskListViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
-                    _exportToastMessage.value = result.message ?: "Export failed"
+                    _exportToastMessage.value = result.message ?: getString(Res.string.export_failed)
                 }
             }
             _isExporting.value = false

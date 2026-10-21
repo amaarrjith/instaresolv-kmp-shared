@@ -16,6 +16,8 @@ import org.example.project.data.model.ToolBoxTalkItem
 import org.example.project.domain.repository.ToolBoxTalkRepository
 import org.example.project.network.NetworkResult
 import org.example.project.data.model.AppFilterState
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class ToolBoxTalkListState(
     val isPullDown: Boolean = false,
@@ -172,7 +174,7 @@ class ToolBoxTalkListViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
-                    _exportToastMessage.value = result.message ?: "Export failed"
+                    _exportToastMessage.value = result.message ?: getString(Res.string.export_failed)
                 }
             }
             _isExporting.value = false

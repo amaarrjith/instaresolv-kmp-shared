@@ -19,6 +19,8 @@ import org.example.project.data.remote.api.AuthApiService
 import org.example.project.data.repository.ViolationDraftRepository
 import org.example.project.data.settings.AuthPreferences
 import org.example.project.shared.db.ViolationDraft
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class ViolationListState(
     val isPullDown: Boolean = false,
@@ -153,7 +155,7 @@ class ViolationListViewModel(
                             isPullDown = false,
                             isLoading = false,
                             isPaginating = false,
-                            error = result.message ?: "Failed to load violations"
+                            error = result.message ?: getString(Res.string.error_failed_to_load_violations)
                         )
                     }
                 }
@@ -193,7 +195,7 @@ class ViolationListViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
-                    _exportToastMessage.value = result.message ?: "Export failed"
+                    _exportToastMessage.value = result.message ?: getString(Res.string.export_failed)
                 }
             }
             _isExporting.value = false

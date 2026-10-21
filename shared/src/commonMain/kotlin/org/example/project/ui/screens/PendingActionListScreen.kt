@@ -1,6 +1,7 @@
 package org.example.project.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -158,16 +160,30 @@ fun PendingActionListScreen(
                         color = AppColors.Black
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Image(
-                        painter = painterResource(Res.drawable.ic_filter),
-                        contentDescription = null,
+                    val isFilterActive = if (selectedTab == 0) selectedFilters.isNotEmpty() else selectedPermitFilters.isNotEmpty()
+                    Box(
                         modifier = Modifier
                             .padding(end = 20.dp)
                             .clickable {
                                 showFilterSheet = true
                             }
-                            .size(24.dp)
-                    )
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.ic_filter),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        if (isFilterActive) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 2.dp, y = (-2).dp)
+                                    .size(8.dp)
+                                    .background(AppColors.Primary, CircleShape)
+                                    .border(1.dp, Color.White, CircleShape)
+                            )
+                        }
+                    }
                 }
             }
         ) { paddingValues ->
@@ -301,11 +317,27 @@ fun PendingActionListScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 12.dp)
                 ) {
-                    Text(
-                        text = stringResource(Res.string.filterBy),
-                        style = textStyle(size = 18.sp, weight = FontWeight.Bold),
-                        color = AppColors.Black
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.filterBy),
+                            style = textStyle(size = 18.sp, weight = FontWeight.Bold),
+                            color = AppColors.Black
+                        )
+                        if (tempFilters.isNotEmpty()) {
+                            Text(
+                                text = stringResource(Res.string.reset),
+                                style = textStyle(size = 14.sp, weight = FontWeight.SemiBold),
+                                color = AppColors.Primary,
+                                modifier = Modifier.clickable {
+                                    tempFilters = emptySet()
+                                }
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(20.dp))
                     
                     val filters = if (selectedTab == 0) {
@@ -697,15 +729,13 @@ fun PendingActionListItem(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
-                Box(modifier = Modifier.weight(1f, fill = false)) {
+                Box {
                     StatusBadge(
                         type = action.type,
                         isEditable = isEditable
                     )
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
                 Spacer(modifier = Modifier.weight(1f))
 
                 if (!action.date.isNullOrEmpty()) {

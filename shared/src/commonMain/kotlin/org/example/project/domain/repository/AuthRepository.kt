@@ -11,6 +11,7 @@ import org.example.project.data.model.ImageUploadData
 import org.example.project.data.model.LoginResponse
 import org.example.project.data.model.NotificationListResponse
 import org.example.project.data.model.OTPResponse
+import org.example.project.data.model.ResendOTPResponse
 import org.example.project.data.model.ProjectAccessRequest
 import org.example.project.data.model.ProjectAccessResponse
 import org.example.project.data.model.QuizSubmitRequest
@@ -47,6 +48,11 @@ interface AuthRepository {
         email: String,
         otp: String
     ): NetworkResult<OTPResponse>
+
+    suspend fun resendOTP(
+        tempUserId: Int,
+        email: String
+    ): NetworkResult<ResendOTPResponse>
 
     suspend fun userCheckOut(
         uuid: String

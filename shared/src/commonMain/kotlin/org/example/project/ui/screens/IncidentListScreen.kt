@@ -329,6 +329,24 @@ fun IncidentListItem(
                         .height(80.dp)
                         .clip(RoundedCornerShape(8.dp))
                 )
+
+                val totalImages = incident.images?.size ?: 0
+                if (totalImages > 1) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(4.dp)
+                            .size(22.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "+${totalImages - 1}",
+                            style = textStyle(size = 10.sp, weight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
+                }
             }
             Column(
                 modifier = Modifier.weight(1f),

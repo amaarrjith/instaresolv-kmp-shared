@@ -15,6 +15,8 @@ import org.example.project.domain.repository.PermitRepository
 import org.example.project.domain.repository.ObservationRepository
 import org.example.project.domain.repository.ProjectRepository
 import org.example.project.network.NetworkResult
+import instaresolv.shared.generated.resources.*
+import org.jetbrains.compose.resources.getString
 
 data class PendingActionListState(
     val isLoading: Boolean = false,
@@ -69,12 +71,12 @@ class PendingActionListViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data.statusMessage ?: "Failed to generate Permit PDF"
+                        _pdfToastMessage.value = result.data.statusMessage ?: getString(Res.string.error_failed_to_generate_permit_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfErrorToastMessage.value = result.message ?: "Failed to generate Permit PDF"
+                    _pdfErrorToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_permit_pdf)
                 }
             }
         }
@@ -117,12 +119,12 @@ class PendingActionListViewModel(
                     if (!url.isNullOrBlank()) {
                         _pdfUrl.value = url
                     } else {
-                        _pdfToastMessage.value = result.data?.statusMessage ?: "Failed to generate PDF"
+                        _pdfToastMessage.value = result.data?.statusMessage ?: getString(Res.string.error_failed_to_generate_pdf)
                     }
                 }
                 is NetworkResult.Error -> {
                     _isGeneratingPdf.value = false
-                    _pdfErrorToastMessage.value = result.message ?: "Failed to generate PDF"
+                    _pdfErrorToastMessage.value = result.message ?: getString(Res.string.error_failed_to_generate_pdf)
                 }
             }
         }
@@ -140,7 +142,7 @@ class PendingActionListViewModel(
                 }
                 is NetworkResult.Error -> {
                     _isActionLoading.value = false
-                    onError(response.message ?: "Failed to approve or reject")
+                    onError(response.message ?: getString(Res.string.error_failed_to_approve_or_reject))
                 }
             }
         }
@@ -154,11 +156,11 @@ class PendingActionListViewModel(
                 is NetworkResult.Success -> {
                     _isActionLoading.value = false
                     if (response.data.isSuccess == true) onSuccess()
-                    else onError(response.data.statusMessage ?: "Failed to submit request")
+                    else onError(response.data.statusMessage ?: getString(Res.string.error_failed_to_submit_request))
                 }
                 is NetworkResult.Error -> {
                     _isActionLoading.value = false
-                    onError(response.message ?: "Failed to submit request")
+                    onError(response.message ?: getString(Res.string.error_failed_to_submit_request))
                 }
             }
         }
@@ -172,11 +174,11 @@ class PendingActionListViewModel(
                 is NetworkResult.Success -> {
                     _isActionLoading.value = false
                     if (response.data.isSuccess == true) onSuccess()
-                    else onError(response.data.statusMessage ?: "Failed to submit request")
+                    else onError(response.data.statusMessage ?: getString(Res.string.error_failed_to_submit_request))
                 }
                 is NetworkResult.Error -> {
                     _isActionLoading.value = false
-                    onError(response.message ?: "Failed to submit request")
+                    onError(response.message ?: getString(Res.string.error_failed_to_submit_request))
                 }
             }
         }
@@ -208,7 +210,7 @@ class PendingActionListViewModel(
                 }
                 is NetworkResult.Error -> {
                     _uiState.update { 
-                        it.copy(isLoading = false, error = result.message ?: "Failed to fetch pending actions") 
+                        it.copy(isLoading = false, error = result.message ?: getString(Res.string.error_failed_to_fetch_pending_actions)) 
                     }
                 }
             }
@@ -227,7 +229,7 @@ class PendingActionListViewModel(
                 }
                 is NetworkResult.Error -> {
                     _uiState.update {
-                        it.copy(isPermitLoading = false, permitError = result.message ?: "Failed to fetch permit pending actions")
+                        it.copy(isPermitLoading = false, permitError = result.message ?: getString(Res.string.error_failed_to_fetch_permit_pending_actions))
                     }
                 }
             }

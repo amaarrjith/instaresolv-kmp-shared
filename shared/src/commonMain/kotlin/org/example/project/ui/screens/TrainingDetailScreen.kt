@@ -45,7 +45,6 @@ import org.example.project.utilites.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
-import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
 import org.example.project.utilites.rememberFileDownloader
@@ -240,7 +239,8 @@ fun TrainingDetailScreen(
                                 CertificateSectionCard(
                                     onDownloadCertificate = {
                                         try {
-                                            val fileName = "Certificate_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                                            val sanitizedTitle = data.title.trim().replace(Regex("[/\\\\:*?\"<>|]"), "_").ifBlank { "Training" }
+                                            val fileName = "$sanitizedTitle - Certificate.pdf"
                                             fileDownloader.downloadFile(data.certificateUrl, fileName)
                                         } catch (e: Exception) {
                                             errorMessage = e.message ?: failedToDownloadCertMessage
@@ -255,7 +255,12 @@ fun TrainingDetailScreen(
                                     url = data.lessonMaterialUrl,
                                     onDownload = { materialUrl ->
                                         try {
-                                            val fileName = "Lesson_Material_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                                            val sanitizedTitle = data.title.trim().replace(Regex("[/\\\\:*?\"<>|]"), "_").ifBlank { "Training" }
+                                            val ext = materialUrl.substringBefore('?')
+                                                .substringBefore('#')
+                                                .substringAfterLast('.', "")
+                                                .let { if (it.isNotBlank() && it.length in 2..5) it else "pdf" }
+                                            val fileName = "$sanitizedTitle - Lesson Material.$ext"
                                             fileDownloader.downloadFile(materialUrl, fileName)
                                         } catch (e: Exception) {
                                             errorMessage = e.message ?: failedToDownloadLessonMessage
@@ -272,7 +277,8 @@ fun TrainingDetailScreen(
                                     certificateUrl = data.certificateUrl,
                                     onDownloadCertificate = { certUrl ->
                                         try {
-                                            val fileName = "Certificate_${Clock.System.now().toEpochMilliseconds()}.pdf"
+                                            val sanitizedTitle = data.title.trim().replace(Regex("[/\\\\:*?\"<>|]"), "_").ifBlank { "Training" }
+                                            val fileName = "$sanitizedTitle - Certificate.pdf"
                                             fileDownloader.downloadFile(certUrl, fileName)
                                         } catch (e: Exception) {
                                             errorMessage = e.message ?: failedToDownloadCertMessage
