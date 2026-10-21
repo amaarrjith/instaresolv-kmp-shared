@@ -1,5 +1,7 @@
 package org.example.project.ui.screens
 
+import org.example.project.config.BrandStrings
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -1231,7 +1233,7 @@ fun SubContractorAuthorizerFormSection(
     Spacer(modifier = Modifier.height(16.dp))
 
     AppUserDropdown(
-        title = stringResource(Res.string.instaresolvAuthorizerName),
+        title = stringResource(BrandStrings.authorizerName),
         isMandatory = true,
         placeholder = stringResource(Res.string.selectPerson),
         users = authorizerPersons,
@@ -1332,7 +1334,7 @@ fun SubContractorAuthorizerViewerSection(
         Spacer(modifier = Modifier.height(8.dp))
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
         Text(
-            text = stringResource(Res.string.instaresolvAuthorizerName),
+            text = stringResource(BrandStrings.authorizerName),
             style = textStyle(12.sp, FontWeight.Normal),
             color = AppColors.TextGray
         )

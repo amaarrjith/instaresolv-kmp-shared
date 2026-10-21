@@ -11,10 +11,15 @@
 		742F44FC3015157A0035BA1E /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 742F44FB3015157A0035BA1E /* FirebaseMessaging */; };
 		74D91EDE2F58B75400285539 /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = 74D91EDD2F58B75400285539 /* TOCropViewController */; };
 		74D91EE92F58B8D800285539 /* Drawsana in Frameworks */ = {isa = PBXBuildFile; productRef = 74D91EE82F58B8D800285539 /* Drawsana */; };
+		QE0700003015157A0035BA1E /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 742F44FB3015157A0035BA1E /* FirebaseMessaging */; };
+		QE0800003015157A0035BA1E /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 742F44F93015157A0035BA1E /* FirebaseCrashlytics */; };
+		QE0900002F58B75400285539 /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = 74D91EDD2F58B75400285539 /* TOCropViewController */; };
+		QE1000002F58B8D800285539 /* Drawsana in Frameworks */ = {isa = PBXBuildFile; productRef = 74D91EE82F58B8D800285539 /* Drawsana */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D2791C5D888A4E7872F9D96A /* InstaResolv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstaResolv.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		QE020000888A4E7872F9D96A /* QualityExpertise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QualityExpertise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -24,6 +29,13 @@
 				Info.plist,
 			);
 			target = 8985B7DDC1DFE0BF628F26A0 /* iosApp */;
+		};
+		QE060000AA37AD8A7AA48E16 /* Exceptions for "iosApp" folder in "QualityExpertise" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = QE010000C1DFE0BF628F26A0 /* QualityExpertise */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -37,6 +49,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				2469C81EAA37AD8A7AA48E16 /* Exceptions for "iosApp" folder in "iosApp" target */,
+				QE060000AA37AD8A7AA48E16 /* Exceptions for "iosApp" folder in "QualityExpertise" target */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -55,6 +68,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		QE11000002D456A4D9238E9C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				QE0700003015157A0035BA1E /* FirebaseMessaging in Frameworks */,
+				QE0800003015157A0035BA1E /* FirebaseCrashlytics in Frameworks */,
+				QE0900002F58B75400285539 /* TOCropViewController in Frameworks */,
+				QE1000002F58B8D800285539 /* Drawsana in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -62,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				D2791C5D888A4E7872F9D96A /* InstaResolv.app */,
+				QE020000888A4E7872F9D96A /* QualityExpertise.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -105,6 +130,33 @@
 			productReference = D2791C5D888A4E7872F9D96A /* InstaResolv.app */;
 			productType = "com.apple.product-type.application";
 		};
+		QE010000C1DFE0BF628F26A0 /* QualityExpertise */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = QE03000019085BBC9251D3DF /* Build configuration list for PBXNativeTarget "QualityExpertise" */;
+			buildPhases = (
+				QE130000EB92A9796E570E82 /* Compile Kotlin Framework */,
+				QE14000052786D555A356A98 /* Sources */,
+				QE11000002D456A4D9238E9C /* Frameworks */,
+				QE120000D3923CCC8AEEA900 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9AF756ADE1377ADE26E320E3 /* iosApp */,
+			);
+			name = QualityExpertise;
+			packageProductDependencies = (
+				742F44F93015157A0035BA1E /* FirebaseCrashlytics */,
+				742F44FB3015157A0035BA1E /* FirebaseMessaging */,
+				74D91EDD2F58B75400285539 /* TOCropViewController */,
+				74D91EE82F58B8D800285539 /* Drawsana */,
+			);
+			productName = QualityExpertise;
+			productReference = QE020000888A4E7872F9D96A /* QualityExpertise.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -116,6 +168,9 @@
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					8985B7DDC1DFE0BF628F26A0 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					QE010000C1DFE0BF628F26A0 = {
 						CreatedOnToolsVersion = 16.2;
 					};
 				};
@@ -140,12 +195,20 @@
 			projectRoot = "";
 			targets = (
 				8985B7DDC1DFE0BF628F26A0 /* iosApp */,
+				QE010000C1DFE0BF628F26A0 /* QualityExpertise */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1CAD14C6D3923CCC8AEEA900 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		QE120000D3923CCC8AEEA900 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -174,10 +237,36 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\n\nif [ -z \"$JAVA_HOME\" ]; then\n  if [ -d \"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ]; then\n    export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\"\n  elif [ -d \"$HOME/.gradle/jdks/amazon_com_inc_-21-aarch64-os_x.2/amazon-corretto-21.jdk/Contents/Home\" ]; then\n    export JAVA_HOME=\"$HOME/.gradle/jdks/amazon_com_inc_-21-aarch64-os_x.2/amazon-corretto-21.jdk/Contents/Home\"\n  fi\nfi\nif [ -n \"$JAVA_HOME\" ]; then\n  export PATH=\"$JAVA_HOME/bin:$PATH\"\nfi\n\ncd \"$SRCROOT/..\"\nexport GRADLE_USER_HOME=\"$SRCROOT/../.gradle\"\nmkdir -p \"$GRADLE_USER_HOME\"\n./gradlew -Dorg.gradle.jvmargs=\"-Xmx6144M -XX:MaxMetaspaceSize=1024M -Dfile.encoding=UTF-8\" -Dkotlin.daemon.jvmargs=\"-Xmx6144M -XX:MaxMetaspaceSize=1024M\" :shared:embedAndSignAppleFrameworkForXcode\n";
 		};
+		QE130000EB92A9796E570E82 /* Compile Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\n\nif [ -z \"$JAVA_HOME\" ]; then\n  if [ -d \"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ]; then\n    export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\"\n  elif [ -d \"$HOME/.gradle/jdks/amazon_com_inc_-21-aarch64-os_x.2/amazon-corretto-21.jdk/Contents/Home\" ]; then\n    export JAVA_HOME=\"$HOME/.gradle/jdks/amazon_com_inc_-21-aarch64-os_x.2/amazon-corretto-21.jdk/Contents/Home\"\n  fi\nfi\nif [ -n \"$JAVA_HOME\" ]; then\n  export PATH=\"$JAVA_HOME/bin:$PATH\"\nfi\n\ncd \"$SRCROOT/..\"\nexport GRADLE_USER_HOME=\"$SRCROOT/../.gradle\"\nmkdir -p \"$GRADLE_USER_HOME\"\n./gradlew -Dorg.gradle.jvmargs=\"-Xmx6144M -XX:MaxMetaspaceSize=1024M -Dfile.encoding=UTF-8\" -Dkotlin.daemon.jvmargs=\"-Xmx6144M -XX:MaxMetaspaceSize=1024M\" :shared:embedAndSignAppleFrameworkForXcode\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D93B787752786D555A356A98 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		QE14000052786D555A356A98 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -394,6 +483,92 @@
 			};
 			name = Debug;
 		};
+		QE0400008A30CE42C8543CE3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
+				DEVELOPMENT_TEAM = TCL2SB7395;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QualityExpertise;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take project photos.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires microphone access to record audio messages.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select photos for incident and observation reports.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 14;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.qualityexpertise.dev;
+				PRODUCT_NAME = QualityExpertise;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		QE050000E0BECB2F36BC9F8B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
+				DEVELOPMENT_TEAM = TCL2SB7395;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QualityExpertise;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to take project photos.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires microphone access to record audio messages.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select photos for incident and observation reports.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 14;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.qualityexpertise.app;
+				PRODUCT_NAME = QualityExpertise;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -411,6 +586,15 @@
 			buildConfigurations = (
 				E1B132A08A30CE42C8543CE3 /* Debug */,
 				29880C2DE0BECB2F36BC9F8B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		QE03000019085BBC9251D3DF /* Build configuration list for PBXNativeTarget "QualityExpertise" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				QE0400008A30CE42C8543CE3 /* Debug */,
+				QE050000E0BECB2F36BC9F8B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

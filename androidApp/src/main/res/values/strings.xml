@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">InstaResolv</string>
     <string name="user_role_changed">Your Access Role Has Been Updated</string>
     <string name="user_role_changed_description">Your account role has been changed. Please log in again to continue using the app with your updated access permissions.</string>
     <string name="access_restricted">Access Restricted!</string>
@@ -11,8 +10,6 @@
     <string name="subcontractorAuthorisation">Sub Contractor Authorisation</string>
     <string name="subContractorAuthorizerName">Sub Contractor Authorizer Name</string>
     <string name="subcontractorAuthorizerName">Sub Contractor Authorizer Name</string>
-    <string name="instaresolvAuthorizerName">InstaResolv Authorizer Name</string>
-    <string name="instaResolvAuthorizerName">InstaResolv Authorizer Name</string>
     <string name="deleteObservation">Delete Observation</string>
     <string name="deleteObservationWithDetailed">Delete this observation report</string>
     <string name="confirmDeletingObservation">Confirm Deleting Observation!</string>

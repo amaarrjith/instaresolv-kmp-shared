@@ -880,4 +880,23 @@
     <string name="rejected">अस्वीकृत</string>
     <string name="search">खोजें</string>
     <string name="otp_sent_successfully">ओटीपी सफलतापूर्वक भेजा गया</string>
+
+    <!-- QualityExpertise Brand Strings -->
+    <string name="app_name_qe">QualityExpertise</string>
+    <string name="welcome_to_qe">QualityExpertise में आपका स्वागत है</string>
+    <string name="learnAboutTheApp_qe">QualityExpertise के बारे में</string>
+    <string name="connectQe">QualityExpertise टीम से जुड़ें</string>
+    <string name="connectqecom">connect@qualityexpertise.com</string>
+    <string name="qeAuthorizerName">QualityExpertise प्राधिकारी का नाम</string>
+    <string name="qeAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments">QualityExpertise AI एक विस्तृत और सटीक विवरण बनाने के लिए आपके चित्र का विश्लेषण कर रहा है। इसमें कुछ क्षण लग सकते हैं....</string>
+    <string name="copyrightText_qe">© %1$d QualityExpertise सर्वाधिकार सुरक्षित</string>
+    <string name="new_version_available_qe">QualityExpertise का नया संस्करण उपलब्ध है।</string>
+    <string name="pending_qe_authorization">QualityExpertise प्राधिकरण लंबित</string>
+    <string name="pending_qe_closure">QualityExpertise समापन लंबित</string>
+    <string name="pending_qe_auth_expired">QualityExpertise प्राधिकरण लंबित और समाप्त</string>
+    <string name="pending_qe_closure_expired">QualityExpertise समापन लंबित और समाप्त</string>
+    <string name="pending_qe_authorization_short">QE प्राधिकरण लंबित</string>
+    <string name="pending_qe_closure_short">QE समापन लंबित</string>
+    <string name="pending_qe_authorization_and_expired">QE प्राधिकरण लंबित और समाप्त</string>
+    <string name="pending_qe_closure_and_expired">QE समापन लंबित और समाप्त</string>
 </resources>

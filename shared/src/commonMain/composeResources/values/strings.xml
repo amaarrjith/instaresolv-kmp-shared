@@ -880,4 +880,23 @@
     <string name="rejected">Rejected</string>
     <string name="search">Search</string>
     <string name="otp_sent_successfully">OTP sent successfully</string>
+
+    <!-- QualityExpertise Brand Strings -->
+    <string name="app_name_qe">QualityExpertise</string>
+    <string name="welcome_to_qe">Welcome to QualityExpertise</string>
+    <string name="learnAboutTheApp_qe">About QualityExpertise</string>
+    <string name="connectQe">Connect QualityExpertise Team</string>
+    <string name="connectqecom">connect@qualityexpertise.com</string>
+    <string name="qeAuthorizerName">QualityExpertise Authorizer Name</string>
+    <string name="qeAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments">QualityExpertise AI is analysing your image to generate a detailed and accurate description. This may take a few moments....</string>
+    <string name="copyrightText_qe">© %1$d QualityExpertise All Rights Reserved</string>
+    <string name="new_version_available_qe">A new version of QualityExpertise is available.</string>
+    <string name="pending_qe_authorization">Pending QualityExpertise Authorization</string>
+    <string name="pending_qe_closure">Pending QualityExpertise Closure</string>
+    <string name="pending_qe_auth_expired">Pending QualityExpertise Authorization and Expired</string>
+    <string name="pending_qe_closure_expired">Pending QualityExpertise Closure and Expired</string>
+    <string name="pending_qe_authorization_short">Pending QE Authorization</string>
+    <string name="pending_qe_closure_short">Pending QE Closure</string>
+    <string name="pending_qe_authorization_and_expired">Pending QE Authorization &amp; Expired</string>
+    <string name="pending_qe_closure_and_expired">Pending QE Closure &amp; Expired</string>
 </resources>

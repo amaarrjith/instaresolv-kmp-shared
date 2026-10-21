@@ -65,6 +65,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.config.AppConfig
 
 @Composable
 fun WelcomeScreen(
@@ -158,7 +159,7 @@ fun WelcomeScreen(
             ) {
 
                 Image(
-                    painter = painterResource(Res.drawable.ic_app_login_logo),
+                    painter = painterResource(AppConfig.loginLogo),
                     contentDescription = null,
                     modifier = Modifier
                         .padding(bottom = 24.dp)

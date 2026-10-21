@@ -1,5 +1,7 @@
 package org.example.project.ui.screens
 
+import org.example.project.config.BrandStrings
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -129,8 +131,8 @@ fun SettingsScreen(
                         }
                     ) 
                 }
-                item { SettingsRow(title = stringResource(Res.string.contactUs), subText = stringResource(Res.string.connectInsta), action = { onContactUsClick() }) }
-                item { SettingsRow(title = stringResource(Res.string.aboutUs), subText = stringResource(Res.string.learnAboutTheApp), action = { onAboutUsClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.contactUs), subText = stringResource(BrandStrings.connectTeam), action = { onContactUsClick() }) }
+                item { SettingsRow(title = stringResource(Res.string.aboutUs), subText = stringResource(BrandStrings.aboutApp), action = { onAboutUsClick() }) }
                 item { SettingsRow(title = stringResource(Res.string.termsAndConditions), subText = stringResource(Res.string.readTerms), action = { onTermsOfUseClick() }) }
                 item { SettingsRow(title = stringResource(Res.string.privacyPolicy), subText = stringResource(Res.string.readPrivacy), action = { onPrivacyPolicyClick() }) }
                 item { SettingsRow(title = stringResource(Res.string.deleteAccount), subText = stringResource(Res.string.weWillMissYou), titleColor = AppColors.Error, action = { onDeleteAccountClick() }) }

@@ -1,5 +1,8 @@
 package org.example.project.ui
 
+import org.example.project.config.BrandStrings
+import org.example.project.config.AppConfig
+
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -144,7 +147,7 @@ private fun UpdateAvailableCard(
 
             // MARK: - App Logo
             Image(
-                painter = painterResource(Res.drawable.ic_app_logo),
+                painter = painterResource(AppConfig.appLogo),
                 contentDescription = null,
                 modifier = Modifier
                     .padding(top = 12.dp)
@@ -208,7 +211,7 @@ private fun UpdateAvailableCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = stringResource(Res.string.new_version_available),
+                    text = stringResource(BrandStrings.newVersionAvailable),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.White.copy(alpha = 0.9f),

@@ -1,5 +1,7 @@
 package org.example.project.ui.components
 
+import org.example.project.config.BrandStrings
+
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -232,7 +234,7 @@ fun AppImageCreateBox   (
                 )
 
                 Text(
-                    text = stringResource(Res.string.instaresolvAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments),
+                    text = stringResource(BrandStrings.aiAnalyzingImage),
                     style = textStyle(
                         fontStyle = FontStyle.Italic,
                         size = 10.sp

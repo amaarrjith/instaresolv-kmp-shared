@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InstaResolv</string>
+    <string name="instaresolvAuthorizerName">InstaResolv Authorizer Name</string>
+    <string name="instaResolvAuthorizerName">InstaResolv Authorizer Name</string>
+</resources>

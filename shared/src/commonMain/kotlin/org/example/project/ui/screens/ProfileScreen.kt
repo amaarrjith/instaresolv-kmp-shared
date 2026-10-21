@@ -1,5 +1,7 @@
 package org.example.project.ui.screens
 
+import org.example.project.config.BrandStrings
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -312,7 +314,7 @@ fun ProfileScreenContent(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = stringResource(Res.string.copyrightText, currentYear),
+                text = stringResource(BrandStrings.copyrightText, currentYear),
                 style = textStyle(
                     size = 10.sp,
                     weight = FontWeight.Normal

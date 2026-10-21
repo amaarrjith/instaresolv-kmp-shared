@@ -1,5 +1,7 @@
 package org.example.project.ui
 
+import org.example.project.config.AppConfig
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -97,7 +99,7 @@ fun SplashScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(Res.drawable.ic_app_logo),
+                painter = painterResource(AppConfig.appLogo),
                 contentDescription = null,
                 modifier = Modifier.size(96.dp)
             )

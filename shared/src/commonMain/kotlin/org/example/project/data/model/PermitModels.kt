@@ -3,6 +3,7 @@ package org.example.project.data.model
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.config.BrandStrings
 
 @Serializable
 enum class PermitStatus(val value: Int, val title: String, val colorHex: Long) {
@@ -27,12 +28,12 @@ enum class PermitStatus(val value: Int, val title: String, val colorHex: Long) {
             SUSPENDED -> Res.string.suspended
             EXPIRED -> Res.string.expired
             CLOSED -> Res.string.closed
-            PENDING_ALNASR_AUTHORIZATION -> Res.string.pending_ir_authorization
-            PENDING_ALNASR_CLOSURE -> Res.string.pending_ir_closure
+            PENDING_ALNASR_AUTHORIZATION -> BrandStrings.pendingAuthShort
+            PENDING_ALNASR_CLOSURE -> BrandStrings.pendingClosureShort
             PENDING_SUBCONTRACTOR_AUTHORIZATION -> Res.string.pending_sc_authorization
             PENDING_SUBCONTRACTOR_CLOSURE -> Res.string.pending_sc_closure
-            PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED -> Res.string.pending_ir_authorization_and_expired
-            PENDING_ALNASR_CLOSURE_AND_EXPIRED -> Res.string.pending_ir_closure_and_expired
+            PENDING_ALNASR_AUTHORIZATION_AND_EXPIRED -> BrandStrings.pendingAuthExpiredShort
+            PENDING_ALNASR_CLOSURE_AND_EXPIRED -> BrandStrings.pendingClosureExpiredShort
             PENDING_SUBCONTRACTOR_AUTHORIZATION_AND_EXPIRED -> Res.string.pending_sc_authorization_and_expired
             PENDING_SUBCONTRACTOR_CLOSURE_AND_EXPIRED -> Res.string.pending_sc_closure_and_expired
         }

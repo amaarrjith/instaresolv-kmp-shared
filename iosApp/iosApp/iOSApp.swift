@@ -9,6 +9,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        if let bundleId = Bundle.main.bundleIdentifier, bundleId.contains("qualityexpertise") {
+            AppConfig.shared.brand = .qualityExpertise
+        } else {
+            AppConfig.shared.brand = .instaResolv
+        }
         #if DEBUG
         AppConfig.shared.environment = .development
         #else
@@ -38,7 +43,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             }
         }
         
-        FirebaseApp.configure()
+        setupFirebase()
         IosImageEditorProvider.shared.bridge = SwiftImageEditorBridge()
         
         UNUserNotificationCenter.current().delegate = self
@@ -52,6 +57,37 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         Messaging.messaging().delegate = self
         
         return true
+    }
+    
+    private func setupFirebase() {
+        let isQE = AppConfig.shared.brand == .qualityExpertise
+        #if DEBUG
+        let envSuffix = "Dev"
+        #else
+        let envSuffix = "Release"
+        #endif
+        
+        let candidateFiles: [String] = isQE
+            ? ["GoogleService-Info-QualityExpertise-\(envSuffix)", "GoogleService-Info-QualityExpertise"]
+            : ["GoogleService-Info-InstaResolv-\(envSuffix)", "GoogleService-Info-InstaResolv"]
+        
+        for candidate in candidateFiles {
+            if let path = Bundle.main.path(forResource: candidate, ofType: "plist"),
+               let options = FirebaseOptions(contentsOfFile: path) {
+                print("Firebase configured with: \(candidate).plist")
+                FirebaseApp.configure(options: options)
+                return
+            }
+        }
+        
+        // Fallback to default GoogleService-Info.plist in bundle
+        if let defaultPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+           let options = FirebaseOptions(contentsOfFile: defaultPath) {
+            print("Firebase configured with default: GoogleService-Info.plist")
+            FirebaseApp.configure(options: options)
+        } else {
+            FirebaseApp.configure()
+        }
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {

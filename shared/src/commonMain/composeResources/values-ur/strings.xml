@@ -880,4 +880,23 @@
     <string name="rejected">مسترد</string>
     <string name="search">تلاش کریں</string>
     <string name="otp_sent_successfully">او ٹی پی کامیابی سے بھیج دیا گیا</string>
+
+    <!-- QualityExpertise Brand Strings -->
+    <string name="app_name_qe">QualityExpertise</string>
+    <string name="welcome_to_qe">QualityExpertise میں خوش آمدید</string>
+    <string name="learnAboutTheApp_qe">QualityExpertise کے بارے میں</string>
+    <string name="connectQe">QualityExpertise ٹیم سے رابطہ کریں</string>
+    <string name="connectqecom">connect@qualityexpertise.com</string>
+    <string name="qeAuthorizerName">QualityExpertise کے مجاز شخص کا نام</string>
+    <string name="qeAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments">QualityExpertise اے آئی تفصیلی اور درست تفصیل تیار کرنے کے لیے آپ کی تصویر کا تجزیہ کر رہا ہے۔ اس میں کچھ لمحے لگ سکتے ہیں....</string>
+    <string name="copyrightText_qe">© %1$d QualityExpertise جملہ حقوق محفوظ ہیں</string>
+    <string name="new_version_available_qe">QualityExpertise کا نیا ورژن دستیاب ہے۔</string>
+    <string name="pending_qe_authorization">QualityExpertise اجازت کے منتظر</string>
+    <string name="pending_qe_closure">QualityExpertise بندش کے منتظر</string>
+    <string name="pending_qe_auth_expired">QualityExpertise اجازت کے منتظر اور میعاد ختم</string>
+    <string name="pending_qe_closure_expired">QualityExpertise بندش کے منتظر اور میعاد ختم</string>
+    <string name="pending_qe_authorization_short">QE اجازت کے منتظر</string>
+    <string name="pending_qe_closure_short">QE بندش کے منتظر</string>
+    <string name="pending_qe_authorization_and_expired">QE اجازت کے منتظر اور میعاد ختم</string>
+    <string name="pending_qe_closure_and_expired">QE بندش کے منتظر اور میعاد ختم</string>
 </resources>

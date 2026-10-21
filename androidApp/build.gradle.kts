@@ -94,13 +94,38 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
         getByName("debug") {
-            applicationIdSuffix = ".development"
             isMinifyEnabled = false
+        }
+    }
+
+    flavorDimensions += listOf("brand")
+    productFlavors {
+        create("instaresolv") {
+            dimension = "brand"
+            applicationId = "com.instaresolve.app"
+            buildConfigField("String", "BRAND_NAME", "\"instaresolv\"")
+        }
+        create("qualityexpertise") {
+            dimension = "brand"
+            applicationId = "com.quality_expertise.app"
+            buildConfigField("String", "BRAND_NAME", "\"qualityexpertise\"")
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        if (variant.buildType == "debug") {
+            if (variant.flavorName == "instaresolv") {
+                variant.applicationId.set("com.instaresolve.app.development")
+            } else if (variant.flavorName == "qualityexpertise") {
+                variant.applicationId.set("com.quality_expertise.app.dev")
+            }
+        }
     }
 }
 

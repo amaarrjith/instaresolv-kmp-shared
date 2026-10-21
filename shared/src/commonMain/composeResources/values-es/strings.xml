@@ -880,4 +880,23 @@
     <string name="rejected">Rechazado</string>
     <string name="search">Buscar</string>
     <string name="otp_sent_successfully">OTP enviado con éxito</string>
+
+    <!-- QualityExpertise Brand Strings -->
+    <string name="app_name_qe">QualityExpertise</string>
+    <string name="welcome_to_qe">Bienvenido a QualityExpertise</string>
+    <string name="learnAboutTheApp_qe">Acerca de QualityExpertise</string>
+    <string name="connectQe">Conectar con el equipo de QualityExpertise</string>
+    <string name="connectqecom">connect@qualityexpertise.com</string>
+    <string name="qeAuthorizerName">Nombre del autorizador de QualityExpertise</string>
+    <string name="qeAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments">La IA de QualityExpertise está analizando tu imagen para generar una descripción detallada y precisa. Esto puede tardar unos momentos....</string>
+    <string name="copyrightText_qe">© %1$d QualityExpertise Todos los derechos reservados</string>
+    <string name="new_version_available_qe">Una nueva versión de QualityExpertise está disponible.</string>
+    <string name="pending_qe_authorization">Pendiente de autorización de QualityExpertise</string>
+    <string name="pending_qe_closure">Pendiente de cierre de QualityExpertise</string>
+    <string name="pending_qe_auth_expired">Pendiente de autorización de QualityExpertise y vencido</string>
+    <string name="pending_qe_closure_expired">Pendiente de cierre de QualityExpertise y vencido</string>
+    <string name="pending_qe_authorization_short">Pendiente de autorización de QE</string>
+    <string name="pending_qe_closure_short">Pendiente de cierre de QE</string>
+    <string name="pending_qe_authorization_and_expired">Pendiente de autorización de QE y vencido</string>
+    <string name="pending_qe_closure_and_expired">Pendiente de cierre de QE y vencido</string>
 </resources>

@@ -1,5 +1,7 @@
 package org.example.project.ui.screens
 
+import org.example.project.config.AppConfig
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -151,7 +153,7 @@ fun GenericSettingsScreen(title: String, type: Int?, showAppIcon: Boolean = fals
                         ) {
                             if (showAppIcon) {
                                 Image(
-                                    painter = painterResource(Res.drawable.ic_app_logo),
+                                    painter = painterResource(AppConfig.appLogo),
                                     contentDescription = stringResource(Res.string.appLogo),
                                     modifier = Modifier
                                         .size(100.dp)

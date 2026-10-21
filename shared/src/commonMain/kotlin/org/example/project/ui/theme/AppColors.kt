@@ -1,9 +1,12 @@
 package org.example.project.colors
 
 import androidx.compose.ui.graphics.Color
+import org.example.project.config.AppConfig
 
 object AppColors {
-    val Primary = Color(0XFFD42027)
+    val Primary: Color
+        get() = AppConfig.primaryColor
+
     val BlackText = Color(0XFF2C4161)
     val Black = Color(0XFF1F2024)
     val DarkGray = Color(0XFF71727A)

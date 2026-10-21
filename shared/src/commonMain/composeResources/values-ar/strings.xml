@@ -880,4 +880,23 @@
     <string name="rejected">مرفوض</string>
     <string name="search">بحث</string>
     <string name="otp_sent_successfully">تم إرسال رمز التحقق بنجاح</string>
+
+    <!-- QualityExpertise Brand Strings -->
+    <string name="app_name_qe">QualityExpertise</string>
+    <string name="welcome_to_qe">مرحبًا بك في QualityExpertise</string>
+    <string name="learnAboutTheApp_qe">حول QualityExpertise</string>
+    <string name="connectQe">تواصل مع فريق QualityExpertise</string>
+    <string name="connectqecom">connect@qualityexpertise.com</string>
+    <string name="qeAuthorizerName">اسم مفوّض QualityExpertise</string>
+    <string name="qeAiIsAnalysingYourImageToGenerateADetailedAndAccurateDescriptionThisMayTakeAFewMoments">يقوم الذكاء الاصطناعي في QualityExpertise بتحليل صورتك لإنشاء وصف دقيق ومفصل. قد يستغرق هذا بضع لحظات....</string>
+    <string name="copyrightText_qe">© %1$d QualityExpertise جميع الحقوق محفوظة</string>
+    <string name="new_version_available_qe">يتوفر إصدار جديد من QualityExpertise.</string>
+    <string name="pending_qe_authorization">بانتظار تصريح QualityExpertise</string>
+    <string name="pending_qe_closure">بانتظار إغلاق QualityExpertise</string>
+    <string name="pending_qe_auth_expired">بانتظار تصريح QualityExpertise ومنتهي الصلاحية</string>
+    <string name="pending_qe_closure_expired">بانتظار إغلاق QualityExpertise ومنتهي الصلاحية</string>
+    <string name="pending_qe_authorization_short">بانتظار تصريح QE</string>
+    <string name="pending_qe_closure_short">بانتظار إغلاق QE</string>
+    <string name="pending_qe_authorization_and_expired">بانتظار تصريح QE ومنتهي الصلاحية</string>
+    <string name="pending_qe_closure_and_expired">بانتظار إغلاق QE ومنتهي الصلاحية</string>
 </resources>

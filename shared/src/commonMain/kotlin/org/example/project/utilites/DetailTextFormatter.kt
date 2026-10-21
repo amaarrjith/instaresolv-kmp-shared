@@ -1,5 +1,7 @@
 package org.example.project.utilites
 
+import org.example.project.config.BrandStrings
+
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -569,7 +571,7 @@ object DetailTextFormatter {
                 title = getString(Res.string.subContractorAuthorisation).uppercase(),
                 lines = listOf(
                     line(getString(Res.string.name).uppercase(), scAuth.subContractorAuthorizerName),
-                    line(getString(Res.string.instaresolvAuthorizerName).uppercase(), alnasr),
+                    line(getString(BrandStrings.authorizerName).uppercase(), alnasr),
                     line(getString(Res.string.date).uppercase(), formatDate(scAuth.authorizationDate, na)),
                     line(getString(Res.string.time).uppercase(), formatTime(scAuth.authorizationTime)),
                     line(getString(Res.string.signature).uppercase(), if (cleanText(scAuth.signatureImageUrl) != null) getString(Res.string.attached) else null)

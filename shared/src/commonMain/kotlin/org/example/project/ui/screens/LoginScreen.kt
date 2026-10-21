@@ -1,5 +1,7 @@
 package org.example.project.ui
 
+import org.example.project.config.BrandStrings
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -65,6 +67,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import instaresolv.shared.generated.resources.*
+import org.example.project.config.AppConfig.loginLogo
 
 @Composable
 fun LoginScreen(
@@ -142,7 +145,7 @@ fun LoginScreenContent(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(Res.drawable.ic_app_login_logo),
+                painter = painterResource(loginLogo),
                 contentDescription = null,
                 modifier = Modifier
                     .padding(bottom = 24.dp)
@@ -251,7 +254,7 @@ fun LoginScreenContent(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = stringResource(Res.string.copyrightText, currentYear),
+                    text = stringResource(BrandStrings.copyrightText, currentYear),
                     style = textStyle(
                         size = 10.sp,
                         weight = FontWeight.Normal
